@@ -20,6 +20,7 @@ class GeometrySet {
 public:
 	std::vector<Geometry *> geometries;
 	std::vector<Geometry *> animalGeometries;
+	std::map<std::string, Geometry *> geometryMap;
 };
 
 GeometrySet *doMakeGeometrySet() {
@@ -154,6 +155,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 
     geometrySet->animalGeometries.push_back(geometry);
   }
+  geometrySet->geometryMap[name] = geometry;
 }
 
 void getAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, float **colors, float **heads, float **legs, unsigned int **indices, unsigned int &numPositions, unsigned int &numColors, unsigned int &numIndices, unsigned int &numHeads, unsigned int &numLegs, float *headPivot, float *aabb) {
