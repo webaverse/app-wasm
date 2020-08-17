@@ -224,8 +224,14 @@ class Vec {
         
         // Dot product
 
-        float operator*(const Vec &o) const {
-            return (x * o.x) + (y * o.y) + (z * o.z);
+        Vec operator*(const Vec &o) const {
+            return Vec(x * o.x, y * o.y, z * o.z);
+        }
+        Vec &operator*=(const Vec &o) {
+          x *= o.x;
+          y *= o.y;
+          z *= o.z;
+          return *this;
         }
 
         // An in-place dot product does not exist because
@@ -381,11 +387,11 @@ class Tri {
       const Vec v1 = b - a;
       const Vec v2 = point - a;
 
-      const float dot00 = v0 * v0;
-      const float dot01 = v0 * v1;
-      const float dot02 = v0 * v2;
-      const float dot11 = v1 * v1;
-      const float dot12 = v1 * v2;
+      const float dot00 = v0.dot(v0);
+      const float dot01 = v0.dot(v1);
+      const float dot02 = v0.dot(v2);
+      const float dot11 = v1.dot(v1);
+      const float dot12 = v1.dot(v2);
 
       const float denom = dot00 * dot11 - dot01 * dot01;
 
@@ -450,7 +456,7 @@ class Ray {
       //   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
       //   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
       //   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
-      float DdN = this->direction * normal;
+      float DdN = this->direction.dot(normal);
       float sign;
 
       if (DdN > 0) {
@@ -465,14 +471,14 @@ class Ray {
       }
 
       Vec diff = this->origin - tri.a;
-      float DdQxE2 = sign * (this->direction * (diff ^ edge2));
+      float DdQxE2 = sign * (this->direction.dot(diff ^ edge2));
 
       // b1 < 0, no intersection
       if (DdQxE2 < 0) {
         return false;
       }
 
-      float DdE1xQ = sign * (this->direction * (edge1 ^ diff));
+      float DdE1xQ = sign * (this->direction.dot(edge1 ^ diff));
 
       // b2 < 0, no intersection
       if ( DdE1xQ < 0 ) {
@@ -485,7 +491,7 @@ class Ray {
       }
 
       // Line intersects triangle, check if ray does.
-      float QdN = -sign * (diff * normal);
+      float QdN = -sign * (diff.dot(normal));
 
       // t < 0, no intersection
       if (QdN < 0) {
@@ -519,7 +525,7 @@ class Plane {
 
     Plane &setFromNormalAndCoplanarPoint(const Vec &normal, const Vec& point) {
       this->normal = normal;
-      this->constant = -(point * normal);
+      this->constant = -(point.dot(normal));
 
       return *this;
     }
@@ -533,7 +539,7 @@ class Plane {
     }
 
     float distanceToPoint(const Vec &point) const {
-      return normal * point + constant;
+      return normal.dot(point) + constant;
     }
 
     /* bool intersectLine(const Line &line, Vec &result) const {
@@ -598,6 +604,53 @@ class Plane {
       return *this;
     }
 }; */
+
+class Box {
+public:
+  /* Box() {
+    
+  } */
+  void setFromPositions(float *positions, unsigned int numPositions) {
+    min.x = std::numeric_limits<float>::infinity();
+    min.y = std::numeric_limits<float>::infinity();
+    min.z = std::numeric_limits<float>::infinity();
+
+    max.x = -std::numeric_limits<float>::infinity();
+    max.y = -std::numeric_limits<float>::infinity();
+    max.z = -std::numeric_limits<float>::infinity();
+
+    for (int i = 0; i < numPositions; i += 3) {
+      float x = positions[i];
+      float y = positions[i+1];
+      float z = positions[i+2];
+
+      if ( x < min.x ) min.x = x;
+      if ( y < min.y ) min.y = y;
+      if ( z < min.z ) min.z = z;
+
+      if ( x > max.x ) max.x = x;
+      if ( y > max.y ) max.y = y;
+      if ( z > max.z ) max.z = z;
+    }
+  }
+  Vec center() const {
+    return Vec{
+      (min.x+max.x)/2.0f,
+      (min.y+max.y)/2.0f,
+      (min.z+max.z)/2.0f,
+    };
+  }
+  Vec size() const {
+    return Vec{
+      max.x-min.x,
+      max.y-min.y,
+      max.z-min.z,
+    };
+  }
+
+  Vec min;
+  Vec max;
+};
 
 class Frustum {
   public:
