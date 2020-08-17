@@ -75,6 +75,8 @@ class Matrix {
       return *this;
     }
 
+    void compose(const Vec &position, const Quat &quaternion, const Vec &scale);
+
     static Matrix fromArray(float *elements) {
       return Matrix(elements);
     }

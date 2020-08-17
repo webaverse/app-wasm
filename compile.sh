@@ -1,6 +1,6 @@
 mkdir -p bin
-emcc --std=c++11 -s WASM=1 -s USE_PTHREADS=1 -O3 -s TOTAL_MEMORY=299958272 \
-  objectize.cc \
+emcc --std=c++11 -s WASM=1 -s USE_PTHREADS=1 -O3 -s TOTAL_MEMORY=52428800 \
+  objectize.cc vector.cc \
   draco/core/draco_types.cc \
 	draco/core/options.cc \
 	draco/core/data_buffer.cc \

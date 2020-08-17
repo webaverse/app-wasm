@@ -46,11 +46,13 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 	std::string animal;
 	metadata->GetEntryString("animal", &animal);
 
+  int numPositions;
   {
 	  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::POSITION);
 	  int numComponents = attribute->num_components();
 	  int numPoints = mesh->num_points();
 	  int numValues = numPoints * numComponents;
+	  numPositions = numValues;
 
 	  float *src = (float *)attribute->buffer()->data();
 	  geometry->positions.resize(numValues);
@@ -58,23 +60,31 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 	}
 	{
 	  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
-	  int numComponents = attribute->num_components();
-	  int numPoints = mesh->num_points();
-	  int numValues = numPoints * numComponents;
+	  if (attribute) {
+		  int numComponents = attribute->num_components();
+		  int numPoints = mesh->num_points();
+		  int numValues = numPoints * numComponents;
 
-	  float *src = (float *)attribute->buffer()->data();
-	  geometry->uvs.resize(numValues);
-	  memcpy(geometry->uvs.data(), src, numValues*sizeof(float));
+		  float *src = (float *)attribute->buffer()->data();
+		  geometry->uvs.resize(numValues);
+		  memcpy(geometry->uvs.data(), src, numValues*sizeof(float));
+		} else {
+			geometry->uvs.resize(numPositions/3*2);
+		}
 	}
 	{
 	  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::COLOR);
-	  int numComponents = attribute->num_components();
-	  int numPoints = mesh->num_points();
-	  int numValues = numPoints * numComponents;
+	  if (attribute) {
+		  int numComponents = attribute->num_components();
+		  int numPoints = mesh->num_points();
+		  int numValues = numPoints * numComponents;
 
-	  float *src = (float *)attribute->buffer()->data();
-	  geometry->colors.resize(numValues);
-	  memcpy(geometry->colors.data(), src, numValues*sizeof(float));
+		  float *src = (float *)attribute->buffer()->data();
+		  geometry->colors.resize(numValues);
+		  memcpy(geometry->colors.data(), src, numValues*sizeof(float));
+		} else {
+			geometry->colors.resize(numPositions);
+		}
 	}
 	{
     int numFaces = mesh->num_faces();
@@ -189,4 +199,104 @@ void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **po
 
   memcpy(headPivot, &geometry->headPivot, sizeof(geometry->headPivot));
   memcpy(aabb, &geometry->aabb, sizeof(geometry->aabb));
+}
+
+constexpr int SUBPARCEL_SIZE = 10;
+constexpr int SUBPARCEL_SIZE_P1 = SUBPARCEL_SIZE + 1;
+constexpr int MAX_NAME_LENGTH = 32;
+int abs(int n) {
+  return std::abs(n);
+}
+int sign(int n) {
+  return n < 0 ? 1 : 0;
+}
+int getSubparcelIndex(int x, int y, int z) {
+	return abs(x)|(abs(y)<<9)|(abs(z)<<18)|(sign(x)<<27)|(sign(y)<<28)|(sign(z)<<29);
+}
+int getFieldIndex(int x, int y, int z) {
+	return x + (z * SUBPARCEL_SIZE_P1) + (y * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1);
+}
+
+class MarchObject {
+public:
+	unsigned int id;
+	char name[MAX_NAME_LENGTH];
+	Vec position;
+	Quat quaternion;
+};
+class MarchSpec {
+public:
+	int index;
+  char heightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
+  unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
+};
+void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, MarchSpec *marchSpecs, unsigned int numMarchSpecs, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices) {
+  unsigned int &positionsIndex = numPositions;
+  unsigned int &uvsIndex = numUvs;
+  unsigned int &idsIndex = numIds;
+  unsigned int &indicesIndex = numIndices;
+
+  positionsIndex = 0;
+  uvsIndex = 0;
+  idsIndex = 0;
+  indicesIndex = 0;
+  unsigned int skyLightsIndex = 0;
+  unsigned int torchLightsIndex = 0;
+
+  for (unsigned int i = 0; i < numMarchObjects; i++) {
+    MarchObject &marchObject = marchObjects[i];
+    std::string name(marchObject.name);
+    Geometry *geometry = geometrySet->geometryMap[name];
+    Matrix matrix;
+    matrix.compose(marchObject.position, marchObject.quaternion, Vec{1, 1, 1});
+
+    unsigned int indexOffset2 = positionsIndex/3;
+    for (unsigned int j = 0; j < geometry->indices.size(); j++) {
+      indices[indicesIndex + j] = geometry->indices[j] + indexOffset2;
+    }
+    indicesIndex += geometry->indices.size();
+
+    for (unsigned int j = 0, jOffset = 0; j < geometry->positions.size(); j += 3, jOffset++) {
+    	Vec position{
+    		geometry->positions[j],
+    		geometry->positions[j+1],
+    		geometry->positions[j+2],
+    	};
+    	position.applyMatrix(matrix);
+    	positions[positionsIndex + j] = position.x;
+  		positions[positionsIndex + j + 1] = position.y;
+  		positions[positionsIndex + j + 2] = position.z;
+
+      int ax = (int)std::floor(position.x);
+      int ay = (int)std::floor(position.y);
+      int az = (int)std::floor(position.z);
+      int sx = ax/SUBPARCEL_SIZE;
+      int sy = ay/SUBPARCEL_SIZE;
+      int sz = az/SUBPARCEL_SIZE;
+      int subparcelIndex = getSubparcelIndex(sx, sy, sz);
+      MarchSpec *marchSpec = std::find_if(marchSpecs, marchSpecs + numMarchSpecs, [&](const MarchSpec &marchSpec) -> bool {
+      	return marchSpec.index == subparcelIndex;
+      });
+      if (marchSpec) {
+        int lx = ax - SUBPARCEL_SIZE*sx;
+        int ly = ay - SUBPARCEL_SIZE*sy;
+        int lz = az - SUBPARCEL_SIZE*sz;
+        int fieldIndex = getFieldIndex(lx, ly, lz);
+        skyLights[skyLightsIndex + jOffset] = marchSpec->heightfield[fieldIndex] < 0 ? 0 : marchSpec->heightfield[fieldIndex];
+        torchLights[torchLightsIndex + jOffset] = marchSpec->lightfield[fieldIndex];
+      } else {
+        skyLights[skyLightsIndex + jOffset] = 0;
+        torchLights[torchLightsIndex + jOffset] = 0;
+      }
+    }
+    positionsIndex += geometry->positions.size();
+    skyLightsIndex += geometry->positions.size()/3;
+    torchLightsIndex += geometry->positions.size()/3;
+
+    memcpy(uvs, geometry->uvs.data(), geometry->uvs.size());
+    uvsIndex += geometry->uvs.size();
+
+    std::fill(ids + idsIndex, ids + idsIndex + geometry->positions.size()/3, marchObject.id);
+    idsIndex += geometry->positions.size()/3;
+  }
 }
