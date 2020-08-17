@@ -158,7 +158,20 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
   geometrySet->geometryMap[name] = geometry;
 }
 
-void getAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, float **colors, float **heads, float **legs, unsigned int **indices, unsigned int &numPositions, unsigned int &numColors, unsigned int &numIndices, unsigned int &numHeads, unsigned int &numLegs, float *headPivot, float *aabb) {
+void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
+  std::string name(nameData, nameSize);
+  Geometry *geometry = geometrySet->geometryMap[name];
+
+  *positions = geometry->positions.data();
+  *uvs = geometry->uvs.data();
+  *indices = geometry->indices.data();
+
+  numPositions = geometry->positions.size();
+  numUvs = geometry->uvs.size();
+  numIndices = geometry->indices.size();
+}
+
+void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, float **colors, float **heads, float **legs, unsigned int **indices, unsigned int &numPositions, unsigned int &numColors, unsigned int &numIndices, unsigned int &numHeads, unsigned int &numLegs, float *headPivot, float *aabb) {
   unsigned int animalGeometryIndex = hash/0xFFFFFF*geometrySet->animalGeometries.size();
   Geometry *geometry = geometrySet->animalGeometries[animalGeometryIndex];
 
