@@ -16,7 +16,7 @@ globalThis.wasmModule = (moduleName, moduleFn) => {
       print(text) { console.log(text); },
       printErr(text) { console.warn(text); },
       locateFile() {
-        return 'bin/objectize.wasm';
+        return 'bin/geometry.wasm';
       },
       onRuntimeInitialized: () => {
         wasmModulePromise.accept();

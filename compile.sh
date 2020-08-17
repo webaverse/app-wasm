@@ -35,5 +35,5 @@ emcc --std=c++11 -s WASM=1 -s USE_PTHREADS=1 -O3 -s TOTAL_MEMORY=52428800 \
 	draco/compression/attributes/sequential_quantization_attribute_decoder.cc \
   -I. \
   --pre-js prefix.js --post-js postfix.js \
-  -o bin/objectize.js
-cat prefix2.js bin/objectize.js >bin/objectize2.js
+  -o bin/geometry.js
+cat prefix2.js bin/geometry.js >bin/geometry2.js
