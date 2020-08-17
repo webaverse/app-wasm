@@ -1,6 +1,11 @@
 #include "vector.h"
 #include "draco/compression/decode.h"
 
+inline unsigned int align4(unsigned int n) {
+  unsigned int d = n%4;
+  return d ? (n+4-d) : n;
+}
+
 class Geometry {
 public:
   std::string name;
@@ -27,145 +32,163 @@ GeometrySet *doMakeGeometrySet() {
 	return new GeometrySet();
 }
 void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size) {
-  Geometry *geometry = new Geometry();
+  unsigned int index = 0;
+  while (index < size) {
+    unsigned int geometrySize = *((unsigned int *)(data + index));
+	  index += sizeof(unsigned int);
+	  unsigned char *geometryData = data + index;
+	  index += geometrySize;
+	  index = align4(index);
 
-  draco::Decoder decoder;
+    Geometry *geometry = new Geometry();
 
-  draco::DecoderBuffer buffer;
-  buffer.Init((char *)data, size);
+	  draco::Decoder decoder;
 
-	std::unique_ptr<draco::Mesh> mesh = decoder.DecodeMeshFromBuffer(&buffer).value();
+	  draco::DecoderBuffer buffer;
+	  buffer.Init((char *)geometryData, geometrySize);
 
-	const draco::GeometryMetadata *metadata = mesh->GetMetadata();
-	std::string name;
-	metadata->GetEntryString("name", &name);
-	std::string transparent;
-	metadata->GetEntryString("transparent", &transparent);
-	std::string vegetation;
-	metadata->GetEntryString("vegetation", &vegetation);
-	std::string animal;
-	metadata->GetEntryString("animal", &animal);
+		std::unique_ptr<draco::Mesh> mesh = decoder.DecodeMeshFromBuffer(&buffer).value();
 
-  int numPositions;
-  {
-	  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::POSITION);
-	  int numComponents = attribute->num_components();
-	  int numPoints = mesh->num_points();
-	  int numValues = numPoints * numComponents;
-	  numPositions = numValues;
+		const draco::GeometryMetadata *metadata = mesh->GetMetadata();
+		std::string name;
+		metadata->GetEntryString("name", &name);
+		std::string transparent;
+		metadata->GetEntryString("transparent", &transparent);
+		std::string vegetation;
+		metadata->GetEntryString("vegetation", &vegetation);
+		std::string animal;
+		metadata->GetEntryString("animal", &animal);
 
-	  float *src = (float *)attribute->buffer()->data();
-	  geometry->positions.resize(numValues);
-	  memcpy(geometry->positions.data(), src, numValues*sizeof(float));
-	}
-	{
-	  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
-	  if (attribute) {
+	  int numPositions;
+	  {
+		  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::POSITION);
 		  int numComponents = attribute->num_components();
 		  int numPoints = mesh->num_points();
 		  int numValues = numPoints * numComponents;
+		  numPositions = numValues;
 
+      geometry->positions.resize(numValues);
+      /* for (int i = 0; i < numPoints; i++) {
+        attribute->GetValue(draco::AttributeValueIndex(i), &geometry->positions[i*3]);
+      } */
 		  float *src = (float *)attribute->buffer()->data();
-		  geometry->uvs.resize(numValues);
-		  memcpy(geometry->uvs.data(), src, numValues*sizeof(float));
-		} else {
-			geometry->uvs.resize(numPositions/3*2);
+		  geometry->positions.resize(numValues);
+		  memcpy(geometry->positions.data(), src, numValues*sizeof(float));
 		}
-	}
-	{
-	  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::COLOR);
-	  if (attribute) {
-		  int numComponents = attribute->num_components();
-		  int numPoints = mesh->num_points();
-		  int numValues = numPoints * numComponents;
+		{
+		  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
+		  if (attribute) {
+			  int numComponents = attribute->num_components();
+			  int numPoints = mesh->num_points();
+			  int numValues = numPoints * numComponents;
 
-		  float *src = (float *)attribute->buffer()->data();
-		  geometry->colors.resize(numValues);
-		  memcpy(geometry->colors.data(), src, numValues*sizeof(float));
-		} else {
-			geometry->colors.resize(numPositions);
+			  float *src = (float *)attribute->buffer()->data();
+			  geometry->uvs.resize(numValues);
+			  memcpy(geometry->uvs.data(), src, numValues*sizeof(float));
+			} else {
+				geometry->uvs.resize(numPositions/3*2);
+			}
 		}
-	}
-	{
-    int numFaces = mesh->num_faces();
-    int numIndices = numFaces * 3;
+		{
+		  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::COLOR);
+		  if (attribute) {
+			  int numComponents = attribute->num_components();
+			  int numPoints = mesh->num_points();
+			  int numValues = numPoints * numComponents;
 
-    geometry->indices.resize(numIndices);
-    for (draco::FaceIndex i(0); i < numFaces; i++) {
-    	const draco::Mesh::Face &face = mesh->face(i);
-    	unsigned int *indicesSrc = (unsigned int *)face.data();
-    	memcpy(&geometry->indices[i.value()*3], indicesSrc, 3*sizeof(unsigned int));
-    }
-  }
+			  float *src = (float *)attribute->buffer()->data();
+			  geometry->colors.resize(numValues);
+			  memcpy(geometry->colors.data(), src, numValues*sizeof(float));
+			} else {
+				geometry->colors.resize(numPositions);
+			}
+		}
+		{
+	    int numFaces = mesh->num_faces();
+	    int numIndices = numFaces * 3;
 
-  geometrySet->geometries.push_back(geometry);
-  if (animal == "1") {
-    geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size());
-    Vec center = geometry->aabb.center();
-    Vec size = geometry->aabb.size();
-    geometry->headPivot = center - (size * Vec(0.0f, 1.0f/2.0f * 0.5f, -1.0f/2.0f * 0.5f));
-    Vec legsPivot = center - (size * Vec(0.0f, -1.0f/2.0f + 1.0f/3.0f, 0.0f));
+	    geometry->indices.resize(numIndices);
 
-	  constexpr float legsSepFactor = 0.5;
-	  Vec legsPivotTopLeft = legsPivot + (size * Vec(-1.0f/2.0f * legsSepFactor, 0.0f, -1.0f/2.0f * legsSepFactor));
-    Vec legsPivotTopRight = legsPivot + (size * Vec(1.0f/2.0f * legsSepFactor, 0.0f, -1.0f/2.0f * legsSepFactor));
-    Vec legsPivotBottomLeft = legsPivot + (size * Vec(-1.0f/2.0f * legsSepFactor, 0.0f, 1.0f/2.0f * legsSepFactor));
-    Vec legsPivotBottomRight = legsPivot + (size * Vec(1.0f/2.0f * legsSepFactor, 0.0f, 1.0f/2.0f * legsSepFactor));
-
-    geometry->heads.resize(geometry->positions.size());
-    geometry->legs.resize(geometry->legs.size()/3*4);
-	  for (unsigned int i = 0, j = 0; i < geometry->positions.size(); i += 3, j += 4) {
-	  	Vec head{
-        geometry->positions[i],
-        geometry->positions[i+1],
-        geometry->positions[i+2],
-	  	};
-	    if (head.z < geometry->headPivot.z) {
-	    	head -= geometry->headPivot;
-	    } else {
-	    	head = Vec();
+	    for (draco::FaceIndex i(0); i < numFaces; i++) {
+	    	const draco::Mesh::Face &face = mesh->face(i);
+	    	/* geometry->indices[i.value()*3] = face[0].value();
+	    	geometry->indices[i.value()*3+1] = face[1].value();
+	    	geometry->indices[i.value()*3+2] = face[2].value(); */
+	    	unsigned int *indicesSrc = (unsigned int *)face.data();
+	    	// std::cout << "get face " << i.value() << " " << (void *)indicesSrc << " " << sizeof(face.data()[0]) << std::endl;
+	    	memcpy(&geometry->indices[i.value()*3], indicesSrc, 3*sizeof(unsigned int));
 	    }
-	    geometry->heads[i] = head.x;
-	    geometry->heads[i+1] = head.y;
-	    geometry->heads[i+2] = head.z;
-
-      Vec position{
-        geometry->positions[i],
-        geometry->positions[i+1],
-        geometry->positions[i+2],
-	  	};
-	    float xAxis;
-	    if (position.y < legsPivot.y) {
-	      if (position.x >= legsPivot.x) {
-	        if (position.z >= legsPivot.z) {
-	          position -= legsPivotBottomRight;
-	          xAxis = 1;
-	        } else {
-	          position -= legsPivotTopRight;
-	          xAxis = -1;
-	        }
-	      } else {
-	        if (position.z >= legsPivot.z) {
-	          position -= legsPivotBottomLeft;
-	          xAxis = -1;
-	        } else {
-	          position -= legsPivotTopLeft;
-	          xAxis = 1;
-	        }
-	      }
-	    } else {
-	    	position = Vec();
-	      xAxis = 0;
-	    }
-	    geometry->legs[j] = position.x;
-	    geometry->legs[j+1] = position.y;
-	    geometry->legs[j+2] = position.z;
-	    geometry->legs[j+3] = xAxis;
 	  }
 
-    geometrySet->animalGeometries.push_back(geometry);
+	  geometrySet->geometries.push_back(geometry);
+	  if (animal == "1") {
+	    geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size());
+	    Vec center = geometry->aabb.center();
+	    Vec size = geometry->aabb.size();
+	    geometry->headPivot = center - (size * Vec(0.0f, 1.0f/2.0f * 0.5f, -1.0f/2.0f * 0.5f));
+	    Vec legsPivot = center - (size * Vec(0.0f, -1.0f/2.0f + 1.0f/3.0f, 0.0f));
+
+		  constexpr float legsSepFactor = 0.5;
+		  Vec legsPivotTopLeft = legsPivot + (size * Vec(-1.0f/2.0f * legsSepFactor, 0.0f, -1.0f/2.0f * legsSepFactor));
+	    Vec legsPivotTopRight = legsPivot + (size * Vec(1.0f/2.0f * legsSepFactor, 0.0f, -1.0f/2.0f * legsSepFactor));
+	    Vec legsPivotBottomLeft = legsPivot + (size * Vec(-1.0f/2.0f * legsSepFactor, 0.0f, 1.0f/2.0f * legsSepFactor));
+	    Vec legsPivotBottomRight = legsPivot + (size * Vec(1.0f/2.0f * legsSepFactor, 0.0f, 1.0f/2.0f * legsSepFactor));
+
+	    geometry->heads.resize(geometry->positions.size());
+	    geometry->legs.resize(geometry->legs.size()/3*4);
+		  for (unsigned int i = 0, j = 0; i < geometry->positions.size(); i += 3, j += 4) {
+		  	Vec head{
+	        geometry->positions[i],
+	        geometry->positions[i+1],
+	        geometry->positions[i+2],
+		  	};
+		    if (head.z < geometry->headPivot.z) {
+		    	head -= geometry->headPivot;
+		    } else {
+		    	head = Vec();
+		    }
+		    geometry->heads[i] = head.x;
+		    geometry->heads[i+1] = head.y;
+		    geometry->heads[i+2] = head.z;
+
+	      Vec position{
+	        geometry->positions[i],
+	        geometry->positions[i+1],
+	        geometry->positions[i+2],
+		  	};
+		    float xAxis;
+		    if (position.y < legsPivot.y) {
+		      if (position.x >= legsPivot.x) {
+		        if (position.z >= legsPivot.z) {
+		          position -= legsPivotBottomRight;
+		          xAxis = 1;
+		        } else {
+		          position -= legsPivotTopRight;
+		          xAxis = -1;
+		        }
+		      } else {
+		        if (position.z >= legsPivot.z) {
+		          position -= legsPivotBottomLeft;
+		          xAxis = -1;
+		        } else {
+		          position -= legsPivotTopLeft;
+		          xAxis = 1;
+		        }
+		      }
+		    } else {
+		    	position = Vec();
+		      xAxis = 0;
+		    }
+		    geometry->legs[j] = position.x;
+		    geometry->legs[j+1] = position.y;
+		    geometry->legs[j+2] = position.z;
+		    geometry->legs[j+3] = xAxis;
+		  }
+
+	    geometrySet->animalGeometries.push_back(geometry);
+	  }
+	  geometrySet->geometryMap[name] = geometry;
   }
-  geometrySet->geometryMap[name] = geometry;
 }
 
 void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
