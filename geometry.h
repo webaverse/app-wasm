@@ -334,7 +334,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
     skyLightsIndex += geometry->positions.size()/3;
     torchLightsIndex += geometry->positions.size()/3;
 
-    memcpy(uvs, geometry->uvs.data(), geometry->uvs.size());
+    memcpy(uvs + uvsIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(float));
     uvsIndex += geometry->uvs.size();
 
     std::fill(ids + idsIndex, ids + idsIndex + geometry->positions.size()/3, marchObject.id);
