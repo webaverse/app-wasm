@@ -264,13 +264,13 @@ public:
 	Vec position;
 	Quat quaternion;
 };
-class MarchSpec {
+class SubparcelObject {
 public:
 	int index;
   char heightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
 };
-void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, MarchSpec *marchSpecs, unsigned int numMarchSpecs, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices) {
+void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices) {
   unsigned int &positionsIndex = numPositions;
   unsigned int &uvsIndex = numUvs;
   unsigned int &idsIndex = numIds;
@@ -314,16 +314,16 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
       int sy = ay/SUBPARCEL_SIZE;
       int sz = az/SUBPARCEL_SIZE;
       int subparcelIndex = getSubparcelIndex(sx, sy, sz);
-      MarchSpec *marchSpec = std::find_if(marchSpecs, marchSpecs + numMarchSpecs, [&](const MarchSpec &marchSpec) -> bool {
-      	return marchSpec.index == subparcelIndex;
+      SubparcelObject *subparcelObject = std::find_if(subparcelObjects, subparcelObjects + numSubparcelObjects, [&](const SubparcelObject &subparcelObject) -> bool {
+      	return subparcelObject.index == subparcelIndex;
       });
-      if (marchSpec) {
+      if (subparcelObject) {
         int lx = ax - SUBPARCEL_SIZE*sx;
         int ly = ay - SUBPARCEL_SIZE*sy;
         int lz = az - SUBPARCEL_SIZE*sz;
         int fieldIndex = getFieldIndex(lx, ly, lz);
-        skyLights[skyLightsIndex + jOffset] = marchSpec->heightfield[fieldIndex] < 0 ? 0 : marchSpec->heightfield[fieldIndex];
-        torchLights[torchLightsIndex + jOffset] = marchSpec->lightfield[fieldIndex];
+        skyLights[skyLightsIndex + jOffset] = subparcelObject->heightfield[fieldIndex] < 0 ? 0 : subparcelObject->heightfield[fieldIndex];
+        torchLights[torchLightsIndex + jOffset] = subparcelObject->lightfield[fieldIndex];
       } else {
         skyLights[skyLightsIndex + jOffset] = 0;
         torchLights[torchLightsIndex + jOffset] = 0;
