@@ -17,7 +17,7 @@ public:
   bool animal;
   std::vector<float> positions;
   std::vector<float> uvs;
-  std::vector<float> colors;
+  std::vector<unsigned char> colors;
   std::vector<unsigned int> indices;
   std::vector<float> heads;
   std::vector<float> legs;
@@ -55,6 +55,48 @@ bool GetAttributeFloatForAllPoints(const draco::PointCloud &pc,
     }
   }
   return true;
+}
+template <class DracoArrayT, class ValueTypeT>
+bool GetAttributeDataForAllPoints(const draco::PointCloud &pc,
+                                         const draco::PointAttribute &pa,
+                                         draco::DataType draco_signed_type,
+                                         draco::DataType draco_unsigned_type,
+                                         DracoArrayT &out_values) {
+  const int components = pa.num_components();
+  const int num_points = pc.num_points();
+  const int num_entries = num_points * components;
+
+  /* if ((pa.data_type() == draco_signed_type ||
+       pa.data_type() == draco_unsigned_type) &&
+      pa.is_mapping_identity()) {
+    // Copy values directly to the output vector.
+    const ValueTypeT *ptr = reinterpret_cast<const ValueTypeT *>(
+        pa.GetAddress(draco::AttributeValueIndex(0)));
+    out_values->MoveData({ptr, ptr + num_entries});
+    return true;
+  } */
+
+  // Copy values one by one.
+  std::vector<ValueTypeT> values(components);
+  int entry_id = 0;
+
+  out_values.resize(num_entries);
+  for (draco::PointIndex i(0); i < num_points; ++i) {
+    const draco::AttributeValueIndex val_index = pa.mapped_index(i);
+    if (!pa.ConvertValue<ValueTypeT>(val_index, &values[0])) {
+      return false;
+    }
+    for (int j = 0; j < components; ++j) {
+      out_values[entry_id++] = values[j];
+    }
+  }
+  return true;
+}
+bool GetAttributeUInt8ForAllPoints(const draco::PointCloud &pc,
+                                            const draco::PointAttribute &pa,
+                                            std::vector<unsigned char> &out_values) {
+  return GetAttributeDataForAllPoints<std::vector<unsigned char>, uint8_t>(
+      pc, pa, draco::DT_INT8, draco::DT_UINT8, out_values);
 }
 void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size) {
   unsigned int index = 0;
@@ -117,7 +159,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 			  // int numPoints = mesh->num_points();
 			  // int numValues = numPoints * numComponents;
 
-	      GetAttributeFloatForAllPoints(*mesh, *attribute, geometry->colors);
+	      GetAttributeUInt8ForAllPoints(*mesh, *attribute, geometry->colors);
 			} else {
 				geometry->colors.resize(numPositions);
 			}
@@ -220,8 +262,8 @@ void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSi
   numIndices = geometry->indices.size();
 }
 
-void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, float **colors, float **heads, float **legs, unsigned int **indices, unsigned int &numPositions, unsigned int &numColors, unsigned int &numIndices, unsigned int &numHeads, unsigned int &numLegs, float *headPivot, float *aabb) {
-  unsigned int animalGeometryIndex = hash/0xFFFFFF*geometrySet->animalGeometries.size();
+void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, unsigned char **colors, unsigned int **indices, float **heads, float **legs, unsigned int &numPositions, unsigned int &numColors, unsigned int &numIndices, unsigned int &numHeads, unsigned int &numLegs, float *headPivot, float *aabb) {
+  unsigned int animalGeometryIndex = (unsigned int)std::floor((float)hash/(float)0xFFFFFF*(float)geometrySet->animalGeometries.size());
   Geometry *geometry = geometrySet->animalGeometries[animalGeometryIndex];
 
   *positions = geometry->positions.data();
