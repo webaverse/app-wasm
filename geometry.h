@@ -318,7 +318,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
       SubparcelObject *subparcelObject = std::find_if(subparcelObjects, subparcelObjects + numSubparcelObjects, [&](const SubparcelObject &subparcelObject) -> bool {
       	return subparcelObject.index == subparcelIndex;
       });
-      if (subparcelObject) {
+      if (subparcelObject != subparcelObjects + numSubparcelObjects) {
         int lx = ax - SUBPARCEL_SIZE*sx;
         int ly = ay - SUBPARCEL_SIZE*sy;
         int lz = az - SUBPARCEL_SIZE*sz;
