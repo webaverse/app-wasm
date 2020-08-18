@@ -20,8 +20,8 @@ EMSCRIPTEN_KEEPALIVE void getAnimalGeometry(GeometrySet *geometrySet, unsigned i
   doGetAnimalGeometry(geometrySet, hash, positions, colors, heads, legs, indices, *numPositions, *numColors, *numIndices, *numHeads, *numLegs, headPivot, aabb);
 }
 
-EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIds, unsigned int *numIndices) {
-  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, *numPositions, *numUvs, *numIds, *numIndices);
+EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIds, unsigned int *numIndices, unsigned int *numSkyLights, unsigned int *numTorchLights) {
+  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
 }
 
 EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {

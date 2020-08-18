@@ -270,18 +270,20 @@ public:
   char heightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
 };
-void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices) {
+void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
   unsigned int &positionsIndex = numPositions;
   unsigned int &uvsIndex = numUvs;
   unsigned int &idsIndex = numIds;
   unsigned int &indicesIndex = numIndices;
+  unsigned int &skyLightsIndex = numSkyLights;
+  unsigned int &torchLightsIndex = numTorchLights;
 
   positionsIndex = 0;
   uvsIndex = 0;
   idsIndex = 0;
   indicesIndex = 0;
-  unsigned int skyLightsIndex = 0;
-  unsigned int torchLightsIndex = 0;
+  skyLightsIndex = 0;
+  torchLightsIndex = 0;
 
   for (unsigned int i = 0; i < numMarchObjects; i++) {
     MarchObject &marchObject = marchObjects[i];
