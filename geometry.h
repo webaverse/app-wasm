@@ -94,17 +94,16 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 		  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::POSITION);
 		  int numComponents = attribute->num_components();
 		  int numPoints = mesh->num_points();
-		  int numValues = numPoints * numComponents;
-		  numPositions = numValues;
+		  numPositions = numPoints * numComponents;
 
       GetAttributeFloatForAllPoints(*mesh, *attribute, geometry->positions);
 		}
 		{
 		  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
 		  if (attribute) {
-			  int numComponents = attribute->num_components();
-			  int numPoints = mesh->num_points();
-			  int numValues = numPoints * numComponents;
+			  // int numComponents = attribute->num_components();
+			  // int numPoints = mesh->num_points();
+			  // int numValues = numPoints * numComponents;
 
 			  GetAttributeFloatForAllPoints(*mesh, *attribute, geometry->uvs);
 			} else {
@@ -114,9 +113,9 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 		{
 		  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::COLOR);
 		  if (attribute) {
-			  int numComponents = attribute->num_components();
-			  int numPoints = mesh->num_points();
-			  int numValues = numPoints * numComponents;
+			  // int numComponents = attribute->num_components();
+			  // int numPoints = mesh->num_points();
+			  // int numValues = numPoints * numComponents;
 
 	      GetAttributeFloatForAllPoints(*mesh, *attribute, geometry->colors);
 			} else {
