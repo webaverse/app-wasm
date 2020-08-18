@@ -73,18 +73,15 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 	  buffer.Init((char *)geometryData, geometrySize);
 
     auto sor = decoder.DecodeMeshFromBuffer(&buffer);
-		auto &mesh = sor.value();
+		const std::unique_ptr<draco::Mesh> &mesh = sor.value();
 		if (!mesh) {
 			auto &status = sor.status();
-			std::cout << "status code " << status.code() << " " << status.error_msg_string() << std::endl;
+			std::cout << "failed to load bake: " << status.code() << " " << status.error_msg_string() << std::endl;
 		}
-
-		std::cout << "decode mesh " << (void *)mesh.get() << std::endl;
 
 		const draco::GeometryMetadata *metadata = mesh->GetMetadata();
 		std::string name;
 		bool ok = metadata->GetEntryString("name", &name);
-		std::cout << "geo name " << (int)ok << " " << name << std::endl;
 		int transparent;
 		metadata->GetEntryInt("transparent", &transparent);
 	  int vegetation;
@@ -100,14 +97,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 		  int numValues = numPoints * numComponents;
 		  numPositions = numValues;
 
-      // geometry->positions.resize(numValues);
       GetAttributeFloatForAllPoints(*mesh, *attribute, geometry->positions);
-      /* for (int i = 0; i < numPoints; i++) {
-        attribute->GetValue(draco::AttributeValueIndex(i), &geometry->positions[i*3]);
-      }
-		  // float *src = (float *)attribute->buffer()->data();
-		  // geometry->positions.resize(numValues);
-		  // memcpy(geometry->positions.data(), src, numValues*sizeof(float)); */
 		}
 		{
 		  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
@@ -116,13 +106,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 			  int numPoints = mesh->num_points();
 			  int numValues = numPoints * numComponents;
 
-			  // float *src = (float *)attribute->buffer()->data();
-			  // geometry->uvs.resize(numValues);
-			  // memcpy(geometry->uvs.data(), src, numValues*sizeof(float));
-			  geometry->uvs.resize(numValues);
-	      for (int i = 0; i < numPoints; i++) {
-	        attribute->GetValue(draco::AttributeValueIndex(i), &geometry->uvs[i*2]);
-	      }
+			  GetAttributeFloatForAllPoints(*mesh, *attribute, geometry->uvs);
 			} else {
 				geometry->uvs.resize(numPositions/3*2);
 			}
@@ -134,13 +118,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 			  int numPoints = mesh->num_points();
 			  int numValues = numPoints * numComponents;
 
-			  // float *src = (float *)attribute->buffer()->data();
-			  // geometry->colors.resize(numValues);
-			  // memcpy(geometry->colors.data(), src, numValues*sizeof(float));
-			  geometry->colors.resize(numValues);
-	      for (int i = 0; i < numPoints; i++) {
-	        attribute->GetValue(draco::AttributeValueIndex(i), &geometry->colors[i*3]);
-	      }
+	      GetAttributeFloatForAllPoints(*mesh, *attribute, geometry->colors);
 			} else {
 				geometry->colors.resize(numPositions);
 			}
@@ -156,15 +134,12 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 	    	geometry->indices[i.value()*3] = face[0].value();
 	    	geometry->indices[i.value()*3+1] = face[1].value();
 	    	geometry->indices[i.value()*3+2] = face[2].value();
-	    	// unsigned int *indicesSrc = (unsigned int *)face.data();
-	    	// std::cout << "get face " << i.value() << " " << (void *)indicesSrc << " " << sizeof(face.data()[0]) << std::endl;
-	    	// memcpy(&geometry->indices[i.value()*3], indicesSrc, 3*sizeof(unsigned int));
 	    }
 	  }
 
 	  geometrySet->geometries.push_back(geometry);
 	  if (animal) {
-	    /* geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size());
+	    geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size());
 	    Vec center = geometry->aabb.center();
 	    Vec size = geometry->aabb.size();
 	    geometry->headPivot = center - (size * Vec(0.0f, 1.0f/2.0f * 0.5f, -1.0f/2.0f * 0.5f));
@@ -225,7 +200,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 		    geometry->legs[j+1] = position.y;
 		    geometry->legs[j+2] = position.z;
 		    geometry->legs[j+3] = xAxis;
-		  } */
+		  }
 
 	    geometrySet->animalGeometries.push_back(geometry);
 	  }
