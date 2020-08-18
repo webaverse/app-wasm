@@ -34,6 +34,28 @@ public:
 GeometrySet *doMakeGeometrySet() {
 	return new GeometrySet();
 }
+bool GetAttributeFloatForAllPoints(const draco::PointCloud &pc,
+                                            const draco::PointAttribute &pa,
+                                            std::vector<float> &out_values) {
+  const int components = pa.num_components();
+  const int num_points = pc.num_points();
+  const int num_entries = num_points * components;
+  const int kMaxAttributeFloatValues = 4;
+  float values[kMaxAttributeFloatValues] = {-2.0, -2.0, -2.0, -2.0};
+  int entry_id = 0;
+
+  out_values.resize(num_entries);
+  for (draco::PointIndex i(0); i < num_points; ++i) {
+    const draco::AttributeValueIndex val_index = pa.mapped_index(i);
+    if (!pa.ConvertValue<float>(val_index, values)) {
+      return false;
+    }
+    for (int j = 0; j < components; ++j) {
+      out_values[entry_id++] = values[j];
+    }
+  }
+  return true;
+}
 void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size) {
   unsigned int index = 0;
   while (index < size) {
@@ -78,13 +100,14 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 		  int numValues = numPoints * numComponents;
 		  numPositions = numValues;
 
-      geometry->positions.resize(numValues);
+      // geometry->positions.resize(numValues);
+      GetAttributeFloatForAllPoints(*mesh, *attribute, geometry->positions);
       /* for (int i = 0; i < numPoints; i++) {
         attribute->GetValue(draco::AttributeValueIndex(i), &geometry->positions[i*3]);
-      } */
-		  float *src = (float *)attribute->buffer()->data();
-		  geometry->positions.resize(numValues);
-		  memcpy(geometry->positions.data(), src, numValues*sizeof(float));
+      }
+		  // float *src = (float *)attribute->buffer()->data();
+		  // geometry->positions.resize(numValues);
+		  // memcpy(geometry->positions.data(), src, numValues*sizeof(float)); */
 		}
 		{
 		  const draco::PointAttribute *attribute = mesh->GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
@@ -93,9 +116,13 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 			  int numPoints = mesh->num_points();
 			  int numValues = numPoints * numComponents;
 
-			  float *src = (float *)attribute->buffer()->data();
+			  // float *src = (float *)attribute->buffer()->data();
+			  // geometry->uvs.resize(numValues);
+			  // memcpy(geometry->uvs.data(), src, numValues*sizeof(float));
 			  geometry->uvs.resize(numValues);
-			  memcpy(geometry->uvs.data(), src, numValues*sizeof(float));
+	      for (int i = 0; i < numPoints; i++) {
+	        attribute->GetValue(draco::AttributeValueIndex(i), &geometry->uvs[i*2]);
+	      }
 			} else {
 				geometry->uvs.resize(numPositions/3*2);
 			}
@@ -107,9 +134,13 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 			  int numPoints = mesh->num_points();
 			  int numValues = numPoints * numComponents;
 
-			  float *src = (float *)attribute->buffer()->data();
+			  // float *src = (float *)attribute->buffer()->data();
+			  // geometry->colors.resize(numValues);
+			  // memcpy(geometry->colors.data(), src, numValues*sizeof(float));
 			  geometry->colors.resize(numValues);
-			  memcpy(geometry->colors.data(), src, numValues*sizeof(float));
+	      for (int i = 0; i < numPoints; i++) {
+	        attribute->GetValue(draco::AttributeValueIndex(i), &geometry->colors[i*3]);
+	      }
 			} else {
 				geometry->colors.resize(numPositions);
 			}
@@ -122,12 +153,12 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 
 	    for (draco::FaceIndex i(0); i < numFaces; i++) {
 	    	const draco::Mesh::Face &face = mesh->face(i);
-	    	/* geometry->indices[i.value()*3] = face[0].value();
+	    	geometry->indices[i.value()*3] = face[0].value();
 	    	geometry->indices[i.value()*3+1] = face[1].value();
-	    	geometry->indices[i.value()*3+2] = face[2].value(); */
-	    	unsigned int *indicesSrc = (unsigned int *)face.data();
+	    	geometry->indices[i.value()*3+2] = face[2].value();
+	    	// unsigned int *indicesSrc = (unsigned int *)face.data();
 	    	// std::cout << "get face " << i.value() << " " << (void *)indicesSrc << " " << sizeof(face.data()[0]) << std::endl;
-	    	memcpy(&geometry->indices[i.value()*3], indicesSrc, 3*sizeof(unsigned int));
+	    	// memcpy(&geometry->indices[i.value()*3], indicesSrc, 3*sizeof(unsigned int));
 	    }
 	  }
 
@@ -333,156 +364,4 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
     std::fill(ids + idsIndex, ids + idsIndex + geometry->positions.size()/3, marchObject.id);
     idsIndex += geometry->positions.size()/3;
   }
-}
-
-void doEncodeGeometry(float *positions, float *uvs, float *colors, unsigned int *indices, unsigned int numPositions, unsigned int numUvs, unsigned int numColors, unsigned int numIndices, char *nameData, unsigned int nameSize, unsigned int transparent, unsigned int vegetation, unsigned int animal, unsigned char *data, unsigned int &size) {
-  std::cout << "encode size 1" << numPositions << " " << numUvs << " " << numColors << " " << numIndices << std::endl;
-
-  draco::Mesh mesh;
-  mesh.SetNumFaces(numIndices/3);
-  mesh.set_num_points(numIndices);
-  for (draco::FaceIndex f(0); f < numIndices/3; ++f) {
-  	draco::Mesh::Face face;
-  	face[0] = 0;
-  	face[1] = 1;
-  	face[2] = 2;
-  	mesh.SetFace(f, face);
-  }
-
-  draco::GeometryAttribute positionsAttribute;
-  positionsAttribute.Init(draco::GeometryAttribute::POSITION, nullptr, 3, draco::DT_FLOAT32, false, 12, 0);
-  std::unique_ptr<draco::PointAttribute> positions2 = mesh.CreateAttribute(positionsAttribute, true, numIndices/3);
-  // positions2->Reset(numPositions/3);
-  // memcpy(positions2->buffer()->data(), positions, numPositions*sizeof(float));
-  mesh.AddAttribute(std::move(positions2));
-
-  /* draco::GeometryAttribute uvsAttribute;
-  uvsAttribute.Init(draco::GeometryAttribute::TEX_COORD, nullptr, 2, draco::DT_FLOAT32, false, 8, 0);
-  std::unique_ptr<draco::PointAttribute> uvs2 = mesh.CreateAttribute(uvsAttribute, true, numUvs/2);
-  uvs2->Reset(numUvs/2);
-  memcpy(uvs2->buffer()->data(), uvs, numUvs*sizeof(float));
-  mesh.AddAttribute(std::move(uvs2));
-
-  draco::GeometryAttribute colorsAttribute;
-  colorsAttribute.Init(draco::GeometryAttribute::COLOR, nullptr, 3, draco::DT_FLOAT32, false, 12, 0);
-  std::unique_ptr<draco::PointAttribute> colors2 = mesh.CreateAttribute(colorsAttribute, true, numColors/3);
-  colors2->Reset(numColors/3);
-  memcpy(colors2->buffer()->data(), colors, numColors*sizeof(float));
-  mesh.AddAttribute(std::move(colors2)); */
-
-  /* std::unique_ptr<draco::GeometryMetadata> metadata = std::unique_ptr<draco::GeometryMetadata>(new draco::GeometryMetadata());
-  std::string name(nameData, nameSize);
-  metadata->AddEntryString("name", name);
-  std::cout << "encode name " << name << std::endl;
-  metadata->AddEntryInt("transparent", transparent);
-  metadata->AddEntryInt("vegetation", vegetation);
-  metadata->AddEntryInt("animal", animal);
-  mesh.AddMetadata(std::move(metadata)); */
-
-  // mesh.DeduplicateAttributeValues();
-  // mesh.DeduplicatePointIds();
-
-  draco::Encoder encoder;
-  encoder.SetEncodingMethod(draco::MESH_SEQUENTIAL_ENCODING);
-  /* encoder.SetAttributeQuantization(draco::GeometryAttribute::POSITION, 11);
-  encoder.SetAttributeQuantization(draco::GeometryAttribute::NORMAL, 7);
-  encoder.SetAttributeQuantization(draco::GeometryAttribute::TEX_COORD, 10);
-  encoder.SetAttributeQuantization(draco::GeometryAttribute::COLOR, 8); */
-  draco::EncoderBuffer buffer;
-  auto status = encoder.EncodeMeshToBuffer(mesh, &buffer);
-  std::cout << "status code encode " << status.code() << " " << status.error_msg_string() << std::endl;
-
-  // memcpy(data, buffer.data(), buffer.size());
-  size = buffer.size();
-
-  std::cout << "encode size 2" << (void *)data << " " << size << " " << numPositions << " " << numUvs << " " << numColors << " " << numIndices << std::endl;
-
-  {
-  	draco::Decoder decoder;
-
-	  draco::DecoderBuffer buffer2;
-	  buffer2.Init((char *)buffer.data(), buffer.size());
-
-    auto sor = decoder.DecodeMeshFromBuffer(&buffer2);
-		auto &mesh = sor.value();
-		if (!mesh) {
-			auto &status = sor.status();
-			std::cout << "status code decode " << status.code() << " " << status.error_msg_string() << std::endl;
-		}
-
-		std::cout << "decode mesh " << (void *)mesh.get() << std::endl;
-  }
-
-  /* MeshBuilder meshBuilder;
-  MetadataBuilder metadataBuilder;
-
-  draco::Mesh dracoMesh;
-  draco::Metadata metadata;
-  
-  metadataBuilder.AddStringEntry(&metadata, "name", nameData);
-  metadataBuilder.AddIntEntry(&metadata, "transparent", transparent);
-  metadataBuilder.AddIntEntry(&metadata, "vegetation", vegetation);
-  metadataBuilder.AddIntEntry(&metadata, "animal", animal);
-  meshBuilder.AddMetadata(&dracoMesh, &metadata);
-
-  unsigned int numFaces = numIndices / 3;
-  unsigned int numPoints = numPositions;
-  meshBuilder.AddFacesToMesh(&dracoMesh, numFaces, (int *)indices);
-
-  meshBuilder.AddFloatAttributeToMesh(&dracoMesh, draco::GeometryAttribute::POSITION, numPoints, 3, positions);
-  if (uvs) {
-    meshBuilder.AddFloatAttributeToMesh(&dracoMesh, draco::GeometryAttribute::TEX_COORD, numPoints, 2, uvs);
-  }
-  if (colors) {
-    meshBuilder.AddFloatAttributeToMesh(&dracoMesh, draco::GeometryAttribute::COLOR, numPoints, 3, colors);
-  }
-
-  Encoder encoder;
-  encoder.SetEncodingMethod(draco::MESH_EDGEBREAKER_ENCODING);
-  DracoInt8Array encodedData;
-  int encodedLen = encoder.EncodeMeshToDracoBuffer(&dracoMesh, &encodedData);
-  for (int i = 0; i < encodedLen; i++) {
-    data[i] = encodedData.GetValue(i);
-  }
-  size = encodedLen;
-
-  std::cout << "write geo size " << size << std::endl; */
-
-  /* const encoder = new encoderModule.Encoder();
-  const meshBuilder = new encoderModule.MeshBuilder();
-  const metadataBuilder = new encoderModule.MetadataBuilder();
-
-  for (const mesh of meshes) {
-    let byteArray;
-    {
-      const dracoMesh = new encoderModule.Mesh();
-      const metadata = new encoderModule.Metadata();
-      
-      metadataBuilder.AddStringEntry(metadata, 'name', mesh.name);
-      metadataBuilder.AddIntEntry(metadata, 'transparent', +mesh.transparent);
-      metadataBuilder.AddIntEntry(metadata, 'vegetation', +mesh.vegetation);
-      metadataBuilder.AddIntEntry(metadata, 'animal', +mesh.animal);
-      meshBuilder.AddMetadata(dracoMesh, metadata);
-
-      const numFaces = mesh.indices.length / 3;
-      const numPoints = mesh.positions.length;
-      meshBuilder.AddFacesToMesh(dracoMesh, numFaces, mesh.indices);
-
-      meshBuilder.AddFloatAttributeToMesh(dracoMesh, encoderModule.POSITION, numPoints, 3, mesh.positions);
-      mesh.uvs && meshBuilder.AddFloatAttributeToMesh(dracoMesh, encoderModule.TEX_COORD, numPoints, 2, mesh.uvs);
-      mesh.colors && meshBuilder.AddFloatAttributeToMesh(dracoMesh, encoderModule.COLOR, numPoints, 3, mesh.colors);
-      encoder.SetEncodingMethod(encoderModule.MESH_EDGEBREAKER_ENCODING);
-      // encoder.SetEncodingMethod(encoderModule.MESH_SEQUENTIAL_ENCODING);
-
-      const encodedData = new encoderModule.DracoInt8Array();
-      // Use default encoding setting.
-      const encodedLen = encoder.EncodeMeshToDracoBuffer(dracoMesh,
-                                                         encodedData);
-      byteArray = new Uint8Array(encodedLen);
-      for (let i = 0; i < encodedLen; i++) {
-        byteArray[i] = encodedData.GetValue(i);
-      }
-      buffers.push(byteArray);
-    }
-  } */
 }

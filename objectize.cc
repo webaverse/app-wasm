@@ -24,10 +24,6 @@ EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, i
   doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, marchSpecs, numMarchSpecs, positions, uvs, ids, indices, skyLights, torchLights, *numPositions, *numUvs, *numIds, *numIndices);
 }
 
-EMSCRIPTEN_KEEPALIVE void encodeGeometry(float *positions, float *uvs, float *colors, unsigned int *indices, unsigned int numPositions, unsigned int numUvs, unsigned int numColors, unsigned int numIndices, char *nameData, unsigned int nameSize, unsigned int transparent, unsigned int vegetation, unsigned int animal, unsigned char *data, unsigned int *size) {
-  doEncodeGeometry(positions, uvs, colors, indices, numPositions, numUvs, numColors, numIndices, nameData, nameSize, transparent, vegetation, animal, data, *size);
-}
-
 EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
   free(ptr);
 }
