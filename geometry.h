@@ -244,16 +244,16 @@ void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **po
 constexpr int SUBPARCEL_SIZE = 10;
 constexpr int SUBPARCEL_SIZE_P1 = SUBPARCEL_SIZE + 1;
 constexpr int MAX_NAME_LENGTH = 32;
-int abs(int n) {
+int absi(int n) {
   return std::abs(n);
 }
 int sign(int n) {
   return n < 0 ? 1 : 0;
 }
 int getSubparcelIndex(int x, int y, int z) {
-	return abs(x)|(abs(y)<<9)|(abs(z)<<18)|(sign(x)<<27)|(sign(y)<<28)|(sign(z)<<29);
+	return absi(x)|(absi(y)<<9)|(absi(z)<<18)|(sign(x)<<27)|(sign(y)<<28)|(sign(z)<<29);
 }
-int getFieldIndex(int x, int y, int z) {
+unsigned int getFieldIndex(unsigned int x, unsigned int y, unsigned int z) {
 	return x + (z * SUBPARCEL_SIZE_P1) + (y * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1);
 }
 
@@ -312,9 +312,9 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
       int ax = (int)std::floor(position.x);
       int ay = (int)std::floor(position.y);
       int az = (int)std::floor(position.z);
-      int sx = (int)std::floor(ax/(float)SUBPARCEL_SIZE);
-      int sy = (int)std::floor(ay/(float)SUBPARCEL_SIZE);
-      int sz = (int)std::floor(az/(float)SUBPARCEL_SIZE);
+      int sx = (int)std::floor((float)ax/(float)SUBPARCEL_SIZE);
+      int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
+      int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
       int subparcelIndex = getSubparcelIndex(sx, sy, sz);
       SubparcelObject *subparcelObject = std::find_if(subparcelObjects, subparcelObjects + numSubparcelObjects, [&](const SubparcelObject &subparcelObject) -> bool {
       	return subparcelObject.index == subparcelIndex;
@@ -323,7 +323,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
         int lx = ax - SUBPARCEL_SIZE*sx;
         int ly = ay - SUBPARCEL_SIZE*sy;
         int lz = az - SUBPARCEL_SIZE*sz;
-        int fieldIndex = getFieldIndex(lx, ly, lz);
+        unsigned int fieldIndex = getFieldIndex(lx, ly, lz);
         skyLights[skyLightsIndex + jOffset] = subparcelObject->heightfield[fieldIndex] < 0 ? 0 : subparcelObject->heightfield[fieldIndex];
         torchLights[torchLightsIndex + jOffset] = subparcelObject->lightfield[fieldIndex];
       } else {
