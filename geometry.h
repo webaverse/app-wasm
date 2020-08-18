@@ -312,9 +312,9 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
       int ax = (int)std::floor(position.x);
       int ay = (int)std::floor(position.y);
       int az = (int)std::floor(position.z);
-      int sx = ax/SUBPARCEL_SIZE;
-      int sy = ay/SUBPARCEL_SIZE;
-      int sz = az/SUBPARCEL_SIZE;
+      int sx = (int)std::floor(ax/(float)SUBPARCEL_SIZE);
+      int sy = (int)std::floor(ay/(float)SUBPARCEL_SIZE);
+      int sz = (int)std::floor(az/(float)SUBPARCEL_SIZE);
       int subparcelIndex = getSubparcelIndex(sx, sy, sz);
       SubparcelObject *subparcelObject = std::find_if(subparcelObjects, subparcelObjects + numSubparcelObjects, [&](const SubparcelObject &subparcelObject) -> bool {
       	return subparcelObject.index == subparcelIndex;
