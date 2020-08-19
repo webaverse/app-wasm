@@ -183,8 +183,8 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 	    geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size());
 	    Vec center = geometry->aabb.center();
 	    Vec size = geometry->aabb.size();
-	    geometry->headPivot = center - (size * Vec(0.0f, 1.0f/2.0f * 0.5f, -1.0f/2.0f * 0.5f));
-	    Vec legsPivot = center - (size * Vec(0.0f, -1.0f/2.0f + 1.0f/3.0f, 0.0f));
+	    geometry->headPivot = center + (size * Vec(0.0f, 1.0f/2.0f * 0.5f, -1.0f/2.0f * 0.5f));
+	    Vec legsPivot = center + (size * Vec(0.0f, -1.0f/2.0f + 1.0f/3.0f, 0.0f));
 
 		  constexpr float legsSepFactor = 0.5;
 		  Vec legsPivotTopLeft = legsPivot + (size * Vec(-1.0f/2.0f * legsSepFactor, 0.0f, -1.0f/2.0f * legsSepFactor));
@@ -203,7 +203,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 		    if (head.z < geometry->headPivot.z) {
 		    	head -= geometry->headPivot;
 		    } else {
-		    	head = Vec();
+		    	head = Vec(0, 0, 0);
 		    }
 		    geometry->heads[i] = head.x;
 		    geometry->heads[i+1] = head.y;
@@ -234,7 +234,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 		        }
 		      }
 		    } else {
-		    	position = Vec();
+		    	position = Vec(0, 0, 0);
 		      xAxis = 0;
 		    }
 		    geometry->legs[j] = position.x;
