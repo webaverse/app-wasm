@@ -162,9 +162,9 @@ class Vec {
         }
 
         Vec& operator=(const Vec &v) {
-            x += v.x;
-            y += v.y;
-            z += v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
             return *this;
         }
 
