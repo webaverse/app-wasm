@@ -185,12 +185,10 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
   [](RequestMessage *requestMessage) -> void { // getGeometry
     unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
-    std::cout << "get geometry geometrySet " << (unsigned int)(void *)geometrySet << std::endl;
     index += sizeof(GeometrySet *);
     char *nameData = *((char **)(requestMessage->args + index));
     index += sizeof(char *);
     unsigned int nameSize = *((unsigned int *)(requestMessage->args + index));
-    std::cout << "got name size " << (unsigned int)(void *)nameData << " " << nameSize << std::endl;
     index += sizeof(unsigned int);
     float **positions = (float **)(requestMessage->args + index);
     index += sizeof(float **);
