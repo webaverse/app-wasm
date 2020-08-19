@@ -1,6 +1,6 @@
 mkdir -p bin
 if [ ! -f temp.o ]; then
-  emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -O3 \
+  emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s ASSERTIONS=1 -s SAFE_HEAP=1 -O3 \
 		draco/mesh/mesh_misc_functions.cc \
 		draco/mesh/mesh_attribute_corner_table.cc \
 		draco/mesh/corner_table.cc \
@@ -81,10 +81,9 @@ if [ ! -f temp.o ]; then
 		-I. \
 		-o temp.o
 fi
-emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=52428800 -O3 \
+emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=52428800 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -s ASSERTIONS=1 -s SAFE_HEAP=1 --minify 0 -O3 \
   objectize.cc vector.cc \
   temp.o \
   -I. \
-  --pre-js prefix.js --post-js postfix.js \
   -o bin/geometry.js
 cat prefix2.js bin/geometry.js >bin/geometry2.js
