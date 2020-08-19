@@ -81,7 +81,7 @@ if [ ! -f temp.o ]; then
 		-I. \
 		-o temp.o
 fi
-emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=52428800 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -s ASSERTIONS=1 -s SAFE_HEAP=1 --minify 0 -O3 \
+emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=52428800 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -s ASSERTIONS=1 -s SAFE_HEAP=1 -O3 \
   objectize.cc vector.cc \
   temp.o \
   -I. \
