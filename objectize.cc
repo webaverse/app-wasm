@@ -205,6 +205,75 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
 
     getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices);
   },
+  [](RequestMessage *requestMessage) -> void { // getAnimalGeometry
+    abort();
+    /* unsigned int index = 0;
+    GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
+    index += sizeof(GeometrySet *);
+    char *nameData = *((char **)(requestMessage->args + index));
+    index += sizeof(char *);
+    unsigned int nameSize = *((unsigned int *)(requestMessage->args + index));
+    index += sizeof(unsigned int);
+    float **positions = (float **)(requestMessage->args + index);
+    index += sizeof(float **);
+    float **uvs = (float **)(requestMessage->args + index);
+    index += sizeof(float **);
+    unsigned int **indices = (unsigned int **)(requestMessage->args + index);
+    index += sizeof(unsigned int **);
+    unsigned int *numPositions = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numUvs = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numIndices = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+
+    getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices); */
+  },
+  [](RequestMessage *requestMessage) -> void { // marchObjects
+    unsigned int index = 0;
+    GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
+    index += sizeof(GeometrySet *);
+    int x = *((int *)(requestMessage->args + index));
+    index += sizeof(int);
+    int y = *((int *)(requestMessage->args + index));
+    index += sizeof(int);
+    int z = *((int *)(requestMessage->args + index));
+    index += sizeof(int);
+    MarchObject *marchObjects = *((MarchObject **)(requestMessage->args + index));
+    index += sizeof(MarchObject *);
+    unsigned int numMarchObjects = *((unsigned int *)(requestMessage->args + index));
+    index += sizeof(unsigned int);
+    SubparcelObject *subparcelObjects = *((SubparcelObject **)(requestMessage->args + index));
+    index += sizeof(SubparcelObject *);
+    unsigned int numSubparcelObjects = *((unsigned int *)(requestMessage->args + index));
+    index += sizeof(unsigned int);
+    float *positions = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+    float *uvs = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+    float *ids = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+    unsigned int *indices = *((unsigned int **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+    unsigned char *skyLights = *((unsigned char **)(requestMessage->args + index));
+    index += sizeof(unsigned char *);
+    unsigned char *torchLights = *((unsigned char **)(requestMessage->args + index));
+    index += sizeof(unsigned char *);
+    unsigned int *numPositions = *((unsigned int **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+    unsigned int *numUvs = *((unsigned int **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+    unsigned int *numIds = *((unsigned int **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+    unsigned int *numIndices = *((unsigned int **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+    unsigned int *numSkyLights = *((unsigned int **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+    unsigned int *numTorchLights = *((unsigned int **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+
+    doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
+  },
 };
 
 }
