@@ -107,9 +107,9 @@ public:
         // std::cout << "thread pool running" << std::endl;
         for (;;) {
           RequestMessage *requestMessage = inbox.wait();
-          std::cout << "got request message method a " << (void *)requestMessage << " " << (unsigned int)requestMessage->method << std::endl;
+          // std::cout << "got request message method a " << (void *)requestMessage << " " << (unsigned int)requestMessage->method << std::endl;
           auto &fn = METHOD_FNS[(unsigned int)requestMessage->method];
-          std::cout << "got request message method b" << std::endl;
+          // std::cout << "got request message method b" << std::endl;
           fn(requestMessage);
           // std::cout << "got message " << (unsigned int)message->method << std::endl;
           outbox.push(new ResponseMessage{requestMessage->id});
@@ -181,6 +181,31 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     unsigned char *data = *((unsigned char **)(requestMessage->args + sizeof(GeometrySet *)));
     unsigned int dataSize = *((unsigned int *)(requestMessage->args + sizeof(GeometrySet *) + sizeof(unsigned char *)));
     loadBake(geometrySet, data, dataSize);
+  },
+  [](RequestMessage *requestMessage) -> void { // getGeometry
+    unsigned int index = 0;
+    GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
+    std::cout << "get geometry geometrySet " << (unsigned int)(void *)geometrySet << std::endl;
+    index += sizeof(GeometrySet *);
+    char *nameData = *((char **)(requestMessage->args + index));
+    index += sizeof(char *);
+    unsigned int nameSize = *((unsigned int *)(requestMessage->args + index));
+    std::cout << "got name size " << (unsigned int)(void *)nameData << " " << nameSize << std::endl;
+    index += sizeof(unsigned int);
+    float **positions = (float **)(requestMessage->args + index);
+    index += sizeof(float **);
+    float **uvs = (float **)(requestMessage->args + index);
+    index += sizeof(float **);
+    unsigned int **indices = (unsigned int **)(requestMessage->args + index);
+    index += sizeof(unsigned int **);
+    unsigned int *numPositions = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numUvs = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numIndices = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+
+    getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices);
   },
 };
 
