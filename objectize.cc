@@ -178,12 +178,9 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
   },
   [](RequestMessage *requestMessage) -> void { // loadBake
     GeometrySet *geometrySet = *((GeometrySet **)requestMessage->args);
-    std::cout << "load bake 1 " << (unsigned int)geometrySet << std::endl;
     unsigned char *data = *((unsigned char **)(requestMessage->args + sizeof(GeometrySet *)));
     unsigned int dataSize = *((unsigned int *)(requestMessage->args + sizeof(GeometrySet *) + sizeof(unsigned char *)));
-    std::cout << "load bake 2 " << dataSize << std::endl;
     loadBake(geometrySet, data, dataSize);
-    std::cout << "load bake 3" << std::endl;
   },
 };
 
