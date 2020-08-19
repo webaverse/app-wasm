@@ -38,18 +38,10 @@ public:
     }
 };
 
-enum class Method : unsigned int {
-  makeGeometrySet = 0,
-  loadBake,
-  getGeometry,
-  getAnimalGeometry,
-  marchObjects,
-};
-
 class RequestMessage {
 public:
   unsigned int id;
-  Method method;
+  unsigned int method;
   unsigned char args[4];
 };
 class ResponseMessage {
@@ -98,6 +90,75 @@ public:
 extern "C" {
   extern std::function<void(RequestMessage *)> METHOD_FNS[];
 }
+
+class FreeEntry {
+public:
+  unsigned int start;
+  unsigned int count;
+};
+class ArenaAllocator {
+public:
+  ArenaAllocator(unsigned int size) {
+    data = malloc(size);
+    freeList.push_back(new FreeEntry{
+      0,
+      size,
+    });
+  }
+  FreeEntry *alloc(unsigned int size) {
+    for (unsigned int i = 0; i < freeList.size(); i++) {
+      FreeEntry *entry = freeList[i];
+      if (entry->count >= size) {
+        if (entry->count > size) {
+          FreeEntry *nextEntry = new FreeEntry{
+            entry->start + size,
+            entry->count - size,
+          };
+          freeList[i] = nextEntry;
+        } else {
+          freeList.erase(freeList.begin() + i);
+        }
+        entry->count = size;
+        return entry;
+      }
+    }
+    return nullptr;
+  }
+  void free(FreeEntry *freeEntry) {
+    freeList.push_back(freeEntry);
+    updateFreeList();
+  }
+  void updateFreeList() {
+    std::sort(freeList.begin(), freeList.end(), [](FreeEntry *a, FreeEntry *b) -> bool {
+      return a->start < b->start;
+    });
+    bool merged = false;
+    for (unsigned int i = 0; i < freeList.size()-1; i++) {
+      FreeEntry *entry = freeList[i];
+      if (entry) {
+        for (unsigned int j = i+1; j < freeList.size(); j++) {
+          FreeEntry *nextEntry = freeList[j];
+          if (nextEntry) {
+            if (entry->start + entry->count == nextEntry->start) {
+              entry->count += nextEntry->count;
+              freeList[j] = nullptr;
+              delete nextEntry;
+              merged = true;
+            }
+          }
+        }
+      }
+    }
+    if (merged) {
+      freeList.erase(std::remove_if(freeList.begin(), freeList.end(), [](FreeEntry *freeEntry) {
+        return freeEntry == nullptr;
+      }), freeList.end());
+    }
+  }
+  void *data;
+  std::vector<FreeEntry *> freeList;
+};
+
 class ThreadPool {
 public:
   ThreadPool(unsigned int numThreads) {
@@ -108,7 +169,7 @@ public:
         for (;;) {
           RequestMessage *requestMessage = inbox.wait();
           // std::cout << "got request message method a " << (void *)requestMessage << " " << (unsigned int)requestMessage->method << std::endl;
-          auto &fn = METHOD_FNS[(unsigned int)requestMessage->method];
+          auto &fn = METHOD_FNS[requestMessage->method];
           // std::cout << "got request message method b" << std::endl;
           fn(requestMessage);
           // std::cout << "got message " << (unsigned int)message->method << std::endl;
@@ -147,7 +208,19 @@ EMSCRIPTEN_KEEPALIVE unsigned int popResponse(ThreadPool *threadPool) {
   }
 }
 
-EMSCRIPTEN_KEEPALIVE void *makeGeometrySet() {
+EMSCRIPTEN_KEEPALIVE ArenaAllocator *makeArenaAllocator(unsigned int size) {
+  return new ArenaAllocator(size);
+}
+
+EMSCRIPTEN_KEEPALIVE FreeEntry *arenaAlloc(ArenaAllocator *arenaAllocator, unsigned int size) {
+  return arenaAllocator->alloc(size);
+}
+
+EMSCRIPTEN_KEEPALIVE void arenaFree(ArenaAllocator *arenaAllocator, FreeEntry *entry) {
+  arenaAllocator->free(entry);
+}
+
+EMSCRIPTEN_KEEPALIVE GeometrySet *makeGeometrySet() {
   return doMakeGeometrySet();
 }
 
@@ -172,6 +245,35 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
 }
 
 std::function<void(RequestMessage *)> METHOD_FNS[] = {
+  [](RequestMessage *requestMessage) -> void { // makeArenaAllocator
+    unsigned int index = 0;
+    unsigned int size = *((unsigned int *)(requestMessage->args + index));
+    index += sizeof(unsigned int);
+    ArenaAllocator **arenaAllocator = (ArenaAllocator **)(requestMessage->args + index);
+    index += sizeof(ArenaAllocator *);
+
+    *arenaAllocator = makeArenaAllocator(size);
+  },
+  [](RequestMessage *requestMessage) -> void { // arenaAlloc
+    unsigned int index = 0;
+    ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    unsigned int size = *((unsigned int *)(requestMessage->args + index));
+    index += sizeof(unsigned int);
+    FreeEntry **entry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry **);
+
+    *entry = arenaAlloc(arenaAllocator, size);
+  },
+  [](RequestMessage *requestMessage) -> void { // arenaFree
+    unsigned int index = 0;
+    ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    FreeEntry *entry = *((FreeEntry **)(requestMessage->args + index));
+    index += sizeof(FreeEntry *);
+
+    arenaFree(arenaAllocator, entry);
+  },
   [](RequestMessage *requestMessage) -> void { // makeGeometrySet
     GeometrySet **geometrySet = (GeometrySet **)requestMessage->args;
     *geometrySet = new GeometrySet();
