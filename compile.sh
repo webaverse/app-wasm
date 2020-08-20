@@ -83,6 +83,7 @@ if [ ! -f temp.o ]; then
 fi
 emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=157286400 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -s ASSERTIONS=1 -s SAFE_HEAP=1 -O3 \
   objectize.cc vector.cc \
+  FastNoise.cpp noise.cc march.cc biomes.cc \
   temp.o \
   -I. \
   -o bin/geometry.js
