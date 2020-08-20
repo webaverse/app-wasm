@@ -243,12 +243,12 @@ EMSCRIPTEN_KEEPALIVE float doGetHeight(int seed, float ax, float ay, float az, f
   return getHeight(seed, ax, ay, az, baseHeight);
 }
 
-EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
-  marchingCubes2(dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, skyLights, torchLights, numOpaquePositions, numTransparentPositions, peeks);
-}
-
 EMSCRIPTEN_KEEPALIVE void doNoise3(int seed, int x, int y, int z, float baseHeight, float wormRate, float wormRadiusBase, float wormRadiusRate, float objectsRate, float potentialDefault, void *subparcelByteOffset) {
   noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
+}
+
+EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
+  marchingCubes2(dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, skyLights, torchLights, numOpaquePositions, numTransparentPositions, peeks);
 }
 
 // requests
@@ -496,6 +496,65 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 
     // std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl;
+  },
+  [](RequestMessage *requestMessage) -> void { // getHeight
+    unsigned int index = 0;
+    int seed = *((int *)(requestMessage->args + index));
+    index += sizeof(int);
+    float x = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float y = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float z = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float baseHeight = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float *height = (float *)(requestMessage->args + index);
+    index += sizeof(float *);
+    *height = getHeight(seed, x, y, z, baseHeight);
+  },
+  [](RequestMessage *requestMessage) -> void { // noise
+    unsigned int index = 0;
+    int seed = *((int *)(requestMessage->args + index));
+    index += sizeof(int);
+    float x = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float y = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float z = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float baseHeight = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float wormRate = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float wormRadiusBase = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float wormRadiusRate = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float objectsRate = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float potentialDefault = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    void *subparcelByteOffset = *((void **)(requestMessage->args + index));
+    index += sizeof(void *);
+    noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
+  },
+  [](RequestMessage *requestMessage) -> void { // marchingCubes
+    /* unsigned int index = 0;
+    int seed = *((int *)(requestMessage->args + index));
+    index += sizeof(int);
+    float x = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float y = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float z = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float baseHeight = *((float *)(requestMessage->args + index));
+    index += sizeof(float);
+    float *height = (float *)(requestMessage->args + index);
+    index += sizeof(float *);
+    *height = getHeight(seed, x, y, z, baseHeight); */
+    // marchingCubes2(dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, skyLights, torchLights, numOpaquePositions, numTransparentPositions, peeks);
   },
 };
 
