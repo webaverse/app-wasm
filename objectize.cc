@@ -247,8 +247,8 @@ EMSCRIPTEN_KEEPALIVE void doNoise3(int seed, int x, int y, int z, float baseHeig
   noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
 }
 
-EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, float *ids, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned int *idIndex, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
-  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, ids, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, *idIndex, skyLights, torchLights, numOpaquePositions, numTransparentPositions, peeks);
+EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
+  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
 }
 
 // requests
@@ -454,27 +454,33 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
 
     *positionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
     if (!*positionsEntry) {
-      std::cout << "could not allocate positions" << std::endl;
+      std::cout << "could not allocate marchObjects positions" << std::endl;
+      abort();
     }
     *uvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
     if (!*uvsEntry) {
-      std::cout << "could not allocate uvs" << std::endl;
+      std::cout << "could not allocate marchObjects uvs" << std::endl;
+      abort();
     }
     *idsEntry = idsAllocator->alloc(numIds*sizeof(float));
     if (!*idsEntry) {
-      std::cout << "could not allocate ids" << std::endl;
+      std::cout << "could not allocate marchObjects ids" << std::endl;
+      abort();
     }
     *indicesEntry = indicesAllocator->alloc(numIndices*sizeof(unsigned int));
     if (!*indicesEntry) {
-      std::cout << "could not allocate indices" << std::endl;
+      std::cout << "could not allocate marchObjects indices" << std::endl;
+      abort();
     }
     *skyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
     if (!*skyLightsEntry) {
-      std::cout << "could not allocate skyLights" << std::endl;
+      std::cout << "could not allocate marchObjects skyLights" << std::endl;
+      abort();
     }
     *torchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
     if (!*torchLightsEntry) {
-      std::cout << "could not allocate torchLights" << std::endl;
+      std::cout << "could not allocate marchObjects torchLights" << std::endl;
+      abort();
     }
 
     // std::cout << "march objects c " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << std::endl;
@@ -541,10 +547,13 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
   },
   [](RequestMessage *requestMessage) -> void { // marchingCubes
     unsigned int index = 0;
+
     float meshId = *(float *)(requestMessage->args + index);
     index += sizeof(float);
+
     int *dims = (int *)(requestMessage->args + index);
     index += 3*sizeof(int);
+
     float *potential = *((float **)(requestMessage->args + index));
     index += sizeof(float *);
     unsigned char *biomes = *((unsigned char **)(requestMessage->args + index));
@@ -553,46 +562,131 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     index += sizeof(char *);
     unsigned char *lightfield = *((unsigned char **)(requestMessage->args + index));
     index += sizeof(unsigned char *);
+
     float *shift = (float *)(requestMessage->args + index);
     index += 3*sizeof(float);
     float *scale = (float *)(requestMessage->args + index);
     index += 3*sizeof(float);
-    float *positions = *((float **)(requestMessage->args + index));
-    index += sizeof(float *);
-    float *normals = *((float **)(requestMessage->args + index));
-    index += sizeof(float *);
-    float *uvs = *((float **)(requestMessage->args + index));
-    index += sizeof(float *);
-    float *barycentrics = *((float **)(requestMessage->args + index));
-    index += sizeof(float *);
-    unsigned char *aos = *((unsigned char **)(requestMessage->args + index));
-    index += sizeof(unsigned char *);
-    float *ids = *((float **)(requestMessage->args + index));
-    index += sizeof(float *);
-    unsigned int *positionIndex = (unsigned int *)(requestMessage->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *normalIndex = (unsigned int *)(requestMessage->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *uvIndex = (unsigned int *)(requestMessage->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *barycentricIndex = (unsigned int *)(requestMessage->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *aoIndex = (unsigned int *)(requestMessage->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *idIndex = (unsigned int *)(requestMessage->args + index);
-    index += sizeof(unsigned int *);
-    unsigned char *skyLights = *((unsigned char **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
-    unsigned char *torchLights = *((unsigned char **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
+
+    ArenaAllocator *positionsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *normalsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *uvsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *barycentricsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *aosAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *idsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *skyLightsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *torchLightsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *peeksAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+
+    FreeEntry **positionsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **normalsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **uvsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **barycentricsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **aosEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **idsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **skyLightsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **torchLightsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **peeksEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+
     unsigned int *numOpaquePositions = (unsigned int *)(requestMessage->args + index);
     index += sizeof(unsigned int *);
     unsigned int *numTransparentPositions = (unsigned int *)(requestMessage->args + index);
     index += sizeof(unsigned int *);
-    unsigned char *peeks = *((unsigned char **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
 
-    marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, ids, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, *idIndex, skyLights, torchLights, *numOpaquePositions, *numTransparentPositions, peeks);
+    constexpr int bufferSize = 1024*1024;
+    std::vector<float> positions(bufferSize);
+    std::vector<float> normals(bufferSize);
+    std::vector<float> uvs(bufferSize);
+    std::vector<float> barycentrics(bufferSize);
+    std::vector<unsigned char> aos(bufferSize);
+    std::vector<float> ids(bufferSize);
+    std::vector<unsigned char> skyLights(bufferSize);
+    std::vector<unsigned char> torchLights(bufferSize);
+    constexpr unsigned int numPeeks = 15;
+    std::vector<unsigned char> peeks(numPeeks);
+    unsigned int numPositions;
+    unsigned int numNormals;
+    unsigned int numUvs;
+    unsigned int numBarycentrics;
+    unsigned int numAos;
+    unsigned int numIds;
+    unsigned int numSkyLights;
+    unsigned int numTorchLights;
+    marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), barycentrics.data(), aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, numBarycentrics, numAos, numIds, numSkyLights, numTorchLights, *numOpaquePositions, *numTransparentPositions, peeks.data());
+
+    *positionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
+    if (!*positionsEntry) {
+      std::cout << "could not allocate marchingCubes positions" << std::endl;
+      abort();
+    }
+    *normalsEntry = normalsAllocator->alloc(numNormals*sizeof(float));
+    if (!*normalsEntry) {
+      std::cout << "could not allocate marchingCubes normals" << std::endl;
+      abort();
+    }
+    *uvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
+    if (!*uvsEntry) {
+      std::cout << "could not allocate marchingCubes uvs" << std::endl;
+      abort();
+    }
+    *barycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float));
+    if (!*barycentricsEntry) {
+      std::cout << "could not allocate marchingCubes barycentrics" << std::endl;
+      abort();
+    }
+    *aosEntry = aosAllocator->alloc(numAos*sizeof(float));
+    if (!*aosEntry) {
+      std::cout << "could not allocate marchingCubes aos" << std::endl;
+      abort();
+    }
+    *idsEntry = idsAllocator->alloc(numIds*sizeof(float));
+    if (!*idsEntry) {
+      std::cout << "could not allocate marchingCubes ids" << std::endl;
+      abort();
+    }
+    *skyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
+    if (!*skyLightsEntry) {
+      std::cout << "could not allocate marchingCubes skyLights" << std::endl;
+      abort();
+    }
+    *torchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
+    if (!*torchLightsEntry) {
+      std::cout << "could not allocate marchingCubes torchLights" << std::endl;
+      abort();
+    }
+    *peeksEntry = peeksAllocator->alloc(numPeeks*sizeof(unsigned char));
+    if (!*peeksEntry) {
+      std::cout << "could not allocate marchingCubes peeks" << std::endl;
+      abort();
+    }
+
+    memcpy(positionsAllocator->data + (*positionsEntry)->start, positions.data(), numPositions);
+    memcpy(normalsAllocator->data + (*normalsEntry)->start, normals.data(), numNormals);
+    memcpy(uvsAllocator->data + (*uvsEntry)->start, uvs.data(), numUvs);
+    memcpy(barycentricsAllocator->data + (*barycentricsEntry)->start, barycentrics.data(), numBarycentrics);
+    memcpy(aosAllocator->data + (*aosEntry)->start, aos.data(), numAos);
+    memcpy(idsAllocator->data + (*idsEntry)->start, ids.data(), numIds);
+    memcpy(skyLightsAllocator->data + (*skyLightsEntry)->start, skyLights.data(), numSkyLights);
+    memcpy(torchLightsAllocator->data + (*torchLightsEntry)->start, torchLights.data(), numTorchLights);
+    memcpy(peeksAllocator->data + (*peeksEntry)->start, peeks.data(), numPeeks);
   },
 };
 
