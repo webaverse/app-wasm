@@ -302,6 +302,7 @@ class MarchObject {
 public:
 	unsigned int id;
 	char name[MAX_NAME_LENGTH];
+	unsigned int nameLength;
 	Vec position;
 	Quat quaternion;
 };
@@ -311,7 +312,7 @@ public:
   char heightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
 };
-void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
+void doGetMarchObjectStats(GeometrySet *geometrySet, MarchObject *marchObjects, unsigned int numMarchObjects, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
   unsigned int &positionsIndex = numPositions;
   unsigned int &uvsIndex = numUvs;
   unsigned int &idsIndex = numIds;
@@ -328,8 +329,36 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
 
   for (unsigned int i = 0; i < numMarchObjects; i++) {
     MarchObject &marchObject = marchObjects[i];
-    std::string name(marchObject.name);
+    std::string name(marchObject.name, marchObject.nameLength);
     Geometry *geometry = geometrySet->geometryMap[name];
+    if (!geometry) {
+    	std::cout << "failed to get geometry: " << name << std::endl;
+    	abort();
+    }
+    positionsIndex += geometry->positions.size();
+    uvsIndex += geometry->uvs.size();
+    idsIndex += geometry->positions.size()/3;
+    indicesIndex += geometry->indices.size();
+    skyLightsIndex += geometry->positions.size()/3;
+    torchLightsIndex += geometry->positions.size()/3;
+  }
+}
+void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights) {
+  unsigned int positionsIndex = 0;
+  unsigned int uvsIndex = 0;
+  unsigned int idsIndex = 0;
+  unsigned int indicesIndex = 0;
+  unsigned int skyLightsIndex = 0;
+  unsigned int torchLightsIndex = 0;
+
+  for (unsigned int i = 0; i < numMarchObjects; i++) {
+    MarchObject &marchObject = marchObjects[i];
+    std::string name(marchObject.name, marchObject.nameLength);
+    Geometry *geometry = geometrySet->geometryMap[name];
+    if (!geometry) {
+    	std::cout << "failed to get geometry: " << name << std::endl;
+    	abort();
+    }
     Matrix matrix;
     matrix.compose(marchObject.position, marchObject.quaternion, Vec{1, 1, 1});
 

@@ -99,13 +99,15 @@ public:
 class ArenaAllocator {
 public:
   ArenaAllocator(unsigned int size) {
-    data = malloc(size);
+    data = (unsigned char *)malloc(size);
     freeList.push_back(new FreeEntry{
       0,
       size,
     });
   }
   FreeEntry *alloc(unsigned int size) {
+    std::lock_guard<std::mutex> lock(mutex);
+
     for (unsigned int i = 0; i < freeList.size(); i++) {
       FreeEntry *entry = freeList[i];
       if (entry->count >= size) {
@@ -125,6 +127,8 @@ public:
     return nullptr;
   }
   void free(FreeEntry *freeEntry) {
+    std::lock_guard<std::mutex> lock(mutex);
+
     freeList.push_back(freeEntry);
     updateFreeList();
   }
@@ -155,8 +159,9 @@ public:
       }), freeList.end());
     }
   }
-  void *data;
+  unsigned char *data;
   std::vector<FreeEntry *> freeList;
+  std::mutex mutex;
 };
 
 class ThreadPool {
@@ -236,8 +241,12 @@ EMSCRIPTEN_KEEPALIVE void getAnimalGeometry(GeometrySet *geometrySet, unsigned i
   doGetAnimalGeometry(geometrySet, hash, positions, colors, indices, heads, legs, *numPositions, *numColors, *numIndices, *numHeads, *numLegs, headPivot, aabb);
 }
 
-EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIds, unsigned int *numIndices, unsigned int *numSkyLights, unsigned int *numTorchLights) {
-  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
+EMSCRIPTEN_KEEPALIVE void getMarchObjectStats(GeometrySet *geometrySet, MarchObject *marchObjects, unsigned int numMarchObjects, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIds, unsigned int *numIndices, unsigned int *numSkyLights, unsigned int *numTorchLights) {
+  doGetMarchObjectStats(geometrySet, marchObjects, numMarchObjects, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
+}
+
+EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights) {
+  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights);
 }
 
 EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
@@ -341,6 +350,9 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     index += sizeof(int);
     int z = *((int *)(requestMessage->args + index));
     index += sizeof(int);
+
+    std::cout << "march objects a " << x << " " << y << " " << z << std::endl;
+
     MarchObject *marchObjects = *((MarchObject **)(requestMessage->args + index));
     index += sizeof(MarchObject *);
     unsigned int numMarchObjects = *((unsigned int *)(requestMessage->args + index));
@@ -349,32 +361,80 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     index += sizeof(SubparcelObject *);
     unsigned int numSubparcelObjects = *((unsigned int *)(requestMessage->args + index));
     index += sizeof(unsigned int);
-    float *positions = *((float **)(requestMessage->args + index));
-    index += sizeof(float *);
-    float *uvs = *((float **)(requestMessage->args + index));
-    index += sizeof(float *);
-    float *ids = *((float **)(requestMessage->args + index));
-    index += sizeof(float *);
-    unsigned int *indices = *((unsigned int **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
-    unsigned char *skyLights = *((unsigned char **)(requestMessage->args + index));
-    index += sizeof(unsigned char *);
-    unsigned char *torchLights = *((unsigned char **)(requestMessage->args + index));
-    index += sizeof(unsigned char *);
-    unsigned int *numPositions = *((unsigned int **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
-    unsigned int *numUvs = *((unsigned int **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
-    unsigned int *numIds = *((unsigned int **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
-    unsigned int *numIndices = *((unsigned int **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
-    unsigned int *numSkyLights = *((unsigned int **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
-    unsigned int *numTorchLights = *((unsigned int **)(requestMessage->args + index));
-    index += sizeof(unsigned int *);
+    ArenaAllocator *positionsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *uvsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *idsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *indicesAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *skyLightsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    ArenaAllocator *torchLightsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    index += sizeof(ArenaAllocator *);
+    FreeEntry **positionsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **uvsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **idsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **indicesEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **skyLightsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
+    FreeEntry **torchLightsEntry = (FreeEntry **)(requestMessage->args + index);
+    index += sizeof(FreeEntry *);
 
-    doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
+    std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
+
+    unsigned int numPositions;
+    unsigned int numUvs;
+    unsigned int numIds;
+    unsigned int numIndices;
+    unsigned int numSkyLights;
+    unsigned int numTorchLights;
+    doGetMarchObjectStats(geometrySet, marchObjects, numMarchObjects, numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
+
+    std::cout << "march objects b " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << " " << (unsigned int)(void *)positionsAllocator << std::endl;
+
+    *positionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
+    if (!*positionsEntry) {
+      std::cout << "could not allocate positions" << std::endl;
+    }
+    *uvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
+    if (!*uvsEntry) {
+      std::cout << "could not allocate uvs" << std::endl;
+    }
+    *idsEntry = idsAllocator->alloc(numIds*sizeof(float));
+    if (!*idsEntry) {
+      std::cout << "could not allocate ids" << std::endl;
+    }
+    *indicesEntry = indicesAllocator->alloc(numIndices*sizeof(unsigned int));
+    if (!*indicesEntry) {
+      std::cout << "could not allocate indices" << std::endl;
+    }
+    *skyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
+    if (!*skyLightsEntry) {
+      std::cout << "could not allocate skyLights" << std::endl;
+    }
+    *torchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
+    if (!*torchLightsEntry) {
+      std::cout << "could not allocate torchLights" << std::endl;
+    }
+
+    std::cout << "march objects c " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << std::endl;
+
+    float *positions = (float *)(positionsAllocator->data + (*positionsEntry)->start);
+    float *uvs = (float *)(uvsAllocator->data + (*uvsEntry)->start);
+    float *ids = (float *)(idsAllocator->data + (*idsEntry)->start);
+    unsigned int *indices = (unsigned int *)(indicesAllocator->data + (*indicesEntry)->start);
+    unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + (*skyLightsEntry)->start);
+    unsigned char *torchLights = (unsigned char *)(torchLightsAllocator->data + (*torchLightsEntry)->start);
+
+    doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights);
+
+    std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl;
   },
 };
 
