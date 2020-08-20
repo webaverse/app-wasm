@@ -195,6 +195,14 @@ extern "C" {
 
 // memory
 
+EMSCRIPTEN_KEEPALIVE void *doMalloc(size_t size) {
+  return malloc(size);
+}
+
+EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
+  free(ptr);
+}
+
 EMSCRIPTEN_KEEPALIVE ArenaAllocator *makeArenaAllocator(unsigned int size) {
   return new ArenaAllocator(size);
 }
@@ -205,10 +213,6 @@ EMSCRIPTEN_KEEPALIVE FreeEntry *arenaAlloc(ArenaAllocator *arenaAllocator, unsig
 
 EMSCRIPTEN_KEEPALIVE void arenaFree(ArenaAllocator *arenaAllocator, FreeEntry *entry) {
   arenaAllocator->free(entry);
-}
-
-EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
-  free(ptr);
 }
 
 // vegetation
