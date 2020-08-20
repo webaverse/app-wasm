@@ -317,7 +317,38 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices);
   },
   [](RequestMessage *requestMessage) -> void { // getAnimalGeometry
-    abort();
+    unsigned int index = 0;
+    GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
+    index += sizeof(GeometrySet *);
+    unsigned int hash = *((unsigned int *)(requestMessage->args + index));
+    index += sizeof(unsigned int);
+    float **positions = (float **)(requestMessage->args + index);
+    index += sizeof(float **);
+    unsigned char **colors = (unsigned char **)(requestMessage->args + index);
+    index += sizeof(unsigned char **);
+    unsigned int **indices = (unsigned int **)(requestMessage->args + index);
+    index += sizeof(unsigned int **);
+    float **heads = (float **)(requestMessage->args + index);
+    index += sizeof(float **);
+    float **legs = (float **)(requestMessage->args + index);
+    index += sizeof(float **);
+    unsigned int *numPositions = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numColors = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numIndices = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numHeads = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numLegs = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    float *headPivot = (float *)(requestMessage->args + index);
+    index += 3*sizeof(float *);
+    float *aabb = (float *)(requestMessage->args + index);
+    index += 6*sizeof(float *);
+
+    getAnimalGeometry(geometrySet, hash, positions, colors, indices, heads, legs, numPositions, numColors, numIndices, numHeads, numLegs, headPivot, aabb);
+
     /* unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
     index += sizeof(GeometrySet *);
