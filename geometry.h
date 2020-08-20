@@ -343,7 +343,7 @@ void doGetMarchObjectStats(GeometrySet *geometrySet, MarchObject *marchObjects, 
     torchLightsIndex += geometry->positions.size()/3;
   }
 }
-void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights) {
+void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
   unsigned int positionsIndex = 0;
   unsigned int uvsIndex = 0;
   unsigned int idsIndex = 0;
@@ -362,7 +362,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
     Matrix matrix;
     matrix.compose(marchObject.position, marchObject.quaternion, Vec{1, 1, 1});
 
-    unsigned int indexOffset2 = positionsIndex/3;
+    unsigned int indexOffset2 = indexOffset + positionsIndex/3;
     for (unsigned int j = 0; j < geometry->indices.size(); j++) {
       indices[indicesIndex + j] = geometry->indices[j] + indexOffset2;
     }

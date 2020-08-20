@@ -245,8 +245,8 @@ EMSCRIPTEN_KEEPALIVE void getMarchObjectStats(GeometrySet *geometrySet, MarchObj
   doGetMarchObjectStats(geometrySet, marchObjects, numMarchObjects, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
 }
 
-EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights) {
-  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights);
+EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
+  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 }
 
 EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
@@ -351,7 +351,7 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     int z = *((int *)(requestMessage->args + index));
     index += sizeof(int);
 
-    std::cout << "march objects a " << x << " " << y << " " << z << std::endl;
+    // std::cout << "march objects a " << x << " " << y << " " << z << std::endl;
 
     MarchObject *marchObjects = *((MarchObject **)(requestMessage->args + index));
     index += sizeof(MarchObject *);
@@ -386,7 +386,7 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     FreeEntry **torchLightsEntry = (FreeEntry **)(requestMessage->args + index);
     index += sizeof(FreeEntry *);
 
-    std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
+    // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
 
     unsigned int numPositions;
     unsigned int numUvs;
@@ -396,7 +396,7 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     unsigned int numTorchLights;
     doGetMarchObjectStats(geometrySet, marchObjects, numMarchObjects, numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
 
-    std::cout << "march objects b " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << " " << (unsigned int)(void *)positionsAllocator << std::endl;
+    // std::cout << "march objects b " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << " " << (unsigned int)(void *)positionsAllocator << std::endl;
 
     *positionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
     if (!*positionsEntry) {
@@ -423,7 +423,7 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
       std::cout << "could not allocate torchLights" << std::endl;
     }
 
-    std::cout << "march objects c " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << std::endl;
+    // std::cout << "march objects c " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << std::endl;
 
     float *positions = (float *)(positionsAllocator->data + (*positionsEntry)->start);
     float *uvs = (float *)(uvsAllocator->data + (*uvsEntry)->start);
@@ -432,9 +432,16 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + (*skyLightsEntry)->start);
     unsigned char *torchLights = (unsigned char *)(torchLightsAllocator->data + (*torchLightsEntry)->start);
 
-    doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights);
+    /* slab => (slab.position.byteOffset - geometry.attributes.position.array.byteOffset)/Float32Array.BYTES_PER_ELEMENT;
+    const indexOffset = vegetationMesh.getSlabPositionOffset(slab)/3;
+    for (let i = 0; i < spec.indices.length; i++) {
+      spec.indices[i] += indexOffset;
+    } */
+    unsigned int indexOffset = (*positionsEntry)->start/sizeof(float)/3;
 
-    std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl;
+    doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+
+    // std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl;
   },
 };
 
