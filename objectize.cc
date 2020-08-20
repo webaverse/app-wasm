@@ -1,5 +1,8 @@
 #include <emscripten.h>
 #include "geometry.h"
+#include "compose.h"
+#include "march.h"
+#include "noise.h"
 // #include <iostream>
 
 #include <deque>
@@ -190,28 +193,7 @@ public:
 
 extern "C" {
 
-EMSCRIPTEN_KEEPALIVE ThreadPool *makeThreadPool(unsigned int numThreads) {
-  return new ThreadPool(numThreads);
-}
-
-unsigned int nextMessageId = 0;
-EMSCRIPTEN_KEEPALIVE unsigned int pushRequest(ThreadPool *threadPool, RequestMessage *message) {
-  unsigned int messageId = ++nextMessageId;
-  message->id = messageId;
-  threadPool->inbox.push(message);
-  return messageId;
-}
-
-EMSCRIPTEN_KEEPALIVE unsigned int popResponse(ThreadPool *threadPool) {
-  ResponseMessage *responseMessage = threadPool->outbox.pop();
-  if (responseMessage) {
-    unsigned int messageId = responseMessage->id;
-    delete responseMessage;
-    return messageId;
-  } else {
-    return 0;
-  }
-}
+// memory
 
 EMSCRIPTEN_KEEPALIVE ArenaAllocator *makeArenaAllocator(unsigned int size) {
   return new ArenaAllocator(size);
@@ -224,6 +206,12 @@ EMSCRIPTEN_KEEPALIVE FreeEntry *arenaAlloc(ArenaAllocator *arenaAllocator, unsig
 EMSCRIPTEN_KEEPALIVE void arenaFree(ArenaAllocator *arenaAllocator, FreeEntry *entry) {
   arenaAllocator->free(entry);
 }
+
+EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
+  free(ptr);
+}
+
+// vegetation
 
 EMSCRIPTEN_KEEPALIVE GeometrySet *makeGeometrySet() {
   return doMakeGeometrySet();
@@ -249,8 +237,43 @@ EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, i
   doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 }
 
-EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
-  free(ptr);
+// land
+
+EMSCRIPTEN_KEEPALIVE float doGetHeight(int seed, float ax, float ay, float az, float baseHeight) {
+  return getHeight(seed, ax, ay, az, baseHeight);
+}
+
+EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned char *skyLights, unsigned char *torchLights, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
+  marchingCubes2(dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, skyLights, torchLights, numOpaquePositions, numTransparentPositions, peeks);
+}
+
+EMSCRIPTEN_KEEPALIVE void doNoise3(int seed, int x, int y, int z, float baseHeight, float wormRate, float wormRadiusBase, float wormRadiusRate, float objectsRate, float potentialDefault, void *subparcelByteOffset) {
+  noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
+}
+
+// requests
+
+EMSCRIPTEN_KEEPALIVE ThreadPool *makeThreadPool(unsigned int numThreads) {
+  return new ThreadPool(numThreads);
+}
+
+unsigned int nextMessageId = 0;
+EMSCRIPTEN_KEEPALIVE unsigned int pushRequest(ThreadPool *threadPool, RequestMessage *message) {
+  unsigned int messageId = ++nextMessageId;
+  message->id = messageId;
+  threadPool->inbox.push(message);
+  return messageId;
+}
+
+EMSCRIPTEN_KEEPALIVE unsigned int popResponse(ThreadPool *threadPool) {
+  ResponseMessage *responseMessage = threadPool->outbox.pop();
+  if (responseMessage) {
+    unsigned int messageId = responseMessage->id;
+    delete responseMessage;
+    return messageId;
+  } else {
+    return 0;
+  }
 }
 
 std::function<void(RequestMessage *)> METHOD_FNS[] = {
