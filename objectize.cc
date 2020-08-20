@@ -540,21 +540,59 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
   },
   [](RequestMessage *requestMessage) -> void { // marchingCubes
-    /* unsigned int index = 0;
-    int seed = *((int *)(requestMessage->args + index));
-    index += sizeof(int);
-    float x = *((float *)(requestMessage->args + index));
+    unsigned int index = 0;
+    float meshId = *(float *)(requestMessage->args + index);
     index += sizeof(float);
-    float y = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-    float z = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-    float baseHeight = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-    float *height = (float *)(requestMessage->args + index);
+    int *dims = (int *)(requestMessage->args + index);
+    index += 3*sizeof(int);
+    float *potential = *((float **)(requestMessage->args + index));
     index += sizeof(float *);
-    *height = getHeight(seed, x, y, z, baseHeight); */
-    // marchingCubes2(dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, skyLights, torchLights, numOpaquePositions, numTransparentPositions, peeks);
+    unsigned char *biomes = *((unsigned char **)(requestMessage->args + index));
+    index += sizeof(unsigned char *);
+    char *heightfield = *((char **)(requestMessage->args + index));
+    index += sizeof(char *);
+    unsigned char *lightfield = *((unsigned char **)(requestMessage->args + index));
+    index += sizeof(unsigned char *);
+    float *shift = (float *)(requestMessage->args + index);
+    index += 3*sizeof(float);
+    float *scale = (float *)(requestMessage->args + index);
+    index += 3*sizeof(float);
+    float *positions = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+    float *normals = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+    float *uvs = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+    float *barycentrics = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+    unsigned char *aos = *((unsigned char **)(requestMessage->args + index));
+    index += sizeof(unsigned char *);
+    float *ids = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+    unsigned int *positionIndex = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *normalIndex = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *uvIndex = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *barycentricIndex = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *aoIndex = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *idIndex = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned char *skyLights = *((unsigned char **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+    unsigned char *torchLights = *((unsigned char **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+    unsigned int *numOpaquePositions = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned int *numTransparentPositions = (unsigned int *)(requestMessage->args + index);
+    index += sizeof(unsigned int *);
+    unsigned char *peeks = *((unsigned char **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+
+    marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, ids, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, *idIndex, skyLights, torchLights, *numOpaquePositions, *numTransparentPositions, peeks);
   },
 };
 
