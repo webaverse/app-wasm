@@ -115,11 +115,8 @@ PxDefaultMemoryOutputStream *doBakeGeometry(float *positions, unsigned int *indi
   meshDesc.triangles.stride       = 3*sizeof(PxU32);
   meshDesc.triangles.data         = indices32;
 
-  // std::cout << "bake geo 1" << std::endl;
   PxDefaultMemoryOutputStream *writeBuffer = new PxDefaultMemoryOutputStream();
-  // std::cout << "bake geo 2" << std::endl;
   bool status = cooking->cookTriangleMesh(meshDesc, *writeBuffer);
-  // std::cout << "bake geo 3 " << status << " " << (void *)writeBuffer << std::endl;
   if (status) {
     return writeBuffer;
   } else {
