@@ -236,8 +236,8 @@ EMSCRIPTEN_KEEPALIVE void getMarchObjectStats(GeometrySet *geometrySet, MarchObj
   doGetMarchObjectStats(geometrySet, marchObjects, numMarchObjects, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
 }
 
-EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
-  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
+  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 }
 
 // land
@@ -414,9 +414,9 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     index += sizeof(MarchObject *);
     unsigned int numMarchObjects = *((unsigned int *)(requestMessage->args + index));
     index += sizeof(unsigned int);
-    SubparcelObject *subparcelObjects = *((SubparcelObject **)(requestMessage->args + index));
-    index += sizeof(SubparcelObject *);
-    unsigned int numSubparcelObjects = *((unsigned int *)(requestMessage->args + index));
+    Subparcel *subparcels = *((Subparcel **)(requestMessage->args + index));
+    index += sizeof(Subparcel *);
+    unsigned int numSubparcels = *((unsigned int *)(requestMessage->args + index));
     index += sizeof(unsigned int);
     ArenaAllocator *positionsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
     index += sizeof(ArenaAllocator *);
@@ -502,7 +502,7 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     } */
     unsigned int indexOffset = (*positionsEntry)->start/sizeof(float)/3;
 
-    doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcelObjects, numSubparcelObjects, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+    doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 
     // std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl;
   },

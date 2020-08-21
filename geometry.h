@@ -1,4 +1,5 @@
 #include "vector.h"
+#include "subparcel.h"
 #include "draco/compression/decode.h"
 #include "draco/compression/encode.h"
 // #include "draco/mesh/triangle_soup_mesh_builder.h"
@@ -282,9 +283,6 @@ void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **po
   memcpy(aabb, &geometry->aabb, sizeof(geometry->aabb));
 }
 
-constexpr int SUBPARCEL_SIZE = 10;
-constexpr int SUBPARCEL_SIZE_P1 = SUBPARCEL_SIZE + 1;
-constexpr int MAX_NAME_LENGTH = 32;
 int absi(int n) {
   return std::abs(n);
 }
@@ -306,12 +304,12 @@ public:
 	Vec position;
 	Quat quaternion;
 };
-class SubparcelObject {
+/* class SubparcelObject {
 public:
 	int index;
   char heightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
-};
+}; */
 void doGetMarchObjectStats(GeometrySet *geometrySet, MarchObject *marchObjects, unsigned int numMarchObjects, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
   unsigned int &positionsIndex = numPositions;
   unsigned int &uvsIndex = numUvs;
@@ -343,7 +341,7 @@ void doGetMarchObjectStats(GeometrySet *geometrySet, MarchObject *marchObjects, 
     torchLightsIndex += geometry->positions.size()/3;
   }
 }
-void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, SubparcelObject *subparcelObjects, unsigned int numSubparcelObjects, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
+void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
   unsigned int positionsIndex = 0;
   unsigned int uvsIndex = 0;
   unsigned int idsIndex = 0;
@@ -386,16 +384,16 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
       int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
       int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
       int subparcelIndex = getSubparcelIndex(sx, sy, sz);
-      SubparcelObject *subparcelObject = std::find_if(subparcelObjects, subparcelObjects + numSubparcelObjects, [&](const SubparcelObject &subparcelObject) -> bool {
-      	return subparcelObject.index == subparcelIndex;
+      Subparcel *subparcel = std::find_if(subparcels, subparcels + numSubparcels, [&](const Subparcel &subparcel) -> bool {
+      	return subparcel.index == subparcelIndex;
       });
-      if (subparcelObject != subparcelObjects + numSubparcelObjects) {
+      if (subparcel != subparcels + numSubparcels) {
         int lx = ax - SUBPARCEL_SIZE*sx;
         int ly = ay - SUBPARCEL_SIZE*sy;
         int lz = az - SUBPARCEL_SIZE*sz;
         unsigned int fieldIndex = getFieldIndex(lx, ly, lz);
-        skyLights[skyLightsIndex + jOffset] = subparcelObject->heightfield[fieldIndex] < 0 ? 0 : subparcelObject->heightfield[fieldIndex];
-        torchLights[torchLightsIndex + jOffset] = subparcelObject->lightfield[fieldIndex];
+        skyLights[skyLightsIndex + jOffset] = subparcel->heightfield[fieldIndex] < 0 ? 0 : subparcel->heightfield[fieldIndex];
+        torchLights[torchLightsIndex + jOffset] = subparcel->lightfield[fieldIndex];
       } else {
         skyLights[skyLightsIndex + jOffset] = 0;
         torchLights[torchLightsIndex + jOffset] = 0;
