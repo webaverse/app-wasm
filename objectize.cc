@@ -525,14 +525,17 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
   },
   [](RequestMessage *requestMessage) -> void { // noise
     unsigned int index = 0;
+
     int seed = *((int *)(requestMessage->args + index));
     index += sizeof(int);
+
     float x = *((float *)(requestMessage->args + index));
     index += sizeof(float);
     float y = *((float *)(requestMessage->args + index));
     index += sizeof(float);
     float z = *((float *)(requestMessage->args + index));
     index += sizeof(float);
+
     float baseHeight = *((float *)(requestMessage->args + index));
     index += sizeof(float);
     float wormRate = *((float *)(requestMessage->args + index));
@@ -545,8 +548,10 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     index += sizeof(float);
     float potentialDefault = *((float *)(requestMessage->args + index));
     index += sizeof(float);
+
     void *subparcelByteOffset = *((void **)(requestMessage->args + index));
     index += sizeof(void *);
+
     noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
   },
   [](RequestMessage *requestMessage) -> void { // marchingCubes
@@ -682,15 +687,15 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
       abort();
     }
 
-    memcpy(positionsAllocator->data + (*positionsEntry)->start, positions.data(), numPositions);
-    memcpy(normalsAllocator->data + (*normalsEntry)->start, normals.data(), numNormals);
-    memcpy(uvsAllocator->data + (*uvsEntry)->start, uvs.data(), numUvs);
-    memcpy(barycentricsAllocator->data + (*barycentricsEntry)->start, barycentrics.data(), numBarycentrics);
-    memcpy(aosAllocator->data + (*aosEntry)->start, aos.data(), numAos);
-    memcpy(idsAllocator->data + (*idsEntry)->start, ids.data(), numIds);
-    memcpy(skyLightsAllocator->data + (*skyLightsEntry)->start, skyLights.data(), numSkyLights);
-    memcpy(torchLightsAllocator->data + (*torchLightsEntry)->start, torchLights.data(), numTorchLights);
-    memcpy(peeksAllocator->data + (*peeksEntry)->start, peeks.data(), numPeeks);
+    memcpy(positionsAllocator->data + (*positionsEntry)->start, positions.data(), numPositions*sizeof(float));
+    memcpy(normalsAllocator->data + (*normalsEntry)->start, normals.data(), numNormals*sizeof(float));
+    memcpy(uvsAllocator->data + (*uvsEntry)->start, uvs.data(), numUvs*sizeof(float));
+    memcpy(barycentricsAllocator->data + (*barycentricsEntry)->start, barycentrics.data(), numBarycentrics*sizeof(float));
+    memcpy(aosAllocator->data + (*aosEntry)->start, aos.data(), numAos*sizeof(unsigned char));
+    memcpy(idsAllocator->data + (*idsEntry)->start, ids.data(), numIds*sizeof(float));
+    memcpy(skyLightsAllocator->data + (*skyLightsEntry)->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
+    memcpy(torchLightsAllocator->data + (*torchLightsEntry)->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
+    memcpy(peeksAllocator->data + (*peeksEntry)->start, peeks.data(), numPeeks*sizeof(unsigned char));
   },
 };
 
