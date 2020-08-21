@@ -83,7 +83,34 @@ if [ ! -f draco.o ]; then
 fi
 if [ ! -f physx.o ]; then
   emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
-  -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
+  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 --profiling \
+  -IPhysX/physx/include -IPhysX/pxshared/include \
+  -IPhysX/physx/source/foundation/include \
+  -IPhysX/physx/source/pvd/include \
+  -IPhysX/physx/source/simulationcontroller/include -IPhysX/physx/source/lowlevel/api/include \
+  -IPhysX/physx/source/geomutils/include \
+  -IPhysX/physx/source/scenequery/include \
+  -IPhysX/physx/source/lowleveldynamics/include \
+  -IPhysX/physx/source/lowlevel/software/include \
+  -IPhysX/physx/source/lowlevelaabb/include \
+  -IPhysX/physx/source/lowlevel/common/include/pipeline \
+  -IPhysX/physx/source/lowlevel/common/include/utils \
+  -IPhysX/physx/source/lowlevel/common/include/collision \
+  -IPhysX/physx/source/geomutils/src -IPhysX/physx/source/geomutils/src/common -IPhysX/physx/source/geomutils/src/mesh -IPhysX/physx/source/geomutils/src/hf -IPhysX/physx/source/geomutils/src/convex -IPhysX/physx/source/geomutils/src/gjk \
+  -IPhysX/physx/source/common/src \
+  -IPhysX/physx/source/physx/src/buffering \
+  -IPhysX/physx/source/physx/src \
+  -IPhysX/physx/source/physxcooking/src/convex \
+  -IPhysX/physx/source/physxcooking/src/mesh \
+  -IPhysX/physx/source/physxextensions/src/serialization/File \
+  -IPhysX/physx/source/physxcooking/src \
+  -IPhysX/physx/source/simulationcontroller/src \
+  -IPhysX/physx/source/geomutils/src/intersection \
+  -IPhysX//physx/source/geomutils/src/ccd \
+  -IPhysX/physx/source/geomutils/src/contact \
+  -IPhysX/physx/source/geomutils/src/pcm \
+  -IPhysX/physx/source/geomutils/src/distance \
+  -IPhysX/physx/source/geomutils/src/sweep \
   PhysX/physx/source/geomutils/src/GuGeometryQuery.cpp \
   PhysX/physx/source/geomutils/src/GuMTD.cpp \
   PhysX/physx/source/common/src/CmMathUtils.cpp \
@@ -293,6 +320,7 @@ if [ ! -f physx.o ]; then
   PhysX/physx/source/lowleveldynamics/src/DyContactPrepPF.cpp \
   PhysX/physx/source/geomutils/src/gjk/GuEPA.cpp \
   PhysX/physx/source/physxextensions/src/ExtTriangleMeshExt.cpp \
+  -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
 	-o physx.o
 fi
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
