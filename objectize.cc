@@ -115,11 +115,10 @@ public:
       FreeEntry *entry = freeList[i];
       if (entry->count >= size) {
         if (entry->count > size) {
-          FreeEntry *nextEntry = new FreeEntry{
+          freeList[i] = new FreeEntry{
             entry->start + size,
             entry->count - size,
           };
-          freeList[i] = nextEntry;
         } else {
           freeList.erase(freeList.begin() + i);
         }
