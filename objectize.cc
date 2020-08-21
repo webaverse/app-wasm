@@ -55,7 +55,7 @@ public:
 template <typename M>
 class Mailbox {
 public:
-  void push(M *message) {
+  void queue(M *message) {
     std::lock_guard<std::mutex> lock(mutex);
     messages.push_back(message);
     semaphore.release();
@@ -70,6 +70,11 @@ public:
     }
     return message;
   }
+  void push(M *message) {
+    std::lock_guard<std::mutex> lock(mutex);
+    messages.push_back(message);
+    // semaphore.release();
+  }
   M *pop() {
     M *message;
     {
@@ -77,7 +82,7 @@ public:
       if (messages.size() > 0) {
         message = messages.front();
         messages.pop_front();
-        semaphore.acquire();
+        // semaphore.acquire();
       } else {
         message = nullptr;
       }
@@ -264,7 +269,7 @@ unsigned int nextMessageId = 0;
 EMSCRIPTEN_KEEPALIVE unsigned int pushRequest(ThreadPool *threadPool, RequestMessage *message) {
   unsigned int messageId = ++nextMessageId;
   message->id = messageId;
-  threadPool->inbox.push(message);
+  threadPool->inbox.queue(message);
   return messageId;
 }
 
