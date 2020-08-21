@@ -1,6 +1,6 @@
 mkdir -p bin
 if [ ! -f temp.o ]; then
-  emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s ASSERTIONS=1 -s SAFE_HEAP=1 -O3 \
+  emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -O3 \
 		draco/mesh/mesh_misc_functions.cc \
 		draco/mesh/mesh_attribute_corner_table.cc \
 		draco/mesh/corner_table.cc \
@@ -82,7 +82,7 @@ if [ ! -f temp.o ]; then
 		-o temp.o
 fi
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
-emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=349962240 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -s ASSERTIONS=1 -s SAFE_HEAP=1 -O3 \
+emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=349962240 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -O3 \
   objectize.cc vector.cc \
   FastNoise.cpp noise.cc march.cc biomes.cc \
   temp.o \
