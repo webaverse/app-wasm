@@ -296,7 +296,7 @@ unsigned int getFieldIndex(unsigned int x, unsigned int y, unsigned int z) {
 	return x + (z * SUBPARCEL_SIZE_P1) + (y * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1);
 }
 
-class MarchObject {
+/* class MarchObject {
 public:
 	unsigned int id;
 	char name[MAX_NAME_LENGTH];
@@ -304,13 +304,13 @@ public:
 	Vec position;
 	Quat quaternion;
 };
-/* class SubparcelObject {
+class SubparcelObject {
 public:
 	int index;
   char heightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
 }; */
-void doGetMarchObjectStats(GeometrySet *geometrySet, MarchObject *marchObjects, unsigned int numMarchObjects, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
+void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
   unsigned int &positionsIndex = numPositions;
   unsigned int &uvsIndex = numUvs;
   unsigned int &idsIndex = numIds;
@@ -325,23 +325,26 @@ void doGetMarchObjectStats(GeometrySet *geometrySet, MarchObject *marchObjects, 
   skyLightsIndex = 0;
   torchLightsIndex = 0;
 
-  for (unsigned int i = 0; i < numMarchObjects; i++) {
-    MarchObject &marchObject = marchObjects[i];
-    std::string name(marchObject.name, marchObject.nameLength);
-    Geometry *geometry = geometrySet->geometryMap[name];
-    if (!geometry) {
-    	std::cout << "failed to get geometry: " << name << std::endl;
-    	abort();
-    }
-    positionsIndex += geometry->positions.size();
-    uvsIndex += geometry->uvs.size();
-    idsIndex += geometry->positions.size()/3;
-    indicesIndex += geometry->indices.size();
-    skyLightsIndex += geometry->positions.size()/3;
-    torchLightsIndex += geometry->positions.size()/3;
+  for (unsigned int i = 0; i < subparcel->numObjects; i++) {
+    Object &object = subparcel->objects[i];
+    std::string name(object.name);
+    auto iter = geometrySet->geometryMap.find(name);
+    if (iter != geometrySet->geometryMap.end()) {
+    	Geometry *geometry = iter->second;
+	    /* if (!geometry) {
+	    	std::cout << "failed to get geometry: " << name << std::endl;
+	    	abort();
+	    } */
+	    positionsIndex += geometry->positions.size();
+	    uvsIndex += geometry->uvs.size();
+	    idsIndex += geometry->positions.size()/3;
+	    indicesIndex += geometry->indices.size();
+	    skyLightsIndex += geometry->positions.size()/3;
+	    torchLightsIndex += geometry->positions.size()/3;
+	  }
   }
 }
-void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
+void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
   unsigned int positionsIndex = 0;
   unsigned int uvsIndex = 0;
   unsigned int idsIndex = 0;
@@ -349,64 +352,67 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *
   unsigned int skyLightsIndex = 0;
   unsigned int torchLightsIndex = 0;
 
-  for (unsigned int i = 0; i < numMarchObjects; i++) {
-    MarchObject &marchObject = marchObjects[i];
-    std::string name(marchObject.name, marchObject.nameLength);
-    Geometry *geometry = geometrySet->geometryMap[name];
-    if (!geometry) {
-    	std::cout << "failed to get geometry: " << name << std::endl;
-    	abort();
-    }
-    Matrix matrix;
-    matrix.compose(marchObject.position, marchObject.quaternion, Vec{1, 1, 1});
+  for (unsigned int i = 0; i < subparcel->numObjects; i++) {
+    Object &object = subparcel->objects[i];
+    std::string name(object.name);
+    auto iter = geometrySet->geometryMap.find(name);
+    if (iter != geometrySet->geometryMap.end()) {
+    	Geometry *geometry = iter->second;
+	    /* if (!geometry) {
+	    	std::cout << "failed to get geometry: " << name << std::endl;
+	    	abort();
+	    } */
+	    Matrix matrix;
+	    matrix.compose(object.position, object.quaternion, Vec{1, 1, 1});
 
-    unsigned int indexOffset2 = indexOffset + positionsIndex/3;
-    for (unsigned int j = 0; j < geometry->indices.size(); j++) {
-      indices[indicesIndex + j] = geometry->indices[j] + indexOffset2;
-    }
-    indicesIndex += geometry->indices.size();
+	    unsigned int indexOffset2 = indexOffset + positionsIndex/3;
+	    for (unsigned int j = 0; j < geometry->indices.size(); j++) {
+	      indices[indicesIndex + j] = geometry->indices[j] + indexOffset2;
+	    }
+	    indicesIndex += geometry->indices.size();
 
-    for (unsigned int j = 0, jOffset = 0; j < geometry->positions.size(); j += 3, jOffset++) {
-    	Vec position{
-    		geometry->positions[j],
-    		geometry->positions[j+1],
-    		geometry->positions[j+2],
-    	};
-    	position.applyMatrix(matrix);
-    	positions[positionsIndex + j] = position.x;
-  		positions[positionsIndex + j + 1] = position.y;
-  		positions[positionsIndex + j + 2] = position.z;
+	    for (unsigned int j = 0, jOffset = 0; j < geometry->positions.size(); j += 3, jOffset++) {
+	    	Vec position{
+	    		geometry->positions[j],
+	    		geometry->positions[j+1],
+	    		geometry->positions[j+2],
+	    	};
+	    	position.applyMatrix(matrix);
+	    	positions[positionsIndex + j] = position.x;
+	  		positions[positionsIndex + j + 1] = position.y;
+	  		positions[positionsIndex + j + 2] = position.z;
 
-      int ax = (int)std::floor(position.x);
-      int ay = (int)std::floor(position.y);
-      int az = (int)std::floor(position.z);
-      int sx = (int)std::floor((float)ax/(float)SUBPARCEL_SIZE);
-      int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
-      int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
-      int subparcelIndex = getSubparcelIndex(sx, sy, sz);
-      Subparcel *subparcel = std::find_if(subparcels, subparcels + numSubparcels, [&](const Subparcel &subparcel) -> bool {
-      	return subparcel.index == subparcelIndex;
-      });
-      if (subparcel != subparcels + numSubparcels) {
-        int lx = ax - SUBPARCEL_SIZE*sx;
-        int ly = ay - SUBPARCEL_SIZE*sy;
-        int lz = az - SUBPARCEL_SIZE*sz;
-        unsigned int fieldIndex = getFieldIndex(lx, ly, lz);
-        skyLights[skyLightsIndex + jOffset] = subparcel->heightfield[fieldIndex] < 0 ? 0 : subparcel->heightfield[fieldIndex];
-        torchLights[torchLightsIndex + jOffset] = subparcel->lightfield[fieldIndex];
-      } else {
-        skyLights[skyLightsIndex + jOffset] = 0;
-        torchLights[torchLightsIndex + jOffset] = 0;
-      }
-    }
-    positionsIndex += geometry->positions.size();
-    skyLightsIndex += geometry->positions.size()/3;
-    torchLightsIndex += geometry->positions.size()/3;
+	      int ax = (int)std::floor(position.x);
+	      int ay = (int)std::floor(position.y);
+	      int az = (int)std::floor(position.z);
+	      int sx = (int)std::floor((float)ax/(float)SUBPARCEL_SIZE);
+	      int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
+	      int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
+	      int subparcelIndex = getSubparcelIndex(sx, sy, sz);
+	      Subparcel *subparcel = std::find_if(subparcels, subparcels + numSubparcels, [&](const Subparcel &subparcel) -> bool {
+	      	return subparcel.index == subparcelIndex;
+	      });
+	      if (subparcel != subparcels + numSubparcels) {
+	        int lx = ax - SUBPARCEL_SIZE*sx;
+	        int ly = ay - SUBPARCEL_SIZE*sy;
+	        int lz = az - SUBPARCEL_SIZE*sz;
+	        unsigned int fieldIndex = getFieldIndex(lx, ly, lz);
+	        skyLights[skyLightsIndex + jOffset] = subparcel->heightfield[fieldIndex] < 0 ? 0 : subparcel->heightfield[fieldIndex];
+	        torchLights[torchLightsIndex + jOffset] = subparcel->lightfield[fieldIndex];
+	      } else {
+	        skyLights[skyLightsIndex + jOffset] = 0;
+	        torchLights[torchLightsIndex + jOffset] = 0;
+	      }
+	    }
+	    positionsIndex += geometry->positions.size();
+	    skyLightsIndex += geometry->positions.size()/3;
+	    torchLightsIndex += geometry->positions.size()/3;
 
-    memcpy(uvs + uvsIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(float));
-    uvsIndex += geometry->uvs.size();
+	    memcpy(uvs + uvsIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(float));
+	    uvsIndex += geometry->uvs.size();
 
-    std::fill(ids + idsIndex, ids + idsIndex + geometry->positions.size()/3, marchObject.id);
-    idsIndex += geometry->positions.size()/3;
+	    std::fill(ids + idsIndex, ids + idsIndex + geometry->positions.size()/3, (float)object.id);
+	    idsIndex += geometry->positions.size()/3;
+	  }
   }
 }

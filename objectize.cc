@@ -232,12 +232,12 @@ EMSCRIPTEN_KEEPALIVE void getAnimalGeometry(GeometrySet *geometrySet, unsigned i
   doGetAnimalGeometry(geometrySet, hash, positions, colors, indices, heads, legs, *numPositions, *numColors, *numIndices, *numHeads, *numLegs, headPivot, aabb);
 }
 
-EMSCRIPTEN_KEEPALIVE void getMarchObjectStats(GeometrySet *geometrySet, MarchObject *marchObjects, unsigned int numMarchObjects, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIds, unsigned int *numIndices, unsigned int *numSkyLights, unsigned int *numTorchLights) {
-  doGetMarchObjectStats(geometrySet, marchObjects, numMarchObjects, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
+EMSCRIPTEN_KEEPALIVE void getMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIds, unsigned int *numIndices, unsigned int *numSkyLights, unsigned int *numTorchLights) {
+  doGetMarchObjectStats(geometrySet, subparcel, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
 }
 
-EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, MarchObject *marchObjects, unsigned int numMarchObjects, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
-  doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
+  doMarchObjects(geometrySet, x, y, z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 }
 
 // land
@@ -410,10 +410,8 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
 
     // std::cout << "march objects a " << x << " " << y << " " << z << std::endl;
 
-    MarchObject *marchObjects = *((MarchObject **)(requestMessage->args + index));
-    index += sizeof(MarchObject *);
-    unsigned int numMarchObjects = *((unsigned int *)(requestMessage->args + index));
-    index += sizeof(unsigned int);
+    Subparcel *subparcel = *((Subparcel **)(requestMessage->args + index));
+    index += sizeof(Subparcel *);
     Subparcel *subparcels = *((Subparcel **)(requestMessage->args + index));
     index += sizeof(Subparcel *);
     unsigned int numSubparcels = *((unsigned int *)(requestMessage->args + index));
@@ -451,7 +449,7 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     unsigned int numIndices;
     unsigned int numSkyLights;
     unsigned int numTorchLights;
-    doGetMarchObjectStats(geometrySet, marchObjects, numMarchObjects, numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
+    doGetMarchObjectStats(geometrySet, subparcel, numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
 
     // std::cout << "march objects b " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << " " << (unsigned int)(void *)positionsAllocator << std::endl;
 
@@ -502,7 +500,7 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     } */
     unsigned int indexOffset = (*positionsEntry)->start/sizeof(float)/3;
 
-    doMarchObjects(geometrySet, x, y, z, marchObjects, numMarchObjects, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+    doMarchObjects(geometrySet, x, y, z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 
     // std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl;
   },
