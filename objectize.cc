@@ -265,8 +265,8 @@ EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(float meshId, int dims[3], float *pot
 EMSCRIPTEN_KEEPALIVE void initPhysx() {
   doInitPhysx();
 }
-EMSCRIPTEN_KEEPALIVE void registerBakedGeometry(unsigned int meshId, uintptr_t data, size_t size, float *meshPosition, float *meshQuaternion, uintptr_t *result) {
-  *result = doRegisterBakedGeometry(meshId, data, size, meshPosition, meshQuaternion);
+EMSCRIPTEN_KEEPALIVE void registerBakedGeometry(unsigned int meshId, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion, uintptr_t *result) {
+  *result = doRegisterBakedGeometry(meshId, writeStream, meshPosition, meshQuaternion);
 }
 EMSCRIPTEN_KEEPALIVE void registerBoxGeometry(unsigned int meshId, float *position, float *quaternion, float w, float h, float d, uintptr_t *result) {
   *result = doRegisterBoxGeometry(meshId, position, quaternion, w, h, d);
@@ -274,11 +274,11 @@ EMSCRIPTEN_KEEPALIVE void registerBoxGeometry(unsigned int meshId, float *positi
 EMSCRIPTEN_KEEPALIVE void registerCapsuleGeometry(unsigned int meshId, float *position, float *quaternion, float radius, float halfHeight, uintptr_t *result) {
   *result = doRegisterCapsuleGeometry(meshId, position, quaternion, radius, halfHeight);
 }
-EMSCRIPTEN_KEEPALIVE void bakeGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uintptr_t *ptr, uintptr_t *data, size_t *size) {
-  doBakeGeometry(positions, indices, numPositions, numIndices, *ptr, *data, *size);
+EMSCRIPTEN_KEEPALIVE void bakeGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, PxDefaultMemoryOutputStream **writeStream) {
+  *writeStream = doBakeGeometry(positions, indices, numPositions, numIndices);
 }
-EMSCRIPTEN_KEEPALIVE void releaseBakedGeometry(uintptr_t ptr) {
-  doReleaseBakedGeometry(ptr);
+EMSCRIPTEN_KEEPALIVE void releaseBakedGeometry(PxDefaultMemoryOutputStream *writeStream) {
+  delete writeStream;
 }
 EMSCRIPTEN_KEEPALIVE void unregisterGeometry(uintptr_t geometrySpecPtr) {
   doUnregisterGeometry(geometrySpecPtr);
@@ -742,6 +742,28 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     memcpy(skyLightsAllocator->data + (*skyLightsEntry)->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
     memcpy(torchLightsAllocator->data + (*torchLightsEntry)->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
     memcpy(peeksAllocator->data + (*peeksEntry)->start, peeks.data(), numPeeks*sizeof(unsigned char));
+  },
+  [](RequestMessage *requestMessage) -> void { // bakeGeometry
+    unsigned int index = 0;
+
+    float *positions = *((float **)(requestMessage->args + index));
+    index += sizeof(float *);
+
+    unsigned int *indices = *((unsigned int **)(requestMessage->args + index));
+    index += sizeof(unsigned int *);
+
+    unsigned int numPositions = *((unsigned int *)(requestMessage->args + index));
+    index += sizeof(unsigned int);
+
+    unsigned int numIndices = *((unsigned int *)(requestMessage->args + index));
+    index += sizeof(unsigned int);
+
+    PxDefaultMemoryOutputStream **writeStream = (PxDefaultMemoryOutputStream **)(requestMessage->args + index);
+    index += sizeof(PxDefaultMemoryOutputStream *);
+
+    // std::cout << "bake 1" << std::endl;
+    bakeGeometry(positions, indices, numPositions, numIndices, writeStream);
+    // std::cout << "bake 2" << std::endl;
   },
 };
 

@@ -67,9 +67,11 @@ void doInitPhysx() {
   cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
 }
 
-uintptr_t doRegisterBakedGeometry(unsigned int meshId, uintptr_t data, size_t size, float *meshPosition, float *meshQuaternion) {
-  PxDefaultMemoryInputData readBuffer((PxU8 *)data, size);
+uintptr_t doRegisterBakedGeometry(unsigned int meshId, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion) {
+  PxDefaultMemoryInputData readBuffer((PxU8 *)writeStream->getData(), writeStream->getSize());
   PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
+  delete writeStream;
+
   PxTriangleMeshGeometry *meshGeom = new PxTriangleMeshGeometry(triangleMesh);
   Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], subparcelRadius);
   GeometrySpec *geometrySpec = new GeometrySpec(meshId, triangleMesh, meshGeom, Vec(), Quat(), boundingSphere);
@@ -98,7 +100,7 @@ uintptr_t doRegisterCapsuleGeometry(unsigned int meshId, float *position, float 
   return (uintptr_t)geometrySpec;
 }
 
-void doBakeGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uintptr_t &ptr, uintptr_t &data, size_t &size) {
+PxDefaultMemoryOutputStream *doBakeGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices) {
   PxVec3 *verts = (PxVec3 *)positions;
   PxU32 nbVerts = numPositions/3;
   PxU32 *indices32 = (PxU32 *)indices;
@@ -113,17 +115,16 @@ void doBakeGeometry(float *positions, unsigned int *indices, unsigned int numPos
   meshDesc.triangles.stride       = 3*sizeof(PxU32);
   meshDesc.triangles.data         = indices32;
 
+  // std::cout << "bake geo 1" << std::endl;
   PxDefaultMemoryOutputStream *writeBuffer = new PxDefaultMemoryOutputStream();
+  // std::cout << "bake geo 2" << std::endl;
   bool status = cooking->cookTriangleMesh(meshDesc, *writeBuffer);
+  // std::cout << "bake geo 3 " << status << " " << (void *)writeBuffer << std::endl;
   if (status) {
-    ptr = (uintptr_t)writeBuffer;
-    data = (uintptr_t)writeBuffer->getData();
-    size = writeBuffer->getSize();
+    return writeBuffer;
   } else {
     delete writeBuffer;
-    ptr = 0;
-    data = 0;
-    size = 0;
+    return nullptr;
   }
 }
 
@@ -155,11 +156,6 @@ void doBakeGeometry(float *positions, unsigned int *indices, unsigned int numPos
     size = 0;
   }
 } */
-
-void doReleaseBakedGeometry(uintptr_t ptr) {
-  PxDefaultMemoryOutputStream *writeBuffer = (PxDefaultMemoryOutputStream *)ptr;
-  delete writeBuffer;
-}
 
 void doUnregisterGeometry(uintptr_t geometrySpecPtr) {
   GeometrySpec *geometrySpec = (GeometrySpec *)geometrySpecPtr;
