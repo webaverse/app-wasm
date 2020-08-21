@@ -1,8 +1,9 @@
 #include <emscripten.h>
 #include "geometry.h"
 #include "compose.h"
-#include "march.h"
 #include "noise.h"
+#include "march.h"
+#include "collide.h"
 // #include <iostream>
 
 #include <deque>
@@ -257,6 +258,49 @@ EMSCRIPTEN_KEEPALIVE void doNoise3(int seed, int x, int y, int z, float baseHeig
 
 EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
   marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
+}
+
+// physics
+
+EMSCRIPTEN_KEEPALIVE void initPhysx() {
+  doInitPhysx();
+}
+EMSCRIPTEN_KEEPALIVE void registerBakedGeometry(unsigned int meshId, uintptr_t data, size_t size, float *meshPosition, float *meshQuaternion, uintptr_t *result) {
+  *result = doRegisterBakedGeometry(meshId, data, size, meshPosition, meshQuaternion);
+}
+EMSCRIPTEN_KEEPALIVE void registerBoxGeometry(unsigned int meshId, float *position, float *quaternion, float w, float h, float d, uintptr_t *result) {
+  *result = doRegisterBoxGeometry(meshId, position, quaternion, w, h, d);
+}
+EMSCRIPTEN_KEEPALIVE void registerCapsuleGeometry(unsigned int meshId, float *position, float *quaternion, float radius, float halfHeight, uintptr_t *result) {
+  *result = doRegisterCapsuleGeometry(meshId, position, quaternion, radius, halfHeight);
+}
+EMSCRIPTEN_KEEPALIVE void bakeGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uintptr_t *ptr, uintptr_t *data, size_t *size) {
+  doBakeGeometry(positions, indices, numPositions, numIndices, *ptr, *data, *size);
+}
+EMSCRIPTEN_KEEPALIVE void releaseBakedGeometry(uintptr_t ptr) {
+  doReleaseBakedGeometry(ptr);
+}
+EMSCRIPTEN_KEEPALIVE void unregisterGeometry(uintptr_t geometrySpecPtr) {
+  doUnregisterGeometry(geometrySpecPtr);
+}
+EMSCRIPTEN_KEEPALIVE void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *meshId, unsigned int *faceIndex) {
+  doRaycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *meshId, *faceIndex);
+}
+EMSCRIPTEN_KEEPALIVE void collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded) {
+  doCollide(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded);
+}
+
+EMSCRIPTEN_KEEPALIVE void *makeCuller() {
+  return doMakeCuller();
+}
+EMSCRIPTEN_KEEPALIVE GroupSet *registerGroupSet(Culler *culler, int x, int y, int z, float r, unsigned char *peeks, Group *groups, unsigned int numGroups) {
+  return doRegisterGroupSet(culler, x, y, z, r, peeks, groups, numGroups);
+}
+EMSCRIPTEN_KEEPALIVE void unregisterGroupSet(Culler *culler, GroupSet *groupSet) {
+  doUnregisterGroupSet(culler, groupSet);
+}
+EMSCRIPTEN_KEEPALIVE void cull(Culler *culler, float *positionData, float *matrixData, float slabRadius, CullResult *cullResults, unsigned int *numCullResults) {
+  doCull(culler, positionData, matrixData, slabRadius, cullResults, *numCullResults);
 }
 
 // requests
