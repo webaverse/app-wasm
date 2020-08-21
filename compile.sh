@@ -81,7 +81,8 @@ if [ ! -f temp.o ]; then
 		-I. \
 		-o temp.o
 fi
-emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=299958272 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -s ASSERTIONS=1 -s SAFE_HEAP=1 -O3 \
+# m = 64*1024; s = 350000000; Math.floor(s/m)*m;
+emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s TOTAL_MEMORY=349962240 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -s ASSERTIONS=1 -s SAFE_HEAP=1 -O3 \
   objectize.cc vector.cc \
   FastNoise.cpp noise.cc march.cc biomes.cc \
   temp.o \
