@@ -1,6 +1,6 @@
 mkdir -p bin
 if [ ! -f draco.o ]; then
-  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
+  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 --profiling \
 		draco/mesh/mesh_misc_functions.cc \
 		draco/mesh/mesh_attribute_corner_table.cc \
 		draco/mesh/corner_table.cc \
@@ -82,7 +82,6 @@ if [ ! -f draco.o ]; then
 		-o draco.o
 fi
 if [ ! -f physx.o ]; then
-  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
   emcc -s WASM=1 -s USE_PTHREADS=1 -O3 --profiling \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
@@ -324,7 +323,7 @@ if [ ! -f physx.o ]; then
 	-o physx.o
 fi
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
-emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=4 -s TOTAL_MEMORY=349962240 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -O3 \
+emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=4 -s TOTAL_MEMORY=299958272 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -O3 --profiling \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
