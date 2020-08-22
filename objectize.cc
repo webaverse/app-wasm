@@ -7,6 +7,7 @@
 // #include <iostream>
 
 #include <deque>
+#include <map>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -283,6 +284,7 @@ EMSCRIPTEN_KEEPALIVE void initPhysx() {
   doInitPhysx();
 }
 EMSCRIPTEN_KEEPALIVE void registerBakedGeometry(unsigned int meshId, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion, uintptr_t *result) {
+  // std::cout << "register baked " << meshQuaternion[0] << " " << meshQuaternion[1] << " " << meshQuaternion[2] << " " << meshQuaternion[3] << std::endl;
   *result = doRegisterBakedGeometry(meshId, writeStream, meshPosition, meshQuaternion);
 }
 EMSCRIPTEN_KEEPALIVE void registerBoxGeometry(unsigned int meshId, float *position, float *quaternion, float w, float h, float d, uintptr_t *result) {
@@ -318,6 +320,87 @@ EMSCRIPTEN_KEEPALIVE void unregisterGroupSet(Culler *culler, GroupSet *groupSet)
 }
 EMSCRIPTEN_KEEPALIVE void cull(Culler *culler, float *positionData, float *matrixData, float slabRadius, CullResult *cullResults, unsigned int *numCullResults) {
   doCull(culler, positionData, matrixData, slabRadius, cullResults, *numCullResults);
+}
+
+class Tracker {
+public:
+  Tracker(int chunkDistance) :
+    chunkDistance(chunkDistance),
+    lastCoord(0, 256, 0)
+    {}
+  std::pair<std::vector<Coord>, std::vector<Coord>> updateNeededCoords(float x, float y, float z) {
+    Coord coord(
+      (int)std::floor(x/(float)SUBPARCEL_SIZE),
+      (int)std::floor(y/(float)SUBPARCEL_SIZE),
+      (int)std::floor(z/(float)SUBPARCEL_SIZE)
+    );
+
+    // std::cout << "check coord " << coord.x << " " << coord.y << " " << coord.z << " " << coord.index << " : " << lastCoord.x << " " << lastCoord.y << " " << lastCoord.z << " " << lastCoord.index << std::endl;
+    if (coord != lastCoord) {
+      std::vector<Coord> neededCoords;
+      neededCoords.reserve(256);
+      std::vector<Coord> addedCoords;
+      addedCoords.reserve(256);
+      for (int dx = -chunkDistance; dx <= chunkDistance; dx++) {
+        const int ax = dx + coord.x;
+        for (int dy = -chunkDistance; dy <= chunkDistance; dy++) {
+          const int ay = dy + coord.y;
+          for (int dz = -chunkDistance; dz <= chunkDistance; dz++) {
+            const int az = dz + coord.z;
+            Coord coord(ax, ay, ax);
+            neededCoords.push_back(coord);
+
+            auto iter = std::find_if(lastNeededCoords.begin(), lastNeededCoords.end(), [&](const Coord &coord2) -> bool {
+              return coord2.index == coord.index;
+            });
+            if (iter == lastNeededCoords.end()) {
+              addedCoords.push_back(coord);
+            }
+          }
+        }
+      }
+
+      std::vector<Coord> removedCoords;
+      removedCoords.reserve(256);
+      for (const Coord &coord : lastNeededCoords) {
+        auto iter = std::find_if(neededCoords.begin(), neededCoords.end(), [&](const Coord &coord2) -> bool {
+          return coord2.index == coord.index;
+        });
+        if (iter == neededCoords.end()) {
+          removedCoords.push_back(coord);
+        }
+      }
+
+      lastNeededCoords = std::move(neededCoords);
+      lastCoord = coord;
+
+      return std::pair<std::vector<Coord>, std::vector<Coord>>{
+        std::move(addedCoords),
+        std::move(removedCoords),
+      };
+    } else {
+      return std::pair<std::vector<Coord>, std::vector<Coord>>();
+    }
+  }
+
+  int chunkDistance;
+  Coord lastCoord;
+  std::vector<Coord> lastNeededCoords;
+  std::map<int, Subparcel> subparcels;
+};
+
+EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int chunkDistance) {
+  return new Tracker(chunkDistance);
+}
+
+EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, float x, float y, float z) {
+  std::pair<std::vector<Coord>, std::vector<Coord>> addedRemovedCoords = tracker->updateNeededCoords(x, y, z);
+  std::vector<Coord> &addedCoords = addedRemovedCoords.first;
+  std::vector<Coord> &removedCoords = addedRemovedCoords.second;
+
+  if (addedCoords.size() > 0 || removedCoords.size() > 0) {
+    std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
+  }
 }
 
 // requests

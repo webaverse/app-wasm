@@ -10,6 +10,11 @@ constexpr int PLANET_OBJECT_SLOTS = 512;
 constexpr int MAX_NAME_LENGTH = 32;
 constexpr float SPAWNER_RATE = 0.08;
 
+int absi(int n);
+int sign(int n);
+int getSubparcelIndex(int x, int y, int z);
+unsigned int getFieldIndex(unsigned int x, unsigned int y, unsigned int z);
+
 enum class OBJECT_TYPE : unsigned int {
   VEGETATION = 1,
   PACKAGE = 2,
@@ -24,12 +29,43 @@ public:
   Quat quaternion;
 };
 
-class Subparcel {
+class Coord {
 public:
+  Coord() : x(0), y(0), z(0), index(getSubparcelIndex(x, y, z)) {}
+  Coord(int x, int y, int z) : x(x), y(x), z(x), index(getSubparcelIndex(x, y, z)) {}
+  Coord(int x, int y, int z, int index) : x(x), y(x), z(x), index(index) {}
+  bool operator<(const Coord &c) const {
+    return c.index < index;
+  }
+  bool operator==(const Coord &c) const {
+    return c.index == index;
+  }
+  bool operator!=(const Coord &c) const {
+    return c.index != index;
+  }
+
   int x;
   int y;
   int z;
   int index;
+};
+class Subparcel {
+public:
+  Subparcel() {}
+  Subparcel(int x, int y, int z) : coord(x, y, z) {}
+  Subparcel(int x, int y, int z, int index) : coord(x, y, z, index) {}
+
+  bool operator<(const Subparcel &subparcel) const {
+    return coord < subparcel.coord;
+  }
+  bool operator==(const Subparcel &subparcel) const {
+    return coord == subparcel.coord;
+  }
+  bool operator!=(const Subparcel &subparcel) const {
+    return coord != subparcel.coord;
+  }
+
+  Coord coord;
   float potentials[SUBPARCEL_SIZE_P3 * SUBPARCEL_SIZE_P3 * SUBPARCEL_SIZE_P3];
   unsigned char biomes[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 3]; // align
   char heightfield[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 1]; // align

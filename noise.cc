@@ -252,9 +252,9 @@ void noise3(int seed, int x, int y, int z, float baseHeight, float wormRate, flo
   unsigned int &numObjects = subparcel->numObjects;
   Object *objects = subparcel->objects;
 
-  subparcel->x = x;
-  subparcel->y = y;
-  subparcel->z = z;
+  subparcel->coord.x = x;
+  subparcel->coord.y = y;
+  subparcel->coord.z = z;
   memset(potential, 0, sizeof(subparcel->potentials));
   memset(biomes, 0, sizeof(subparcel->biomes));
   memset(heightfield, 0, sizeof(subparcel->heightfield));

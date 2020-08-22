@@ -283,19 +283,6 @@ void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **po
   memcpy(aabb, &geometry->aabb, sizeof(geometry->aabb));
 }
 
-int absi(int n) {
-  return std::abs(n);
-}
-int sign(int n) {
-  return n < 0 ? 1 : 0;
-}
-int getSubparcelIndex(int x, int y, int z) {
-	return absi(x)|(absi(y)<<9)|(absi(z)<<18)|(sign(x)<<27)|(sign(y)<<28)|(sign(z)<<29);
-}
-unsigned int getFieldIndex(unsigned int x, unsigned int y, unsigned int z) {
-	return x + (z * SUBPARCEL_SIZE_P1) + (y * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1);
-}
-
 /* class MarchObject {
 public:
 	unsigned int id;
@@ -390,7 +377,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
 	      int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
 	      int subparcelIndex = getSubparcelIndex(sx, sy, sz);
 	      Subparcel *subparcel = std::find_if(subparcels, subparcels + numSubparcels, [&](const Subparcel &subparcel) -> bool {
-	      	return subparcel.index == subparcelIndex;
+	      	return subparcel.coord.index == subparcelIndex;
 	      });
 	      if (subparcel != subparcels + numSubparcels) {
 	        int lx = ax - SUBPARCEL_SIZE*sx;
