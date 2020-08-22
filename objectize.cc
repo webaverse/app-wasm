@@ -324,7 +324,8 @@ EMSCRIPTEN_KEEPALIVE void cull(Culler *culler, float *positionData, float *matri
 
 class Tracker {
 public:
-  Tracker(int chunkDistance) :
+  Tracker(int seed, int chunkDistance) :
+    seed(seed),
     chunkDistance(chunkDistance),
     lastCoord(0, 256, 0)
     {}
@@ -383,14 +384,15 @@ public:
     }
   }
 
+  int seed;
   int chunkDistance;
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;
   std::map<int, Subparcel> subparcels;
 };
 
-EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int chunkDistance) {
-  return new Tracker(chunkDistance);
+EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int seed, int chunkDistance) {
+  return new Tracker(seed, chunkDistance);
 }
 
 EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, float x, float y, float z) {
