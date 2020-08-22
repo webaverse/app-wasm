@@ -42,15 +42,12 @@ public:
     }
 };
 
-class RequestMessage {
+class Message {
 public:
   unsigned int id;
   unsigned int method;
+  unsigned int count;
   unsigned char args[4];
-};
-class ResponseMessage {
-public:
-  unsigned int id;
 };
 
 template <typename M>
@@ -60,6 +57,13 @@ public:
     std::lock_guard<std::mutex> lock(mutex);
     messages.push_back(message);
     semaphore.release();
+  }
+  void queueAll(std::vector<M *> &&ms) {
+    std::lock_guard<std::mutex> lock(mutex);
+    for (M *m : ms) {
+      messages.push_back(m);
+      semaphore.release();
+    }
   }
   M *wait() {
     semaphore.acquire();
@@ -74,6 +78,7 @@ public:
   void push(M *message) {
     std::lock_guard<std::mutex> lock(mutex);
     messages.push_back(message);
+    // std::cout << "push messages a " << messages.size() << std::endl;
     // semaphore.release();
   }
   M *pop() {
@@ -90,6 +95,16 @@ public:
     }
     return message;
   }
+  void popAll(std::vector<M *> &ms) {
+    std::lock_guard<std::mutex> lock(mutex);
+    // std::cout << "pop all a " << messages.size() << std::endl;
+    ms.reserve(messages.size());
+    for (Message *message : messages) {
+      ms.push_back(message);
+    }
+    messages.clear();
+    // std::cout << "pop all b " << ms.size() << std::endl;
+  }
 
   std::deque<M *> messages;
   Semaphore semaphore;
@@ -97,7 +112,7 @@ public:
 };
 
 extern "C" {
-  extern std::function<void(RequestMessage *)> METHOD_FNS[];
+  extern std::function<void(Message *)> METHOD_FNS[];
 }
 
 class FreeEntry {
@@ -180,20 +195,22 @@ public:
       std::thread thread([this]() -> void {
         // std::cout << "thread pool running" << std::endl;
         for (;;) {
-          RequestMessage *requestMessage = inbox.wait();
-          // std::cout << "got request message method a " << (void *)requestMessage << " " << (unsigned int)requestMessage->method << std::endl;
-          auto &fn = METHOD_FNS[requestMessage->method];
+          Message *message = inbox.wait();
+          // std::cout << "got request message method a " << (void *)Message << " " << (unsigned int)Message->method << std::endl;
+          auto &fn = METHOD_FNS[message->method];
           // std::cout << "got request message method b" << std::endl;
-          fn(requestMessage);
-          // std::cout << "got message " << (unsigned int)message->method << std::endl;
-          outbox.push(new ResponseMessage{requestMessage->id});
+          fn(message);
+
+          outbox.push(message);
+
+          // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
         }
       });
       thread.detach();
     }
   }
-  Mailbox<RequestMessage> inbox;
-  Mailbox<ResponseMessage> outbox;
+  Mailbox<Message> inbox;
+  Mailbox<Message> outbox;
 };
 
 extern "C" {
@@ -309,8 +326,8 @@ EMSCRIPTEN_KEEPALIVE ThreadPool *makeThreadPool(unsigned int numThreads) {
   return new ThreadPool(numThreads);
 }
 
-unsigned int nextMessageId = 0;
-EMSCRIPTEN_KEEPALIVE unsigned int pushRequest(ThreadPool *threadPool, RequestMessage *message) {
+/* unsigned int nextMessageId = 0;
+EMSCRIPTEN_KEEPALIVE unsigned int pushRequest(ThreadPool *threadPool, Message *message) {
   unsigned int messageId = ++nextMessageId;
   message->id = messageId;
   threadPool->inbox.queue(message);
@@ -326,168 +343,223 @@ EMSCRIPTEN_KEEPALIVE unsigned int popResponse(ThreadPool *threadPool) {
   } else {
     return 0;
   }
+} */
+
+EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsigned int numEntries, unsigned char *outPtr, unsigned int *outNumEntries) {
+  {
+    std::vector<Message *> outMessages;
+    threadPool->outbox.popAll(outMessages);
+    // std::cout << "out messages a " << outMessages.size() << std::endl;
+    unsigned int index = 0;
+    int i = 0;
+    for (Message *outMessage : outMessages) {
+      Message *clientMessage = (Message *)(outPtr + index);
+
+      unsigned int offsetCount = outMessage->count;
+      unsigned int offsetSize = (3 + offsetCount)*sizeof(unsigned int);
+      memcpy(clientMessage, outMessage, offsetSize);
+
+      // std::cout << "out id " << i << " " << outMessages.size() << " " << clientMessage->id << " " << index << " " << (unsigned int)clientMessage << std::endl;
+      /* if (!clientMessage->id || clientMessage->id > 100) {
+        std::cout << "no id a " << clientMessage->id << " " << index << std::endl;
+        abort();
+      } */
+
+      index += offsetSize;
+
+      free(outMessage);
+      i++;
+    }
+    // std::cout << "out messages b " << outMessages.size() << std::endl;
+    *outNumEntries = outMessages.size();
+  }
+
+  {
+    std::vector<Message *> inMessages(numEntries);
+    unsigned int index = 0;
+    for (unsigned int i = 0; i < numEntries; i++) {
+      Message *clientMessage = (Message *)(ptr + index);
+
+      unsigned int offsetCount = clientMessage->count;
+      unsigned int offsetSize = (3 + offsetCount)*sizeof(unsigned int);
+
+      Message *newMessage = (Message *)malloc(offsetSize);
+      memcpy(newMessage, clientMessage, offsetSize);
+      // std::cout << "in id " << newMessage->id << std::endl;
+      /* if (!newMessage->id || newMessage->id > 100) {
+        std::cout << "no id b " << newMessage->id << " " << index << std::endl;
+        abort();
+      } */
+
+      inMessages[i] = newMessage;
+      index += offsetSize;
+    }
+    threadPool->inbox.queueAll(std::move(inMessages));
+  }
 }
 
-std::function<void(RequestMessage *)> METHOD_FNS[] = {
-  [](RequestMessage *requestMessage) -> void { // makeArenaAllocator
+std::function<void(Message *)> METHOD_FNS[] = {
+  [](Message *Message) -> void { // makeArenaAllocator
     unsigned int index = 0;
-    unsigned int size = *((unsigned int *)(requestMessage->args + index));
+    unsigned int size = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
-    ArenaAllocator **arenaAllocator = (ArenaAllocator **)(requestMessage->args + index);
+    ArenaAllocator **arenaAllocator = (ArenaAllocator **)(Message->args + index);
     index += sizeof(ArenaAllocator *);
 
     *arenaAllocator = makeArenaAllocator(size);
   },
-  [](RequestMessage *requestMessage) -> void { // arenaAlloc
+  [](Message *Message) -> void { // arenaAlloc
     unsigned int index = 0;
-    ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    unsigned int size = *((unsigned int *)(requestMessage->args + index));
+    unsigned int size = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
-    FreeEntry **entry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **entry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry **);
 
     *entry = arenaAlloc(arenaAllocator, size);
   },
-  [](RequestMessage *requestMessage) -> void { // arenaFree
+  [](Message *Message) -> void { // arenaFree
     unsigned int index = 0;
-    ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    FreeEntry *entry = *((FreeEntry **)(requestMessage->args + index));
+    FreeEntry *entry = *((FreeEntry **)(Message->args + index));
     index += sizeof(FreeEntry *);
 
     arenaFree(arenaAllocator, entry);
   },
-  [](RequestMessage *requestMessage) -> void { // makeGeometrySet
-    GeometrySet **geometrySet = (GeometrySet **)requestMessage->args;
+  [](Message *Message) -> void { // makeGeometrySet
+    GeometrySet **geometrySet = (GeometrySet **)Message->args;
     *geometrySet = new GeometrySet();
   },
-  [](RequestMessage *requestMessage) -> void { // loadBake
-    GeometrySet *geometrySet = *((GeometrySet **)requestMessage->args);
-    unsigned char *data = *((unsigned char **)(requestMessage->args + sizeof(GeometrySet *)));
-    unsigned int dataSize = *((unsigned int *)(requestMessage->args + sizeof(GeometrySet *) + sizeof(unsigned char *)));
+  [](Message *Message) -> void { // loadBake
+    GeometrySet *geometrySet = *((GeometrySet **)Message->args);
+    unsigned char *data = *((unsigned char **)(Message->args + sizeof(GeometrySet *)));
+    unsigned int dataSize = *((unsigned int *)(Message->args + sizeof(GeometrySet *) + sizeof(unsigned char *)));
+    // std::cout << "load bake 1 " << (unsigned int)(void *)geometrySet << " " << (unsigned int)data << " " << dataSize << std::endl;
     loadBake(geometrySet, data, dataSize);
+    // std::cout << "load bake 2" << std::endl;
   },
-  [](RequestMessage *requestMessage) -> void { // getGeometry
+  [](Message *Message) -> void { // getGeometry
     unsigned int index = 0;
-    GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
+    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
     index += sizeof(GeometrySet *);
-    char *nameData = *((char **)(requestMessage->args + index));
+    char *nameData = *((char **)(Message->args + index));
     index += sizeof(char *);
-    unsigned int nameSize = *((unsigned int *)(requestMessage->args + index));
+    unsigned int nameSize = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
-    float **positions = (float **)(requestMessage->args + index);
+    float **positions = (float **)(Message->args + index);
     index += sizeof(float **);
-    float **uvs = (float **)(requestMessage->args + index);
+    float **uvs = (float **)(Message->args + index);
     index += sizeof(float **);
-    unsigned int **indices = (unsigned int **)(requestMessage->args + index);
+    unsigned int **indices = (unsigned int **)(Message->args + index);
     index += sizeof(unsigned int **);
-    unsigned int *numPositions = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numPositions = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numUvs = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numUvs = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numIndices = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numIndices = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
 
     getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices);
   },
-  [](RequestMessage *requestMessage) -> void { // getAnimalGeometry
+  [](Message *Message) -> void { // getAnimalGeometry
     unsigned int index = 0;
-    GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
+    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
     index += sizeof(GeometrySet *);
-    unsigned int hash = *((unsigned int *)(requestMessage->args + index));
+    unsigned int hash = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
-    float **positions = (float **)(requestMessage->args + index);
+    float **positions = (float **)(Message->args + index);
     index += sizeof(float **);
-    unsigned char **colors = (unsigned char **)(requestMessage->args + index);
+    unsigned char **colors = (unsigned char **)(Message->args + index);
     index += sizeof(unsigned char **);
-    unsigned int **indices = (unsigned int **)(requestMessage->args + index);
+    unsigned int **indices = (unsigned int **)(Message->args + index);
     index += sizeof(unsigned int **);
-    float **heads = (float **)(requestMessage->args + index);
+    float **heads = (float **)(Message->args + index);
     index += sizeof(float **);
-    float **legs = (float **)(requestMessage->args + index);
+    float **legs = (float **)(Message->args + index);
     index += sizeof(float **);
-    unsigned int *numPositions = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numPositions = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numColors = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numColors = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numIndices = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numIndices = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numHeads = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numHeads = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numLegs = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numLegs = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    float *headPivot = (float *)(requestMessage->args + index);
+    float *headPivot = (float *)(Message->args + index);
     index += 3*sizeof(float *);
-    float *aabb = (float *)(requestMessage->args + index);
+    float *aabb = (float *)(Message->args + index);
     index += 6*sizeof(float *);
 
     getAnimalGeometry(geometrySet, hash, positions, colors, indices, heads, legs, numPositions, numColors, numIndices, numHeads, numLegs, headPivot, aabb);
 
     /* unsigned int index = 0;
-    GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
+    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
     index += sizeof(GeometrySet *);
-    char *nameData = *((char **)(requestMessage->args + index));
+    char *nameData = *((char **)(Message->args + index));
     index += sizeof(char *);
-    unsigned int nameSize = *((unsigned int *)(requestMessage->args + index));
+    unsigned int nameSize = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
-    float **positions = (float **)(requestMessage->args + index);
+    float **positions = (float **)(Message->args + index);
     index += sizeof(float **);
-    float **uvs = (float **)(requestMessage->args + index);
+    float **uvs = (float **)(Message->args + index);
     index += sizeof(float **);
-    unsigned int **indices = (unsigned int **)(requestMessage->args + index);
+    unsigned int **indices = (unsigned int **)(Message->args + index);
     index += sizeof(unsigned int **);
-    unsigned int *numPositions = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numPositions = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numUvs = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numUvs = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numIndices = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numIndices = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
 
     getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices); */
   },
-  [](RequestMessage *requestMessage) -> void { // marchObjects
+  [](Message *Message) -> void { // marchObjects
     unsigned int index = 0;
-    GeometrySet *geometrySet = *((GeometrySet **)(requestMessage->args + index));
+    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
     index += sizeof(GeometrySet *);
-    int x = *((int *)(requestMessage->args + index));
+    int x = *((int *)(Message->args + index));
     index += sizeof(int);
-    int y = *((int *)(requestMessage->args + index));
+    int y = *((int *)(Message->args + index));
     index += sizeof(int);
-    int z = *((int *)(requestMessage->args + index));
+    int z = *((int *)(Message->args + index));
     index += sizeof(int);
 
     // std::cout << "march objects a " << x << " " << y << " " << z << std::endl;
 
-    Subparcel *subparcel = *((Subparcel **)(requestMessage->args + index));
+    Subparcel *subparcel = *((Subparcel **)(Message->args + index));
     index += sizeof(Subparcel *);
-    Subparcel *subparcels = *((Subparcel **)(requestMessage->args + index));
+    Subparcel *subparcels = *((Subparcel **)(Message->args + index));
     index += sizeof(Subparcel *);
-    unsigned int numSubparcels = *((unsigned int *)(requestMessage->args + index));
+    unsigned int numSubparcels = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
-    ArenaAllocator *positionsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *positionsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *uvsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *uvsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *idsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *idsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *indicesAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *indicesAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *skyLightsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *skyLightsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *torchLightsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *torchLightsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    FreeEntry **positionsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **positionsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **uvsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **uvsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **idsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **idsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **indicesEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **indicesEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **skyLightsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **skyLightsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **torchLightsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **torchLightsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
 
     // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
@@ -553,117 +625,117 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
 
     // std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl;
   },
-  [](RequestMessage *requestMessage) -> void { // getHeight
+  [](Message *Message) -> void { // getHeight
     unsigned int index = 0;
-    int seed = *((int *)(requestMessage->args + index));
+    int seed = *((int *)(Message->args + index));
     index += sizeof(int);
-    float x = *((float *)(requestMessage->args + index));
+    float x = *((float *)(Message->args + index));
     index += sizeof(float);
-    float y = *((float *)(requestMessage->args + index));
+    float y = *((float *)(Message->args + index));
     index += sizeof(float);
-    float z = *((float *)(requestMessage->args + index));
+    float z = *((float *)(Message->args + index));
     index += sizeof(float);
-    float baseHeight = *((float *)(requestMessage->args + index));
+    float baseHeight = *((float *)(Message->args + index));
     index += sizeof(float);
-    float *height = (float *)(requestMessage->args + index);
+    float *height = (float *)(Message->args + index);
     index += sizeof(float *);
     *height = getHeight(seed, x, y, z, baseHeight);
   },
-  [](RequestMessage *requestMessage) -> void { // noise
+  [](Message *Message) -> void { // noise
     unsigned int index = 0;
 
-    int seed = *((int *)(requestMessage->args + index));
+    int seed = *((int *)(Message->args + index));
     index += sizeof(int);
 
-    float x = *((float *)(requestMessage->args + index));
+    float x = *((float *)(Message->args + index));
     index += sizeof(float);
-    float y = *((float *)(requestMessage->args + index));
+    float y = *((float *)(Message->args + index));
     index += sizeof(float);
-    float z = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-
-    float baseHeight = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-    float wormRate = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-    float wormRadiusBase = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-    float wormRadiusRate = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-    float objectsRate = *((float *)(requestMessage->args + index));
-    index += sizeof(float);
-    float potentialDefault = *((float *)(requestMessage->args + index));
+    float z = *((float *)(Message->args + index));
     index += sizeof(float);
 
-    void *subparcelByteOffset = *((void **)(requestMessage->args + index));
+    float baseHeight = *((float *)(Message->args + index));
+    index += sizeof(float);
+    float wormRate = *((float *)(Message->args + index));
+    index += sizeof(float);
+    float wormRadiusBase = *((float *)(Message->args + index));
+    index += sizeof(float);
+    float wormRadiusRate = *((float *)(Message->args + index));
+    index += sizeof(float);
+    float objectsRate = *((float *)(Message->args + index));
+    index += sizeof(float);
+    float potentialDefault = *((float *)(Message->args + index));
+    index += sizeof(float);
+
+    void *subparcelByteOffset = *((void **)(Message->args + index));
     index += sizeof(void *);
 
     noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
   },
-  [](RequestMessage *requestMessage) -> void { // marchingCubes
+  [](Message *Message) -> void { // marchingCubes
     unsigned int index = 0;
 
-    float meshId = *(float *)(requestMessage->args + index);
+    float meshId = *(float *)(Message->args + index);
     index += sizeof(float);
 
-    int *dims = (int *)(requestMessage->args + index);
+    int *dims = (int *)(Message->args + index);
     index += 3*sizeof(int);
 
-    float *potential = *((float **)(requestMessage->args + index));
+    float *potential = *((float **)(Message->args + index));
     index += sizeof(float *);
-    unsigned char *biomes = *((unsigned char **)(requestMessage->args + index));
+    unsigned char *biomes = *((unsigned char **)(Message->args + index));
     index += sizeof(unsigned char *);
-    char *heightfield = *((char **)(requestMessage->args + index));
+    char *heightfield = *((char **)(Message->args + index));
     index += sizeof(char *);
-    unsigned char *lightfield = *((unsigned char **)(requestMessage->args + index));
+    unsigned char *lightfield = *((unsigned char **)(Message->args + index));
     index += sizeof(unsigned char *);
 
-    float *shift = (float *)(requestMessage->args + index);
+    float *shift = (float *)(Message->args + index);
     index += 3*sizeof(float);
-    float *scale = (float *)(requestMessage->args + index);
+    float *scale = (float *)(Message->args + index);
     index += 3*sizeof(float);
 
-    ArenaAllocator *positionsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *positionsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *normalsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *normalsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *uvsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *uvsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *barycentricsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *barycentricsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *aosAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *aosAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *idsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *idsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *skyLightsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *skyLightsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *torchLightsAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *torchLightsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *peeksAllocator = *((ArenaAllocator **)(requestMessage->args + index));
+    ArenaAllocator *peeksAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
 
-    FreeEntry **positionsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **positionsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **normalsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **normalsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **uvsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **uvsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **barycentricsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **barycentricsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **aosEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **aosEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **idsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **idsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **skyLightsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **skyLightsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **torchLightsEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **torchLightsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **peeksEntry = (FreeEntry **)(requestMessage->args + index);
+    FreeEntry **peeksEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
 
-    unsigned int *numOpaquePositions = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numOpaquePositions = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
-    unsigned int *numTransparentPositions = (unsigned int *)(requestMessage->args + index);
+    unsigned int *numTransparentPositions = (unsigned int *)(Message->args + index);
     index += sizeof(unsigned int *);
 
     constexpr int bufferSize = 1024*1024;
@@ -743,22 +815,22 @@ std::function<void(RequestMessage *)> METHOD_FNS[] = {
     memcpy(torchLightsAllocator->data + (*torchLightsEntry)->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
     memcpy(peeksAllocator->data + (*peeksEntry)->start, peeks.data(), numPeeks*sizeof(unsigned char));
   },
-  [](RequestMessage *requestMessage) -> void { // bakeGeometry
+  [](Message *Message) -> void { // bakeGeometry
     unsigned int index = 0;
 
-    float *positions = *((float **)(requestMessage->args + index));
+    float *positions = *((float **)(Message->args + index));
     index += sizeof(float *);
 
-    unsigned int *indices = *((unsigned int **)(requestMessage->args + index));
+    unsigned int *indices = *((unsigned int **)(Message->args + index));
     index += sizeof(unsigned int *);
 
-    unsigned int numPositions = *((unsigned int *)(requestMessage->args + index));
+    unsigned int numPositions = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
 
-    unsigned int numIndices = *((unsigned int *)(requestMessage->args + index));
+    unsigned int numIndices = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
 
-    PxDefaultMemoryOutputStream **writeStream = (PxDefaultMemoryOutputStream **)(requestMessage->args + index);
+    PxDefaultMemoryOutputStream **writeStream = (PxDefaultMemoryOutputStream **)(Message->args + index);
     index += sizeof(PxDefaultMemoryOutputStream *);
 
     // std::cout << "bake 1" << std::endl;
