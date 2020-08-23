@@ -45,7 +45,7 @@ public:
 
 class Message {
 public:
-  unsigned int id;
+  int id;
   unsigned int method;
   unsigned int count;
   unsigned char args[4];
