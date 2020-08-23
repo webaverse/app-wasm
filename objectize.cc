@@ -106,6 +106,18 @@ public:
     messages.clear();
     // std::cout << "pop all b " << ms.size() << std::endl;
   }
+  void filter(std::function<bool(Message *message)> testFn) {
+    std::lock_guard<std::mutex> lock(mutex);
+
+    messages.erase(std::remove_if(messages.begin(), messages.end(), [&](Message *message) {
+      if (testFn(message)) {
+        return false;
+      } else {
+        delete message;
+        return true;
+      }
+    }), messages.end());
+  }
 
   std::deque<M *> messages;
   Semaphore semaphore;
@@ -202,7 +214,9 @@ public:
           // std::cout << "got request message method b" << std::endl;
           fn(message);
 
-          outbox.push(message);
+          if (message->id >= 0) {
+            outbox.push(message);
+          }
 
           // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
         }
@@ -322,6 +336,27 @@ EMSCRIPTEN_KEEPALIVE void cull(Culler *culler, float *positionData, float *matri
   doCull(culler, positionData, matrixData, slabRadius, cullResults, *numCullResults);
 }
 
+enum class METHODS : unsigned int {
+  makeArenaAllocator = 0,
+  arenaAlloc = 1,
+  arenaFree = 2,
+  makeGeometrySet = 3,
+  loadBake = 4,
+  getGeometry = 5,
+  getAnimalGeometry = 6,
+  marchObjects = 7,
+  getHeight = 8,
+  noise = 9,
+  marchingCubes = 10,
+  bakeGeometry = 11,
+};
+constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
+constexpr float wormRate = 2;
+constexpr float wormRadiusBase = 2;
+constexpr float wormRadiusRate = 2;
+constexpr float objectsRate = 3;
+constexpr float potentialDefault = -0.5;
+
 class Tracker {
 public:
   Tracker(int seed, int chunkDistance) :
@@ -329,7 +364,7 @@ public:
     chunkDistance(chunkDistance),
     lastCoord(0, 256, 0)
     {}
-  std::pair<std::vector<Coord>, std::vector<Coord>> updateNeededCoords(float x, float y, float z) {
+  void updateNeededCoords(ThreadPool *threadPool, float x, float y, float z) {
     Coord coord(
       (int)std::floor(x/(float)SUBPARCEL_SIZE),
       (int)std::floor(y/(float)SUBPARCEL_SIZE),
@@ -372,15 +407,53 @@ public:
         }
       }
 
+      for (const Coord &addedCoord : addedCoords) {
+        Subparcel *subparcel = new Subparcel(addedCoord);
+        subparcels[addedCoord.index] = subparcel;
+
+        Message *message = (Message *)malloc(sizeof(Message) - 4 + 11*sizeof(unsigned int));
+        message->id = -1;
+        message->method = (unsigned int)METHODS::noise;
+        message->count = 0;
+
+        {
+          unsigned int *u32 = (unsigned int *)message->args;
+          float *f32 = (float *)message->args;
+
+          u32[0] = seed;
+
+          f32[1] = x;
+          f32[2] = y;
+          f32[3] = z;
+          f32[4] = baseHeight;
+          f32[5] = wormRate;
+          f32[6] = wormRadiusBase;
+          f32[7] = wormRadiusRate;
+          f32[8] = objectsRate;
+          f32[9] = potentialDefault;
+
+          u32[10] = (unsigned int)subparcel;
+        }
+
+        threadPool->inbox.queue(message);
+      }
+      for (const Coord &removedCoord : removedCoords) {
+        threadPool->inbox.filter([&](Message *message) -> bool {
+          if (message->method == (unsigned int)METHODS::noise) {
+            float *f32 = (float *)message->args;
+            return f32[1] == removedCoord.x && f32[2] == removedCoord.y && f32[3] == removedCoord.z;
+          } else {
+            return false;
+          }
+        });
+      }
+
       lastNeededCoords = std::move(neededCoords);
       lastCoord = coord;
 
-      return std::pair<std::vector<Coord>, std::vector<Coord>>{
-        std::move(addedCoords),
-        std::move(removedCoords),
-      };
-    } else {
-      return std::pair<std::vector<Coord>, std::vector<Coord>>();
+      if (addedCoords.size() > 0 || removedCoords.size() > 0) {
+        std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
+      }
     }
   }
 
@@ -388,21 +461,15 @@ public:
   int chunkDistance;
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;
-  std::map<int, Subparcel> subparcels;
+  std::map<int, Subparcel *> subparcels;
 };
 
 EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int seed, int chunkDistance) {
   return new Tracker(seed, chunkDistance);
 }
 
-EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, float x, float y, float z) {
-  std::pair<std::vector<Coord>, std::vector<Coord>> addedRemovedCoords = tracker->updateNeededCoords(x, y, z);
-  std::vector<Coord> &addedCoords = addedRemovedCoords.first;
-  std::vector<Coord> &removedCoords = addedRemovedCoords.second;
-
-  if (addedCoords.size() > 0 || removedCoords.size() > 0) {
-    std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
-  }
+EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, ThreadPool *threadPool, float x, float y, float z) {
+  tracker->updateNeededCoords(threadPool, x, y, z);
 }
 
 // requests

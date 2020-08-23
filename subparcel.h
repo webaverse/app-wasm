@@ -3,6 +3,7 @@
 
 #include "vector.h"
 
+constexpr int PARCEL_SIZE = 300;
 constexpr int SUBPARCEL_SIZE = 10;
 constexpr int SUBPARCEL_SIZE_P1 = SUBPARCEL_SIZE + 1;
 constexpr int SUBPARCEL_SIZE_P3 = SUBPARCEL_SIZE + 3;
@@ -34,6 +35,7 @@ public:
   Coord() : x(0), y(0), z(0), index(getSubparcelIndex(x, y, z)) {}
   Coord(int x, int y, int z) : x(x), y(x), z(x), index(getSubparcelIndex(x, y, z)) {}
   Coord(int x, int y, int z, int index) : x(x), y(x), z(x), index(index) {}
+  Coord(const Coord &coord) : x(coord.x), y(coord.x), z(coord.x), index(coord.index) {}
   bool operator<(const Coord &c) const {
     return c.index < index;
   }
@@ -54,6 +56,7 @@ public:
   Subparcel() {}
   Subparcel(int x, int y, int z) : coord(x, y, z) {}
   Subparcel(int x, int y, int z, int index) : coord(x, y, z, index) {}
+  Subparcel(const Coord &coord) : coord(coord) {}
 
   bool operator<(const Subparcel &subparcel) const {
     return coord < subparcel.coord;
