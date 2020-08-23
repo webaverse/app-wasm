@@ -33,9 +33,9 @@ public:
 class Coord {
 public:
   Coord() : x(0), y(0), z(0), index(getSubparcelIndex(x, y, z)) {}
-  Coord(int x, int y, int z) : x(x), y(x), z(x), index(getSubparcelIndex(x, y, z)) {}
-  Coord(int x, int y, int z, int index) : x(x), y(x), z(x), index(index) {}
-  Coord(const Coord &coord) : x(coord.x), y(coord.x), z(coord.x), index(coord.index) {}
+  Coord(int x, int y, int z) : x(x), y(y), z(z), index(getSubparcelIndex(x, y, z)) {}
+  Coord(int x, int y, int z, int index) : x(x), y(y), z(z), index(index) {}
+  Coord(const Coord &coord) : x(coord.x), y(coord.y), z(coord.z), index(coord.index) {}
   bool operator<(const Coord &c) const {
     return c.index < index;
   }

@@ -209,14 +209,16 @@ public:
         // std::cout << "thread pool running" << std::endl;
         for (;;) {
           Message *message = inbox.wait();
-          // std::cout << "got request message method a " << (void *)Message << " " << (unsigned int)Message->method << std::endl;
+          // std::cout << "got request message method " << (unsigned int)message->method << std::endl;
           auto &fn = METHOD_FNS[message->method];
           // std::cout << "got request message method b" << std::endl;
           fn(message);
 
           if (message->id >= 0) {
             outbox.push(message);
-          }
+          } /* else {
+            std::cout << "ignore message due to id " << message->id << std::endl;
+          } */
 
           // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
         }
@@ -226,6 +228,121 @@ public:
   }
   Mailbox<Message> inbox;
   Mailbox<Message> outbox;
+};
+
+enum class METHODS : unsigned int {
+  makeArenaAllocator = 0,
+  arenaAlloc,
+  arenaFree,
+  makeGeometrySet,
+  loadBake,
+  getGeometry,
+  getAnimalGeometry,
+  marchObjects,
+  getHeight,
+  noise,
+  marchingCubes,
+  bakeGeometry,
+  chunk,
+};
+
+class Tracker {
+public:
+  Tracker(int seed, int chunkDistance) :
+    seed(seed),
+    chunkDistance(chunkDistance),
+    lastCoord(0, 256, 0)
+    {}
+  void updateNeededCoords(ThreadPool *threadPool, float x, float y, float z) {
+    Coord coord(
+      (int)std::floor(x/(float)SUBPARCEL_SIZE),
+      (int)std::floor(y/(float)SUBPARCEL_SIZE),
+      (int)std::floor(z/(float)SUBPARCEL_SIZE)
+    );
+
+    // std::cout << "check coord " << coord.x << " " << coord.y << " " << coord.z << " " << coord.index << " : " << lastCoord.x << " " << lastCoord.y << " " << lastCoord.z << " " << lastCoord.index << std::endl;
+    if (coord != lastCoord) {
+      std::vector<Coord> neededCoords;
+      neededCoords.reserve(256);
+      std::vector<Coord> addedCoords;
+      addedCoords.reserve(256);
+      for (int dx = -chunkDistance; dx <= chunkDistance; dx++) {
+        const int ax = dx + coord.x;
+        for (int dy = -chunkDistance; dy <= chunkDistance; dy++) {
+          const int ay = dy + coord.y;
+          for (int dz = -chunkDistance; dz <= chunkDistance; dz++) {
+            const int az = dz + coord.z;
+            Coord coord(ax, ay, ax);
+            neededCoords.push_back(coord);
+
+            auto iter = std::find_if(lastNeededCoords.begin(), lastNeededCoords.end(), [&](const Coord &coord2) -> bool {
+              return coord2.index == coord.index;
+            });
+            if (iter == lastNeededCoords.end()) {
+              addedCoords.push_back(coord);
+            }
+          }
+        }
+      }
+
+      std::vector<Coord> removedCoords;
+      removedCoords.reserve(256);
+      for (const Coord &coord : lastNeededCoords) {
+        auto iter = std::find_if(neededCoords.begin(), neededCoords.end(), [&](const Coord &coord2) -> bool {
+          return coord2.index == coord.index;
+        });
+        if (iter == neededCoords.end()) {
+          removedCoords.push_back(coord);
+        }
+      }
+
+      for (const Coord &addedCoord : addedCoords) {
+        Subparcel *subparcel = new Subparcel(addedCoord);
+        subparcels[addedCoord.index] = subparcel;
+
+        Message *message = (Message *)malloc(sizeof(Message) - 4 + 2*sizeof(unsigned int));
+        message->id = -1;
+        message->method = (unsigned int)METHODS::chunk;
+        message->count = 0;
+
+        std::cout << "queue chunking " << (unsigned int)METHODS::chunk << std::endl;
+
+        {
+          unsigned int *u32 = (unsigned int *)message->args;
+          float *f32 = (float *)message->args;
+
+          u32[0] = seed;
+          u32[1] = (unsigned int)subparcel;
+        }
+
+        threadPool->inbox.queue(message);
+      }
+      for (const Coord &removedCoord : removedCoords) {
+        threadPool->inbox.filter([&](Message *message) -> bool {
+          if (message->method == (unsigned int)METHODS::chunk) {
+            unsigned int *u32 = (unsigned int *)message->args;
+            Subparcel *subparcel = (Subparcel *)(u32 + 1);
+            return subparcel-> coord == removedCoord;
+          } else {
+            return false;
+          }
+        });
+      }
+
+      lastNeededCoords = std::move(neededCoords);
+      lastCoord = coord;
+
+      if (addedCoords.size() > 0 || removedCoords.size() > 0) {
+        std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
+      }
+    }
+  }
+
+  int seed;
+  int chunkDistance;
+  Coord lastCoord;
+  std::vector<Coord> lastNeededCoords;
+  std::map<int, Subparcel *> subparcels;
 };
 
 extern "C" {
@@ -323,6 +440,8 @@ EMSCRIPTEN_KEEPALIVE void collide(float radius, float halfHeight, float *positio
   doCollide(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded);
 }
 
+// culling
+
 EMSCRIPTEN_KEEPALIVE void *makeCuller() {
   return doMakeCuller();
 }
@@ -336,133 +455,7 @@ EMSCRIPTEN_KEEPALIVE void cull(Culler *culler, float *positionData, float *matri
   doCull(culler, positionData, matrixData, slabRadius, cullResults, *numCullResults);
 }
 
-enum class METHODS : unsigned int {
-  makeArenaAllocator = 0,
-  arenaAlloc = 1,
-  arenaFree = 2,
-  makeGeometrySet = 3,
-  loadBake = 4,
-  getGeometry = 5,
-  getAnimalGeometry = 6,
-  marchObjects = 7,
-  getHeight = 8,
-  noise = 9,
-  marchingCubes = 10,
-  bakeGeometry = 11,
-};
-constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
-constexpr float wormRate = 2;
-constexpr float wormRadiusBase = 2;
-constexpr float wormRadiusRate = 2;
-constexpr float objectsRate = 3;
-constexpr float potentialDefault = -0.5;
-
-class Tracker {
-public:
-  Tracker(int seed, int chunkDistance) :
-    seed(seed),
-    chunkDistance(chunkDistance),
-    lastCoord(0, 256, 0)
-    {}
-  void updateNeededCoords(ThreadPool *threadPool, float x, float y, float z) {
-    Coord coord(
-      (int)std::floor(x/(float)SUBPARCEL_SIZE),
-      (int)std::floor(y/(float)SUBPARCEL_SIZE),
-      (int)std::floor(z/(float)SUBPARCEL_SIZE)
-    );
-
-    // std::cout << "check coord " << coord.x << " " << coord.y << " " << coord.z << " " << coord.index << " : " << lastCoord.x << " " << lastCoord.y << " " << lastCoord.z << " " << lastCoord.index << std::endl;
-    if (coord != lastCoord) {
-      std::vector<Coord> neededCoords;
-      neededCoords.reserve(256);
-      std::vector<Coord> addedCoords;
-      addedCoords.reserve(256);
-      for (int dx = -chunkDistance; dx <= chunkDistance; dx++) {
-        const int ax = dx + coord.x;
-        for (int dy = -chunkDistance; dy <= chunkDistance; dy++) {
-          const int ay = dy + coord.y;
-          for (int dz = -chunkDistance; dz <= chunkDistance; dz++) {
-            const int az = dz + coord.z;
-            Coord coord(ax, ay, ax);
-            neededCoords.push_back(coord);
-
-            auto iter = std::find_if(lastNeededCoords.begin(), lastNeededCoords.end(), [&](const Coord &coord2) -> bool {
-              return coord2.index == coord.index;
-            });
-            if (iter == lastNeededCoords.end()) {
-              addedCoords.push_back(coord);
-            }
-          }
-        }
-      }
-
-      std::vector<Coord> removedCoords;
-      removedCoords.reserve(256);
-      for (const Coord &coord : lastNeededCoords) {
-        auto iter = std::find_if(neededCoords.begin(), neededCoords.end(), [&](const Coord &coord2) -> bool {
-          return coord2.index == coord.index;
-        });
-        if (iter == neededCoords.end()) {
-          removedCoords.push_back(coord);
-        }
-      }
-
-      for (const Coord &addedCoord : addedCoords) {
-        Subparcel *subparcel = new Subparcel(addedCoord);
-        subparcels[addedCoord.index] = subparcel;
-
-        Message *message = (Message *)malloc(sizeof(Message) - 4 + 11*sizeof(unsigned int));
-        message->id = -1;
-        message->method = (unsigned int)METHODS::noise;
-        message->count = 0;
-
-        {
-          unsigned int *u32 = (unsigned int *)message->args;
-          float *f32 = (float *)message->args;
-
-          u32[0] = seed;
-
-          f32[1] = x;
-          f32[2] = y;
-          f32[3] = z;
-          f32[4] = baseHeight;
-          f32[5] = wormRate;
-          f32[6] = wormRadiusBase;
-          f32[7] = wormRadiusRate;
-          f32[8] = objectsRate;
-          f32[9] = potentialDefault;
-
-          u32[10] = (unsigned int)subparcel;
-        }
-
-        threadPool->inbox.queue(message);
-      }
-      for (const Coord &removedCoord : removedCoords) {
-        threadPool->inbox.filter([&](Message *message) -> bool {
-          if (message->method == (unsigned int)METHODS::noise) {
-            float *f32 = (float *)message->args;
-            return f32[1] == removedCoord.x && f32[2] == removedCoord.y && f32[3] == removedCoord.z;
-          } else {
-            return false;
-          }
-        });
-      }
-
-      lastNeededCoords = std::move(neededCoords);
-      lastCoord = coord;
-
-      if (addedCoords.size() > 0 || removedCoords.size() > 0) {
-        std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
-      }
-    }
-  }
-
-  int seed;
-  int chunkDistance;
-  Coord lastCoord;
-  std::vector<Coord> lastNeededCoords;
-  std::map<int, Subparcel *> subparcels;
-};
+// tracking
 
 EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int seed, int chunkDistance) {
   return new Tracker(seed, chunkDistance);
@@ -470,6 +463,10 @@ EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int seed, int chunkDistance) {
 
 EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, ThreadPool *threadPool, float x, float y, float z) {
   tracker->updateNeededCoords(threadPool, x, y, z);
+}
+
+EMSCRIPTEN_KEEPALIVE void doChunk(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
+  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
 }
 
 // requests
@@ -988,6 +985,24 @@ std::function<void(Message *)> METHOD_FNS[] = {
     // std::cout << "bake 1" << std::endl;
     bakeGeometry(positions, indices, numPositions, numIndices, writeStream);
     // std::cout << "bake 2" << std::endl;
+  },
+  [](Message *Message) -> void { // chunk
+    constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
+    constexpr float wormRate = 2;
+    constexpr float wormRadiusBase = 2;
+    constexpr float wormRadiusRate = 2;
+    constexpr float objectsRate = 3;
+    constexpr float potentialDefault = -0.5;
+
+    unsigned int index = 0;
+    int seed = *((int *)(Message->args + index));
+    index += sizeof(int);
+    void *subparcelByteOffset = *((void **)(Message->args + index));
+    index += sizeof(void *);
+
+    Subparcel *subparcel = (Subparcel *)subparcelByteOffset;
+    // std::cout << "execute chunk " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
+    noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
   },
 };
 
