@@ -1034,6 +1034,8 @@ std::function<void(Message *)> METHOD_FNS[] = {
       // std::cout << "execute chunk " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
       noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
     }
+    float *landPositions;
+    unsigned int numLandPositions;
     {
       float meshId = subparcel->coord.index;
       int dims[3] = {
@@ -1163,6 +1165,9 @@ std::function<void(Message *)> METHOD_FNS[] = {
       memcpy(skyLightsAllocator->data + skyLightsEntry->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
       memcpy(torchLightsAllocator->data + torchLightsEntry->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
       memcpy(peeksAllocator->data + peeksEntry->start, peeks.data(), numPeeks*sizeof(unsigned char));
+
+      landPositions = (float *)(positionsAllocator->data + positionsEntry->start);
+      numLandPositions = numOpaquePositions;
     }
     {
       // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
@@ -1239,6 +1244,22 @@ std::function<void(Message *)> METHOD_FNS[] = {
       Subparcel *subparcels = nullptr;
       unsigned int numSubparcels = 0;
       doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+    }
+    if (numLandPositions > 0) {
+      PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(landPositions, nullptr, numLandPositions, 0);
+      unsigned int meshId = subparcel->coord.index;
+      float meshPosition[3] = {
+        (float)subparcel->coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+        (float)subparcel->coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+        (float)subparcel->coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+      };
+      float meshQuaternion[4] = {
+        0,
+        0,
+        0,
+        1,
+      };
+      uintptr_t physxGeometry = doRegisterBakedGeometry(meshId, writeStream, meshPosition, meshQuaternion);
     }
   },
 };
