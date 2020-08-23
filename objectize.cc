@@ -67,14 +67,15 @@ public:
     }
   }
   M *wait() {
-    semaphore.acquire();
-    M *message;
-    {
+    for(;;) {
+      semaphore.acquire();
       std::lock_guard<std::mutex> lock(mutex);
-      message = messages.front();
+      M *message = messages.front();
       messages.pop_front();
+      if (message) {
+        return message;
+      }
     }
-    return message;
   }
   void push(M *message) {
     std::lock_guard<std::mutex> lock(mutex);
@@ -106,17 +107,15 @@ public:
     messages.clear();
     // std::cout << "pop all b " << ms.size() << std::endl;
   }
-  void filter(std::function<bool(Message *message)> testFn) {
+  void filterQueue(std::function<bool(Message *message)> testFn) {
     std::lock_guard<std::mutex> lock(mutex);
 
-    messages.erase(std::remove_if(messages.begin(), messages.end(), [&](Message *message) {
-      if (testFn(message)) {
-        return false;
-      } else {
-        delete message;
-        return true;
+    for (auto iter = messages.begin(); iter != messages.end(); iter++) {
+      Message *message = *iter;
+      if (!testFn(message)) {
+        *iter = nullptr;
       }
-    }), messages.end());
+    }
   }
 
   std::deque<M *> messages;
@@ -248,10 +247,19 @@ enum class METHODS : unsigned int {
 
 class Tracker {
 public:
-  Tracker(int seed, int chunkDistance) :
+  Tracker(int seed, int chunkDistance, ArenaAllocator *positionsAllocator, ArenaAllocator *normalsAllocator, ArenaAllocator *uvsAllocator, ArenaAllocator *barycentricsAllocator, ArenaAllocator *aosAllocator, ArenaAllocator *idsAllocator, ArenaAllocator *skyLightsAllocator, ArenaAllocator *torchLightsAllocator, ArenaAllocator *peeksAllocator) :
     seed(seed),
     chunkDistance(chunkDistance),
-    lastCoord(0, 256, 0)
+    lastCoord(0, 256, 0),
+    positionsAllocator(positionsAllocator),
+    normalsAllocator(normalsAllocator),
+    uvsAllocator(uvsAllocator),
+    barycentricsAllocator(barycentricsAllocator),
+    aosAllocator(aosAllocator),
+    idsAllocator(idsAllocator),
+    skyLightsAllocator(skyLightsAllocator),
+    torchLightsAllocator(torchLightsAllocator),
+    peeksAllocator(peeksAllocator)
     {}
   void updateNeededCoords(ThreadPool *threadPool, float x, float y, float z) {
     Coord coord(
@@ -300,29 +308,30 @@ public:
         Subparcel *subparcel = new Subparcel(addedCoord);
         subparcels[addedCoord.index] = subparcel;
 
-        Message *message = (Message *)malloc(sizeof(Message) - 4 + 2*sizeof(unsigned int));
+        Message *message = (Message *)malloc(sizeof(Message) - 4 + 3*sizeof(unsigned int));
         message->id = -1;
         message->method = (unsigned int)METHODS::chunk;
-        message->count = 0;
+        message->count = 3;
 
-        std::cout << "queue chunking " << (unsigned int)METHODS::chunk << std::endl;
+        // std::cout << "queue chunking " << (unsigned int)METHODS::chunk << std::endl;
 
         {
           unsigned int *u32 = (unsigned int *)message->args;
-          float *f32 = (float *)message->args;
+          // float *f32 = (float *)message->args;
 
           u32[0] = seed;
-          u32[1] = (unsigned int)subparcel;
+          u32[1] = (unsigned int)this;
+          u32[2] = (unsigned int)subparcel;
         }
 
         threadPool->inbox.queue(message);
       }
       for (const Coord &removedCoord : removedCoords) {
-        threadPool->inbox.filter([&](Message *message) -> bool {
+        threadPool->inbox.filterQueue([&](Message *message) -> bool {
           if (message->method == (unsigned int)METHODS::chunk) {
             unsigned int *u32 = (unsigned int *)message->args;
-            Subparcel *subparcel = (Subparcel *)(u32 + 1);
-            return subparcel-> coord == removedCoord;
+            Subparcel *subparcel = (Subparcel *)(u32 + 2);
+            return subparcel->coord == removedCoord;
           } else {
             return false;
           }
@@ -340,6 +349,15 @@ public:
 
   int seed;
   int chunkDistance;
+  ArenaAllocator *positionsAllocator;
+  ArenaAllocator *normalsAllocator;
+  ArenaAllocator *uvsAllocator;
+  ArenaAllocator *barycentricsAllocator;
+  ArenaAllocator *aosAllocator;
+  ArenaAllocator *idsAllocator;
+  ArenaAllocator *skyLightsAllocator;
+  ArenaAllocator *torchLightsAllocator;
+  ArenaAllocator *peeksAllocator;
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;
   std::map<int, Subparcel *> subparcels;
@@ -457,8 +475,8 @@ EMSCRIPTEN_KEEPALIVE void cull(Culler *culler, float *positionData, float *matri
 
 // tracking
 
-EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int seed, int chunkDistance) {
-  return new Tracker(seed, chunkDistance);
+EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int seed, int chunkDistance, ArenaAllocator *positionsAllocator, ArenaAllocator *normalsAllocator, ArenaAllocator *uvsAllocator, ArenaAllocator *barycentricsAllocator, ArenaAllocator *aosAllocator, ArenaAllocator *idsAllocator, ArenaAllocator *skyLightsAllocator, ArenaAllocator *torchLightsAllocator, ArenaAllocator *peeksAllocator) {
+  return new Tracker(seed, chunkDistance, positionsAllocator, normalsAllocator, uvsAllocator, barycentricsAllocator, aosAllocator, idsAllocator, skyLightsAllocator, torchLightsAllocator, peeksAllocator);
 }
 
 EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, ThreadPool *threadPool, float x, float y, float z) {
@@ -997,12 +1015,148 @@ std::function<void(Message *)> METHOD_FNS[] = {
     unsigned int index = 0;
     int seed = *((int *)(Message->args + index));
     index += sizeof(int);
+    void *trackerByteOffset = *((void **)(Message->args + index));
+    index += sizeof(void *);
     void *subparcelByteOffset = *((void **)(Message->args + index));
     index += sizeof(void *);
 
+    Tracker *tracker = (Tracker *)trackerByteOffset;
     Subparcel *subparcel = (Subparcel *)subparcelByteOffset;
     // std::cout << "execute chunk " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
     noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
+
+    // XXX
+
+    float meshId = subparcel->coord.index;
+    int dims[3] = {
+      SUBPARCEL_SIZE,
+      SUBPARCEL_SIZE,
+      SUBPARCEL_SIZE,
+    };
+    float *potential = subparcel->potentials;
+    unsigned char *biomes = subparcel->biomes;
+    char *heightfield = subparcel->heightfield;
+    unsigned char *lightfield = subparcel->lightfield;
+    float shift[3] = {
+      (float)subparcel->coord.x*(float)SUBPARCEL_SIZE,
+      (float)subparcel->coord.y*(float)SUBPARCEL_SIZE,
+      (float)subparcel->coord.z*(float)SUBPARCEL_SIZE,
+    };
+    float scale[3] = {1, 1, 1};
+
+    ArenaAllocator *positionsAllocator = tracker->positionsAllocator;
+    ArenaAllocator *normalsAllocator = tracker->normalsAllocator;
+    ArenaAllocator *uvsAllocator = tracker->uvsAllocator;
+    ArenaAllocator *barycentricsAllocator = tracker->barycentricsAllocator;
+    ArenaAllocator *aosAllocator = tracker->aosAllocator;
+    ArenaAllocator *idsAllocator = tracker->idsAllocator;
+    ArenaAllocator *skyLightsAllocator = tracker->skyLightsAllocator;
+    ArenaAllocator *torchLightsAllocator = tracker->torchLightsAllocator;
+    ArenaAllocator *peeksAllocator = tracker->peeksAllocator;
+
+    /* std::cout << "allocators a " <<
+      (void *)positionsAllocator << " " <<
+      (void *)normalsAllocator << " " <<
+      (void *)uvsAllocator << " " <<
+      (void *)barycentricsAllocator << " " <<
+      (void *)aosAllocator << " " <<
+      (void *)idsAllocator << " " <<
+      (void *)skyLightsAllocator << " " <<
+      (void *)torchLightsAllocator << " " <<
+      (void *)peeksAllocator << std::endl; */
+
+    FreeEntry *positionsEntry;
+    FreeEntry *normalsEntry;
+    FreeEntry *uvsEntry;
+    FreeEntry *barycentricsEntry;
+    FreeEntry *aosEntry;
+    FreeEntry *idsEntry;
+    FreeEntry *skyLightsEntry;
+    FreeEntry *torchLightsEntry;
+    FreeEntry *peeksEntry;
+    unsigned int numOpaquePositions;
+    unsigned int numTransparentPositions;
+
+    constexpr int bufferSize = 1024*1024;
+    std::vector<float> positions(bufferSize);
+    std::vector<float> normals(bufferSize);
+    std::vector<float> uvs(bufferSize);
+    std::vector<float> barycentrics(bufferSize);
+    std::vector<unsigned char> aos(bufferSize);
+    std::vector<float> ids(bufferSize);
+    std::vector<unsigned char> skyLights(bufferSize);
+    std::vector<unsigned char> torchLights(bufferSize);
+    constexpr unsigned int numPeeks = 15;
+    std::vector<unsigned char> peeks(numPeeks);
+    unsigned int numPositions;
+    unsigned int numNormals;
+    unsigned int numUvs;
+    unsigned int numBarycentrics;
+    unsigned int numAos;
+    unsigned int numIds;
+    unsigned int numSkyLights;
+    unsigned int numTorchLights;
+    marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), barycentrics.data(), aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, numBarycentrics, numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks.data());
+
+    positionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
+    if (!positionsEntry) {
+      std::cout << "could not allocate marchingCubes positions" << std::endl;
+      abort();
+    }
+    normalsEntry = normalsAllocator->alloc(numNormals*sizeof(float));
+    if (!normalsEntry) {
+      std::cout << "could not allocate marchingCubes normals" << std::endl;
+      abort();
+    }
+    uvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
+    if (!uvsEntry) {
+      std::cout << "could not allocate marchingCubes uvs" << std::endl;
+      abort();
+    }
+    barycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float));
+    if (!barycentricsEntry) {
+      std::cout << "could not allocate marchingCubes barycentrics" << std::endl;
+      abort();
+    }
+    aosEntry = aosAllocator->alloc(numAos*sizeof(float));
+    if (!aosEntry) {
+      std::cout << "could not allocate marchingCubes aos" << std::endl;
+      abort();
+    }
+    idsEntry = idsAllocator->alloc(numIds*sizeof(float));
+    if (!idsEntry) {
+      std::cout << "could not allocate marchingCubes ids" << std::endl;
+      abort();
+    }
+    skyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
+    if (!skyLightsEntry) {
+      std::cout << "could not allocate marchingCubes skyLights" << std::endl;
+      abort();
+    }
+    torchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
+    if (!torchLightsEntry) {
+      std::cout << "could not allocate marchingCubes torchLights" << std::endl;
+      abort();
+    }
+    peeksEntry = peeksAllocator->alloc(numPeeks*sizeof(unsigned char));
+    if (!peeksEntry) {
+      std::cout << "could not allocate marchingCubes peeks" << std::endl;
+      abort();
+    }
+
+    // std::cout << "allocators b" << std::endl;
+
+    memcpy(positionsAllocator->data + positionsEntry->start, positions.data(), numPositions*sizeof(float));
+    memcpy(normalsAllocator->data + normalsEntry->start, normals.data(), numNormals*sizeof(float));
+    memcpy(uvsAllocator->data + uvsEntry->start, uvs.data(), numUvs*sizeof(float));
+    memcpy(barycentricsAllocator->data + barycentricsEntry->start, barycentrics.data(), numBarycentrics*sizeof(float));
+    memcpy(aosAllocator->data + aosEntry->start, aos.data(), numAos*sizeof(unsigned char));
+    memcpy(idsAllocator->data + idsEntry->start, ids.data(), numIds*sizeof(float));
+    memcpy(skyLightsAllocator->data + skyLightsEntry->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
+    memcpy(torchLightsAllocator->data + torchLightsEntry->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
+    memcpy(peeksAllocator->data + peeksEntry->start, peeks.data(), numPeeks*sizeof(unsigned char));
+
+    // std::cout << "allocators c" << std::endl;
   },
 };
 
