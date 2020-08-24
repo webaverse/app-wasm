@@ -205,7 +205,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
     }
 
     for (const Coord &addedCoord : addedCoords) {
-      Subparcel *subparcel = new Subparcel(addedCoord);
+      std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord));
       subparcels[addedCoord.index] = subparcel;
       // std::cout << "added subparcel " << addedCoord.x << " " << addedCoord.y << " " << addedCoord.z << " " << addedCoord.index << " " << addedCoords.size() << " " << subparcels.size() << std::endl;
 
@@ -220,7 +220,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
         u32[0] = seed;
         u32[1] = (unsigned int)this;
         u32[2] = (unsigned int)geometrySet;
-        u32[3] = (unsigned int)subparcel;
+        u32[3] = (unsigned int)(new std::shared_ptr<Subparcel>(subparcel));
       }
 
       threadPool->inbox.queue(message);
@@ -229,11 +229,11 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
       threadPool->inbox.filterQueue([&](Message *message) -> bool {
         if (message->method == (int)METHODS::chunk) {
           unsigned int *u32 = (unsigned int *)message->args;
-          Subparcel *subparcel = (Subparcel *)(u32 + 2);
-          if (subparcel->coord != removedCoord) {
-            return true;
+          std::shared_ptr<Subparcel> *subparcel = (std::shared_ptr<Subparcel> *)(u32 + 2);
+          if ((*subparcel)->coord != removedCoord) {
+          	return true;
           } else {
-          	// std::cout << "dequeue subparcel " << removedCoord.x << " " << removedCoord.y << " " << removedCoord.z << std::endl;
+          	delete subparcel;
           	return false;
           }
         } else {
@@ -241,7 +241,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
         }
       });
 
-      subparcels.erase(removedCoord.index); // XXX delete the actual subparcel
+      subparcels.erase(removedCoord.index);
     }
 
     lastNeededCoords = std::move(neededCoords);

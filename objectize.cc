@@ -731,12 +731,14 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(void *);
     void *geometrySetByteOffset = *((void **)(Message->args + index));
     index += sizeof(void *);
-    void *subparcelByteOffset = *((void **)(Message->args + index));
+    void *subparcelSharedPtrByteOffset = *((void **)(Message->args + index));
     index += sizeof(void *);
 
     Tracker *tracker = (Tracker *)trackerByteOffset;
     GeometrySet *geometrySet = (GeometrySet *)geometrySetByteOffset;
-    Subparcel *subparcel = (Subparcel *)subparcelByteOffset;
+    std::shared_ptr<Subparcel> *subparcelSharedPtr = (std::shared_ptr<Subparcel> *)subparcelSharedPtrByteOffset;
+    std::shared_ptr<Subparcel> subparcel(std::move(*subparcelSharedPtr));
+    delete subparcelSharedPtr;
 
     {
       constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
@@ -747,7 +749,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
       constexpr float potentialDefault = -0.5;
 
       // std::cout << "execute chunk " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
-      noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
+      noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcel.get());
     }
 
     float *landPositions;
@@ -906,7 +908,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
       unsigned int numIndices;
       unsigned int numSkyLights;
       unsigned int numTorchLights;
-      doGetMarchObjectStats(geometrySet, subparcel, numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
+      doGetMarchObjectStats(geometrySet, subparcel.get(), numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
 
       ArenaAllocator *positionsAllocator = tracker->vegetationPositionsAllocator;
       ArenaAllocator *uvsAllocator = tracker->vegetationUvsAllocator;
@@ -969,7 +971,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
 
       Subparcel *subparcels = nullptr;
       unsigned int numSubparcels = 0;
-      doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+      doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 
       // groups
       subparcel->vegetationGroups[0].start = indicesEntry->start/sizeof(unsigned int);

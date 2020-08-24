@@ -304,7 +304,7 @@ public:
 
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;
-  std::map<int, Subparcel *> subparcels;
+  std::map<int, std::shared_ptr<Subparcel>> subparcels;
 };
 
 #endif

@@ -540,23 +540,23 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
   frustum.setFromMatrix(matrixData);
 
   // frustum cull
-  std::vector<Subparcel *> frustumSubparcels;
+  std::vector<std::shared_ptr<Subparcel>> frustumSubparcels;
   frustumSubparcels.reserve(tracker->subparcels.size());
   for (auto &iter : tracker->subparcels) {
-    Subparcel *subparcel = iter.second;
+    std::shared_ptr<Subparcel> &subparcel = iter.second;
     if (frustum.intersectsSphere(subparcel->boundingSphere)) {
       frustumSubparcels.push_back(subparcel);
     }
   }
-  std::sort(frustumSubparcels.begin(), frustumSubparcels.end(), [&](Subparcel *a, Subparcel *b) -> bool {
+  std::sort(frustumSubparcels.begin(), frustumSubparcels.end(), [&](std::shared_ptr<Subparcel> &a, std::shared_ptr<Subparcel> &b) -> bool {
     return a->boundingSphere.center.distanceTo(position) < b->boundingSphere.center.distanceTo(position);
   });
 
   // intialize queue
-  std::deque<Subparcel *> queue;
-  std::set<Subparcel *> seenQueue;
+  std::deque<std::shared_ptr<Subparcel>> queue;
+  std::set<std::shared_ptr<Subparcel>> seenQueue;
   for (int i = 0; i < frustumSubparcels.size(); i++) {
-    Subparcel *subparcel = frustumSubparcels[i];
+    std::shared_ptr<Subparcel> &subparcel = frustumSubparcels[i];
     if (subparcel->boundingSphere.center.distanceTo(position) < slabRadius*2.0f) {
       queue.push_back(subparcel);
       seenQueue.insert(subparcel);
@@ -567,8 +567,7 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
   numLandCullResults = 0;
   numVegetationCullResults = 0;
   while (queue.size() > 0) {
-    Subparcel *subparcel = queue.front();
-    queue.pop_front();
+    std::shared_ptr<Subparcel> &subparcel = queue.front();
 
     for (const Group &group : subparcel->landGroups) {
       CullResult &cullResult = landCullResults[numLandCullResults++];
@@ -600,11 +599,11 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
             - position;
           if (direction.dot(exitNormal) >= 0 && subparcel->peeks[PEEK_FACE_INDICES[(int)enterFace << 4 | (int)exitFace]]) {
             int index = getSubparcelIndex(subparcel->coord.x + exitINormal[0], subparcel->coord.y + exitINormal[1], subparcel->coord.z + exitINormal[2]);
-            auto nextSubparcelIter = std::find_if(frustumSubparcels.begin(), frustumSubparcels.end(), [&](Subparcel *subparcel) -> bool {
+            auto nextSubparcelIter = std::find_if(frustumSubparcels.begin(), frustumSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
               return subparcel->coord.index == index;
             });
             if (nextSubparcelIter != frustumSubparcels.end()) {
-              Subparcel *nextSubparcel = *nextSubparcelIter;
+              std::shared_ptr<Subparcel> nextSubparcel = *nextSubparcelIter;
               if (nextSubparcel != nullptr && seenQueue.find(nextSubparcel) == seenQueue.end()) {
                 queue.push_back(nextSubparcel);
                 seenQueue.insert(nextSubparcel);
@@ -614,6 +613,8 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
         }
       }
     }
+
+    queue.pop_front();
   }
   std::sort(landCullResults, landCullResults + numLandCullResults, [&](const CullResult &a, const CullResult &b) -> bool {
     return a.materialIndex < b.materialIndex;
