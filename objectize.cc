@@ -833,7 +833,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
       subparcel->landGroups[0].materialIndex = 0;
       subparcel->landGroups[1].start = subparcel->landGroups[0].start + subparcel->landGroups[0].count;
       subparcel->landGroups[1].count = numTransparentPositions/3;
-      subparcel->landGroups[1].materialIndex = 0;
+      subparcel->landGroups[1].materialIndex = 1;
 
       // latch
       landPositions = (float *)(positionsAllocator->data + positionsEntry->start);
