@@ -154,14 +154,15 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
         const int ay = dy + coord.y;
         for (int dz = -chunkDistance; dz <= chunkDistance; dz++) {
           const int az = dz + coord.z;
-          Coord coord(ax, ay, ax);
-          neededCoords.push_back(coord);
+          Coord aCoord(ax, ay, az);
+          neededCoords.push_back(aCoord);
 
           auto iter = std::find_if(lastNeededCoords.begin(), lastNeededCoords.end(), [&](const Coord &coord2) -> bool {
-            return coord2.index == coord.index;
+            return coord2.index == aCoord.index;
           });
           if (iter == lastNeededCoords.end()) {
-            addedCoords.push_back(coord);
+          	// std::cout << "add index " << coord.x << " " << coord.y << " " << coord.z << " " << aCoord.x << " " << aCoord.y << " " << aCoord.z << " " << aCoord.index << " " << dx << " " << dy << " " << dz << std::endl;
+            addedCoords.push_back(aCoord);
           }
         }
       }
@@ -169,18 +170,19 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
 
     std::vector<Coord> removedCoords;
     removedCoords.reserve(256);
-    for (const Coord &coord : lastNeededCoords) {
+    for (const Coord &lastNeededCoord : lastNeededCoords) {
       auto iter = std::find_if(neededCoords.begin(), neededCoords.end(), [&](const Coord &coord2) -> bool {
-        return coord2.index == coord.index;
+        return coord2.index == lastNeededCoord.index;
       });
       if (iter == neededCoords.end()) {
-        removedCoords.push_back(coord);
+        removedCoords.push_back(lastNeededCoord);
       }
     }
 
     for (const Coord &addedCoord : addedCoords) {
       Subparcel *subparcel = new Subparcel(addedCoord);
       subparcels[addedCoord.index] = subparcel;
+      // std::cout << "added subparcel " << addedCoord.x << " " << addedCoord.y << " " << addedCoord.z << " " << addedCoord.index << " " << addedCoords.size() << " " << subparcels.size() << std::endl;
 
       unsigned int count = 128;
       Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
@@ -188,12 +190,8 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
       message->method = (int)METHODS::chunk;
       message->count = count;
 
-      // std::cout << "queue chunking " << (unsigned int)METHODS::chunk << std::endl;
-
       {
         unsigned int *u32 = (unsigned int *)message->args;
-        // float *f32 = (float *)message->args;
-
         u32[0] = seed;
         u32[1] = (unsigned int)this;
         u32[2] = (unsigned int)geometrySet;
@@ -212,6 +210,8 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
           return false;
         }
       });
+
+      subparcels.erase(removedCoord.index); // XXX delete the actual subparcel
     }
 
     lastNeededCoords = std::move(neededCoords);
