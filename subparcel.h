@@ -75,6 +75,7 @@ public:
   unsigned char lightfield[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned int numObjects;
   Object objects[PLANET_OBJECT_SLOTS];
+  uintptr_t physxGeometry;
 };
 
 #endif

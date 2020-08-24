@@ -244,6 +244,9 @@ enum class METHODS : int {
   bakeGeometry,
   chunk,
 };
+enum class MESSAGES : int {
+  updateGeometry = -1,
+};
 
 class Tracker {
 public:
@@ -309,7 +312,7 @@ public:
         Subparcel *subparcel = new Subparcel(addedCoord);
         subparcels[addedCoord.index] = subparcel;
 
-        unsigned int count = 4;
+        unsigned int count = 128;
         Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
         message->id = -1;
         message->method = (int)METHODS::chunk;
@@ -1034,8 +1037,25 @@ std::function<void(Message *)> METHOD_FNS[] = {
       // std::cout << "execute chunk " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
       noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
     }
+
     float *landPositions;
     unsigned int numLandPositions;
+    FreeEntry *landPositionsEntry;
+    FreeEntry *landNormalsEntry;
+    FreeEntry *landUvsEntry;
+    FreeEntry *landBarycentricsEntry;
+    FreeEntry *landAosEntry;
+    FreeEntry *landIdsEntry;
+    FreeEntry *landSkyLightsEntry;
+    FreeEntry *landTorchLightsEntry;
+    FreeEntry *landPeeksEntry;
+
+    FreeEntry *vegetationPositionsEntry;
+    FreeEntry *vegetationUvsEntry;
+    FreeEntry *vegetationIdsEntry;
+    FreeEntry *vegetationIndicesEntry;
+    FreeEntry *vegetationSkyLightsEntry;
+    FreeEntry *vegetationTorchLightsEntry;
     {
       float meshId = subparcel->coord.index;
       int dims[3] = {
@@ -1168,6 +1188,15 @@ std::function<void(Message *)> METHOD_FNS[] = {
 
       landPositions = (float *)(positionsAllocator->data + positionsEntry->start);
       numLandPositions = numOpaquePositions;
+      landPositionsEntry = positionsEntry;
+      landNormalsEntry = normalsEntry;
+      landUvsEntry = uvsEntry;
+      landBarycentricsEntry = barycentricsEntry;
+      landAosEntry = aosEntry;
+      landIdsEntry = idsEntry;
+      landSkyLightsEntry = skyLightsEntry;
+      landTorchLightsEntry = torchLightsEntry;
+      landPeeksEntry = peeksEntry;
     }
     {
       // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
@@ -1244,6 +1273,13 @@ std::function<void(Message *)> METHOD_FNS[] = {
       Subparcel *subparcels = nullptr;
       unsigned int numSubparcels = 0;
       doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+
+      vegetationPositionsEntry = positionsEntry;
+      vegetationUvsEntry = uvsEntry;
+      vegetationIdsEntry = idsEntry;
+      vegetationIndicesEntry = indicesEntry;
+      vegetationSkyLightsEntry = skyLightsEntry;
+      vegetationTorchLightsEntry = torchLightsEntry;
     }
     if (numLandPositions > 0) {
       PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(landPositions, nullptr, numLandPositions, 0);
@@ -1259,8 +1295,60 @@ std::function<void(Message *)> METHOD_FNS[] = {
         0,
         1,
       };
-      uintptr_t physxGeometry = doRegisterBakedGeometry(meshId, writeStream, meshPosition, meshQuaternion);
+      subparcel->physxGeometry = doRegisterBakedGeometry(meshId, writeStream, meshPosition, meshQuaternion);
+    } else {
+      subparcel->physxGeometry = 0;
     }
+
+    // output
+    // std::cout << "return 1" << std::endl;
+    Message->method = (int)MESSAGES::updateGeometry;
+
+    // std::cout << "return 2" << std::endl;
+
+    index = 0;
+    *((FreeEntry **)(Message->args + index)) = landPositionsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = landNormalsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = landUvsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = landBarycentricsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = landAosEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = landIdsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = landSkyLightsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = landTorchLightsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = landPeeksEntry;
+    index += sizeof(FreeEntry *);
+
+    // std::cout << "return 3" << std::endl;
+
+    *((FreeEntry **)(Message->args + index)) = vegetationPositionsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = vegetationUvsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = vegetationIdsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = vegetationIndicesEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = vegetationSkyLightsEntry;
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = vegetationTorchLightsEntry;
+    index += sizeof(FreeEntry *);
+
+    // std::cout << "return 4" << std::endl;
+
+    if (index/sizeof(unsigned int) > Message->count) {
+      std::cout << "message overflow " << index << " " << Message->count << std::endl;
+      abort();
+    }
+
+    // std::cout << "return 5" << std::endl;
   },
 };
 
