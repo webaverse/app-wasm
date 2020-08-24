@@ -142,7 +142,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
     (int)std::floor(z/(float)SUBPARCEL_SIZE)
   );
 
-  // std::cout << "check coord " << coord.x << " " << coord.y << " " << coord.z << " " << coord.index << " : " << lastCoord.x << " " << lastCoord.y << " " << lastCoord.z << " " << lastCoord.index << std::endl;
+  // std::cout << "check coord " << x << " " << y << " " << z << " " << coord.x << " " << coord.y << " " << coord.z << " " << coord.index << " : " << lastCoord.x << " " << lastCoord.y << " " << lastCoord.z << " " << lastCoord.index << " " << (coord != lastCoord) << std::endl;
   if (coord != lastCoord) {
     std::vector<Coord> neededCoords;
     neededCoords.reserve(256);
@@ -205,7 +205,12 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
         if (message->method == (int)METHODS::chunk) {
           unsigned int *u32 = (unsigned int *)message->args;
           Subparcel *subparcel = (Subparcel *)(u32 + 2);
-          return subparcel->coord == removedCoord;
+          if (subparcel->coord != removedCoord) {
+            return true;
+          } else {
+          	// std::cout << "dequeue subparcel " << removedCoord.x << " " << removedCoord.y << " " << removedCoord.z << std::endl;
+          	return false;
+          }
         } else {
           return false;
         }
@@ -217,8 +222,8 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
     lastNeededCoords = std::move(neededCoords);
     lastCoord = coord;
 
-    if (addedCoords.size() > 0 || removedCoords.size() > 0) {
+    // if (addedCoords.size() > 0 || removedCoords.size() > 0) {
       std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
-    }
+    // }
   }
 }
