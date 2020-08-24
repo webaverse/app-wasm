@@ -46,7 +46,7 @@ public:
 class Message {
 public:
   int id;
-  unsigned int method;
+  int method;
   unsigned int count;
   unsigned char args[4];
 };
@@ -213,7 +213,7 @@ public:
           // std::cout << "got request message method b" << std::endl;
           fn(message);
 
-          if (message->id >= 0) {
+          if (message->id != 0) {
             outbox.push(message);
           } /* else {
             std::cout << "ignore message due to id " << message->id << std::endl;
@@ -229,7 +229,7 @@ public:
   Mailbox<Message> outbox;
 };
 
-enum class METHODS : unsigned int {
+enum class METHODS : int {
   makeArenaAllocator = 0,
   arenaAlloc,
   arenaFree,
@@ -312,7 +312,7 @@ public:
         unsigned int count = 4;
         Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
         message->id = -1;
-        message->method = (unsigned int)METHODS::chunk;
+        message->method = (int)METHODS::chunk;
         message->count = count;
 
         // std::cout << "queue chunking " << (unsigned int)METHODS::chunk << std::endl;
@@ -331,7 +331,7 @@ public:
       }
       for (const Coord &removedCoord : removedCoords) {
         threadPool->inbox.filterQueue([&](Message *message) -> bool {
-          if (message->method == (unsigned int)METHODS::chunk) {
+          if (message->method == (int)METHODS::chunk) {
             unsigned int *u32 = (unsigned int *)message->args;
             Subparcel *subparcel = (Subparcel *)(u32 + 2);
             return subparcel->coord == removedCoord;
