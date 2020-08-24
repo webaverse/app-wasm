@@ -79,7 +79,6 @@ EMSCRIPTEN_KEEPALIVE void initPhysx() {
   doInitPhysx();
 }
 EMSCRIPTEN_KEEPALIVE void registerBakedGeometry(unsigned int meshId, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion, uintptr_t *result) {
-  // std::cout << "register baked " << meshQuaternion[0] << " " << meshQuaternion[1] << " " << meshQuaternion[2] << " " << meshQuaternion[3] << std::endl;
   *result = doRegisterBakedGeometry(meshId, writeStream, meshPosition, meshQuaternion);
 }
 EMSCRIPTEN_KEEPALIVE void registerBoxGeometry(unsigned int meshId, float *position, float *quaternion, float w, float h, float d, uintptr_t *result) {
@@ -198,6 +197,39 @@ EMSCRIPTEN_KEEPALIVE unsigned int popResponse(ThreadPool *threadPool) {
     return 0;
   }
 } */
+
+class Shape {
+public:
+  Vec position;
+  Quat quaternion;
+  Vec scale;
+};
+std::map<std::string, Shape> PHYSICS_SHAPES = {
+  {
+    "wood_ramp",
+    {
+      {0, 1, 0},
+      Quat(Vec{1, 0, 0}, -PI/4.0f),
+      {2, 2*SQRT2, 0.1},
+    },
+  },
+  {
+    "wood_floor",
+    {
+      {0, 0, 0},
+      Quat(),
+      {2, 0.1, 2},
+    },
+  },
+  {
+    "wood_wall",
+    {
+      {0, 1, -1},
+      Quat(),
+      {2, 2, 0.1},
+    },
+  }
+};
 
 EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsigned int numEntries, unsigned char *outPtr, unsigned int *outNumEntries) {
   {
@@ -951,6 +983,33 @@ std::function<void(Message *)> METHOD_FNS[] = {
       vegetationIndicesEntry = indicesEntry;
       vegetationSkyLightsEntry = skyLightsEntry;
       vegetationTorchLightsEntry = torchLightsEntry;
+    }
+    for (unsigned int i = 0; i < subparcel->numObjects; i++) {
+      Object &object = subparcel->objects[i];
+      if (strcmp(object.name, "spawner") != 0) {
+        uintptr_t physxGeometry;
+        auto shapeIter = PHYSICS_SHAPES.find(object.name);
+        if (shapeIter != PHYSICS_SHAPES.end()) {
+          const Shape &shape = shapeIter->second;
+
+          Matrix matrix;
+          matrix.compose(shape.position, shape.quaternion, Vec{1, 1, 1});
+          matrix.premultiply(Matrix().compose(object.position, object.quaternion, Vec{1, 1, 1}));
+
+          Vec position;
+          Quat quaternion;
+          Vec scale;
+          matrix.decompose(position, quaternion, scale);
+          physxGeometry = doRegisterBoxGeometry(object.id, position.data, quaternion.data, shape.scale.x, shape.scale.y, shape.scale.z);
+        } else {
+          Vec position = object.position;
+          position += Vec{0, (2.0f+0.5f)/2.0f, 0};
+          Quat quaternion = object.quaternion;
+          quaternion.multiply(Quat(Vec{0, 0, 1}, PI/2.0f));
+          physxGeometry = doRegisterCapsuleGeometry(object.id, position.data, quaternion.data, 0.5, 2);
+        }
+        subparcel->objectPhysxGeometries.push_back(physxGeometry);
+      }
     }
     if (numLandPositions > 0) {
       PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(landPositions, nullptr, numLandPositions, 0);

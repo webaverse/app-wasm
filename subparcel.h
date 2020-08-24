@@ -128,6 +128,7 @@ public:
   Group landGroups[2];
   Group vegetationGroups[1];
   uintptr_t physxGeometry;
+  std::vector<uintptr_t> objectPhysxGeometries;
 };
 
 class FreeEntry {

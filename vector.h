@@ -5,6 +5,9 @@
 #include <vector>
 #include <algorithm>
 
+constexpr float PI = 3.14159265358979323846;
+constexpr float SQRT2 = 1.4142135623730951;
+
 class Vec;
 class Quat;
 class Matrix;
@@ -74,45 +77,65 @@ class Matrix {
 
       return *this;
     }
+    Matrix &multiply(const Matrix &m) {
+      return multiply(*this, m);
+    }
+    Matrix &premultiply(const Matrix &m) {
+      return multiply(m, *this);
+    }
 
-    void compose(const Vec &position, const Quat &quaternion, const Vec &scale);
+    Matrix &compose(const Vec &position, const Quat &quaternion, const Vec &scale);
+    Matrix &decompose(Vec &position, Quat &quaternion, Vec &scale);
+
+    float determinant() const {
+      const float *te = this->elements;
+
+      const float n11 = te[ 0 ], n12 = te[ 4 ], n13 = te[ 8 ], n14 = te[ 12 ];
+      const float n21 = te[ 1 ], n22 = te[ 5 ], n23 = te[ 9 ], n24 = te[ 13 ];
+      const float n31 = te[ 2 ], n32 = te[ 6 ], n33 = te[ 10 ], n34 = te[ 14 ];
+      const float n41 = te[ 3 ], n42 = te[ 7 ], n43 = te[ 11 ], n44 = te[ 15 ];
+
+      //TODO: make this more efficient
+      //( based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm )
+
+      return (
+        n41 * (
+          + n14 * n23 * n32
+           - n13 * n24 * n32
+           - n14 * n22 * n33
+           + n12 * n24 * n33
+           + n13 * n22 * n34
+           - n12 * n23 * n34
+        ) +
+        n42 * (
+          + n11 * n23 * n34
+           - n11 * n24 * n33
+           + n14 * n21 * n33
+           - n13 * n21 * n34
+           + n13 * n24 * n31
+           - n14 * n23 * n31
+        ) +
+        n43 * (
+          + n11 * n24 * n32
+           - n11 * n22 * n34
+           - n14 * n21 * n32
+           + n12 * n21 * n34
+           + n14 * n22 * n31
+           - n12 * n24 * n31
+        ) +
+        n44 * (
+          - n13 * n22 * n31
+           - n11 * n23 * n32
+           + n11 * n22 * n33
+           + n13 * n21 * n32
+           - n12 * n21 * n33
+           + n12 * n23 * n31
+        )
+      );
+    }
 
     static Matrix fromArray(float *elements) {
       return Matrix(elements);
-    }
-};
-
-class Quat {
-  public:
-    union {
-      float data[4];
-      struct {
-        float x;
-        float y;
-        float z;
-        float w;
-      };
-    };
-
-    Quat() {
-      x = 0;
-      y = 0;
-      z = 0;
-      w = 1;
-    }
-
-    Quat(float ax, float ay, float az, float aw) {
-      x = ax;
-      y = ay;
-      z = az;
-      w = aw;
-    }
-
-    Quat(const Quat &q) {
-      x = q.x;
-      y = q.y;
-      z = q.z;
-      w = q.w;
     }
 };
 
@@ -308,26 +331,7 @@ class Vec {
           return this->x * v.x + this->y * v.y + this->z * v.z;
         }
 
-        Vec &applyQuaternion(const Quat &q) {
-          const float x = this->x, y = this->y, z = this->z;
-          const float qx = q.x, qy = q.y, qz = q.z, qw = q.w;
-
-          // calculate quat * vector
-
-          float ix = qw * x + qy * z - qz * y;
-          float iy = qw * y + qz * x - qx * z;
-          float iz = qw * z + qx * y - qy * x;
-          float iw = - qx * x - qy * y - qz * z;
-
-          // calculate result * inverse quat
-
-          this->x = ix * qw + iw * - qx + iy * - qz - iz * - qy;
-          this->y = iy * qw + iw * - qy + iz * - qx - ix * - qz;
-          this->z = iz * qw + iw * - qz + ix * - qy - iy * - qx;
-
-          return *this;
-
-        }
+        Vec &applyQuaternion(const Quat &q);
 
         Vec &applyMatrix(const Matrix &m) {
           const float *e = m.elements;
@@ -344,6 +348,118 @@ class Vec {
         Vec clone() const {
           return Vec(x, y, z);
         }
+};
+
+class Quat {
+  public:
+    union {
+      float data[4];
+      struct {
+        float x;
+        float y;
+        float z;
+        float w;
+      };
+    };
+
+    Quat() {
+      x = 0;
+      y = 0;
+      z = 0;
+      w = 1;
+    }
+
+    Quat(float ax, float ay, float az, float aw) {
+      x = ax;
+      y = ay;
+      z = az;
+      w = aw;
+    }
+
+    Quat(const Quat &q) {
+      x = q.x;
+      y = q.y;
+      z = q.z;
+      w = q.w;
+    }
+
+    Quat(const Vec &axis, float angle) {
+      const float halfAngle = angle / 2.0f, s = std::sin(halfAngle);
+
+      x = axis.x * s;
+      y = axis.y * s;
+      z = axis.z * s;
+      w = std::cos(halfAngle);
+    }
+
+    Quat &setFromRotationMatrix(const Matrix &m) {
+      // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
+
+      // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+
+      const float *te = m.elements;
+      const float m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ],
+        m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ],
+        m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ],
+        trace = m11 + m22 + m33;
+
+      if ( trace > 0.0f ) {
+
+        const float s = 0.5f / std::sqrt( trace + 1.0f );
+
+        w = 0.25f / s;
+        x = ( m32 - m23 ) * s;
+        y = ( m13 - m31 ) * s;
+        z = ( m21 - m12 ) * s;
+
+      } else if ( m11 > m22 && m11 > m33 ) {
+
+        const float s = 2.0f * std::sqrt( 1.0f + m11 - m22 - m33 );
+
+        w = ( m32 - m23 ) / s;
+        x = 0.25f * s;
+        y = ( m12 + m21 ) / s;
+        z = ( m13 + m31 ) / s;
+
+      } else if ( m22 > m33 ) {
+
+        const float s = 2.0f * std::sqrt( 1.0f + m22 - m11 - m33 );
+
+        w = ( m13 - m31 ) / s;
+        x = ( m12 + m21 ) / s;
+        y = 0.25f * s;
+        z = ( m23 + m32 ) / s;
+
+      } else {
+
+        const float s = 2.0f * std::sqrt( 1.0f + m33 - m11 - m22 );
+
+        w = ( m21 - m12 ) / s;
+        x = ( m13 + m31 ) / s;
+        y = ( m23 + m32 ) / s;
+        z = 0.25f * s;
+      }
+
+      return *this;
+    }
+
+    Quat &multiply(const Quat &a, const Quat &b) {
+      const float qax = a.x, qay = a.y, qaz = a.z, qaw = a.w;
+      const float qbx = b.x, qby = b.y, qbz = b.z, qbw = b.w;
+
+      x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
+      y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
+      z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
+      w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
+
+      return *this;
+    }
+    Quat &multiply(const Quat &q) {
+      return multiply(*this, q);
+    }
+    Quat &premultiply(const Quat &q) {
+      return multiply(q, *this);
+    }
 };
 
 class Tri {
