@@ -415,6 +415,8 @@ class Tri {
 
 class Sphere {
   public:
+    Sphere() : center(), radius(0) {}
+
     Vec center;
     float radius;
 
