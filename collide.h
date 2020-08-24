@@ -370,12 +370,6 @@ PeekDirection PEEK_DIRECTIONS[6] = {
   {{0, -1, 0}, {0, -1, 0}, PEEK_FACES::BOTTOM},
 };
 
-class Group {
-public:
-  unsigned int start;
-  unsigned int count;
-  unsigned int materialIndex;
-};
 class GroupSet {
 public:
   GroupSet(int x, int y, int z, int index, const Sphere &boundingSphere, unsigned char *peeks, Group *groups, unsigned int numGroups) :

@@ -1174,8 +1174,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
         abort();
       }
 
-      // std::cout << "allocators b" << std::endl;
-
       memcpy(positionsAllocator->data + positionsEntry->start, positions.data(), numPositions*sizeof(float));
       memcpy(normalsAllocator->data + normalsEntry->start, normals.data(), numNormals*sizeof(float));
       memcpy(uvsAllocator->data + uvsEntry->start, uvs.data(), numUvs*sizeof(float));
@@ -1186,6 +1184,15 @@ std::function<void(Message *)> METHOD_FNS[] = {
       memcpy(torchLightsAllocator->data + torchLightsEntry->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
       memcpy(peeksAllocator->data + peeksEntry->start, peeks.data(), numPeeks*sizeof(unsigned char));
 
+      // groups
+      subparcel->groups[0].start = positionsEntry->start/sizeof(float)/3;
+      subparcel->groups[0].count = numOpaquePositions/3;
+      subparcel->groups[0].materialIndex = 0;
+      subparcel->groups[1].start = subparcel->groups[0].start + subparcel->groups[0].count;
+      subparcel->groups[1].count = numTransparentPositions/3;
+      subparcel->groups[1].materialIndex = 0;
+
+      // latch
       landPositions = (float *)(positionsAllocator->data + positionsEntry->start);
       numLandPositions = numOpaquePositions;
       landPositionsEntry = positionsEntry;
@@ -1254,8 +1261,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
         abort();
       }
 
-      // std::cout << "march objects c " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << std::endl;
-
       float *positions = (float *)(positionsAllocator->data + positionsEntry->start);
       float *uvs = (float *)(uvsAllocator->data + uvsEntry->start);
       float *ids = (float *)(idsAllocator->data + idsEntry->start);
@@ -1274,6 +1279,12 @@ std::function<void(Message *)> METHOD_FNS[] = {
       unsigned int numSubparcels = 0;
       doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 
+      // groups
+      subparcel->groups[2].start = indicesEntry->start/sizeof(unsigned int);
+      subparcel->groups[2].count = indicesEntry->count/sizeof(unsigned int);
+      subparcel->groups[2].materialIndex = 0;
+
+      // latch
       vegetationPositionsEntry = positionsEntry;
       vegetationUvsEntry = uvsEntry;
       vegetationIdsEntry = idsEntry;
