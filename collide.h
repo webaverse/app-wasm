@@ -506,7 +506,7 @@ void doCull(Culler *culler, float *positionData, float *matrixData, float slabRa
     return a.materialIndex < b.materialIndex;
   });
 }
-void doTickCull(Tracker *tracker, float *positionData, float *matrixData, float slabRadius, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults) {
+void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults) {
   Vec position(positionData[0], positionData[1], positionData[2]);
   Frustum frustum;
   frustum.setFromMatrix(matrixData);
