@@ -124,8 +124,46 @@ EMSCRIPTEN_KEEPALIVE void tickCull(Tracker *tracker, float *positionData, float 
 
 // tracking
 
-EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(int seed, int chunkDistance, ArenaAllocator *positionsAllocator, ArenaAllocator *normalsAllocator, ArenaAllocator *uvsAllocator, ArenaAllocator *barycentricsAllocator, ArenaAllocator *aosAllocator, ArenaAllocator *idsAllocator, ArenaAllocator *skyLightsAllocator, ArenaAllocator *torchLightsAllocator, ArenaAllocator *indicesAllocator, ArenaAllocator *peeksAllocator) {
-  return new Tracker(seed, chunkDistance, positionsAllocator, normalsAllocator, uvsAllocator, barycentricsAllocator, aosAllocator, idsAllocator, skyLightsAllocator, torchLightsAllocator, indicesAllocator, peeksAllocator);
+EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(
+  int seed,
+  int chunkDistance,
+
+  ArenaAllocator *landPositionsAllocator,
+  ArenaAllocator *landNormalsAllocator,
+  ArenaAllocator *landUvsAllocator,
+  ArenaAllocator *landBarycentricsAllocator,
+  ArenaAllocator *landAosAllocator,
+  ArenaAllocator *landIdsAllocator,
+  ArenaAllocator *landSkyLightsAllocator,
+  ArenaAllocator *landTorchLightsAllocator,
+
+  ArenaAllocator *vegetationPositionsAllocator,
+  ArenaAllocator *vegetationUvsAllocator,
+  ArenaAllocator *vegetationIdsAllocator,
+  ArenaAllocator *vegetationIndicesAllocator,
+  ArenaAllocator *vegetationSkyLightsAllocator,
+  ArenaAllocator *vegetationTorchLightsAllocator
+) {
+  return new Tracker(
+    seed,
+    chunkDistance,
+
+    landPositionsAllocator,
+    landNormalsAllocator,
+    landUvsAllocator,
+    landBarycentricsAllocator,
+    landAosAllocator,
+    landIdsAllocator,
+    landSkyLightsAllocator,
+    landTorchLightsAllocator,
+
+    vegetationPositionsAllocator,
+    vegetationUvsAllocator,
+    vegetationIdsAllocator,
+    vegetationIndicesAllocator,
+    vegetationSkyLightsAllocator,
+    vegetationTorchLightsAllocator
+  );
 }
 
 EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z) {
@@ -690,7 +728,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
     FreeEntry *landIdsEntry;
     FreeEntry *landSkyLightsEntry;
     FreeEntry *landTorchLightsEntry;
-    FreeEntry *landPeeksEntry;
 
     FreeEntry *vegetationPositionsEntry;
     FreeEntry *vegetationUvsEntry;
@@ -716,26 +753,14 @@ std::function<void(Message *)> METHOD_FNS[] = {
       };
       float scale[3] = {1, 1, 1};
 
-      ArenaAllocator *positionsAllocator = tracker->positionsAllocator;
-      ArenaAllocator *normalsAllocator = tracker->normalsAllocator;
-      ArenaAllocator *uvsAllocator = tracker->uvsAllocator;
-      ArenaAllocator *barycentricsAllocator = tracker->barycentricsAllocator;
-      ArenaAllocator *aosAllocator = tracker->aosAllocator;
-      ArenaAllocator *idsAllocator = tracker->idsAllocator;
-      ArenaAllocator *skyLightsAllocator = tracker->skyLightsAllocator;
-      ArenaAllocator *torchLightsAllocator = tracker->torchLightsAllocator;
-      ArenaAllocator *peeksAllocator = tracker->peeksAllocator;
-
-      /* std::cout << "allocators a " <<
-        (void *)positionsAllocator << " " <<
-        (void *)normalsAllocator << " " <<
-        (void *)uvsAllocator << " " <<
-        (void *)barycentricsAllocator << " " <<
-        (void *)aosAllocator << " " <<
-        (void *)idsAllocator << " " <<
-        (void *)skyLightsAllocator << " " <<
-        (void *)torchLightsAllocator << " " <<
-        (void *)peeksAllocator << std::endl; */
+      ArenaAllocator *positionsAllocator = tracker->landPositionsAllocator;
+      ArenaAllocator *normalsAllocator = tracker->landNormalsAllocator;
+      ArenaAllocator *uvsAllocator = tracker->landUvsAllocator;
+      ArenaAllocator *barycentricsAllocator = tracker->landBarycentricsAllocator;
+      ArenaAllocator *aosAllocator = tracker->landAosAllocator;
+      ArenaAllocator *idsAllocator = tracker->landIdsAllocator;
+      ArenaAllocator *skyLightsAllocator = tracker->landSkyLightsAllocator;
+      ArenaAllocator *torchLightsAllocator = tracker->landTorchLightsAllocator;
 
       FreeEntry *positionsEntry;
       FreeEntry *normalsEntry;
@@ -745,7 +770,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
       FreeEntry *idsEntry;
       FreeEntry *skyLightsEntry;
       FreeEntry *torchLightsEntry;
-      FreeEntry *peeksEntry;
       unsigned int numOpaquePositions;
       unsigned int numTransparentPositions;
 
@@ -790,7 +814,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
         std::cout << "could not allocate chunk marchingCubes barycentrics" << std::endl;
         abort();
       }
-      aosEntry = aosAllocator->alloc(numAos*sizeof(float));
+      aosEntry = aosAllocator->alloc(numAos*sizeof(unsigned char));
       if (!aosEntry) {
         std::cout << "could not allocate chunk marchingCubes aos" << std::endl;
         abort();
@@ -810,11 +834,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
         std::cout << "could not allocate chunk marchingCubes torchLights" << std::endl;
         abort();
       }
-      peeksEntry = peeksAllocator->alloc(numPeeks*sizeof(unsigned char)); // XXX maybe not needed
-      if (!peeksEntry) {
-        std::cout << "could not allocate chunk marchingCubes peeks" << std::endl;
-        abort();
-      }
 
       memcpy(positionsAllocator->data + positionsEntry->start, positions.data(), numPositions*sizeof(float));
       memcpy(normalsAllocator->data + normalsEntry->start, normals.data(), numNormals*sizeof(float));
@@ -824,7 +843,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
       memcpy(idsAllocator->data + idsEntry->start, ids.data(), numIds*sizeof(float));
       memcpy(skyLightsAllocator->data + skyLightsEntry->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
       memcpy(torchLightsAllocator->data + torchLightsEntry->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
-      memcpy(peeksAllocator->data + peeksEntry->start, peeks.data(), numPeeks*sizeof(unsigned char));
       memcpy(subparcel->peeks, peeks.data(), numPeeks*sizeof(unsigned char));
 
       // groups
@@ -846,7 +864,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
       landIdsEntry = idsEntry;
       landSkyLightsEntry = skyLightsEntry;
       landTorchLightsEntry = torchLightsEntry;
-      landPeeksEntry = peeksEntry;
     }
     {
       // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
@@ -859,12 +876,12 @@ std::function<void(Message *)> METHOD_FNS[] = {
       unsigned int numTorchLights;
       doGetMarchObjectStats(geometrySet, subparcel, numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
 
-      ArenaAllocator *positionsAllocator = tracker->positionsAllocator;
-      ArenaAllocator *uvsAllocator = tracker->uvsAllocator;
-      ArenaAllocator *idsAllocator = tracker->idsAllocator;
-      ArenaAllocator *indicesAllocator = tracker->indicesAllocator;
-      ArenaAllocator *skyLightsAllocator = tracker->skyLightsAllocator;
-      ArenaAllocator *torchLightsAllocator = tracker->torchLightsAllocator;
+      ArenaAllocator *positionsAllocator = tracker->vegetationPositionsAllocator;
+      ArenaAllocator *uvsAllocator = tracker->vegetationUvsAllocator;
+      ArenaAllocator *idsAllocator = tracker->vegetationIdsAllocator;
+      ArenaAllocator *indicesAllocator = tracker->vegetationIndicesAllocator;
+      ArenaAllocator *skyLightsAllocator = tracker->vegetationSkyLightsAllocator;
+      ArenaAllocator *torchLightsAllocator = tracker->vegetationTorchLightsAllocator;
 
       FreeEntry *positionsEntry;
       FreeEntry *uvsEntry;
@@ -976,8 +993,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
     *((FreeEntry **)(Message->args + index)) = landSkyLightsEntry;
     index += sizeof(FreeEntry *);
     *((FreeEntry **)(Message->args + index)) = landTorchLightsEntry;
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = landPeeksEntry;
     index += sizeof(FreeEntry *);
 
     // std::cout << "return 3" << std::endl;

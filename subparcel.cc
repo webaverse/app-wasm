@@ -120,21 +120,46 @@ ThreadPool::ThreadPool(unsigned int numThreads) {
   }
 }
 
-Tracker::Tracker(int seed, int chunkDistance, ArenaAllocator *positionsAllocator, ArenaAllocator *normalsAllocator, ArenaAllocator *uvsAllocator, ArenaAllocator *barycentricsAllocator, ArenaAllocator *aosAllocator, ArenaAllocator *idsAllocator, ArenaAllocator *skyLightsAllocator, ArenaAllocator *torchLightsAllocator, ArenaAllocator *indicesAllocator, ArenaAllocator *peeksAllocator) :
+Tracker::Tracker(
+	int seed,
+  int chunkDistance,
+
+  ArenaAllocator *landPositionsAllocator,
+  ArenaAllocator *landNormalsAllocator,
+  ArenaAllocator *landUvsAllocator,
+  ArenaAllocator *landBarycentricsAllocator,
+  ArenaAllocator *landAosAllocator,
+  ArenaAllocator *landIdsAllocator,
+  ArenaAllocator *landSkyLightsAllocator,
+  ArenaAllocator *landTorchLightsAllocator,
+
+  ArenaAllocator *vegetationPositionsAllocator,
+  ArenaAllocator *vegetationUvsAllocator,
+  ArenaAllocator *vegetationIdsAllocator,
+  ArenaAllocator *vegetationIndicesAllocator,
+  ArenaAllocator *vegetationSkyLightsAllocator,
+  ArenaAllocator *vegetationTorchLightsAllocator
+) :
   seed(seed),
   chunkDistance(chunkDistance),
   lastCoord(0, 256, 0),
-  positionsAllocator(positionsAllocator),
-  normalsAllocator(normalsAllocator),
-  uvsAllocator(uvsAllocator),
-  barycentricsAllocator(barycentricsAllocator),
-  aosAllocator(aosAllocator),
-  idsAllocator(idsAllocator),
-  skyLightsAllocator(skyLightsAllocator),
-  torchLightsAllocator(torchLightsAllocator),
-  indicesAllocator(indicesAllocator),
-  peeksAllocator(peeksAllocator)
-  {}
+
+  landPositionsAllocator(landPositionsAllocator),
+  landNormalsAllocator(landNormalsAllocator),
+  landUvsAllocator(landUvsAllocator),
+  landBarycentricsAllocator(landBarycentricsAllocator),
+  landAosAllocator(landAosAllocator),
+  landIdsAllocator(landIdsAllocator),
+  landSkyLightsAllocator(landSkyLightsAllocator),
+  landTorchLightsAllocator(landTorchLightsAllocator),
+
+  vegetationPositionsAllocator(vegetationPositionsAllocator),
+  vegetationUvsAllocator(vegetationUvsAllocator),
+  vegetationIdsAllocator(vegetationIdsAllocator),
+  vegetationIndicesAllocator(vegetationIndicesAllocator),
+  vegetationSkyLightsAllocator(vegetationSkyLightsAllocator),
+  vegetationTorchLightsAllocator(vegetationTorchLightsAllocator)
+{}
 void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z) {
   Coord coord(
     (int)std::floor(x/(float)SUBPARCEL_SIZE),

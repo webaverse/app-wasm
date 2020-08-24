@@ -260,21 +260,47 @@ public:
 class GeometrySet;
 class Tracker {
 public:
-  Tracker(int seed, int chunkDistance, ArenaAllocator *positionsAllocator, ArenaAllocator *normalsAllocator, ArenaAllocator *uvsAllocator, ArenaAllocator *barycentricsAllocator, ArenaAllocator *aosAllocator, ArenaAllocator *idsAllocator, ArenaAllocator *skyLightsAllocator, ArenaAllocator *torchLightsAllocator, ArenaAllocator *indicesAllocator, ArenaAllocator *peeksAllocator);
+  Tracker(
+    int seed,
+    int chunkDistance,
+
+    ArenaAllocator *landPositionsAllocator,
+    ArenaAllocator *landNormalsAllocator,
+    ArenaAllocator *landUvsAllocator,
+    ArenaAllocator *landBarycentricsAllocator,
+    ArenaAllocator *landAosAllocator,
+    ArenaAllocator *landIdsAllocator,
+    ArenaAllocator *landSkyLightsAllocator,
+    ArenaAllocator *landTorchLightsAllocator,
+
+    ArenaAllocator *vegetationPositionsAllocator,
+    ArenaAllocator *vegetationUvsAllocator,
+    ArenaAllocator *vegetationIdsAllocator,
+    ArenaAllocator *vegetationIndicesAllocator,
+    ArenaAllocator *vegetationSkyLightsAllocator,
+    ArenaAllocator *vegetationTorchLightsAllocator
+  );
   void updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z);
 
   int seed;
   int chunkDistance;
-  ArenaAllocator *positionsAllocator;
-  ArenaAllocator *normalsAllocator;
-  ArenaAllocator *uvsAllocator;
-  ArenaAllocator *barycentricsAllocator;
-  ArenaAllocator *aosAllocator;
-  ArenaAllocator *idsAllocator;
-  ArenaAllocator *skyLightsAllocator;
-  ArenaAllocator *torchLightsAllocator;
-  ArenaAllocator *indicesAllocator;
-  ArenaAllocator *peeksAllocator;
+
+  ArenaAllocator *landPositionsAllocator;
+  ArenaAllocator *landNormalsAllocator;
+  ArenaAllocator *landUvsAllocator;
+  ArenaAllocator *landBarycentricsAllocator;
+  ArenaAllocator *landAosAllocator;
+  ArenaAllocator *landIdsAllocator;
+  ArenaAllocator *landSkyLightsAllocator;
+  ArenaAllocator *landTorchLightsAllocator;
+
+  ArenaAllocator *vegetationPositionsAllocator;
+  ArenaAllocator *vegetationUvsAllocator;
+  ArenaAllocator *vegetationIdsAllocator;
+  ArenaAllocator *vegetationIndicesAllocator;
+  ArenaAllocator *vegetationSkyLightsAllocator;
+  ArenaAllocator *vegetationTorchLightsAllocator;
+
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;
   std::map<int, Subparcel *> subparcels;
