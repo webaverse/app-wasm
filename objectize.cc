@@ -738,8 +738,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
     Tracker *tracker = (Tracker *)trackerByteOffset;
     GeometrySet *geometrySet = (GeometrySet *)geometrySetByteOffset;
     std::shared_ptr<Subparcel> *subparcelSharedPtr = (std::shared_ptr<Subparcel> *)subparcelSharedPtrByteOffset;
-    std::shared_ptr<Subparcel> subparcel(std::move(*subparcelSharedPtr));
-    delete subparcelSharedPtr;
+    std::shared_ptr<Subparcel> subparcel(*subparcelSharedPtr);
 
     {
       constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
@@ -1040,6 +1039,9 @@ std::function<void(Message *)> METHOD_FNS[] = {
     *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry;
     index += sizeof(FreeEntry *);
 
+    *((std::shared_ptr<Subparcel> **)(Message->args + index)) = subparcelSharedPtr;
+    index += sizeof(std::shared_ptr<Subparcel> *);
+
     // std::cout << "return 4" << std::endl;
 
     if (index/sizeof(unsigned int) > Message->count) {
@@ -1048,6 +1050,12 @@ std::function<void(Message *)> METHOD_FNS[] = {
     }
 
     // std::cout << "return update " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
+  },
+  [](Message *Message) -> void { // releaseUpdate
+    unsigned int index = 0;
+    std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
+    index += sizeof(std::shared_ptr<Subparcel> *);
+    delete subparcelSharedPtr;
   },
 };
 

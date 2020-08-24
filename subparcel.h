@@ -145,6 +145,7 @@ enum class METHODS : int {
   marchingCubes,
   bakeGeometry,
   chunk,
+  releaseUpdate,
 };
 enum class MESSAGES : int {
   updateGeometry = -1,
