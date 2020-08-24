@@ -4,6 +4,7 @@
 #include "vector.h"
 #include <deque>
 #include <map>
+#include <set>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -31,104 +32,6 @@ public:
   void release();
   void acquire();
   bool try_acquire();
-};
-
-class Coord {
-public:
-  Coord() : x(0), y(0), z(0), index(getSubparcelIndex(x, y, z)) {}
-  Coord(int x, int y, int z) : x(x), y(y), z(z), index(getSubparcelIndex(x, y, z)) {}
-  Coord(int x, int y, int z, int index) : x(x), y(y), z(z), index(index) {}
-  Coord(const Coord &coord) : x(coord.x), y(coord.y), z(coord.z), index(coord.index) {}
-  bool operator<(const Coord &c) const {
-    return c.index < index;
-  }
-  bool operator==(const Coord &c) const {
-    return c.index == index;
-  }
-  bool operator!=(const Coord &c) const {
-    return c.index != index;
-  }
-  Coord &operator=(const Coord &c) {
-    x = c.x;
-    y = c.y;
-    z = c.z;
-    index = c.index;
-    return *this;
-  }
-
-  int x;
-  int y;
-  int z;
-  int index;
-};
-
-class Group {
-public:
-  unsigned int start;
-  unsigned int count;
-  unsigned int materialIndex;
-};
-
-enum class OBJECT_TYPE : unsigned int {
-  VEGETATION = 1,
-  PACKAGE = 2,
-};
-class Object {
-public:
-  unsigned int id;
-  OBJECT_TYPE type;
-  char name[MAX_NAME_LENGTH];
-  Vec position;
-  Quat quaternion;
-};
-
-class Subparcel {
-public:
-  Subparcel() {
-    initState();
-  }
-  Subparcel(int x, int y, int z) : coord(x, y, z) {
-    initState();
-  }
-  Subparcel(int x, int y, int z, int index) : coord(x, y, z, index) {
-    initState();
-  }
-  Subparcel(const Coord &coord) : coord(coord) {
-    initState();
-  }
-  inline void initState() {
-    boundingSphere = Sphere(
-      Vec{(float)coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, (float)coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, (float)coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f},
-      slabRadius
-    );
-  }
-
-  bool operator<(const Subparcel &subparcel) const {
-    return coord < subparcel.coord;
-  }
-  bool operator==(const Subparcel &subparcel) const {
-    return coord == subparcel.coord;
-  }
-  bool operator!=(const Subparcel &subparcel) const {
-    return coord != subparcel.coord;
-  }
-
-  // data
-  Coord coord;
-  float potentials[SUBPARCEL_SIZE_P3 * SUBPARCEL_SIZE_P3 * SUBPARCEL_SIZE_P3];
-  unsigned char biomes[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 3]; // align
-  char heightfield[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 1]; // align
-  unsigned char lightfield[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 1]; // align
-  unsigned int numObjects;
-  Object objects[PLANET_OBJECT_SLOTS];
-
-  // state
-  Sphere boundingSphere;
-  unsigned char peeks[16];
-  Group landGroups[2];
-  Group vegetationGroups[1];
-  uintptr_t physxGeometry;
-  std::vector<uintptr_t> objectPhysxGeometries;
 };
 
 class FreeEntry {
@@ -258,7 +161,47 @@ public:
   Mailbox<Message> outbox;
 };
 
+class Coord {
+public:
+  Coord() : x(0), y(0), z(0), index(getSubparcelIndex(x, y, z)) {}
+  Coord(int x, int y, int z) : x(x), y(y), z(z), index(getSubparcelIndex(x, y, z)) {}
+  Coord(int x, int y, int z, int index) : x(x), y(y), z(z), index(index) {}
+  Coord(const Coord &coord) : x(coord.x), y(coord.y), z(coord.z), index(coord.index) {}
+  bool operator<(const Coord &c) const {
+    return c.index < index;
+  }
+  bool operator==(const Coord &c) const {
+    return c.index == index;
+  }
+  bool operator!=(const Coord &c) const {
+    return c.index != index;
+  }
+  Coord &operator=(const Coord &c) {
+    x = c.x;
+    y = c.y;
+    z = c.z;
+    index = c.index;
+    return *this;
+  }
+
+  int x;
+  int y;
+  int z;
+  int index;
+};
+
 class GeometrySet;
+class GeometrySpec;
+class FreeEntry;
+class Subparcel;
+namespace physx {
+  class PxDefaultAllocator;
+  class PxDefaultErrorCallback;
+  class PxFoundation;
+  class PxPhysics;
+  class PxCooking;
+}
+using namespace physx;
 class Tracker {
 public:
   Tracker(
@@ -305,6 +248,90 @@ public:
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;
   std::map<int, std::shared_ptr<Subparcel>> subparcels;
+
+  PxDefaultAllocator *gAllocator = nullptr;
+  PxDefaultErrorCallback *gErrorCallback = nullptr;
+  PxFoundation *gFoundation = nullptr;
+  PxPhysics *physics = nullptr;
+  PxCooking *cooking = nullptr;
+  std::set<GeometrySpec *> geometrySpecs;
+  std::set<GeometrySpec *> staticGeometrySpecs;
+  std::vector<std::set<GeometrySpec *> *> geometrySpecSets{
+    &staticGeometrySpecs,
+    &geometrySpecs,
+  };
+  std::mutex gPhysicsMutex;
+};
+
+class Group {
+public:
+  unsigned int start;
+  unsigned int count;
+  unsigned int materialIndex;
+};
+
+enum class OBJECT_TYPE : unsigned int {
+  VEGETATION = 1,
+  PACKAGE = 2,
+};
+class Object {
+public:
+  unsigned int id;
+  OBJECT_TYPE type;
+  char name[MAX_NAME_LENGTH];
+  Vec position;
+  Quat quaternion;
+};
+
+class Subparcel {
+public:
+  Subparcel(const Coord &coord, Tracker *tracker);
+  ~Subparcel();
+
+  bool operator<(const Subparcel &subparcel) const {
+    return coord < subparcel.coord;
+  }
+  bool operator==(const Subparcel &subparcel) const {
+    return coord == subparcel.coord;
+  }
+  bool operator!=(const Subparcel &subparcel) const {
+    return coord != subparcel.coord;
+  }
+
+  // data
+  Coord coord;
+  float potentials[SUBPARCEL_SIZE_P3 * SUBPARCEL_SIZE_P3 * SUBPARCEL_SIZE_P3];
+  unsigned char biomes[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 3]; // align
+  char heightfield[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 1]; // align
+  unsigned char lightfield[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 1]; // align
+  unsigned int numObjects;
+  Object objects[PLANET_OBJECT_SLOTS];
+
+  // state
+  Tracker *tracker;
+  Sphere boundingSphere;
+  unsigned char peeks[16];
+
+  FreeEntry *landPositionsEntry;
+  FreeEntry *landNormalsEntry;
+  FreeEntry *landUvsEntry;
+  FreeEntry *landBarycentricsEntry;
+  FreeEntry *landAosEntry;
+  FreeEntry *landIdsEntry;
+  FreeEntry *landSkyLightsEntry;
+  FreeEntry *landTorchLightsEntry;
+
+  FreeEntry *vegetationPositionsEntry;
+  FreeEntry *vegetationUvsEntry;
+  FreeEntry *vegetationIdsEntry;
+  FreeEntry *vegetationIndicesEntry;
+  FreeEntry *vegetationSkyLightsEntry;
+  FreeEntry *vegetationTorchLightsEntry;
+
+  Group landGroups[2];
+  Group vegetationGroups[1];
+  GeometrySpec *physxGeometry;
+  std::vector<GeometrySpec *> objectPhysxGeometries;
 };
 
 #endif

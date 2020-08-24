@@ -1,4 +1,5 @@
 #include "subparcel.h"
+#include "collide.h"
 #include <iostream>
 
 int absi(int n) {
@@ -89,9 +90,12 @@ void ArenaAllocator::updateFreeList() {
     }
   }
   if (merged) {
-    freeList.erase(std::remove_if(freeList.begin(), freeList.end(), [](FreeEntry *freeEntry) {
-      return freeEntry == nullptr;
-    }), freeList.end());
+		std::vector<FreeEntry *> freeList2;
+		freeList2.reserve(freeList.size());
+		std::copy_if(freeList.begin(), freeList.end(), std::back_inserter(freeList2), [](FreeEntry *freeEntry) -> bool {
+      return freeEntry != nullptr;
+		});
+		freeList = std::move(freeList2);
   }
 }
 
@@ -159,7 +163,16 @@ Tracker::Tracker(
   vegetationIndicesAllocator(vegetationIndicesAllocator),
   vegetationSkyLightsAllocator(vegetationSkyLightsAllocator),
   vegetationTorchLightsAllocator(vegetationTorchLightsAllocator)
-{}
+{
+  gAllocator = new PxDefaultAllocator();
+  gErrorCallback = new PxDefaultErrorCallback();
+  gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, *gAllocator, *gErrorCallback);
+  PxTolerancesScale tolerancesScale;
+  physics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, tolerancesScale);
+  PxCookingParams cookingParams(tolerancesScale);
+  // cookingParams.midphaseDesc = PxMeshMidPhase::eBVH34;
+  cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
+}
 void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z) {
   Coord coord(
     (int)std::floor(x/(float)SUBPARCEL_SIZE),
@@ -205,7 +218,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
     }
 
     for (const Coord &addedCoord : addedCoords) {
-      std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord));
+      std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
       subparcels[addedCoord.index] = subparcel;
       // std::cout << "added subparcel " << addedCoord.x << " " << addedCoord.y << " " << addedCoord.z << " " << addedCoord.index << " " << addedCoords.size() << " " << subparcels.size() << std::endl;
 
@@ -250,5 +263,66 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
     // if (addedCoords.size() > 0 || removedCoords.size() > 0) {
       std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
     // }
+  }
+}
+
+Subparcel::Subparcel(const Coord &coord, Tracker *tracker) :
+  coord(coord),
+  tracker(tracker),
+  boundingSphere(
+    Vec{(float)coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, (float)coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, (float)coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f},
+    slabRadius
+  ),
+
+  landPositionsEntry(nullptr),
+  landNormalsEntry(nullptr),
+  landUvsEntry(nullptr),
+  landBarycentricsEntry(nullptr),
+  landAosEntry(nullptr),
+  landIdsEntry(nullptr),
+  landSkyLightsEntry(nullptr),
+  landTorchLightsEntry(nullptr),
+
+  vegetationPositionsEntry(nullptr),
+  vegetationUvsEntry(nullptr),
+  vegetationIdsEntry(nullptr),
+  vegetationIndicesEntry(nullptr),
+  vegetationSkyLightsEntry(nullptr),
+  vegetationTorchLightsEntry(nullptr),
+
+  physxGeometry(nullptr)
+{}
+Subparcel::~Subparcel() {
+  // std::cout << "delete subparcel " << coord.x << " " << coord.y << " " << coord.z << std::endl;
+
+  if (landPositionsEntry) tracker->landPositionsAllocator->free(landPositionsEntry);
+  if (landNormalsEntry) tracker->landNormalsAllocator->free(landNormalsEntry);
+  if (landUvsEntry) tracker->landUvsAllocator->free(landUvsEntry);
+  if (landBarycentricsEntry) tracker->landBarycentricsAllocator->free(landBarycentricsEntry);
+  if (landAosEntry) tracker->landAosAllocator->free(landAosEntry);
+  if (landIdsEntry) tracker->landIdsAllocator->free(landIdsEntry);
+  if (landSkyLightsEntry) tracker->landSkyLightsAllocator->free(landSkyLightsEntry);
+  if (landTorchLightsEntry) tracker->landTorchLightsAllocator->free(landTorchLightsEntry);
+
+  if (vegetationPositionsEntry) tracker->vegetationPositionsAllocator->free(vegetationPositionsEntry);
+  if (vegetationUvsEntry) tracker->vegetationUvsAllocator->free(vegetationUvsEntry);
+  if (vegetationIdsEntry) tracker->vegetationIdsAllocator->free(vegetationIdsEntry);
+  if (vegetationIndicesEntry) tracker->vegetationIndicesAllocator->free(vegetationIndicesEntry);
+  if (vegetationSkyLightsEntry) tracker->vegetationSkyLightsAllocator->free(vegetationSkyLightsEntry);
+  if (vegetationTorchLightsEntry) tracker->vegetationTorchLightsAllocator->free(vegetationTorchLightsEntry);
+
+  {
+    std::lock_guard<std::mutex> lock(tracker->gPhysicsMutex);
+
+    if (physxGeometry) {
+      for (std::set<GeometrySpec *> *geometrySpecSet : tracker->geometrySpecSets) {
+        geometrySpecSet->erase(physxGeometry);
+      }
+    }
+    for (GeometrySpec *geometrySpec : objectPhysxGeometries) {
+      for (std::set<GeometrySpec *> *geometrySpecSet : tracker->geometrySpecSets) {
+        geometrySpecSet->erase(geometrySpec);
+      }
+    }
   }
 }
