@@ -506,3 +506,88 @@ void doCull(Culler *culler, float *positionData, float *matrixData, float slabRa
     return a.materialIndex < b.materialIndex;
   });
 }
+void doTickCull(Tracker *tracker, float *positionData, float *matrixData, float slabRadius, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults) {
+  Vec position(positionData[0], positionData[1], positionData[2]);
+  Frustum frustum;
+  frustum.setFromMatrix(matrixData);
+
+  // frustum cull
+  std::vector<Subparcel *> frustumSubparcels;
+  frustumSubparcels.reserve(tracker->subparcels.size());
+  for (auto &iter : tracker->subparcels) {
+    Subparcel *subparcel = iter.second;
+    if (frustum.intersectsSphere(subparcel->boundingSphere)) {
+      frustumSubparcels.push_back(subparcel);
+    }
+  }
+  std::sort(frustumSubparcels.begin(), frustumSubparcels.end(), [&](Subparcel *a, Subparcel *b) -> bool {
+    return a->boundingSphere.center.distanceTo(position) < b->boundingSphere.center.distanceTo(position);
+  });
+
+  // intialize queue
+  std::deque<Subparcel *> queue;
+  std::set<Subparcel *> seenQueue;
+  for (int i = 0; i < frustumSubparcels.size(); i++) {
+    Subparcel *subparcel = frustumSubparcels[i];
+    if (subparcel->boundingSphere.center.distanceTo(position) < slabRadius*2.0f) {
+      queue.push_back(subparcel);
+      seenQueue.insert(subparcel);
+    }
+  }
+
+  // run queue
+  numLandCullResults = 0;
+  numVegetationCullResults = 0;
+  while (queue.size() > 0) {
+    Subparcel *subparcel = queue.front();
+    queue.pop_front();
+
+    for (const Group &group : subparcel->landGroups) {
+      CullResult &cullResult = landCullResults[numLandCullResults++];
+      cullResult.start = group.start;
+      cullResult.count = group.count;
+      cullResult.materialIndex = group.materialIndex;
+    }
+    for (const Group &group : subparcel->vegetationGroups) {
+      CullResult &cullResult = vegetationCullResults[numVegetationCullResults++];
+      cullResult.start = group.start;
+      cullResult.count = group.count;
+      cullResult.materialIndex = group.materialIndex;
+    }
+
+    for (const PeekDirection &enterPeekDirection : PEEK_DIRECTIONS) {
+      const Vec &enterNormal = enterPeekDirection.normal;
+      const int *enterINormal = enterPeekDirection.inormal;
+      const PEEK_FACES &enterFace = enterPeekDirection.face;
+      const Vec direction = subparcel->boundingSphere.center
+        + (enterNormal * (float)SUBPARCEL_SIZE/2.0f)
+        - position;
+      if (direction.dot(enterNormal) <= 0) {
+        for (const PeekDirection &exitPeekDirection : PEEK_DIRECTIONS) {
+          const Vec &exitNormal = exitPeekDirection.normal;
+          const PEEK_FACES &exitFace = exitPeekDirection.face;
+          const int *exitINormal = exitPeekDirection.inormal;
+          const Vec direction = subparcel->boundingSphere.center
+            + (exitNormal * (float)SUBPARCEL_SIZE/2.0f)
+            - position;
+          if (direction.dot(exitNormal) >= 0 && subparcel->peeks[PEEK_FACE_INDICES[(int)enterFace << 4 | (int)exitFace]]) {
+            int index = getSubparcelIndex(subparcel->coord.x + exitINormal[0], subparcel->coord.y + exitINormal[1], subparcel->coord.z + exitINormal[2]);
+            auto nextSubparcelIter = std::find_if(frustumSubparcels.begin(), frustumSubparcels.end(), [&](Subparcel *subparcel) -> bool {
+              return subparcel->coord.index == index;
+            });
+            if (nextSubparcelIter != frustumSubparcels.end()) {
+              Subparcel *nextSubparcel = *nextSubparcelIter;
+              if (nextSubparcel != nullptr && seenQueue.find(nextSubparcel) == seenQueue.end()) {
+                queue.push_back(nextSubparcel);
+                seenQueue.insert(nextSubparcel);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  std::sort(landCullResults, landCullResults + numLandCullResults, [&](const CullResult &a, const CullResult &b) -> bool {
+    return a.materialIndex < b.materialIndex;
+  });
+}

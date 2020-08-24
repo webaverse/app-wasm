@@ -8,367 +8,6 @@
 
 #include <deque>
 #include <map>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-
-class Semaphore
-{
-private:
-    std::mutex mutex_;
-    std::condition_variable condition_;
-    unsigned long count_ = 0; // Initialized as locked.
-
-public:
-    void release() {
-        std::lock_guard<decltype(mutex_)> lock(mutex_);
-        ++count_;
-        condition_.notify_one();
-    }
-
-    void acquire() {
-        std::unique_lock<decltype(mutex_)> lock(mutex_);
-        while(!count_) // Handle spurious wake-ups.
-            condition_.wait(lock);
-        --count_;
-    }
-
-    bool try_acquire() {
-        std::lock_guard<decltype(mutex_)> lock(mutex_);
-        if(count_) {
-            --count_;
-            return true;
-        }
-        return false;
-    }
-};
-
-class Message {
-public:
-  int id;
-  int method;
-  unsigned int count;
-  unsigned char args[4];
-};
-
-template <typename M>
-class Mailbox {
-public:
-  void queue(M *message) {
-    std::lock_guard<std::mutex> lock(mutex);
-    messages.push_back(message);
-    semaphore.release();
-  }
-  void queueAll(std::vector<M *> &&ms) {
-    std::lock_guard<std::mutex> lock(mutex);
-    for (M *m : ms) {
-      messages.push_back(m);
-      semaphore.release();
-    }
-  }
-  M *wait() {
-    for(;;) {
-      semaphore.acquire();
-      std::lock_guard<std::mutex> lock(mutex);
-      M *message = messages.front();
-      messages.pop_front();
-      if (message) {
-        return message;
-      }
-    }
-  }
-  void push(M *message) {
-    std::lock_guard<std::mutex> lock(mutex);
-    messages.push_back(message);
-    // std::cout << "push messages a " << messages.size() << std::endl;
-    // semaphore.release();
-  }
-  M *pop() {
-    M *message;
-    {
-      std::lock_guard<std::mutex> lock(mutex);
-      if (messages.size() > 0) {
-        message = messages.front();
-        messages.pop_front();
-        // semaphore.acquire();
-      } else {
-        message = nullptr;
-      }
-    }
-    return message;
-  }
-  void popAll(std::vector<M *> &ms) {
-    std::lock_guard<std::mutex> lock(mutex);
-    // std::cout << "pop all a " << messages.size() << std::endl;
-    ms.reserve(messages.size());
-    for (Message *message : messages) {
-      ms.push_back(message);
-    }
-    messages.clear();
-    // std::cout << "pop all b " << ms.size() << std::endl;
-  }
-  void filterQueue(std::function<bool(Message *message)> testFn) {
-    std::lock_guard<std::mutex> lock(mutex);
-
-    for (auto iter = messages.begin(); iter != messages.end(); iter++) {
-      Message *message = *iter;
-      if (!testFn(message)) {
-        *iter = nullptr;
-      }
-    }
-  }
-
-  std::deque<M *> messages;
-  Semaphore semaphore;
-  std::mutex mutex;
-};
-
-extern "C" {
-  extern std::function<void(Message *)> METHOD_FNS[];
-}
-
-class FreeEntry {
-public:
-  unsigned int start;
-  unsigned int count;
-};
-class ArenaAllocator {
-public:
-  ArenaAllocator(unsigned int size) {
-    data = (unsigned char *)malloc(size);
-    freeList.push_back(new FreeEntry{
-      0,
-      size,
-    });
-  }
-  FreeEntry *alloc(unsigned int size) {
-    std::lock_guard<std::mutex> lock(mutex);
-
-    for (unsigned int i = 0; i < freeList.size(); i++) {
-      FreeEntry *entry = freeList[i];
-      if (entry->count >= size) {
-        if (entry->count > size) {
-          freeList[i] = new FreeEntry{
-            entry->start + size,
-            entry->count - size,
-          };
-        } else {
-          freeList.erase(freeList.begin() + i);
-        }
-        entry->count = size;
-        return entry;
-      }
-    }
-    return nullptr;
-  }
-  void free(FreeEntry *freeEntry) {
-    std::lock_guard<std::mutex> lock(mutex);
-
-    freeList.push_back(freeEntry);
-    updateFreeList();
-  }
-  void updateFreeList() {
-    std::sort(freeList.begin(), freeList.end(), [](FreeEntry *a, FreeEntry *b) -> bool {
-      return a->start < b->start;
-    });
-    bool merged = false;
-    for (unsigned int i = 0; i < freeList.size()-1; i++) {
-      FreeEntry *entry = freeList[i];
-      if (entry) {
-        for (unsigned int j = i+1; j < freeList.size(); j++) {
-          FreeEntry *nextEntry = freeList[j];
-          if (nextEntry) {
-            if (entry->start + entry->count == nextEntry->start) {
-              entry->count += nextEntry->count;
-              freeList[j] = nullptr;
-              delete nextEntry;
-              merged = true;
-            }
-          }
-        }
-      }
-    }
-    if (merged) {
-      freeList.erase(std::remove_if(freeList.begin(), freeList.end(), [](FreeEntry *freeEntry) {
-        return freeEntry == nullptr;
-      }), freeList.end());
-    }
-  }
-  unsigned char *data;
-  std::vector<FreeEntry *> freeList;
-  std::mutex mutex;
-};
-
-class ThreadPool {
-public:
-  ThreadPool(unsigned int numThreads) {
-    for (unsigned int i = 0; i < numThreads; i++) {
-      // std::cout << "starting thread " << i << std::endl;
-      std::thread thread([this]() -> void {
-        // std::cout << "thread pool running" << std::endl;
-        for (;;) {
-          Message *message = inbox.wait();
-          // std::cout << "got request message method " << (unsigned int)message->method << std::endl;
-          auto &fn = METHOD_FNS[message->method];
-          // std::cout << "got request message method b" << std::endl;
-          fn(message);
-
-          if (message->id != 0) {
-            outbox.push(message);
-          } /* else {
-            std::cout << "ignore message due to id " << message->id << std::endl;
-          } */
-
-          // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
-        }
-      });
-      thread.detach();
-    }
-  }
-  Mailbox<Message> inbox;
-  Mailbox<Message> outbox;
-};
-
-enum class METHODS : int {
-  makeArenaAllocator = 0,
-  arenaAlloc,
-  arenaFree,
-  makeGeometrySet,
-  loadBake,
-  getGeometry,
-  getAnimalGeometry,
-  marchObjects,
-  getHeight,
-  noise,
-  marchingCubes,
-  bakeGeometry,
-  chunk,
-};
-enum class MESSAGES : int {
-  updateGeometry = -1,
-};
-
-class Tracker {
-public:
-  Tracker(int seed, int chunkDistance, ArenaAllocator *positionsAllocator, ArenaAllocator *normalsAllocator, ArenaAllocator *uvsAllocator, ArenaAllocator *barycentricsAllocator, ArenaAllocator *aosAllocator, ArenaAllocator *idsAllocator, ArenaAllocator *skyLightsAllocator, ArenaAllocator *torchLightsAllocator, ArenaAllocator *indicesAllocator, ArenaAllocator *peeksAllocator) :
-    seed(seed),
-    chunkDistance(chunkDistance),
-    lastCoord(0, 256, 0),
-    positionsAllocator(positionsAllocator),
-    normalsAllocator(normalsAllocator),
-    uvsAllocator(uvsAllocator),
-    barycentricsAllocator(barycentricsAllocator),
-    aosAllocator(aosAllocator),
-    idsAllocator(idsAllocator),
-    skyLightsAllocator(skyLightsAllocator),
-    torchLightsAllocator(torchLightsAllocator),
-    indicesAllocator(indicesAllocator),
-    peeksAllocator(peeksAllocator)
-    {}
-  void updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z) {
-    Coord coord(
-      (int)std::floor(x/(float)SUBPARCEL_SIZE),
-      (int)std::floor(y/(float)SUBPARCEL_SIZE),
-      (int)std::floor(z/(float)SUBPARCEL_SIZE)
-    );
-
-    // std::cout << "check coord " << coord.x << " " << coord.y << " " << coord.z << " " << coord.index << " : " << lastCoord.x << " " << lastCoord.y << " " << lastCoord.z << " " << lastCoord.index << std::endl;
-    if (coord != lastCoord) {
-      std::vector<Coord> neededCoords;
-      neededCoords.reserve(256);
-      std::vector<Coord> addedCoords;
-      addedCoords.reserve(256);
-      for (int dx = -chunkDistance; dx <= chunkDistance; dx++) {
-        const int ax = dx + coord.x;
-        for (int dy = -chunkDistance; dy <= chunkDistance; dy++) {
-          const int ay = dy + coord.y;
-          for (int dz = -chunkDistance; dz <= chunkDistance; dz++) {
-            const int az = dz + coord.z;
-            Coord coord(ax, ay, ax);
-            neededCoords.push_back(coord);
-
-            auto iter = std::find_if(lastNeededCoords.begin(), lastNeededCoords.end(), [&](const Coord &coord2) -> bool {
-              return coord2.index == coord.index;
-            });
-            if (iter == lastNeededCoords.end()) {
-              addedCoords.push_back(coord);
-            }
-          }
-        }
-      }
-
-      std::vector<Coord> removedCoords;
-      removedCoords.reserve(256);
-      for (const Coord &coord : lastNeededCoords) {
-        auto iter = std::find_if(neededCoords.begin(), neededCoords.end(), [&](const Coord &coord2) -> bool {
-          return coord2.index == coord.index;
-        });
-        if (iter == neededCoords.end()) {
-          removedCoords.push_back(coord);
-        }
-      }
-
-      for (const Coord &addedCoord : addedCoords) {
-        Subparcel *subparcel = new Subparcel(addedCoord);
-        subparcels[addedCoord.index] = subparcel;
-
-        unsigned int count = 128;
-        Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
-        message->id = -1;
-        message->method = (int)METHODS::chunk;
-        message->count = count;
-
-        // std::cout << "queue chunking " << (unsigned int)METHODS::chunk << std::endl;
-
-        {
-          unsigned int *u32 = (unsigned int *)message->args;
-          // float *f32 = (float *)message->args;
-
-          u32[0] = seed;
-          u32[1] = (unsigned int)this;
-          u32[2] = (unsigned int)geometrySet;
-          u32[3] = (unsigned int)subparcel;
-        }
-
-        threadPool->inbox.queue(message);
-      }
-      for (const Coord &removedCoord : removedCoords) {
-        threadPool->inbox.filterQueue([&](Message *message) -> bool {
-          if (message->method == (int)METHODS::chunk) {
-            unsigned int *u32 = (unsigned int *)message->args;
-            Subparcel *subparcel = (Subparcel *)(u32 + 2);
-            return subparcel->coord == removedCoord;
-          } else {
-            return false;
-          }
-        });
-      }
-
-      lastNeededCoords = std::move(neededCoords);
-      lastCoord = coord;
-
-      if (addedCoords.size() > 0 || removedCoords.size() > 0) {
-        std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
-      }
-    }
-  }
-
-  int seed;
-  int chunkDistance;
-  ArenaAllocator *positionsAllocator;
-  ArenaAllocator *normalsAllocator;
-  ArenaAllocator *uvsAllocator;
-  ArenaAllocator *barycentricsAllocator;
-  ArenaAllocator *aosAllocator;
-  ArenaAllocator *idsAllocator;
-  ArenaAllocator *skyLightsAllocator;
-  ArenaAllocator *torchLightsAllocator;
-  ArenaAllocator *indicesAllocator;
-  ArenaAllocator *peeksAllocator;
-  Coord lastCoord;
-  std::vector<Coord> lastNeededCoords;
-  std::map<int, Subparcel *> subparcels;
-};
 
 extern "C" {
 
@@ -1143,7 +782,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
         std::cout << "could not allocate chunk marchingCubes uvs" << std::endl;
         abort();
       }
-      barycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float));
+      barycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float)); // XXX maybe not needed
       if (!barycentricsEntry) {
         std::cout << "could not allocate chunk marchingCubes barycentrics" << std::endl;
         abort();
@@ -1168,7 +807,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
         std::cout << "could not allocate chunk marchingCubes torchLights" << std::endl;
         abort();
       }
-      peeksEntry = peeksAllocator->alloc(numPeeks*sizeof(unsigned char));
+      peeksEntry = peeksAllocator->alloc(numPeeks*sizeof(unsigned char)); // XXX maybe not needed
       if (!peeksEntry) {
         std::cout << "could not allocate chunk marchingCubes peeks" << std::endl;
         abort();
@@ -1183,14 +822,15 @@ std::function<void(Message *)> METHOD_FNS[] = {
       memcpy(skyLightsAllocator->data + skyLightsEntry->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
       memcpy(torchLightsAllocator->data + torchLightsEntry->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
       memcpy(peeksAllocator->data + peeksEntry->start, peeks.data(), numPeeks*sizeof(unsigned char));
+      memcpy(subparcel->peeks, peeks.data(), numPeeks*sizeof(unsigned char));
 
       // groups
-      subparcel->groups[0].start = positionsEntry->start/sizeof(float)/3;
-      subparcel->groups[0].count = numOpaquePositions/3;
-      subparcel->groups[0].materialIndex = 0;
-      subparcel->groups[1].start = subparcel->groups[0].start + subparcel->groups[0].count;
-      subparcel->groups[1].count = numTransparentPositions/3;
-      subparcel->groups[1].materialIndex = 0;
+      subparcel->landGroups[0].start = positionsEntry->start/sizeof(float)/3;
+      subparcel->landGroups[0].count = numOpaquePositions/3;
+      subparcel->landGroups[0].materialIndex = 0;
+      subparcel->landGroups[1].start = subparcel->landGroups[0].start + subparcel->landGroups[0].count;
+      subparcel->landGroups[1].count = numTransparentPositions/3;
+      subparcel->landGroups[1].materialIndex = 0;
 
       // latch
       landPositions = (float *)(positionsAllocator->data + positionsEntry->start);
@@ -1280,9 +920,9 @@ std::function<void(Message *)> METHOD_FNS[] = {
       doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
 
       // groups
-      subparcel->groups[2].start = indicesEntry->start/sizeof(unsigned int);
-      subparcel->groups[2].count = indicesEntry->count/sizeof(unsigned int);
-      subparcel->groups[2].materialIndex = 0;
+      subparcel->vegetationGroups[0].start = indicesEntry->start/sizeof(unsigned int);
+      subparcel->vegetationGroups[0].count = indicesEntry->count/sizeof(unsigned int);
+      subparcel->vegetationGroups[0].materialIndex = 0;
 
       // latch
       vegetationPositionsEntry = positionsEntry;
