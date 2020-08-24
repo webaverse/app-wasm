@@ -48,6 +48,13 @@ public:
   bool operator!=(const Coord &c) const {
     return c.index != index;
   }
+  Coord &operator=(const Coord &c) {
+    x = c.x;
+    y = c.y;
+    z = c.z;
+    index = c.index;
+    return *this;
+  }
 
   int x;
   int y;
