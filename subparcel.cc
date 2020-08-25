@@ -226,6 +226,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
       Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
       message->id = -1;
       message->method = (int)METHODS::chunk;
+      message->priority = 0;
       message->count = count;
 
       {

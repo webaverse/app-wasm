@@ -242,7 +242,7 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsig
       Message *clientMessage = (Message *)(outPtr + index);
 
       unsigned int offsetCount = outMessage->count;
-      unsigned int offsetSize = (3 + offsetCount)*sizeof(unsigned int);
+      unsigned int offsetSize = sizeof(Message) - 4 + offsetCount*sizeof(unsigned int);
       memcpy(clientMessage, outMessage, offsetSize);
 
       // std::cout << "out id " << i << " " << outMessages.size() << " " << clientMessage->id << " " << index << " " << (unsigned int)clientMessage << std::endl;
@@ -267,7 +267,7 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsig
       Message *clientMessage = (Message *)(ptr + index);
 
       unsigned int offsetCount = clientMessage->count;
-      unsigned int offsetSize = (3 + offsetCount)*sizeof(unsigned int);
+      unsigned int offsetSize = sizeof(Message) - 4 + offsetCount*sizeof(unsigned int);
 
       Message *newMessage = (Message *)malloc(offsetSize);
       memcpy(newMessage, clientMessage, offsetSize);

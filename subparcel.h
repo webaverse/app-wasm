@@ -55,6 +55,7 @@ class Message {
 public:
   int id;
   int method;
+  int priority;
   unsigned int count;
   unsigned char args[4];
 };
