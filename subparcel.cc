@@ -113,9 +113,10 @@ ThreadPool::ThreadPool(unsigned int numThreads) {
 
         if (message->id != 0) {
           outbox.push(message);
-        } /* else {
-          std::cout << "ignore message due to id " << message->id << std::endl;
-        } */
+        } else {
+          free(message);
+          // std::cout << "ignore message due to id " << message->id << std::endl;
+        }
 
         // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
       }
