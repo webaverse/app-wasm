@@ -1058,6 +1058,53 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(std::shared_ptr<Subparcel> *);
     delete subparcelSharedPtr;
   },
+  [](Message *Message) -> void { // mine
+    unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+    float *position = (float *)(Message->args + index);
+    index += 3*sizeof(float);
+    float delta = *((float *)(Message->args + index));
+    index += sizeof(float);
+
+    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doMine(tracker, position, delta);
+  },
+  [](Message *Message) -> void { // light
+    unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+    float *position = (float *)(Message->args + index);
+    index += 3*sizeof(float);
+    float delta = *((float *)(Message->args + index));
+    index += sizeof(float);
+
+    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doLight(tracker, position, delta);
+  },
+  [](Message *Message) -> void { // addObject
+    unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+    char *nameChar = (char *)(Message->args + index);
+    index += MAX_NAME_LENGTH;
+    float *position = (float *)(Message->args + index);
+    index += 3*sizeof(float);
+    float *quaternion = (float *)(Message->args + index);
+    index += 4*sizeof(float);
+
+    std::string name(nameChar);
+    std::vector<std::shared_ptr<Subparcel>> addSpecs = doAddObject(tracker, OBJECT_TYPE::VEGETATION, name, position, quaternion);
+  },
+  [](Message *Message) -> void { // removeObject
+    unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+    int meshIndex = *((int *)(Message->args + index));
+    index += sizeof(int);
+    unsigned int objectId = *((int *)(Message->args + index));
+    index += sizeof(unsigned int);
+
+    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doRemoveObject(tracker, meshIndex, objectId);
+  },
 };
 
 }

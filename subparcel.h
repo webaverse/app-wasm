@@ -156,6 +156,10 @@ enum class METHODS : int {
   bakeGeometry,
   chunk,
   releaseUpdate,
+  mine,
+  light,
+  addObject,
+  removeObject,
 };
 enum class MESSAGES : int {
   updateGeometry = -1,
@@ -259,6 +263,7 @@ public:
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;
   std::map<int, std::shared_ptr<Subparcel>> subparcels;
+  std::mutex subparcelsMutex;
 
   PxDefaultAllocator *gAllocator = nullptr;
   PxDefaultErrorCallback *gErrorCallback = nullptr;

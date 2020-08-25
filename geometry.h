@@ -403,3 +403,74 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
 	  }
   }
 }
+
+std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, OBJECT_TYPE type, const std::string &name, float *position, float *quaternion) {
+  const int sdx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
+  const int sdy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
+  const int sdz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
+  int index = getSubparcelIndex(sdx, sdy, sdz);
+  
+  std::shared_ptr<Subparcel> subparcel;
+  {
+    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+    auto subparcelIter = tracker->subparcels.find(index);
+    if (subparcelIter != tracker->subparcels.end()) {
+      subparcel = subparcelIter->second;
+    }
+  }
+  
+  std::vector<std::shared_ptr<Subparcel>> result;
+  if (subparcel) {
+    Object o;
+    o.id = (unsigned int)rand();
+    o.type = type;
+    strcpy(o.name, name.c_str());
+    o.position = Vec{
+      position[0],
+      position[1],
+      position[2],
+    };
+    o.quaternion = Quat{
+      quaternion[0],
+      quaternion[1],
+      quaternion[2],
+      quaternion[3],
+    };
+    subparcel->objects[subparcel->numObjects++] = o;
+
+    // XXX re-march objects
+
+    result.push_back(subparcel);
+  }
+  return std::move(result);
+}
+std::vector<std::shared_ptr<Subparcel>> doRemoveObject(Tracker *tracker, int meshIndex, unsigned int objectId) {
+  std::shared_ptr<Subparcel> subparcel;
+  {
+    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+    auto subparcelIter = tracker->subparcels.find(meshIndex);
+    if (subparcelIter != tracker->subparcels.end()) {
+      subparcel = subparcelIter->second;
+    }
+  }
+  
+  std::vector<std::shared_ptr<Subparcel>> result;
+  if (subparcel) {
+    Object *objectsEnd = ((Object *)subparcel->objects) + subparcel->numObjects;
+    auto objectIter = std::find_if(subparcel->objects, objectsEnd, [&](const Object &object) -> bool {
+      return object.id == objectId;
+    });
+    if (objectIter) {
+      while ((objectIter + 1) != objectsEnd) {
+        *objectIter = *(objectIter + 1);
+        objectIter++;
+      }
+      subparcel->numObjects--;
+      
+      // re-march objects
+
+      result.push_back(subparcel);
+    }
+  }
+  return std::move(result);
+}

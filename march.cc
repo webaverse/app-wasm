@@ -1,4 +1,5 @@
 #include "march.h"
+#include "subparcel.h"
 #include "vector.h"
 #include "biomes.h"
 #include <cstdlib>
@@ -716,4 +717,320 @@ void marchingCubes2(float meshId, int dims[3], float *potential, unsigned char *
     }
   }, heightfield, lightfield, shift, scale, 4.0f, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, positionIndex, normalIndex, uvIndex, /*barycentricIndex,*/ aoIndex, idIndex, skyLightsIndex, torchLightsIndex, peeks);
   numTransparentPositions = positionIndex - numOpaquePositions;
+}
+
+std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position, float delta) {
+  int x = (int)position[0];
+  int y = (int)position[1];
+  int z = (int)position[2];
+  constexpr int radius = 1;
+  int dimsP3[3] = {
+    SUBPARCEL_SIZE_P3,
+    SUBPARCEL_SIZE_P3,
+    SUBPARCEL_SIZE_P3,
+  };
+
+  std::vector<std::shared_ptr<Subparcel>> mineSpecs;
+  std::function<void(int, int, int, float)> _applyRound = [&](int ax, int ay, int az, float value) -> void {
+    std::vector<int> mineSpecsRound;
+    for (int ddy = -1; ddy <= 1; ddy++) {
+      const int ady = ay + ddy;
+      for (int ddz = -1; ddz <= 1; ddz++) {
+        const int adz = az + ddz;
+        for (int ddx = -1; ddx <= 1; ddx++) {
+          const int adx = ax + ddx;
+
+          const int sdx = (int)std::floor((float)adx/(float)SUBPARCEL_SIZE);
+          const int sdy = (int)std::floor((float)ady/(float)SUBPARCEL_SIZE);
+          const int sdz = (int)std::floor((float)adz/(float)SUBPARCEL_SIZE);
+          const int lx = ax - sdx*SUBPARCEL_SIZE;
+          const int ly = ay - sdy*SUBPARCEL_SIZE;
+          const int lz = az - sdz*SUBPARCEL_SIZE;
+
+          if (
+            lx >= 0 && lx < SUBPARCEL_SIZE_P3 &&
+            ly >= 0 && ly < SUBPARCEL_SIZE_P3 &&
+            lz >= 0 && lz < SUBPARCEL_SIZE_P3
+          ) {
+            const int index = getSubparcelIndex(sdx, sdy, sdz);
+            if (std::find(mineSpecsRound.begin(), mineSpecsRound.end(), index) == mineSpecsRound.end()) {
+              auto subparcelIter = tracker->subparcels.find(index);
+              if (subparcelIter != tracker->subparcels.end()) {
+                std::shared_ptr<Subparcel> subparcel = subparcelIter->second;
+
+                const int potentialIndex = getPotentialIndex(lx, ly, lz, dimsP3);
+                subparcel->potentials[potentialIndex] += value;
+
+                mineSpecsRound.push_back(index);
+                if (std::find(mineSpecs.begin(), mineSpecs.end(), subparcel) == mineSpecs.end()) {
+                  mineSpecs.push_back(subparcel);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  {
+    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+
+    for (int dy = -radius; dy <= radius; dy++) {
+      const int ay = y + dy;
+      for (int dz = -radius; dz <= radius; dz++) {
+        const int az = z + dz;
+        for (int dx = -radius; dx <= radius; dx++) {
+          const int ax = x + dx;
+
+          const float dist = std::sqrt((float)dx*(float)dx + (float)dy*(float)dy + (float)dz*(float)dz);
+          const float maxDistScale = radius;
+          const float maxDist = std::sqrt(maxDistScale*maxDistScale + maxDistScale*maxDistScale + maxDistScale*maxDistScale);
+          const float distanceDiff = maxDist - dist;
+          if (distanceDiff > 0) {
+            const float value = (1.0f-dist/maxDist)*delta;
+            _applyRound(ax, ay, az, value);
+          }
+        }
+      }
+    }
+  }
+
+  return std::move(mineSpecs);
+  
+  /* const _mine = async (mineSpecs, explodePosition) => {
+  const slabs = mineSpecs.map(spec => currentChunkMesh.getSlab(spec.x, spec.y, spec.z));
+  const specs = await chunkWorker.requestMine(currentChunkMesh.meshId, mineSpecs);
+  for (let i = 0; i < slabs.length; i++) {
+    const slab = slabs[i];
+    const spec = specs[i];
+    currentChunkMesh.updateGeometry(slab, spec);
+  }
+  for (let i = 0; i < slabs.length; i++) {
+    if (slab.physxGroupSet) {
+      geometryWorker.unregisterGroupSet(culler, slab.physxGroupSet);
+      slab.physxGroupSet = 0;
+    }
+    const peeks = new Uint8Array(currentChunkMesh.geometry.peeks.buffer, currentChunkMesh.geometry.peeks.byteOffset + slab.spec.peeksStart, slab.spec.peeksCount);
+    slab.physxGroupSet = geometryWorker.registerGroupSet(culler, slab.x, slab.y, slab.z, slabRadius, peeks, slab.groupSet.groups);
+  }
+  const neededSpecs = specs.filter(spec => spec.numOpaquePositions > 0);
+  if (neededSpecs.length > 0) {
+    const bakeSpecs = neededSpecs.map(spec => {
+      const {positions, numOpaquePositions, x, y, z} = spec;
+      return numOpaquePositions > 0 ? {
+        positions,
+        numOpaquePositions,
+        x,
+        y,
+        z,
+      } : null;
+    });
+    const result = await geometryWorker.requestBakeGeometries(bakeSpecs.map(spec => ({
+      positions: spec.positions,
+      count: spec.numOpaquePositions,
+    })));
+    for (let i = 0; i < result.physicsGeometryBuffers.length; i++) {
+      const physxGeometry = result.physicsGeometryBuffers[i];
+      const {x, y, z} = bakeSpecs[i];
+      // const stat = bakeStats[i];
+      const slab = currentChunkMesh.getSlab(x, y, z);
+      if (slab.physxGeometry) {
+        geometryWorker.unregisterGeometry(slab.physxGeometry);
+        slab.physxGeometry = 0;
+      }
+      slab.physxGeometry = geometryWorker.registerBakedGeometry(currentChunkMesh.meshId, physxGeometry, x, y, z);
+    }
+  }
+  if (specs.length > 0 && explodePosition) {
+    for (let i = 0; i < 3; i++) {
+      const pxMesh = new THREE.Mesh(tetrehedronGeometry, currentChunkMesh.material[0]);
+      currentChunkMesh.getWorldQuaternion(localQuaternion2).inverse();
+      pxMesh.position.copy(explodePosition)
+        .add(localVector2.set((-1+Math.random()*2)*0.2, 0.2, (-1+Math.random()*2)*0.2).applyQuaternion(localQuaternion2));
+      pxMesh.velocity = new THREE.Vector3((-1+Math.random()*2)*0.5, Math.random()*3, (-1+Math.random()*2)*0.5)
+        .applyQuaternion(localQuaternion2);
+      pxMesh.angularVelocity = new THREE.Vector3((-1+Math.random()*2)*Math.PI*2*0.01, (-1+Math.random()*2)*Math.PI*2*0.01, (-1+Math.random()*2)*Math.PI*2*0.01);
+      pxMesh.isBuildMesh = true;
+      const startTime = Date.now();
+      const endTime = startTime + 3000;
+      pxMesh.update = () => Date.now() < endTime;
+      currentChunkMesh.add(pxMesh);
+      pxMeshes.push(pxMesh);
+    }
+  }
+};
+const _applyMineSpec = (p, radius, key, dim, getIndex, delta) => {
+  const mineSpecs = [];
+  const _applyRound = (ax, ay, az, value) => {
+    const mineSpecsRound = [];
+    for (let ddy = -1; ddy <= 1; ddy++) {
+      const ady = ay + ddy;
+      for (let ddz = -1; ddz <= 1; ddz++) {
+        const adz = az + ddz;
+        for (let ddx = -1; ddx <= 1; ddx++) {
+          const adx = ax + ddx;
+
+          const sdx = Math.floor(adx/currentChunkMesh.subparcelSize);
+          const sdy = Math.floor(ady/currentChunkMesh.subparcelSize);
+          const sdz = Math.floor(adz/currentChunkMesh.subparcelSize);
+          const lx = ax - sdx*currentChunkMesh.subparcelSize;
+          const ly = ay - sdy*currentChunkMesh.subparcelSize;
+          const lz = az - sdz*currentChunkMesh.subparcelSize;
+
+          if (
+            lx >= 0 && lx < dim &&
+            ly >= 0 && ly < dim &&
+            lz >= 0 && lz < dim
+          ) {
+            const index = planet.getSubparcelIndex(sdx, sdy, sdz);
+            if (!mineSpecsRound.some(mineSpec => mineSpec.index === index)) {
+              planet.editSubparcel(sdx, sdy, sdz, subparcel => {
+                const potentialIndex = getIndex(lx, ly, lz);
+                subparcel[key][potentialIndex] += value;
+
+                const slab = currentChunkMesh.getSlab(sdx, sdy, sdz);
+
+                const mineSpec = {
+                  x: sdx,
+                  y: sdy,
+                  z: sdz,
+                  index,
+                  potentials: subparcel.potentials,
+                  biomes: subparcel.biomes,
+                  heightfield: subparcel.heightfield,
+                  lightfield: subparcel.lightfield,
+                  position: slab.position,
+                  normal: slab.normal,
+                  uv: slab.uv,
+                  barycentric: slab.barycentric,
+                  ao: slab.ao,
+                  id: slab.id,
+                  skyLight: slab.skyLight,
+                  torchLight: slab.torchLight,
+                  peeks: slab.peeks,
+                };
+                mineSpecsRound.push(mineSpec);
+                if (!mineSpecs.some(mineSpec => mineSpec.index === index)) {
+                  mineSpecs.push(mineSpec);
+                }
+              });
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const {x, y, z} = p;
+  for (let dy = -radius; dy <= radius; dy++) {
+    const ay = y + dy;
+    for (let dz = -radius; dz <= radius; dz++) {
+      const az = z + dz;
+      for (let dx = -radius; dx <= radius; dx++) {
+        const ax = x + dx;
+
+        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        const maxDistScale = radius;
+        const maxDist = Math.sqrt(maxDistScale*maxDistScale + maxDistScale*maxDistScale + maxDistScale*maxDistScale);
+        const distanceDiff = maxDist - dist;
+        if (distanceDiff > 0) {
+          const value = (1-dist/maxDist)*delta;
+          _applyRound(ax, ay, az, value);
+        }
+      }
+    }
+  }
+  return mineSpecs;
+};
+const _applyPotentialDelta = async (position, delta) => {
+  localVector2.copy(position)
+    .applyMatrix4(localMatrix.getInverse(currentChunkMesh.matrixWorld));
+  const applyPosition = localVector2.clone();
+  localVector2.x = Math.floor(localVector2.x);
+  localVector2.y = Math.floor(localVector2.y);
+  localVector2.z = Math.floor(localVector2.z);
+
+  const mineSpecs = _applyMineSpec(localVector2, 1, 'potentials', SUBPARCEL_SIZE_P3, planet.getPotentialIndex, delta);
+  await _mine(mineSpecs, delta < 0 ? applyPosition : null);
+}; */
+}
+std::vector<std::shared_ptr<Subparcel>> doLight(Tracker *tracker, float *position, float delta) {
+  int x = (int)position[0];
+  int y = (int)position[1];
+  int z = (int)position[2];
+  constexpr int radius = 1;
+  int dimsP1[3] = {
+    SUBPARCEL_SIZE_P1,
+    SUBPARCEL_SIZE_P1,
+    SUBPARCEL_SIZE_P1,
+  };
+
+  std::vector<std::shared_ptr<Subparcel>> mineSpecs;
+  std::function<void(int, int, int, float)> _applyRound = [&](int ax, int ay, int az, float value) -> void {
+    std::vector<int> mineSpecsRound;
+    for (int ddy = -1; ddy <= 1; ddy++) {
+      const int ady = ay + ddy;
+      for (int ddz = -1; ddz <= 1; ddz++) {
+        const int adz = az + ddz;
+        for (int ddx = -1; ddx <= 1; ddx++) {
+          const int adx = ax + ddx;
+
+          const int sdx = (int)std::floor((float)adx/(float)SUBPARCEL_SIZE);
+          const int sdy = (int)std::floor((float)ady/(float)SUBPARCEL_SIZE);
+          const int sdz = (int)std::floor((float)adz/(float)SUBPARCEL_SIZE);
+          const int lx = ax - sdx*SUBPARCEL_SIZE;
+          const int ly = ay - sdy*SUBPARCEL_SIZE;
+          const int lz = az - sdz*SUBPARCEL_SIZE;
+
+          if (
+            lx >= 0 && lx < SUBPARCEL_SIZE_P1 &&
+            ly >= 0 && ly < SUBPARCEL_SIZE_P1 &&
+            lz >= 0 && lz < SUBPARCEL_SIZE_P1
+          ) {
+            const int index = getSubparcelIndex(sdx, sdy, sdz);
+            if (std::find(mineSpecsRound.begin(), mineSpecsRound.end(), index) == mineSpecsRound.end()) {
+              auto subparcelIter = tracker->subparcels.find(index);
+              if (subparcelIter != tracker->subparcels.end()) {
+                std::shared_ptr<Subparcel> subparcel = subparcelIter->second;
+
+                const int potentialIndex = getPotentialIndex(lx, ly, lz, dimsP1);
+                subparcel->lightfield[potentialIndex] += value;
+
+                mineSpecsRound.push_back(index);
+                if (std::find(mineSpecs.begin(), mineSpecs.end(), subparcel) == mineSpecs.end()) {
+                  mineSpecs.push_back(subparcel);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  {
+    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+
+    for (int dy = -radius; dy <= radius; dy++) {
+      const int ay = y + dy;
+      for (int dz = -radius; dz <= radius; dz++) {
+        const int az = z + dz;
+        for (int dx = -radius; dx <= radius; dx++) {
+          const int ax = x + dx;
+
+          const float dist = std::sqrt((float)dx*(float)dx + (float)dy*(float)dy + (float)dz*(float)dz);
+          const float maxDistScale = radius;
+          const float maxDist = std::sqrt(maxDistScale*maxDistScale + maxDistScale*maxDistScale + maxDistScale*maxDistScale);
+          const float distanceDiff = maxDist - dist;
+          if (distanceDiff > 0) {
+            const float value = (1.0f-dist/maxDist)*delta;
+            _applyRound(ax, ay, az, value);
+          }
+        }
+      }
+    }
+  }
+
+  return std::move(mineSpecs);
 }

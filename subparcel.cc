@@ -219,7 +219,10 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
 
     for (const Coord &addedCoord : addedCoords) {
       std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
-      subparcels[addedCoord.index] = subparcel;
+      {
+        std::lock_guard<std::mutex> lock(subparcelsMutex);
+        subparcels[addedCoord.index] = subparcel;
+      }
 
       unsigned int count = 128;
       Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
@@ -254,7 +257,10 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
         }
       });
 
-      subparcels.erase(removedCoord.index);
+      {
+        std::lock_guard<std::mutex> lock(subparcelsMutex);
+        subparcels.erase(removedCoord.index);
+      }
     }
 
     lastNeededCoords = std::move(neededCoords);
