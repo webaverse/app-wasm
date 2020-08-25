@@ -323,7 +323,7 @@ if [ ! -f physx.o ]; then
 	-o physx.o
 fi
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
-emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=4 -s TOTAL_MEMORY=399966208 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -O3 \
+emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=2 -s TOTAL_MEMORY=399966208 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
