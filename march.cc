@@ -506,8 +506,8 @@ inline void marchingCubesRaw(float meshId, int dimsP1[3], std::function<float(in
         setLights(c, [&](int index) -> unsigned char { return (unsigned char)maxChar(heightfield[index], 0); }, skyLights, skyLightsIndex++, dimsP1);
         setLights(c, [&](int index) -> unsigned char { return lightfield[index]; }, torchLights, torchLightsIndex++, dimsP1);
       } else {
-        constexpr float skyLight = 8.0f;
-        constexpr float torchLight = 0.0f;
+        constexpr unsigned char skyLight = 8;
+        constexpr unsigned char torchLight = 0.0f;
 
         skyLights[skyLightsIndex++] = skyLight;
         torchLights[torchLightsIndex++] = torchLight;
