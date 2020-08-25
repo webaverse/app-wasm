@@ -131,7 +131,7 @@ Tracker::Tracker(
   ArenaAllocator *landPositionsAllocator,
   ArenaAllocator *landNormalsAllocator,
   ArenaAllocator *landUvsAllocator,
-  ArenaAllocator *landBarycentricsAllocator,
+  // ArenaAllocator *landBarycentricsAllocator,
   ArenaAllocator *landAosAllocator,
   ArenaAllocator *landIdsAllocator,
   ArenaAllocator *landSkyLightsAllocator,
@@ -151,7 +151,7 @@ Tracker::Tracker(
   landPositionsAllocator(landPositionsAllocator),
   landNormalsAllocator(landNormalsAllocator),
   landUvsAllocator(landUvsAllocator),
-  landBarycentricsAllocator(landBarycentricsAllocator),
+  // landBarycentricsAllocator(landBarycentricsAllocator),
   landAosAllocator(landAosAllocator),
   landIdsAllocator(landIdsAllocator),
   landSkyLightsAllocator(landSkyLightsAllocator),
@@ -277,7 +277,7 @@ Subparcel::Subparcel(const Coord &coord, Tracker *tracker) :
   landPositionsEntry(nullptr),
   landNormalsEntry(nullptr),
   landUvsEntry(nullptr),
-  landBarycentricsEntry(nullptr),
+  // landBarycentricsEntry(nullptr),
   landAosEntry(nullptr),
   landIdsEntry(nullptr),
   landSkyLightsEntry(nullptr),
@@ -298,7 +298,7 @@ Subparcel::~Subparcel() {
   if (landPositionsEntry) tracker->landPositionsAllocator->free(landPositionsEntry);
   if (landNormalsEntry) tracker->landNormalsAllocator->free(landNormalsEntry);
   if (landUvsEntry) tracker->landUvsAllocator->free(landUvsEntry);
-  if (landBarycentricsEntry) tracker->landBarycentricsAllocator->free(landBarycentricsEntry);
+  // if (landBarycentricsEntry) tracker->landBarycentricsAllocator->free(landBarycentricsEntry);
   if (landAosEntry) tracker->landAosAllocator->free(landAosEntry);
   if (landIdsEntry) tracker->landIdsAllocator->free(landIdsEntry);
   if (landSkyLightsEntry) tracker->landSkyLightsAllocator->free(landSkyLightsEntry);

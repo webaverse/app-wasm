@@ -222,7 +222,7 @@ public:
     ArenaAllocator *landPositionsAllocator,
     ArenaAllocator *landNormalsAllocator,
     ArenaAllocator *landUvsAllocator,
-    ArenaAllocator *landBarycentricsAllocator,
+    // ArenaAllocator *landBarycentricsAllocator,
     ArenaAllocator *landAosAllocator,
     ArenaAllocator *landIdsAllocator,
     ArenaAllocator *landSkyLightsAllocator,
@@ -243,7 +243,7 @@ public:
   ArenaAllocator *landPositionsAllocator;
   ArenaAllocator *landNormalsAllocator;
   ArenaAllocator *landUvsAllocator;
-  ArenaAllocator *landBarycentricsAllocator;
+  // ArenaAllocator *landBarycentricsAllocator;
   ArenaAllocator *landAosAllocator;
   ArenaAllocator *landIdsAllocator;
   ArenaAllocator *landSkyLightsAllocator;
@@ -326,7 +326,7 @@ public:
   FreeEntry *landPositionsEntry;
   FreeEntry *landNormalsEntry;
   FreeEntry *landUvsEntry;
-  FreeEntry *landBarycentricsEntry;
+  // FreeEntry *landBarycentricsEntry;
   FreeEntry *landAosEntry;
   FreeEntry *landIdsEntry;
   FreeEntry *landSkyLightsEntry;

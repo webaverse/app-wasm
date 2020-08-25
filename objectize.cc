@@ -69,8 +69,8 @@ EMSCRIPTEN_KEEPALIVE void doNoise3(int seed, int x, int y, int z, float baseHeig
   noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
 }
 
-EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
-  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
+EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, /*unsigned int *barycentricIndex,*/ unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
+  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, /**barycentricIndex,*/ *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
 }
 
 // physics
@@ -130,7 +130,7 @@ EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(
   ArenaAllocator *landPositionsAllocator,
   ArenaAllocator *landNormalsAllocator,
   ArenaAllocator *landUvsAllocator,
-  ArenaAllocator *landBarycentricsAllocator,
+  // ArenaAllocator *landBarycentricsAllocator,
   ArenaAllocator *landAosAllocator,
   ArenaAllocator *landIdsAllocator,
   ArenaAllocator *landSkyLightsAllocator,
@@ -150,7 +150,7 @@ EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(
     landPositionsAllocator,
     landNormalsAllocator,
     landUvsAllocator,
-    landBarycentricsAllocator,
+    // landBarycentricsAllocator,
     landAosAllocator,
     landIdsAllocator,
     landSkyLightsAllocator,
@@ -169,8 +169,8 @@ EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, ThreadPool *threadPool, 
   tracker->updateNeededCoords(threadPool, geometrySet, x, y, z);
 }
 
-EMSCRIPTEN_KEEPALIVE void doChunk(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, float *barycentrics, unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *barycentricIndex, unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
-  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, barycentrics, aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, *barycentricIndex, *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
+EMSCRIPTEN_KEEPALIVE void doChunk(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, /*unsigned int *barycentricIndex,*/ unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
+  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, /**barycentricIndex,*/ *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
 }
 
 // requests
@@ -587,8 +587,8 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(ArenaAllocator *);
     ArenaAllocator *uvsAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
-    ArenaAllocator *barycentricsAllocator = *((ArenaAllocator **)(Message->args + index));
-    index += sizeof(ArenaAllocator *);
+    /* ArenaAllocator *barycentricsAllocator = *((ArenaAllocator **)(Message->args + index));
+    index += sizeof(ArenaAllocator *); */
     ArenaAllocator *aosAllocator = *((ArenaAllocator **)(Message->args + index));
     index += sizeof(ArenaAllocator *);
     ArenaAllocator *idsAllocator = *((ArenaAllocator **)(Message->args + index));
@@ -606,8 +606,8 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(FreeEntry *);
     FreeEntry **uvsEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
-    FreeEntry **barycentricsEntry = (FreeEntry **)(Message->args + index);
-    index += sizeof(FreeEntry *);
+    /* FreeEntry **barycentricsEntry = (FreeEntry **)(Message->args + index);
+    index += sizeof(FreeEntry *); */
     FreeEntry **aosEntry = (FreeEntry **)(Message->args + index);
     index += sizeof(FreeEntry *);
     FreeEntry **idsEntry = (FreeEntry **)(Message->args + index);
@@ -628,7 +628,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
     std::vector<float> positions(bufferSize);
     std::vector<float> normals(bufferSize);
     std::vector<float> uvs(bufferSize);
-    std::vector<float> barycentrics(bufferSize);
+    // std::vector<float> barycentrics(bufferSize);
     std::vector<unsigned char> aos(bufferSize);
     std::vector<float> ids(bufferSize);
     std::vector<unsigned char> skyLights(bufferSize);
@@ -638,12 +638,12 @@ std::function<void(Message *)> METHOD_FNS[] = {
     unsigned int numPositions;
     unsigned int numNormals;
     unsigned int numUvs;
-    unsigned int numBarycentrics;
+    // unsigned int numBarycentrics;
     unsigned int numAos;
     unsigned int numIds;
     unsigned int numSkyLights;
     unsigned int numTorchLights;
-    marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), barycentrics.data(), aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, numBarycentrics, numAos, numIds, numSkyLights, numTorchLights, *numOpaquePositions, *numTransparentPositions, peeks.data());
+    marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), /*barycentrics.data(),*/ aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, /*numBarycentrics,*/ numAos, numIds, numSkyLights, numTorchLights, *numOpaquePositions, *numTransparentPositions, peeks.data());
 
     *positionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
     if (!*positionsEntry) {
@@ -660,11 +660,11 @@ std::function<void(Message *)> METHOD_FNS[] = {
       std::cout << "could not allocate marchingCubes uvs" << std::endl;
       abort();
     }
-    *barycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float));
+    /* *barycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float));
     if (!*barycentricsEntry) {
       std::cout << "could not allocate marchingCubes barycentrics" << std::endl;
       abort();
-    }
+    } */
     *aosEntry = aosAllocator->alloc(numAos*sizeof(float));
     if (!*aosEntry) {
       std::cout << "could not allocate marchingCubes aos" << std::endl;
@@ -694,7 +694,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
     memcpy(positionsAllocator->data + (*positionsEntry)->start, positions.data(), numPositions*sizeof(float));
     memcpy(normalsAllocator->data + (*normalsEntry)->start, normals.data(), numNormals*sizeof(float));
     memcpy(uvsAllocator->data + (*uvsEntry)->start, uvs.data(), numUvs*sizeof(float));
-    memcpy(barycentricsAllocator->data + (*barycentricsEntry)->start, barycentrics.data(), numBarycentrics*sizeof(float));
+    // memcpy(barycentricsAllocator->data + (*barycentricsEntry)->start, barycentrics.data(), numBarycentrics*sizeof(float));
     memcpy(aosAllocator->data + (*aosEntry)->start, aos.data(), numAos*sizeof(unsigned char));
     memcpy(idsAllocator->data + (*idsEntry)->start, ids.data(), numIds*sizeof(float));
     memcpy(skyLightsAllocator->data + (*skyLightsEntry)->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
@@ -757,7 +757,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
     FreeEntry *landPositionsEntry;
     FreeEntry *landNormalsEntry;
     FreeEntry *landUvsEntry;
-    FreeEntry *landBarycentricsEntry;
+    // FreeEntry *landBarycentricsEntry;
     FreeEntry *landAosEntry;
     FreeEntry *landIdsEntry;
     FreeEntry *landSkyLightsEntry;
@@ -790,7 +790,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
       ArenaAllocator *positionsAllocator = tracker->landPositionsAllocator;
       ArenaAllocator *normalsAllocator = tracker->landNormalsAllocator;
       ArenaAllocator *uvsAllocator = tracker->landUvsAllocator;
-      ArenaAllocator *barycentricsAllocator = tracker->landBarycentricsAllocator;
+      // ArenaAllocator *barycentricsAllocator = tracker->landBarycentricsAllocator;
       ArenaAllocator *aosAllocator = tracker->landAosAllocator;
       ArenaAllocator *idsAllocator = tracker->landIdsAllocator;
       ArenaAllocator *skyLightsAllocator = tracker->landSkyLightsAllocator;
@@ -803,7 +803,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
       std::vector<float> positions(bufferSize);
       std::vector<float> normals(bufferSize);
       std::vector<float> uvs(bufferSize);
-      std::vector<float> barycentrics(bufferSize);
+      // std::vector<float> barycentrics(bufferSize);
       std::vector<unsigned char> aos(bufferSize);
       std::vector<float> ids(bufferSize);
       std::vector<unsigned char> skyLights(bufferSize);
@@ -813,12 +813,12 @@ std::function<void(Message *)> METHOD_FNS[] = {
       unsigned int numPositions;
       unsigned int numNormals;
       unsigned int numUvs;
-      unsigned int numBarycentrics;
+      // unsigned int numBarycentrics;
       unsigned int numAos;
       unsigned int numIds;
       unsigned int numSkyLights;
       unsigned int numTorchLights;
-      marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), barycentrics.data(), aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, numBarycentrics, numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks.data());
+      marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), /*barycentrics.data(),*/ aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, /*numBarycentrics,*/ numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks.data());
 
       subparcel->landPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
       if (!subparcel->landPositionsEntry) {
@@ -835,11 +835,11 @@ std::function<void(Message *)> METHOD_FNS[] = {
         std::cout << "could not allocate chunk marchingCubes uvs" << std::endl;
         abort();
       }
-      subparcel->landBarycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float)); // XXX maybe not needed
+      /* subparcel->landBarycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float)); // XXX maybe not needed
       if (!subparcel->landBarycentricsEntry) {
         std::cout << "could not allocate chunk marchingCubes barycentrics" << std::endl;
         abort();
-      }
+      } */
       subparcel->landAosEntry = aosAllocator->alloc(numAos*sizeof(unsigned char));
       if (!subparcel->landAosEntry) {
         std::cout << "could not allocate chunk marchingCubes aos" << std::endl;
@@ -864,7 +864,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
       memcpy(positionsAllocator->data + subparcel->landPositionsEntry->start, positions.data(), numPositions*sizeof(float));
       memcpy(normalsAllocator->data + subparcel->landNormalsEntry->start, normals.data(), numNormals*sizeof(float));
       memcpy(uvsAllocator->data + subparcel->landUvsEntry->start, uvs.data(), numUvs*sizeof(float));
-      memcpy(barycentricsAllocator->data + subparcel->landBarycentricsEntry->start, barycentrics.data(), numBarycentrics*sizeof(float));
+      // memcpy(barycentricsAllocator->data + subparcel->landBarycentricsEntry->start, barycentrics.data(), numBarycentrics*sizeof(float));
       memcpy(aosAllocator->data + subparcel->landAosEntry->start, aos.data(), numAos*sizeof(unsigned char));
       memcpy(idsAllocator->data + subparcel->landIdsEntry->start, ids.data(), numIds*sizeof(float));
       memcpy(skyLightsAllocator->data + subparcel->landSkyLightsEntry->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
@@ -1013,8 +1013,8 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(FreeEntry *);
     *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry;
     index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->landBarycentricsEntry;
-    index += sizeof(FreeEntry *);
+    /* *((FreeEntry **)(Message->args + index)) = subparcel->landBarycentricsEntry;
+    index += sizeof(FreeEntry *); */
     *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry;
     index += sizeof(FreeEntry *);
     *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry;
