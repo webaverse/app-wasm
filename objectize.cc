@@ -1049,11 +1049,12 @@ std::function<void(Message *)> METHOD_FNS[] = {
       abort();
     }
 
-    // std::cout << "return update " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
+    // std::cout << "return update " << (void *)subparcelSharedPtr << " " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
   },
   [](Message *Message) -> void { // releaseUpdate
     unsigned int index = 0;
     std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
+    // std::cout << "release subparcel " << (void *)subparcelSharedPtr << " " << (*subparcelSharedPtr)->coord.x << " " << (*subparcelSharedPtr)->coord.y << " " << (*subparcelSharedPtr)->coord.z << std::endl;
     index += sizeof(std::shared_ptr<Subparcel> *);
     delete subparcelSharedPtr;
   },

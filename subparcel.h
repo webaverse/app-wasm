@@ -65,13 +65,21 @@ class Mailbox {
 public:
   void queue(M *message) {
     std::lock_guard<std::mutex> lock(mutex);
-    messages.push_back(message);
+    if (message->priority) {
+      messages.push_front(message);
+    } else {
+      messages.push_back(message);
+    }
     semaphore.release();
   }
   void queueAll(std::vector<M *> &&ms) {
     std::lock_guard<std::mutex> lock(mutex);
     for (M *m : ms) {
-      messages.push_back(m);
+      if (m->priority) {
+        messages.push_front(m);
+      } else {
+        messages.push_back(m);
+      }
       semaphore.release();
     }
   }
