@@ -221,7 +221,6 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
     for (const Coord &addedCoord : addedCoords) {
       std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
       subparcels[addedCoord.index] = subparcel;
-      // std::cout << "added subparcel " << addedCoord.x << " " << addedCoord.y << " " << addedCoord.z << " " << addedCoord.index << " " << addedCoords.size() << " " << subparcels.size() << std::endl;
 
       unsigned int count = 128;
       Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
@@ -244,7 +243,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
       threadPool->inbox.filterQueue([&](Message *message) -> bool {
         if (message->method == (int)METHODS::chunk) {
           unsigned int *u32 = (unsigned int *)message->args;
-          std::shared_ptr<Subparcel> *subparcel = (std::shared_ptr<Subparcel> *)(u32 + 3);
+          std::shared_ptr<Subparcel> *subparcel = *((std::shared_ptr<Subparcel> **)(u32 + 3));
           if ((*subparcel)->coord != removedCoord) {
           	return true;
           } else {
@@ -252,7 +251,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
           	return false;
           }
         } else {
-          return false;
+          return true;
         }
       });
 

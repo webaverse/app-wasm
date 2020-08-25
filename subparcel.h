@@ -129,7 +129,8 @@ public:
 
     for (auto iter = messages.begin(); iter != messages.end(); iter++) {
       Message *message = *iter;
-      if (!testFn(message)) {
+      if (message && !testFn(message)) {
+        free(message);
         *iter = nullptr;
       }
     }
