@@ -357,4 +357,3 @@ emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=4 -s TO
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
   -o bin/geometry.js
-cat prefix2.js bin/geometry.js >bin/geometry2.js
