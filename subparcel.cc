@@ -296,6 +296,14 @@ Subparcel::Subparcel(const Coord &coord, Tracker *tracker) :
   vegetationSkyLightsEntry(nullptr),
   vegetationTorchLightsEntry(nullptr),
 
+  landGroups{
+    {0, 0, 0},
+    {0, 0, 0},
+  },
+  vegetationGroups{
+    {0, 0, 0},
+  },
+
   physxGeometry(nullptr)
 {}
 Subparcel::~Subparcel() {
@@ -331,4 +339,16 @@ Subparcel::~Subparcel() {
       }
     }
   }
+}
+Subparcel *Subparcel::clone() const {
+  Subparcel *subparcel = new Subparcel(coord, tracker);
+
+  memcpy(subparcel->potentials, potentials, sizeof(potentials));
+  memcpy(subparcel->biomes, biomes, sizeof(biomes));
+  memcpy(subparcel->heightfield, heightfield, sizeof(heightfield));
+  memcpy(subparcel->lightfield, lightfield, sizeof(lightfield));
+  subparcel->numObjects = numObjects;
+  memcpy(subparcel->objects, objects, sizeof(objects));
+
+  return subparcel;
 }

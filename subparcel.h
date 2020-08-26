@@ -163,6 +163,7 @@ enum class METHODS : int {
 };
 enum class MESSAGES : int {
   updateGeometry = -1,
+  updateMine = -2,
 };
 extern "C" {
   extern std::function<void(Message *)> METHOD_FNS[];
@@ -313,6 +314,8 @@ public:
   bool operator!=(const Subparcel &subparcel) const {
     return coord != subparcel.coord;
   }
+  
+  Subparcel *clone() const;
 
   // data
   Coord coord;
@@ -323,9 +326,11 @@ public:
   unsigned int numObjects;
   Object objects[PLANET_OBJECT_SLOTS];
 
-  // state
+  // transient state
   Tracker *tracker;
   Sphere boundingSphere;
+
+  // build state
   unsigned char peeks[16];
 
   FreeEntry *landPositionsEntry;

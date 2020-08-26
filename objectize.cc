@@ -1067,7 +1067,50 @@ std::function<void(Message *)> METHOD_FNS[] = {
     float delta = *((float *)(Message->args + index));
     index += sizeof(float);
 
-    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doMine(tracker, position, delta);
+    std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<Subparcel>>> mineSpecs = doMine(tracker, position, delta);
+    std::vector<std::shared_ptr<Subparcel>> &newSubparcels = mineSpecs.first;
+    std::vector<std::shared_ptr<Subparcel>> &oldSubparcels = mineSpecs.second;
+    
+    Message->method = (int)MESSAGES::updateMine;
+
+    // std::cout << "return 2" << std::endl;
+
+    index = 0;
+    *((unsigned int *)(Message->args + index)) = newSubparcels.size();
+    index += sizeof(unsigned int);
+    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+      
+      *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry;
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry;
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry;
+      index += sizeof(FreeEntry *);
+      /* *((FreeEntry **)(Message->args + index)) = subparcel->landBarycentricsEntry;
+      index += sizeof(FreeEntry *); */
+      *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry;
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry;
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry;
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry;
+      index += sizeof(FreeEntry *);
+    }
+
+    *((unsigned int *)(Message->args + index)) = newSubparcels.size() + oldSubparcels.size();
+    index += sizeof(unsigned int);
+    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+      *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
+      index += sizeof(std::shared_ptr<Subparcel> *);
+    }
+    for (unsigned int i = 0; i < oldSubparcels.size(); i++) {
+      std::shared_ptr<Subparcel> &subparcel = oldSubparcels[i];
+      *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
+      index += sizeof(std::shared_ptr<Subparcel> *);
+    }
   },
   [](Message *Message) -> void { // light
     unsigned int index = 0;

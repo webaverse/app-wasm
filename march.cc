@@ -1,10 +1,12 @@
 #include "march.h"
 #include "subparcel.h"
+#include "collide.h"
 #include "vector.h"
 #include "biomes.h"
 #include <cstdlib>
 #include <array>
 #include <map>
+#include <iostream>
 
 int edgeTable[256]={
 0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -719,63 +721,83 @@ void marchingCubes2(float meshId, int dims[3], float *potential, unsigned char *
   numTransparentPositions = positionIndex - numOpaquePositions;
 }
 
-std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position, float delta) {
+std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<Subparcel>>> doMine(Tracker *tracker, float *position, float delta) {
   int x = (int)position[0];
   int y = (int)position[1];
   int z = (int)position[2];
+  
+  // collect subparcels
+  std::vector<std::shared_ptr<Subparcel>> oldSubparcels;
+  std::vector<std::shared_ptr<Subparcel>> newSubparcels;
   constexpr int radius = 1;
-  int dimsP3[3] = {
-    SUBPARCEL_SIZE_P3,
-    SUBPARCEL_SIZE_P3,
-    SUBPARCEL_SIZE_P3,
-  };
+  {
+    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
 
-  std::vector<std::shared_ptr<Subparcel>> mineSpecs;
-  std::function<void(int, int, int, float)> _applyRound = [&](int ax, int ay, int az, float value) -> void {
-    std::vector<int> mineSpecsRound;
-    for (int ddy = -1; ddy <= 1; ddy++) {
-      const int ady = ay + ddy;
-      for (int ddz = -1; ddz <= 1; ddz++) {
-        const int adz = az + ddz;
-        for (int ddx = -1; ddx <= 1; ddx++) {
-          const int adx = ax + ddx;
+    for (int dy = -radius - 1; dy <= radius + 1; dy++) {
+      const int ay = y + dy;
+      for (int dz = -radius - 1; dz <= radius + 1; dz++) {
+        const int az = z + dz;
+        for (int dx = -radius - 1; dx <= radius + 1; dx++) {
+          const int ax = x + dx;
+          const int sx = (int)std::floor((float)ax/(float)SUBPARCEL_SIZE);
+          const int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
+          const int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
+          const int index = getSubparcelIndex(sx, sy, sz);
+          auto subparcelIter = tracker->subparcels.find(index);
+          if (subparcelIter !=  tracker->subparcels.end()) {
+            std::shared_ptr<Subparcel> &oldSubparcel = subparcelIter->second;
+            oldSubparcels.push_back(oldSubparcel);
+            std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
+            newSubparcels.push_back(std::move(newSubparcel));
+          }
+        }
+      }
+    }
+  }
+  // apply edit
+  {
+    int dimsP3[3] = {
+      SUBPARCEL_SIZE_P3,
+      SUBPARCEL_SIZE_P3,
+      SUBPARCEL_SIZE_P3,
+    };
+    std::function<void(int, int, int, float)> _applyRound = [&](int ax, int ay, int az, float value) -> void {
+      for (int ddy = -1; ddy <= 1; ddy++) {
+        const int ady = ay + ddy;
+        for (int ddz = -1; ddz <= 1; ddz++) {
+          const int adz = az + ddz;
+          for (int ddx = -1; ddx <= 1; ddx++) {
+            const int adx = ax + ddx;
 
-          const int sdx = (int)std::floor((float)adx/(float)SUBPARCEL_SIZE);
-          const int sdy = (int)std::floor((float)ady/(float)SUBPARCEL_SIZE);
-          const int sdz = (int)std::floor((float)adz/(float)SUBPARCEL_SIZE);
-          const int lx = ax - sdx*SUBPARCEL_SIZE;
-          const int ly = ay - sdy*SUBPARCEL_SIZE;
-          const int lz = az - sdz*SUBPARCEL_SIZE;
+            const int sdx = (int)std::floor((float)adx/(float)SUBPARCEL_SIZE);
+            const int sdy = (int)std::floor((float)ady/(float)SUBPARCEL_SIZE);
+            const int sdz = (int)std::floor((float)adz/(float)SUBPARCEL_SIZE);
+            const int lx = ax - sdx*SUBPARCEL_SIZE;
+            const int ly = ay - sdy*SUBPARCEL_SIZE;
+            const int lz = az - sdz*SUBPARCEL_SIZE;
 
-          if (
-            lx >= 0 && lx < SUBPARCEL_SIZE_P3 &&
-            ly >= 0 && ly < SUBPARCEL_SIZE_P3 &&
-            lz >= 0 && lz < SUBPARCEL_SIZE_P3
-          ) {
-            const int index = getSubparcelIndex(sdx, sdy, sdz);
-            if (std::find(mineSpecsRound.begin(), mineSpecsRound.end(), index) == mineSpecsRound.end()) {
-              auto subparcelIter = tracker->subparcels.find(index);
-              if (subparcelIter != tracker->subparcels.end()) {
-                std::shared_ptr<Subparcel> subparcel = subparcelIter->second;
+            if (
+              lx >= 0 && lx < SUBPARCEL_SIZE_P3 &&
+              ly >= 0 && ly < SUBPARCEL_SIZE_P3 &&
+              lz >= 0 && lz < SUBPARCEL_SIZE_P3
+            ) {
+              const int index = getSubparcelIndex(sdx, sdy, sdz);
+              auto subparcelIter = std::find_if(newSubparcels.begin(), newSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
+                return subparcel->coord.index == index;
+              });
+              if (subparcelIter != newSubparcels.end()) {
+                std::shared_ptr<Subparcel> &subparcel = *subparcelIter;
 
                 const int potentialIndex = getPotentialIndex(lx, ly, lz, dimsP3);
                 subparcel->potentials[potentialIndex] += value;
-
-                mineSpecsRound.push_back(index);
-                if (std::find(mineSpecs.begin(), mineSpecs.end(), subparcel) == mineSpecs.end()) {
-                  mineSpecs.push_back(subparcel);
-                }
+              } else {
+                std::cout << "warning: did not have subparcel: " << sdx << " " << sdy << " " << sdz << std::endl;
               }
             }
           }
         }
       }
-    }
-  };
-
-  {
-    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
-
+    };
     for (int dy = -radius; dy <= radius; dy++) {
       const int ay = y + dy;
       for (int dz = -radius; dz <= radius; dz++) {
@@ -795,8 +817,176 @@ std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position
       }
     }
   }
+  // re-polygonalize new subparcels
+  for (std::shared_ptr<Subparcel> subparcel : newSubparcels) {
+    float *landPositions;
+    unsigned int numLandPositions;
+    FreeEntry *landPositionsEntry;
+    FreeEntry *landNormalsEntry;
+    FreeEntry *landUvsEntry;
+    // FreeEntry *landBarycentricsEntry;
+    FreeEntry *landAosEntry;
+    FreeEntry *landIdsEntry;
+    FreeEntry *landSkyLightsEntry;
+    FreeEntry *landTorchLightsEntry;
+    {
+      float meshId = subparcel->coord.index;
+      int dims[3] = {
+        SUBPARCEL_SIZE,
+        SUBPARCEL_SIZE,
+        SUBPARCEL_SIZE,
+      };
+      float *potential = subparcel->potentials;
+      unsigned char *biomes = subparcel->biomes;
+      char *heightfield = subparcel->heightfield;
+      unsigned char *lightfield = subparcel->lightfield;
+      float shift[3] = {
+        (float)subparcel->coord.x*(float)SUBPARCEL_SIZE,
+        (float)subparcel->coord.y*(float)SUBPARCEL_SIZE,
+        (float)subparcel->coord.z*(float)SUBPARCEL_SIZE,
+      };
+      float scale[3] = {1, 1, 1};
 
-  return std::move(mineSpecs);
+      ArenaAllocator *positionsAllocator = tracker->landPositionsAllocator;
+      ArenaAllocator *normalsAllocator = tracker->landNormalsAllocator;
+      ArenaAllocator *uvsAllocator = tracker->landUvsAllocator;
+      // ArenaAllocator *barycentricsAllocator = tracker->landBarycentricsAllocator;
+      ArenaAllocator *aosAllocator = tracker->landAosAllocator;
+      ArenaAllocator *idsAllocator = tracker->landIdsAllocator;
+      ArenaAllocator *skyLightsAllocator = tracker->landSkyLightsAllocator;
+      ArenaAllocator *torchLightsAllocator = tracker->landTorchLightsAllocator;
+
+      unsigned int numOpaquePositions;
+      unsigned int numTransparentPositions;
+
+      constexpr int bufferSize = 1024*1024;
+      std::vector<float> positions(bufferSize);
+      std::vector<float> normals(bufferSize);
+      std::vector<float> uvs(bufferSize);
+      // std::vector<float> barycentrics(bufferSize);
+      std::vector<unsigned char> aos(bufferSize);
+      std::vector<float> ids(bufferSize);
+      std::vector<unsigned char> skyLights(bufferSize);
+      std::vector<unsigned char> torchLights(bufferSize);
+      constexpr unsigned int numPeeks = 15;
+      std::vector<unsigned char> peeks(numPeeks);
+      unsigned int numPositions;
+      unsigned int numNormals;
+      unsigned int numUvs;
+      // unsigned int numBarycentrics;
+      unsigned int numAos;
+      unsigned int numIds;
+      unsigned int numSkyLights;
+      unsigned int numTorchLights;
+      marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), /*barycentrics.data(),*/ aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, /*numBarycentrics,*/ numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks.data());
+
+      subparcel->landPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
+      if (!subparcel->landPositionsEntry) {
+        std::cout << "could not allocate chunk marchingCubes positions" << std::endl;
+        abort();
+      }
+      subparcel->landNormalsEntry = normalsAllocator->alloc(numNormals*sizeof(float));
+      if (!subparcel->landNormalsEntry) {
+        std::cout << "could not allocate chunk marchingCubes normals" << std::endl;
+        abort();
+      }
+      subparcel->landUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
+      if (!subparcel->landUvsEntry) {
+        std::cout << "could not allocate chunk marchingCubes uvs" << std::endl;
+        abort();
+      }
+      /* subparcel->landBarycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float)); // XXX maybe not needed
+      if (!subparcel->landBarycentricsEntry) {
+        std::cout << "could not allocate chunk marchingCubes barycentrics" << std::endl;
+        abort();
+      } */
+      subparcel->landAosEntry = aosAllocator->alloc(numAos*sizeof(unsigned char));
+      if (!subparcel->landAosEntry) {
+        std::cout << "could not allocate chunk marchingCubes aos" << std::endl;
+        abort();
+      }
+      subparcel->landIdsEntry = idsAllocator->alloc(numIds*sizeof(float));
+      if (!subparcel->landIdsEntry) {
+        std::cout << "could not allocate chunk marchingCubes ids" << std::endl;
+        abort();
+      }
+      subparcel->landSkyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
+      if (!subparcel->landSkyLightsEntry) {
+        std::cout << "could not allocate chunk marchingCubes skyLights" << std::endl;
+        abort();
+      }
+      subparcel->landTorchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
+      if (!subparcel->landTorchLightsEntry) {
+        std::cout << "could not allocate chunk marchingCubes torchLights" << std::endl;
+        abort();
+      }
+
+      memcpy(positionsAllocator->data + subparcel->landPositionsEntry->start, positions.data(), numPositions*sizeof(float));
+      memcpy(normalsAllocator->data + subparcel->landNormalsEntry->start, normals.data(), numNormals*sizeof(float));
+      memcpy(uvsAllocator->data + subparcel->landUvsEntry->start, uvs.data(), numUvs*sizeof(float));
+      // memcpy(barycentricsAllocator->data + subparcel->landBarycentricsEntry->start, barycentrics.data(), numBarycentrics*sizeof(float));
+      memcpy(aosAllocator->data + subparcel->landAosEntry->start, aos.data(), numAos*sizeof(unsigned char));
+      memcpy(idsAllocator->data + subparcel->landIdsEntry->start, ids.data(), numIds*sizeof(float));
+      memcpy(skyLightsAllocator->data + subparcel->landSkyLightsEntry->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
+      memcpy(torchLightsAllocator->data + subparcel->landTorchLightsEntry->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
+      memcpy(subparcel->peeks, peeks.data(), numPeeks*sizeof(unsigned char));
+
+      // groups
+      subparcel->landGroups[0].start = subparcel->landPositionsEntry->start/sizeof(float)/3;
+      subparcel->landGroups[0].count = numOpaquePositions/3;
+      subparcel->landGroups[0].materialIndex = 0;
+      subparcel->landGroups[1].start = subparcel->landGroups[0].start + subparcel->landGroups[0].count;
+      subparcel->landGroups[1].count = numTransparentPositions/3;
+      subparcel->landGroups[1].materialIndex = 1;
+
+      // latch
+      landPositions = (float *)(positionsAllocator->data + subparcel->landPositionsEntry->start);
+      numLandPositions = numOpaquePositions;
+    }
+    if (numLandPositions > 0) {
+      PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(tracker, landPositions, nullptr, numLandPositions, 0);
+      unsigned int meshId = subparcel->coord.index;
+      float meshPosition[3] = {
+        (float)subparcel->coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+        (float)subparcel->coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+        (float)subparcel->coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+      };
+      float meshQuaternion[4] = {
+        0,
+        0,
+        0,
+        1,
+      };
+      subparcel->physxGeometry = doMakeBakedGeometry(tracker, meshId, writeStream, meshPosition, meshQuaternion);
+    } else {
+      subparcel->physxGeometry = nullptr;
+    }
+  }
+
+  // latch new subparcels in tracker
+  {
+    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+
+    std::map<int, std::shared_ptr<Subparcel>> newTrackerSubparcels;
+    for (auto iter : tracker->subparcels) {
+      std::shared_ptr<Subparcel> &subparcel = iter.second;
+      auto iter2 = std::find_if(oldSubparcels.begin(), oldSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel2) -> bool {
+        return *subparcel2 == *subparcel;
+      });
+      if (iter2 == oldSubparcels.end()) {
+        newTrackerSubparcels[iter.first] = subparcel;
+      }
+    }
+    for (std::shared_ptr<Subparcel> subparcel : newSubparcels) {
+      newTrackerSubparcels[subparcel->coord.index] = subparcel;
+    }
+    tracker->subparcels = std::move(newTrackerSubparcels);
+  }
+
+  return std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<Subparcel>>>(
+    std::move(newSubparcels),
+    std::move(oldSubparcels)
+  );
   
   /* const _mine = async (mineSpecs, explodePosition) => {
   const slabs = mineSpecs.map(spec => currentChunkMesh.getSlab(spec.x, spec.y, spec.z));
