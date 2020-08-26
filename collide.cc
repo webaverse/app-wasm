@@ -121,6 +121,85 @@ PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions
   }
 }
 
+std::map<std::string, Shape> PHYSICS_SHAPES = {
+  {
+    "wood_ramp",
+    {
+      {0, 1, 0},
+      Quat(Vec{1, 0, 0}, -PI/4.0f),
+      {2, 2*SQRT2, 0.1},
+    },
+  },
+  {
+    "wood_floor",
+    {
+      {0, 0, 0},
+      Quat(),
+      {2, 0.1, 2},
+    },
+  },
+  {
+    "wood_wall",
+    {
+      {0, 1, -1},
+      Quat(),
+      {2, 2, 0.1},
+    },
+  }
+};
+
+void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions, unsigned int numLandPositions) {
+  if (numLandPositions > 0) {
+    PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, landPositions, nullptr, numLandPositions, 0);
+    float meshPosition[3] = {
+      (float)subparcel->coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+      (float)subparcel->coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+      (float)subparcel->coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+    };
+    float meshQuaternion[4] = {
+      0,
+      0,
+      0,
+      1,
+    };
+    subparcel->physxGeometry = doMakeBakedGeometry(&tracker->physicer, tracker->meshId, writeStream, meshPosition, meshQuaternion);
+  } else {
+    subparcel->physxGeometry = nullptr;
+  }
+}
+
+void doObjectPhysics(Tracker *tracker, Subparcel *subparcel) {
+  subparcel->objectPhysxGeometries.clear();
+  subparcel->objectPhysxGeometries.reserve(subparcel->numObjects);
+  for (unsigned int i = 0; i < subparcel->numObjects; i++) {
+    Object &object = subparcel->objects[i];
+    if (strcmp(object.name, "spawner") != 0) {
+      std::shared_ptr<PhysicsGeometry> physxGeometry;
+      auto shapeIter = PHYSICS_SHAPES.find(object.name);
+      if (shapeIter != PHYSICS_SHAPES.end()) {
+        const Shape &shape = shapeIter->second;
+
+        Matrix matrix;
+        matrix.compose(shape.position, shape.quaternion, Vec{1, 1, 1});
+        matrix.premultiply(Matrix().compose(object.position, object.quaternion, Vec{1, 1, 1}));
+
+        Vec position;
+        Quat quaternion;
+        Vec scale;
+        matrix.decompose(position, quaternion, scale);
+        physxGeometry = doMakeBoxGeometry(&tracker->physicer, object.id, position.data, quaternion.data, shape.scale.x, shape.scale.y, shape.scale.z);
+      } else {
+        Vec position = object.position;
+        position += Vec{0, (2.0f+0.5f)/2.0f, 0};
+        Quat quaternion = object.quaternion;
+        quaternion.multiply(Quat(Vec{0, 0, 1}, PI/2.0f));
+        physxGeometry = doMakeCapsuleGeometry(&tracker->physicer, object.id, position.data, quaternion.data, 0.5, 2);
+      }
+      subparcel->objectPhysxGeometries.push_back(std::move(physxGeometry));
+    }
+  }
+}
+
 /* void doUnregisterGeometry(PhysicsGeometry * geometrySpec) {
   {
     std::lock_guard<std::mutex> lock(gPhysicsMutex);

@@ -14,6 +14,7 @@
 #include "extensions/PxTriangleMeshExt.h"
 #include "PxQueryReport.h"
 #include "geometry/PxGeometryQuery.h"
+#include <map>
 #include <set>
 #include <deque>
 #include <algorithm>
@@ -77,6 +78,18 @@ PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions
 
   delete geometrySpec;
 } */
+
+class Shape {
+public:
+  Vec position;
+  Quat quaternion;
+  Vec scale;
+};
+extern std::map<std::string, Shape> PHYSICS_SHAPES;
+
+void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions, unsigned int numLandPositions);
+void doObjectPhysics(Tracker *tracker, Subparcel *subparcel);
+
 void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &meshId, unsigned int &faceIndex);
 void doCollide(Physicer *physicer, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
 extern int PEEK_FACE_INDICES[];
