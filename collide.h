@@ -21,9 +21,10 @@
 
 using namespace physx;
 
+class Physicer;
 class PhysicsGeometry {
 public:
-  PhysicsGeometry(unsigned int meshId, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere);
+  PhysicsGeometry(unsigned int meshId, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer);
   ~PhysicsGeometry();
 
   unsigned int meshId;
@@ -32,8 +33,8 @@ public:
   Vec position;
   Quat quaternion;
   Sphere boundingSphere;
+  Physicer *physicer;
 };
-
 class Physicer {
 public:
   Physicer();
@@ -43,9 +44,9 @@ public:
   PxFoundation *gFoundation = nullptr;
   PxPhysics *physics = nullptr;
   PxCooking *cooking = nullptr;
-  std::set<std::shared_ptr<PhysicsGeometry>> geometrySpecs;
-  std::set<std::shared_ptr<PhysicsGeometry>> staticGeometrySpecs;
-  std::vector<std::set<std::shared_ptr<PhysicsGeometry>> *> geometrySpecSets{
+  std::set<PhysicsGeometry *> geometrySpecs;
+  std::set<PhysicsGeometry *> staticGeometrySpecs;
+  std::vector<std::set<PhysicsGeometry *> *> geometrySpecSets{
     &staticGeometrySpecs,
     &geometrySpecs,
   };

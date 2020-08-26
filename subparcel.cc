@@ -280,24 +280,7 @@ Subparcel::Subparcel(const Coord &coord, Tracker *tracker) :
 
   physxGeometry(nullptr)
 {}
-Subparcel::~Subparcel() {
-  // std::cout << "delete subparcel " << coord.x << " " << coord.y << " " << coord.z << std::endl;
-
-  {
-    std::lock_guard<std::mutex> lock(tracker->physicer.gPhysicsMutex);
-
-    if (physxGeometry) {
-      for (std::set<std::shared_ptr<PhysicsGeometry>> *geometrySpecSet : tracker->physicer.geometrySpecSets) {
-        geometrySpecSet->erase(physxGeometry);
-      }
-    }
-    for (std::shared_ptr<PhysicsGeometry> geometrySpec : objectPhysxGeometries) {
-      for (std::set<std::shared_ptr<PhysicsGeometry>> *geometrySpecSet : tracker->physicer.geometrySpecSets) {
-        geometrySpecSet->erase(geometrySpec);
-      }
-    }
-  }
-}
+Subparcel::~Subparcel() {}
 Subparcel *Subparcel::clone() const {
   Subparcel *subparcel = new Subparcel(coord, tracker);
 
