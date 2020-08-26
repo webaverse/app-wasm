@@ -35,54 +35,60 @@ bool Semaphore::try_acquire() {
   return false;
 }
 
+FreeEntry::FreeEntry(const FreeEntrySpec &spec, ArenaAllocator *arenaAllocator) : spec(spec), arenaAllocator(arenaAllocator) {}
+FreeEntry::~FreeEntry() {
+  arenaAllocator->freeSpec(spec);
+}
+
 ArenaAllocator::ArenaAllocator(unsigned int size) {
   data = (unsigned char *)malloc(size);
-  freeList.push_back(new FreeEntry{
+  freeList.push_back(FreeEntrySpec{
     0,
     size,
   });
 }
-FreeEntry *ArenaAllocator::alloc(unsigned int size) {
+std::shared_ptr<FreeEntry> ArenaAllocator::alloc(unsigned int size) {
   std::lock_guard<std::mutex> lock(mutex);
 
   for (unsigned int i = 0; i < freeList.size(); i++) {
-    FreeEntry *entry = freeList[i];
-    if (entry->count >= size) {
-      if (entry->count > size) {
-        freeList[i] = new FreeEntry{
-          entry->start + size,
-          entry->count - size,
+    FreeEntrySpec entry = freeList[i];
+    if (entry.count >= size) {
+      if (entry.count > size) {
+        freeList[i] = FreeEntrySpec{
+          entry.start + size,
+          entry.count - size,
         };
       } else {
         freeList.erase(freeList.begin() + i);
       }
-      entry->count = size;
-      return entry;
+      entry.count = size;
+      return std::shared_ptr<FreeEntry>(new FreeEntry(entry, this));
     }
   }
-  return nullptr;
+  return std::shared_ptr<FreeEntry>();
 }
-void ArenaAllocator::free(FreeEntry *freeEntry) {
+void ArenaAllocator::freeSpec(const FreeEntrySpec &spec) {
   std::lock_guard<std::mutex> lock(mutex);
 
-  freeList.push_back(freeEntry);
+  freeList.push_back(spec);
   updateFreeList();
 }
 void ArenaAllocator::updateFreeList() {
-  std::sort(freeList.begin(), freeList.end(), [](FreeEntry *a, FreeEntry *b) -> bool {
-    return a->start < b->start;
+  std::sort(freeList.begin(), freeList.end(), [](FreeEntrySpec &a, FreeEntrySpec &b) -> bool {
+    return a.start < b.start;
   });
   bool merged = false;
   for (unsigned int i = 0; i < freeList.size()-1; i++) {
-    FreeEntry *entry = freeList[i];
-    if (entry) {
+    FreeEntrySpec &entry = freeList[i];
+    if (entry.count > 0) {
       for (unsigned int j = i+1; j < freeList.size(); j++) {
-        FreeEntry *nextEntry = freeList[j];
-        if (nextEntry) {
-          if (entry->start + entry->count == nextEntry->start) {
-            entry->count += nextEntry->count;
-            freeList[j] = nullptr;
-            delete nextEntry;
+        FreeEntrySpec &nextEntry = freeList[j];
+        if (nextEntry.count > 0) {
+          if (entry.start + entry.count == nextEntry.start) {
+            entry.count += nextEntry.count;
+
+            freeList[j] = FreeEntrySpec{0, 0};
+
             merged = true;
           }
         }
@@ -90,10 +96,10 @@ void ArenaAllocator::updateFreeList() {
     }
   }
   if (merged) {
-		std::vector<FreeEntry *> freeList2;
+		std::vector<FreeEntrySpec> freeList2;
 		freeList2.reserve(freeList.size());
-		std::copy_if(freeList.begin(), freeList.end(), std::back_inserter(freeList2), [](FreeEntry *freeEntry) -> bool {
-      return freeEntry != nullptr;
+		std::copy_if(freeList.begin(), freeList.end(), std::back_inserter(freeList2), [](FreeEntrySpec &freeEntry) -> bool {
+      return freeEntry.count > 0;
 		});
 		freeList = std::move(freeList2);
   }
@@ -279,51 +285,12 @@ Subparcel::Subparcel(const Coord &coord, Tracker *tracker) :
     Vec{(float)coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, (float)coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, (float)coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f},
     slabRadius
   ),
-
-  landPositionsEntry(nullptr),
-  landNormalsEntry(nullptr),
-  landUvsEntry(nullptr),
-  // landBarycentricsEntry(nullptr),
-  landAosEntry(nullptr),
-  landIdsEntry(nullptr),
-  landSkyLightsEntry(nullptr),
-  landTorchLightsEntry(nullptr),
-
-  vegetationPositionsEntry(nullptr),
-  vegetationUvsEntry(nullptr),
-  vegetationIdsEntry(nullptr),
-  vegetationIndicesEntry(nullptr),
-  vegetationSkyLightsEntry(nullptr),
-  vegetationTorchLightsEntry(nullptr),
-
-  landGroups{
-    {0, 0, 0},
-    {0, 0, 0},
-  },
-  vegetationGroups{
-    {0, 0, 0},
-  },
+  live(true),
 
   physxGeometry(nullptr)
 {}
 Subparcel::~Subparcel() {
   // std::cout << "delete subparcel " << coord.x << " " << coord.y << " " << coord.z << std::endl;
-
-  if (landPositionsEntry) tracker->landPositionsAllocator->free(landPositionsEntry);
-  if (landNormalsEntry) tracker->landNormalsAllocator->free(landNormalsEntry);
-  if (landUvsEntry) tracker->landUvsAllocator->free(landUvsEntry);
-  // if (landBarycentricsEntry) tracker->landBarycentricsAllocator->free(landBarycentricsEntry);
-  if (landAosEntry) tracker->landAosAllocator->free(landAosEntry);
-  if (landIdsEntry) tracker->landIdsAllocator->free(landIdsEntry);
-  if (landSkyLightsEntry) tracker->landSkyLightsAllocator->free(landSkyLightsEntry);
-  if (landTorchLightsEntry) tracker->landTorchLightsAllocator->free(landTorchLightsEntry);
-
-  if (vegetationPositionsEntry) tracker->vegetationPositionsAllocator->free(vegetationPositionsEntry);
-  if (vegetationUvsEntry) tracker->vegetationUvsAllocator->free(vegetationUvsEntry);
-  if (vegetationIdsEntry) tracker->vegetationIdsAllocator->free(vegetationIdsEntry);
-  if (vegetationIndicesEntry) tracker->vegetationIndicesAllocator->free(vegetationIndicesEntry);
-  if (vegetationSkyLightsEntry) tracker->vegetationSkyLightsAllocator->free(vegetationSkyLightsEntry);
-  if (vegetationTorchLightsEntry) tracker->vegetationTorchLightsAllocator->free(vegetationTorchLightsEntry);
 
   {
     std::lock_guard<std::mutex> lock(tracker->gPhysicsMutex);
@@ -351,4 +318,28 @@ Subparcel *Subparcel::clone() const {
   memcpy(subparcel->objects, objects, sizeof(objects));
 
   return subparcel;
+}
+void Subparcel::copyLand(const Subparcel &subparcel) {
+  memcpy(peeks, subparcel.peeks, sizeof(peeks));
+
+  landPositionsEntry = subparcel.landPositionsEntry;
+  landNormalsEntry = subparcel.landNormalsEntry;
+  landUvsEntry = subparcel.landUvsEntry;
+  // landBarycentricsEntry = subparcel.landBarycentricsEntry;
+  landAosEntry = subparcel.landAosEntry;
+  landIdsEntry = subparcel.landIdsEntry;
+  landSkyLightsEntry = subparcel.landSkyLightsEntry;
+  landTorchLightsEntry = subparcel.landTorchLightsEntry;
+
+  memcpy(landGroups, subparcel.landGroups, sizeof(landGroups));
+}
+void Subparcel::copyVegetation(const Subparcel &subparcel) {
+  vegetationPositionsEntry = subparcel.vegetationPositionsEntry;
+  vegetationUvsEntry = subparcel.vegetationUvsEntry;
+  vegetationIdsEntry = subparcel.vegetationIdsEntry;
+  vegetationIndicesEntry = subparcel.vegetationIndicesEntry;
+  vegetationSkyLightsEntry = subparcel.vegetationSkyLightsEntry;
+  vegetationTorchLightsEntry = subparcel.vegetationTorchLightsEntry;
+  
+  memcpy(vegetationGroups, subparcel.vegetationGroups, sizeof(vegetationGroups));
 }

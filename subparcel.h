@@ -34,21 +34,34 @@ public:
   bool try_acquire();
 };
 
-class FreeEntry {
+class ArenaAllocator;
+class FreeEntrySpec {
 public:
   unsigned int start;
   unsigned int count;
 };
+class FreeEntry {
+public:
+  FreeEntry(const FreeEntrySpec &spec, ArenaAllocator *arenaAllocator);
+  ~FreeEntry();
+
+  FreeEntrySpec spec;
+  ArenaAllocator *arenaAllocator;
+};
 class ArenaAllocator {
 public:
   ArenaAllocator(unsigned int size);
-  FreeEntry *alloc(unsigned int size);
-  void free(FreeEntry *freeEntry);
+  std::shared_ptr<FreeEntry> alloc(unsigned int size);
+protected:
+  void freeSpec(const FreeEntrySpec &spec);
   void updateFreeList();
 
+public:
   unsigned char *data;
-  std::vector<FreeEntry *> freeList;
+  std::vector<FreeEntrySpec> freeList;
   std::mutex mutex;
+
+  friend class FreeEntry;
 };
 
 class Message {
@@ -157,6 +170,7 @@ enum class METHODS : int {
   chunk,
   releaseUpdate,
   mine,
+  releaseMine,
   light,
   addObject,
   removeObject,
@@ -282,6 +296,8 @@ public:
 
 class Group {
 public:
+  Group() : start(0), count(0), materialIndex(0) {}
+
   unsigned int start;
   unsigned int count;
   unsigned int materialIndex;
@@ -316,6 +332,8 @@ public:
   }
   
   Subparcel *clone() const;
+  void copyLand(const Subparcel &subparcel);
+  void copyVegetation(const Subparcel &subparcel);
 
   // data
   Coord coord;
@@ -331,26 +349,28 @@ public:
   Sphere boundingSphere;
 
   // build state
+  bool live;
+
   unsigned char peeks[16];
+  std::shared_ptr<FreeEntry> landPositionsEntry;
+  std::shared_ptr<FreeEntry> landNormalsEntry;
+  std::shared_ptr<FreeEntry> landUvsEntry;
+  // std::shared_ptr<FreeEntry> landBarycentricsEntry;
+  std::shared_ptr<FreeEntry> landAosEntry;
+  std::shared_ptr<FreeEntry> landIdsEntry;
+  std::shared_ptr<FreeEntry> landSkyLightsEntry;
+  std::shared_ptr<FreeEntry> landTorchLightsEntry;
 
-  FreeEntry *landPositionsEntry;
-  FreeEntry *landNormalsEntry;
-  FreeEntry *landUvsEntry;
-  // FreeEntry *landBarycentricsEntry;
-  FreeEntry *landAosEntry;
-  FreeEntry *landIdsEntry;
-  FreeEntry *landSkyLightsEntry;
-  FreeEntry *landTorchLightsEntry;
-
-  FreeEntry *vegetationPositionsEntry;
-  FreeEntry *vegetationUvsEntry;
-  FreeEntry *vegetationIdsEntry;
-  FreeEntry *vegetationIndicesEntry;
-  FreeEntry *vegetationSkyLightsEntry;
-  FreeEntry *vegetationTorchLightsEntry;
+  std::shared_ptr<FreeEntry> vegetationPositionsEntry;
+  std::shared_ptr<FreeEntry> vegetationUvsEntry;
+  std::shared_ptr<FreeEntry> vegetationIdsEntry;
+  std::shared_ptr<FreeEntry> vegetationIndicesEntry;
+  std::shared_ptr<FreeEntry> vegetationSkyLightsEntry;
+  std::shared_ptr<FreeEntry> vegetationTorchLightsEntry;
 
   Group landGroups[2];
   Group vegetationGroups[1];
+
   GeometrySpec *physxGeometry;
   std::vector<GeometrySpec *> objectPhysxGeometries;
 };

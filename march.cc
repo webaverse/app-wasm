@@ -721,13 +721,12 @@ void marchingCubes2(float meshId, int dims[3], float *potential, unsigned char *
   numTransparentPositions = positionIndex - numOpaquePositions;
 }
 
-std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<Subparcel>>> doMine(Tracker *tracker, float *position, float delta) {
+std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position, float delta) {
   int x = (int)position[0];
   int y = (int)position[1];
   int z = (int)position[2];
   
   // collect subparcels
-  std::vector<std::shared_ptr<Subparcel>> oldSubparcels;
   std::vector<std::shared_ptr<Subparcel>> newSubparcels;
   constexpr int radius = 1;
   {
@@ -746,9 +745,16 @@ std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<S
           auto subparcelIter = tracker->subparcels.find(index);
           if (subparcelIter !=  tracker->subparcels.end()) {
             std::shared_ptr<Subparcel> &oldSubparcel = subparcelIter->second;
-            oldSubparcels.push_back(oldSubparcel);
-            std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
-            newSubparcels.push_back(std::move(newSubparcel));
+            if (oldSubparcel->live) {
+              std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
+              newSubparcels.push_back(std::move(newSubparcel));
+              
+              newSubparcel->copyVegetation(*oldSubparcel);
+              oldSubparcel->live = false;
+            } else {
+              std::cout << "cannot edit dead index " << ax << " " << ay << " " << az << std::endl;
+              abort();
+            }
           }
         }
       }
@@ -921,18 +927,18 @@ std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<S
         abort();
       }
 
-      memcpy(positionsAllocator->data + subparcel->landPositionsEntry->start, positions.data(), numPositions*sizeof(float));
-      memcpy(normalsAllocator->data + subparcel->landNormalsEntry->start, normals.data(), numNormals*sizeof(float));
-      memcpy(uvsAllocator->data + subparcel->landUvsEntry->start, uvs.data(), numUvs*sizeof(float));
-      // memcpy(barycentricsAllocator->data + subparcel->landBarycentricsEntry->start, barycentrics.data(), numBarycentrics*sizeof(float));
-      memcpy(aosAllocator->data + subparcel->landAosEntry->start, aos.data(), numAos*sizeof(unsigned char));
-      memcpy(idsAllocator->data + subparcel->landIdsEntry->start, ids.data(), numIds*sizeof(float));
-      memcpy(skyLightsAllocator->data + subparcel->landSkyLightsEntry->start, skyLights.data(), numSkyLights*sizeof(unsigned char));
-      memcpy(torchLightsAllocator->data + subparcel->landTorchLightsEntry->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
+      memcpy(positionsAllocator->data + subparcel->landPositionsEntry->spec.start, positions.data(), numPositions*sizeof(float));
+      memcpy(normalsAllocator->data + subparcel->landNormalsEntry->spec.start, normals.data(), numNormals*sizeof(float));
+      memcpy(uvsAllocator->data + subparcel->landUvsEntry->spec.start, uvs.data(), numUvs*sizeof(float));
+      // memcpy(barycentricsAllocator->data + subparcel->landBarycentricsEntry->spec.start, barycentrics.data(), numBarycentrics*sizeof(float));
+      memcpy(aosAllocator->data + subparcel->landAosEntry->spec.start, aos.data(), numAos*sizeof(unsigned char));
+      memcpy(idsAllocator->data + subparcel->landIdsEntry->spec.start, ids.data(), numIds*sizeof(float));
+      memcpy(skyLightsAllocator->data + subparcel->landSkyLightsEntry->spec.start, skyLights.data(), numSkyLights*sizeof(unsigned char));
+      memcpy(torchLightsAllocator->data + subparcel->landTorchLightsEntry->spec.start, torchLights.data(), numTorchLights*sizeof(unsigned char));
       memcpy(subparcel->peeks, peeks.data(), numPeeks*sizeof(unsigned char));
 
       // groups
-      subparcel->landGroups[0].start = subparcel->landPositionsEntry->start/sizeof(float)/3;
+      subparcel->landGroups[0].start = subparcel->landPositionsEntry->spec.start/sizeof(float)/3;
       subparcel->landGroups[0].count = numOpaquePositions/3;
       subparcel->landGroups[0].materialIndex = 0;
       subparcel->landGroups[1].start = subparcel->landGroups[0].start + subparcel->landGroups[0].count;
@@ -940,7 +946,7 @@ std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<S
       subparcel->landGroups[1].materialIndex = 1;
 
       // latch
-      landPositions = (float *)(positionsAllocator->data + subparcel->landPositionsEntry->start);
+      landPositions = (float *)(positionsAllocator->data + subparcel->landPositionsEntry->spec.start);
       numLandPositions = numOpaquePositions;
     }
     if (numLandPositions > 0) {
@@ -963,30 +969,7 @@ std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<S
     }
   }
 
-  // latch new subparcels in tracker
-  {
-    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
-
-    std::map<int, std::shared_ptr<Subparcel>> newTrackerSubparcels;
-    for (auto iter : tracker->subparcels) {
-      std::shared_ptr<Subparcel> &subparcel = iter.second;
-      auto iter2 = std::find_if(oldSubparcels.begin(), oldSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel2) -> bool {
-        return *subparcel2 == *subparcel;
-      });
-      if (iter2 == oldSubparcels.end()) {
-        newTrackerSubparcels[iter.first] = subparcel;
-      }
-    }
-    for (std::shared_ptr<Subparcel> subparcel : newSubparcels) {
-      newTrackerSubparcels[subparcel->coord.index] = subparcel;
-    }
-    tracker->subparcels = std::move(newTrackerSubparcels);
-  }
-
-  return std::pair<std::vector<std::shared_ptr<Subparcel>>, std::vector<std::shared_ptr<Subparcel>>>(
-    std::move(newSubparcels),
-    std::move(oldSubparcels)
-  );
+  return std::move(newSubparcels);
   
   /* const _mine = async (mineSpecs, explodePosition) => {
   const slabs = mineSpecs.map(spec => currentChunkMesh.getSlab(spec.x, spec.y, spec.z));
@@ -1144,6 +1127,16 @@ const _applyPotentialDelta = async (position, delta) => {
   const mineSpecs = _applyMineSpec(localVector2, 1, 'potentials', SUBPARCEL_SIZE_P3, planet.getPotentialIndex, delta);
   await _mine(mineSpecs, delta < 0 ? applyPosition : null);
 }; */
+}
+void doReleaseMine(Tracker *tracker, std::shared_ptr<Subparcel> **subparcelPtrs, unsigned int numSubparcelPtrs) {
+  std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+
+  for (unsigned int i = 0; i < numSubparcelPtrs; i++) {
+    std::shared_ptr<Subparcel> *subparcelPtr = subparcelPtrs[i];
+    std::shared_ptr<Subparcel> &subparcel = *subparcelPtr;
+    tracker->subparcels[subparcel->coord.index] = subparcel;
+    delete subparcelPtr;
+  }
 }
 std::vector<std::shared_ptr<Subparcel>> doLight(Tracker *tracker, float *position, float delta) {
   int x = (int)position[0];
