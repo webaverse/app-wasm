@@ -300,6 +300,10 @@ enum class OBJECT_TYPE : unsigned int {
 };
 class Object {
 public:
+  Object();
+  Object(const Object &object);
+  Object &operator=(const Object &object);
+
   unsigned int id;
   OBJECT_TYPE type;
   char name[MAX_NAME_LENGTH];
