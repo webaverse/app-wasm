@@ -726,6 +726,45 @@ std::function<void(Message *)> METHOD_FNS[] = {
     bakeGeometry(positions, indices, numPositions, numIndices, writeStream);
     // std::cout << "bake 2" << std::endl; */
   },
+  [](Message *Message) -> void { // getSubparcel
+    unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+    int x = *((int *)(Message->args + index));
+    index += sizeof(int);
+    int y = *((int *)(Message->args + index));
+    index += sizeof(void *);
+    int z = *((int *)(Message->args + index));
+    index += sizeof(void *);
+
+    std::shared_ptr<Subparcel> subparcel;
+    {
+      int subparcelIndex = getSubparcelIndex(x, y, z);
+      std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+      auto subparcelIter = tracker->subparcels.find(subparcelIndex);
+      if (subparcelIter != tracker->subparcels.end()) {
+        subparcel = subparcelIter->second;
+      }
+    }
+    std::shared_ptr<Subparcel> *subparcelPtr;
+    if (subparcel) {
+      subparcelPtr = new std::shared_ptr<Subparcel>(subparcel);
+    } else {
+      subparcelPtr = nullptr;
+    }
+
+    index = 0;
+    *((std::shared_ptr<Subparcel> **)(Message->args + index)) = subparcelPtr;
+    index += sizeof(std::shared_ptr<Subparcel> *);
+    *((Subparcel **)(Message->args + index)) = subparcel.get();
+    index += sizeof(Subparcel *);
+  },
+  [](Message *Message) -> void { // releaseSubparcel
+    unsigned int index = 0;
+    std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
+    index += sizeof(std::shared_ptr<Subparcel> *);
+    delete subparcelSharedPtr;
+  },
   [](Message *Message) -> void { // chunk
     unsigned int index = 0;
     int seed = *((int *)(Message->args + index));
@@ -1036,12 +1075,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
     }
 
     // std::cout << "return update " << (void *)subparcelSharedPtr << " " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
-  },
-  [](Message *Message) -> void { // releaseUpdate
-    unsigned int index = 0;
-    std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
-    index += sizeof(std::shared_ptr<Subparcel> *);
-    delete subparcelSharedPtr;
   },
   [](Message *Message) -> void { // mine
     unsigned int index = 0;
