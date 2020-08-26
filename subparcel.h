@@ -179,7 +179,6 @@ enum class METHODS : int {
 };
 enum class MESSAGES : int {
   updateGeometry = -1,
-  updateMine = -2,
 };
 extern "C" {
   extern std::function<void(Message *)> METHOD_FNS[];

@@ -1039,7 +1039,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
   [](Message *Message) -> void { // releaseUpdate
     unsigned int index = 0;
     std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
-    // std::cout << "release subparcel " << (void *)subparcelSharedPtr << " " << (*subparcelSharedPtr)->coord.x << " " << (*subparcelSharedPtr)->coord.y << " " << (*subparcelSharedPtr)->coord.z << std::endl;
     index += sizeof(std::shared_ptr<Subparcel> *);
     delete subparcelSharedPtr;
   },
@@ -1053,10 +1052,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(float);
 
     std::vector<std::shared_ptr<Subparcel>> newSubparcels = doMine(tracker, position, delta);
-    
-    Message->method = (int)MESSAGES::updateMine;
-
-    // std::cout << "return 2" << std::endl;
 
     index = 0;
     *((unsigned int *)(Message->args + index)) = newSubparcels.size();
@@ -1070,8 +1065,6 @@ std::function<void(Message *)> METHOD_FNS[] = {
       index += sizeof(FreeEntry *);
       *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
       index += sizeof(FreeEntry *);
-      /* *((FreeEntry **)(Message->args + index)) = subparcel->landBarycentricsEntry.get();
-      index += sizeof(FreeEntry *); */
       *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
       index += sizeof(FreeEntry *);
       *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
@@ -1089,11 +1082,24 @@ std::function<void(Message *)> METHOD_FNS[] = {
     }
   },
   [](Message *Message) -> void { // releaseMine
-    /* unsigned int index = 0;
-    std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
-    // std::cout << "release subparcel " << (void *)subparcelSharedPtr << " " << (*subparcelSharedPtr)->coord.x << " " << (*subparcelSharedPtr)->coord.y << " " << (*subparcelSharedPtr)->coord.z << std::endl;
-    index += sizeof(std::shared_ptr<Subparcel> *);
-    delete subparcelSharedPtr; */
+    unsigned int index = 0;
+
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+
+    unsigned int numSubparcels = *((unsigned int *)(Message->args + index));
+    index += sizeof(unsigned int);
+
+    {
+      std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+      for (unsigned int i = 0; i < numSubparcels; i++) {
+        std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
+        index += sizeof(std::shared_ptr<Subparcel> *);
+
+        tracker->subparcels[(*subparcelSharedPtr)->coord.index] = *subparcelSharedPtr;
+        delete subparcelSharedPtr;
+      }
+    }
   },
   [](Message *Message) -> void { // light
     unsigned int index = 0;
@@ -1186,15 +1192,22 @@ std::function<void(Message *)> METHOD_FNS[] = {
     }
   },
   [](Message *Message) -> void { // releaseAddRemoveObject
-    /* unsigned int index = 0;
+    unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
-    int meshIndex = *((int *)(Message->args + index));
-    index += sizeof(int);
-    unsigned int objectId = *((int *)(Message->args + index));
+    unsigned int numSubparcels = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
 
-    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doRemoveObject(tracker, meshIndex, objectId); */
+    {
+      std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+      for (unsigned int i = 0; i < numSubparcels; i++) {
+        std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
+        index += sizeof(std::shared_ptr<Subparcel> *);
+
+        tracker->subparcels[(*subparcelSharedPtr)->coord.index] = *subparcelSharedPtr;
+        delete subparcelSharedPtr;
+      }
+    }
   },
 };
 
