@@ -305,6 +305,7 @@ void Subparcel::copyLand(const Subparcel &subparcel) {
   landSkyLightsEntry = subparcel.landSkyLightsEntry;
   landTorchLightsEntry = subparcel.landTorchLightsEntry;
 
+  physxGeometry = subparcel.physxGeometry;
   memcpy(landGroups, subparcel.landGroups, sizeof(landGroups));
 }
 void Subparcel::copyVegetation(const Subparcel &subparcel) {
@@ -316,4 +317,5 @@ void Subparcel::copyVegetation(const Subparcel &subparcel) {
   vegetationTorchLightsEntry = subparcel.vegetationTorchLightsEntry;
   
   memcpy(vegetationGroups, subparcel.vegetationGroups, sizeof(vegetationGroups));
+  objectPhysxGeometries = subparcel.objectPhysxGeometries;
 }
