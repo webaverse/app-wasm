@@ -774,7 +774,10 @@ std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position
       SUBPARCEL_SIZE_P3,
       SUBPARCEL_SIZE_P3,
     };
+    std::vector<int> minedIndices;
+    minedIndices.reserve(32);
     std::function<void(int, int, int, float)> _applyRound = [&](int ax, int ay, int az, float value) -> void {
+      minedIndices.clear();
       for (int ddy = -1; ddy <= 1; ddy++) {
         const int ady = ay + ddy;
         for (int ddz = -1; ddz <= 1; ddz++) {
@@ -785,26 +788,31 @@ std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position
             const int sdx = (int)std::floor((float)adx/(float)SUBPARCEL_SIZE);
             const int sdy = (int)std::floor((float)ady/(float)SUBPARCEL_SIZE);
             const int sdz = (int)std::floor((float)adz/(float)SUBPARCEL_SIZE);
-            const int lx = ax - sdx*SUBPARCEL_SIZE;
-            const int ly = ay - sdy*SUBPARCEL_SIZE;
-            const int lz = az - sdz*SUBPARCEL_SIZE;
+            const int index = getSubparcelIndex(sdx, sdy, sdz);
+            auto minedIndexIter = std::find(minedIndices.begin(), minedIndices.end(), index);
+            if (minedIndexIter == minedIndices.end()) {
+              minedIndices.push_back(index);
+              
+              const int lx = ax - sdx*SUBPARCEL_SIZE;
+              const int ly = ay - sdy*SUBPARCEL_SIZE;
+              const int lz = az - sdz*SUBPARCEL_SIZE;
+              if (
+                lx >= 0 && lx < SUBPARCEL_SIZE_P3 &&
+                ly >= 0 && ly < SUBPARCEL_SIZE_P3 &&
+                lz >= 0 && lz < SUBPARCEL_SIZE_P3
+              ) {
+                auto subparcelIter = std::find_if(newSubparcels.begin(), newSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
+                  return subparcel->coord.index == index;
+                });
+                if (subparcelIter != newSubparcels.end()) {
+                  std::shared_ptr<Subparcel> &subparcel = *subparcelIter;
 
-            if (
-              lx >= 0 && lx < SUBPARCEL_SIZE_P3 &&
-              ly >= 0 && ly < SUBPARCEL_SIZE_P3 &&
-              lz >= 0 && lz < SUBPARCEL_SIZE_P3
-            ) {
-              const int index = getSubparcelIndex(sdx, sdy, sdz);
-              auto subparcelIter = std::find_if(newSubparcels.begin(), newSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
-                return subparcel->coord.index == index;
-              });
-              if (subparcelIter != newSubparcels.end()) {
-                std::shared_ptr<Subparcel> &subparcel = *subparcelIter;
-
-                const int potentialIndex = getPotentialIndex(lx, ly, lz, dimsP3);
-                subparcel->potentials[potentialIndex] += value;
-              } else {
-                std::cout << "warning: did not have subparcel: " << sdx << " " << sdy << " " << sdz << std::endl;
+                  const int potentialIndex = getPotentialIndex(lx, ly, lz, dimsP3);
+                  // std::cout << "mine potential " << index << " " << lx << " " << ly << " " << lz << " " << potentialIndex << " " << subparcel->potentials[potentialIndex] << " " << value << std::endl;
+                  subparcel->potentials[potentialIndex] += value;
+                } else {
+                  std::cout << "warning: did not have subparcel: " << sdx << " " << sdy << " " << sdz << std::endl;
+                }
               }
             }
           }
