@@ -97,10 +97,10 @@ EMSCRIPTEN_KEEPALIVE void unregisterGeometry(GeometrySpec *geometrySpec) {
   doUnregisterGeometry(geometrySpec);
 } */
 EMSCRIPTEN_KEEPALIVE void raycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *meshId, unsigned int *faceIndex) {
-  doRaycast(tracker, origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *meshId, *faceIndex);
+  doRaycast(&tracker->physicer, origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *meshId, *faceIndex);
 }
 EMSCRIPTEN_KEEPALIVE void collide(Tracker *tracker, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded) {
-  doCollide(tracker, radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded);
+  doCollide(&tracker->physicer, radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded);
 }
 
 // culling
@@ -942,7 +942,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
     for (unsigned int i = 0; i < subparcel->numObjects; i++) {
       Object &object = subparcel->objects[i];
       if (strcmp(object.name, "spawner") != 0) {
-        GeometrySpec *physxGeometry;
+        std::shared_ptr<PhysicsGeometry> physxGeometry;
         auto shapeIter = PHYSICS_SHAPES.find(object.name);
         if (shapeIter != PHYSICS_SHAPES.end()) {
           const Shape &shape = shapeIter->second;
@@ -955,19 +955,19 @@ std::function<void(Message *)> METHOD_FNS[] = {
           Quat quaternion;
           Vec scale;
           matrix.decompose(position, quaternion, scale);
-          physxGeometry = doMakeBoxGeometry(tracker, object.id, position.data, quaternion.data, shape.scale.x, shape.scale.y, shape.scale.z);
+          physxGeometry = doMakeBoxGeometry(&tracker->physicer, object.id, position.data, quaternion.data, shape.scale.x, shape.scale.y, shape.scale.z);
         } else {
           Vec position = object.position;
           position += Vec{0, (2.0f+0.5f)/2.0f, 0};
           Quat quaternion = object.quaternion;
           quaternion.multiply(Quat(Vec{0, 0, 1}, PI/2.0f));
-          physxGeometry = doMakeCapsuleGeometry(tracker, object.id, position.data, quaternion.data, 0.5, 2);
+          physxGeometry = doMakeCapsuleGeometry(&tracker->physicer, object.id, position.data, quaternion.data, 0.5, 2);
         }
-        subparcel->objectPhysxGeometries.push_back(physxGeometry);
+        subparcel->objectPhysxGeometries.push_back(std::move(physxGeometry));
       }
     }
     if (numLandPositions > 0) {
-      PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(tracker, landPositions, nullptr, numLandPositions, 0);
+      PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, landPositions, nullptr, numLandPositions, 0);
       unsigned int meshId = subparcel->coord.index;
       float meshPosition[3] = {
         (float)subparcel->coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
@@ -980,7 +980,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
         0,
         1,
       };
-      subparcel->physxGeometry = doMakeBakedGeometry(tracker, meshId, writeStream, meshPosition, meshQuaternion);
+      subparcel->physxGeometry = doMakeBakedGeometry(&tracker->physicer, meshId, writeStream, meshPosition, meshQuaternion);
     } else {
       subparcel->physxGeometry = nullptr;
     }

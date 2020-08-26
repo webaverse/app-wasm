@@ -2,6 +2,7 @@
 #define SUBPARCEL_H
 
 #include "vector.h"
+#include "collide.h"
 #include <deque>
 #include <map>
 #include <set>
@@ -221,7 +222,6 @@ public:
 };
 
 class GeometrySet;
-class GeometrySpec;
 class FreeEntry;
 class Subparcel;
 namespace physx {
@@ -231,7 +231,6 @@ namespace physx {
   class PxPhysics;
   class PxCooking;
 }
-using namespace physx;
 class Tracker {
 public:
   Tracker(
@@ -280,18 +279,7 @@ public:
   std::map<int, std::shared_ptr<Subparcel>> subparcels;
   std::mutex subparcelsMutex;
 
-  PxDefaultAllocator *gAllocator = nullptr;
-  PxDefaultErrorCallback *gErrorCallback = nullptr;
-  PxFoundation *gFoundation = nullptr;
-  PxPhysics *physics = nullptr;
-  PxCooking *cooking = nullptr;
-  std::set<GeometrySpec *> geometrySpecs;
-  std::set<GeometrySpec *> staticGeometrySpecs;
-  std::vector<std::set<GeometrySpec *> *> geometrySpecSets{
-    &staticGeometrySpecs,
-    &geometrySpecs,
-  };
-  std::mutex gPhysicsMutex;
+  Physicer physicer;
 };
 
 class Group {
@@ -371,8 +359,8 @@ public:
   Group landGroups[2];
   Group vegetationGroups[1];
 
-  GeometrySpec *physxGeometry;
-  std::vector<GeometrySpec *> objectPhysxGeometries;
+  std::shared_ptr<PhysicsGeometry> physxGeometry;
+  std::vector<std::shared_ptr<PhysicsGeometry>> objectPhysxGeometries;
 };
 
 #endif

@@ -169,16 +169,7 @@ Tracker::Tracker(
   vegetationIndicesAllocator(vegetationIndicesAllocator),
   vegetationSkyLightsAllocator(vegetationSkyLightsAllocator),
   vegetationTorchLightsAllocator(vegetationTorchLightsAllocator)
-{
-  gAllocator = new PxDefaultAllocator();
-  gErrorCallback = new PxDefaultErrorCallback();
-  gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, *gAllocator, *gErrorCallback);
-  PxTolerancesScale tolerancesScale;
-  physics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, tolerancesScale);
-  PxCookingParams cookingParams(tolerancesScale);
-  // cookingParams.midphaseDesc = PxMeshMidPhase::eBVH34;
-  cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
-}
+{}
 void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z) {
   Coord coord(
     (int)std::floor(x/(float)SUBPARCEL_SIZE),
@@ -293,15 +284,15 @@ Subparcel::~Subparcel() {
   // std::cout << "delete subparcel " << coord.x << " " << coord.y << " " << coord.z << std::endl;
 
   {
-    std::lock_guard<std::mutex> lock(tracker->gPhysicsMutex);
+    std::lock_guard<std::mutex> lock(tracker->physicer.gPhysicsMutex);
 
     if (physxGeometry) {
-      for (std::set<GeometrySpec *> *geometrySpecSet : tracker->geometrySpecSets) {
+      for (std::set<std::shared_ptr<PhysicsGeometry>> *geometrySpecSet : tracker->physicer.geometrySpecSets) {
         geometrySpecSet->erase(physxGeometry);
       }
     }
-    for (GeometrySpec *geometrySpec : objectPhysxGeometries) {
-      for (std::set<GeometrySpec *> *geometrySpecSet : tracker->geometrySpecSets) {
+    for (std::shared_ptr<PhysicsGeometry> geometrySpec : objectPhysxGeometries) {
+      for (std::set<std::shared_ptr<PhysicsGeometry>> *geometrySpecSet : tracker->physicer.geometrySpecSets) {
         geometrySpecSet->erase(geometrySpec);
       }
     }

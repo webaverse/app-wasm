@@ -21,10 +21,10 @@
 
 using namespace physx;
 
-class GeometrySpec {
+class PhysicsGeometry {
 public:
-  GeometrySpec(unsigned int meshId, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere);
-  ~GeometrySpec();
+  PhysicsGeometry(unsigned int meshId, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere);
+  ~PhysicsGeometry();
 
   unsigned int meshId;
   PxTriangleMesh *triangleMesh;
@@ -33,6 +33,25 @@ public:
   Quat quaternion;
   Sphere boundingSphere;
 };
+
+class Physicer {
+public:
+  Physicer();
+  
+  PxDefaultAllocator *gAllocator = nullptr;
+  PxDefaultErrorCallback *gErrorCallback = nullptr;
+  PxFoundation *gFoundation = nullptr;
+  PxPhysics *physics = nullptr;
+  PxCooking *cooking = nullptr;
+  std::set<std::shared_ptr<PhysicsGeometry>> geometrySpecs;
+  std::set<std::shared_ptr<PhysicsGeometry>> staticGeometrySpecs;
+  std::vector<std::set<std::shared_ptr<PhysicsGeometry>> *> geometrySpecSets{
+    &staticGeometrySpecs,
+    &geometrySpecs,
+  };
+  std::mutex gPhysicsMutex;
+};
+
 /* void doInitPhysx() {
   gAllocator = new PxDefaultAllocator();
   gErrorCallback = new PxDefaultErrorCallback();
@@ -43,23 +62,22 @@ public:
   // cookingParams.midphaseDesc = PxMeshMidPhase::eBVH34;
   cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
 } */
-class Tracker;
-GeometrySpec *doMakeBakedGeometry(Tracker *tracker, unsigned int meshId, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion);
-GeometrySpec *doMakeBoxGeometry(Tracker *tracker, unsigned int meshId, float *position, float *quaternion, float w, float h, float d);
-GeometrySpec *doMakeCapsuleGeometry(Tracker *tracker, unsigned int meshId, float *position, float *quaternion, float radius, float halfHeight);
-PxDefaultMemoryOutputStream *doBakeGeometry(Tracker *tracker, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices);
-/* void doUnregisterGeometry(GeometrySpec * geometrySpec) {
+std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, unsigned int meshId, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion);
+std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned int meshId, float *position, float *quaternion, float w, float h, float d);
+std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, unsigned int meshId, float *position, float *quaternion, float radius, float halfHeight);
+PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices);
+/* void doUnregisterGeometry(PhysicsGeometry * geometrySpec) {
   {
     std::lock_guard<std::mutex> lock(gPhysicsMutex);
-    for (std::set<GeometrySpec *> *geometrySpecSet : geometrySpecSets) {
-      geometrySpecSet->erase(geometrySpec);
+    for (std::set<PhysicsGeometry *> *geometrySpecSet : geometrySpecSets) {
+      geometrySpecSet->erase(PhysicsGeometry);
     }
   }
 
   delete geometrySpec;
 } */
-void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &meshId, unsigned int &faceIndex);
-void doCollide(Tracker *tracker, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
+void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &meshId, unsigned int &faceIndex);
+void doCollide(Physicer *physicer, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
 extern int PEEK_FACE_INDICES[];
 /* (() => {
   const directionsLookup = {
