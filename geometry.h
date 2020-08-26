@@ -511,6 +511,10 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySe
       Subparcel *subparcels = nullptr;
       unsigned int numSubparcels = 0;
       doMarchObjects(geometrySet, sdx, sdy, sdz, subparcel.get(), subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+
+      subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
+      subparcel->vegetationGroups[0].count = subparcel->vegetationIndicesEntry->spec.count/sizeof(unsigned int);
+      subparcel->vegetationGroups[0].materialIndex = 0;
     }
 
     result.push_back(subparcel);
