@@ -1077,14 +1077,13 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(Tracker *);
     GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
     index += sizeof(GeometrySet *);
-    char *nameChar = (char *)(Message->args + index);
+    char *name = (char *)(Message->args + index);
     index += MAX_NAME_LENGTH;
     float *position = (float *)(Message->args + index);
     index += 3*sizeof(float);
     float *quaternion = (float *)(Message->args + index);
     index += 4*sizeof(float);
 
-    std::string name(nameChar);
     std::vector<std::shared_ptr<Subparcel>> newSubparcels = doAddObject(tracker, geometrySet, OBJECT_TYPE::VEGETATION, name, position, quaternion);
 
     for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {

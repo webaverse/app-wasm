@@ -404,7 +404,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
   }
 }
 
-std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySet *geometrySet, OBJECT_TYPE type, const std::string &name, float *position, float *quaternion) {
+std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySet *geometrySet, OBJECT_TYPE type, const char *name, float *position, float *quaternion) {
   const int sdx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
   const int sdy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
   const int sdz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
@@ -434,7 +434,7 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySe
     Object &o = subparcel->objects[subparcel->numObjects];
     o.id = (unsigned int)rand();
     o.type = type;
-    strcpy(o.name, name.c_str());
+    memcpy(o.name, name, sizeof(o.name));
     o.position = Vec{
       position[0],
       position[1],
