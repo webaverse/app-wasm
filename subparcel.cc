@@ -132,6 +132,7 @@ ThreadPool::ThreadPool(unsigned int numThreads) {
 
 Tracker::Tracker(
 	int seed,
+  unsigned int meshId,
   int chunkDistance,
 
   ArenaAllocator *landPositionsAllocator,
@@ -151,6 +152,7 @@ Tracker::Tracker(
   ArenaAllocator *vegetationTorchLightsAllocator
 ) :
   seed(seed),
+  meshId(meshId),
   chunkDistance(chunkDistance),
   lastCoord(0, 256, 0),
 

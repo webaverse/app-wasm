@@ -235,6 +235,7 @@ class Tracker {
 public:
   Tracker(
     int seed,
+    unsigned int meshId,
     int chunkDistance,
 
     ArenaAllocator *landPositionsAllocator,
@@ -256,6 +257,7 @@ public:
   void updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z);
 
   int seed;
+  unsigned int meshId;
   int chunkDistance;
 
   ArenaAllocator *landPositionsAllocator;
