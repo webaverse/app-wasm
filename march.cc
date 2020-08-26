@@ -722,9 +722,9 @@ void marchingCubes2(float meshId, int dims[3], float *potential, unsigned char *
 }
 
 std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position, float delta) {
-  int x = (int)position[0];
-  int y = (int)position[1];
-  int z = (int)position[2];
+  int x = (int)std::floor(position[0]);
+  int y = (int)std::floor(position[1]);
+  int z = (int)std::floor(position[2]);
   
   // collect subparcels
   std::vector<std::shared_ptr<Subparcel>> newSubparcels;
@@ -742,18 +742,25 @@ std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position
           const int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
           const int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
           const int index = getSubparcelIndex(sx, sy, sz);
-          auto subparcelIter = tracker->subparcels.find(index);
-          if (subparcelIter !=  tracker->subparcels.end()) {
-            std::shared_ptr<Subparcel> &oldSubparcel = subparcelIter->second;
-            if (oldSubparcel->live) {
-              std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
-              newSubparcels.push_back(std::move(newSubparcel));
+          auto existingSubparcelIter = std::find_if(newSubparcels.begin(), newSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
+            return subparcel->coord.index == index;
+          });
+          if (existingSubparcelIter == newSubparcels.end()) {
+            auto oldSubparcelIter = tracker->subparcels.find(index);
+            if (oldSubparcelIter != tracker->subparcels.end()) {
               
-              newSubparcel->copyVegetation(*oldSubparcel);
-              oldSubparcel->live = false;
-            } else {
-              std::cout << "cannot edit dead index " << ax << " " << ay << " " << az << std::endl;
-              abort();
+              std::shared_ptr<Subparcel> &oldSubparcel = oldSubparcelIter->second;
+              if (oldSubparcel->live) {
+                std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
+                
+                newSubparcel->copyVegetation(*oldSubparcel);
+                oldSubparcel->live = false;
+                
+                newSubparcels.push_back(std::move(newSubparcel));
+              } else {
+                std::cout << "cannot edit dead index " << ax << " " << ay << " " << az << std::endl;
+                abort();
+              }
             }
           }
         }
@@ -1126,16 +1133,6 @@ const _applyPotentialDelta = async (position, delta) => {
   const mineSpecs = _applyMineSpec(localVector2, 1, 'potentials', SUBPARCEL_SIZE_P3, planet.getPotentialIndex, delta);
   await _mine(mineSpecs, delta < 0 ? applyPosition : null);
 }; */
-}
-void doReleaseMine(Tracker *tracker, std::shared_ptr<Subparcel> **subparcelPtrs, unsigned int numSubparcelPtrs) {
-  std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
-
-  for (unsigned int i = 0; i < numSubparcelPtrs; i++) {
-    std::shared_ptr<Subparcel> *subparcelPtr = subparcelPtrs[i];
-    std::shared_ptr<Subparcel> &subparcel = *subparcelPtr;
-    tracker->subparcels[subparcel->coord.index] = subparcel;
-    delete subparcelPtr;
-  }
 }
 std::vector<std::shared_ptr<Subparcel>> doLight(Tracker *tracker, float *position, float delta) {
   int x = (int)position[0];
