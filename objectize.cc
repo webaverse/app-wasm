@@ -1088,7 +1088,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
     std::vector<std::shared_ptr<Subparcel>> newSubparcels = doAddObject(tracker, geometrySet, OBJECT_TYPE::VEGETATION, name, position, quaternion);
 
     for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
-     doObjectPhysics(tracker, subparcel.get());
+      doObjectPhysics(tracker, subparcel.get());
     }
 
     index = 0;
