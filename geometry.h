@@ -297,7 +297,7 @@ public:
   char heightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
 }; */
-void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
+void doGetdoAddObjecttats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
   unsigned int &positionsIndex = numPositions;
   unsigned int &uvsIndex = numUvs;
   unsigned int &idsIndex = numIds;
@@ -431,7 +431,7 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySe
   
   std::vector<std::shared_ptr<Subparcel>> result;
   if (subparcel) {
-    Object o;
+    Object &o = subparcel->objects[subparcel->numObjects];
     o.id = (unsigned int)rand();
     o.type = type;
     strcpy(o.name, name.c_str());
@@ -446,7 +446,6 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySe
       quaternion[2],
       quaternion[3],
     };
-    subparcel->objects[subparcel->numObjects] = o;
     subparcel->numObjects++;
 
     // re-polygonalize

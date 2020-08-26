@@ -271,7 +271,7 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
   }
 }
 
-Object::Object() {}
+/* Object::Object() {}
 Object::Object(const Object &object) {
   id = object.id;
   type = object.type;
@@ -286,7 +286,7 @@ Object &Object::operator=(const Object &object) {
   position = object.position;
   quaternion = object.quaternion;
   return *this;
-}
+} */
 
 Subparcel::Subparcel(const Coord &coord, Tracker *tracker) :
   coord(coord),
