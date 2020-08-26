@@ -404,7 +404,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
   }
 }
 
-std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, OBJECT_TYPE type, const std::string &name, float *position, float *quaternion) {
+std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySet *geometrySet, OBJECT_TYPE type, const std::string &name, float *position, float *quaternion) {
   const int sdx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
   const int sdy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
   const int sdz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
@@ -415,7 +415,17 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, OBJECT_TYP
     std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
     auto subparcelIter = tracker->subparcels.find(index);
     if (subparcelIter != tracker->subparcels.end()) {
-      subparcel = subparcelIter->second;
+      if (subparcel->live) {
+        std::shared_ptr<Subparcel> &oldSubparcel = subparcelIter->second;
+        
+        subparcel = std::shared_ptr<Subparcel>(oldSubparcel->clone());
+        
+        subparcel->copyLand(*oldSubparcel);
+        oldSubparcel->live = false;
+      } else {
+        std::cout << "cannot edit dead index " << sdx << " " << sdy << " " << sdz << std::endl;
+        abort();
+      }
     }
   }
   
@@ -438,108 +448,70 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, OBJECT_TYP
     };
     subparcel->objects[subparcel->numObjects++] = o;
 
-    /* {
-      unsigned int index = 0;
-      GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
-      index += sizeof(GeometrySet *);
-      int x = *((int *)(Message->args + index));
-      index += sizeof(int);
-      int y = *((int *)(Message->args + index));
-      index += sizeof(int);
-      int z = *((int *)(Message->args + index));
-      index += sizeof(int);
-
-      // std::cout << "march objects a " << x << " " << y << " " << z << std::endl;
-
-      Subparcel *subparcel = *((Subparcel **)(Message->args + index));
-      index += sizeof(Subparcel *);
-      Subparcel *subparcels = *((Subparcel **)(Message->args + index));
-      index += sizeof(Subparcel *);
-      unsigned int numSubparcels = *((unsigned int *)(Message->args + index));
-      index += sizeof(unsigned int);
-      ArenaAllocator *positionsAllocator = *((ArenaAllocator **)(Message->args + index));
-      index += sizeof(ArenaAllocator *);
-      ArenaAllocator *uvsAllocator = *((ArenaAllocator **)(Message->args + index));
-      index += sizeof(ArenaAllocator *);
-      ArenaAllocator *idsAllocator = *((ArenaAllocator **)(Message->args + index));
-      index += sizeof(ArenaAllocator *);
-      ArenaAllocator *indicesAllocator = *((ArenaAllocator **)(Message->args + index));
-      index += sizeof(ArenaAllocator *);
-      ArenaAllocator *skyLightsAllocator = *((ArenaAllocator **)(Message->args + index));
-      index += sizeof(ArenaAllocator *);
-      ArenaAllocator *torchLightsAllocator = *((ArenaAllocator **)(Message->args + index));
-      index += sizeof(ArenaAllocator *);
-      FreeEntry **positionsEntry = (FreeEntry **)(Message->args + index);
-      index += sizeof(FreeEntry *);
-      FreeEntry **uvsEntry = (FreeEntry **)(Message->args + index);
-      index += sizeof(FreeEntry *);
-      FreeEntry **idsEntry = (FreeEntry **)(Message->args + index);
-      index += sizeof(FreeEntry *);
-      FreeEntry **indicesEntry = (FreeEntry **)(Message->args + index);
-      index += sizeof(FreeEntry *);
-      FreeEntry **skyLightsEntry = (FreeEntry **)(Message->args + index);
-      index += sizeof(FreeEntry *);
-      FreeEntry **torchLightsEntry = (FreeEntry **)(Message->args + index);
-      index += sizeof(FreeEntry *);
-
-      // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
-
+    // re-polygonalize
+    {
       unsigned int numPositions;
       unsigned int numUvs;
       unsigned int numIds;
       unsigned int numIndices;
       unsigned int numSkyLights;
       unsigned int numTorchLights;
-      doGetMarchObjectStats(geometrySet, subparcel, numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
+      doGetMarchObjectStats(geometrySet, subparcel.get(), numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
 
+      ArenaAllocator *positionsAllocator = tracker->vegetationPositionsAllocator;
+      ArenaAllocator *uvsAllocator = tracker->vegetationUvsAllocator;
+      ArenaAllocator *idsAllocator = tracker->vegetationIdsAllocator;
+      ArenaAllocator *indicesAllocator = tracker->vegetationIndicesAllocator;
+      ArenaAllocator *skyLightsAllocator = tracker->vegetationSkyLightsAllocator;
+      ArenaAllocator *torchLightsAllocator = tracker->vegetationTorchLightsAllocator;
       // std::cout << "march objects b " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << " " << (unsigned int)(void *)positionsAllocator << std::endl;
 
-      *positionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
-      if (!*positionsEntry) {
+      subparcel->vegetationPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
+      if (!subparcel->vegetationPositionsEntry) {
         std::cout << "could not allocate marchObjects positions" << std::endl;
         abort();
       }
-      *uvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
-      if (!*uvsEntry) {
+      subparcel->vegetationUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
+      if (!subparcel->vegetationUvsEntry) {
         std::cout << "could not allocate marchObjects uvs" << std::endl;
         abort();
       }
-      *idsEntry = idsAllocator->alloc(numIds*sizeof(float));
-      if (!*idsEntry) {
+      subparcel->vegetationIdsEntry = idsAllocator->alloc(numIds*sizeof(float));
+      if (!subparcel->vegetationIdsEntry) {
         std::cout << "could not allocate marchObjects ids" << std::endl;
         abort();
       }
-      *indicesEntry = indicesAllocator->alloc(numIndices*sizeof(unsigned int));
-      if (!*indicesEntry) {
+      subparcel->vegetationIndicesEntry = indicesAllocator->alloc(numIndices*sizeof(unsigned int));
+      if (!subparcel->vegetationIndicesEntry) {
         std::cout << "could not allocate marchObjects indices" << std::endl;
         abort();
       }
-      *skyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
-      if (!*skyLightsEntry) {
+      subparcel->vegetationSkyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
+      if (!subparcel->vegetationSkyLightsEntry) {
         std::cout << "could not allocate marchObjects skyLights" << std::endl;
         abort();
       }
-      *torchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
-      if (!*torchLightsEntry) {
+      subparcel->vegetationTorchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
+      if (!subparcel->vegetationTorchLightsEntry) {
         std::cout << "could not allocate marchObjects torchLights" << std::endl;
         abort();
       }
 
       // std::cout << "march objects c " << numPositions << " " << numUvs << " " << numIds << " " << numIndices << " " << numSkyLights << " " << numTorchLights << std::endl;
 
-      float *positions = (float *)(positionsAllocator->data + (*positionsEntry)->start);
-      float *uvs = (float *)(uvsAllocator->data + (*uvsEntry)->start);
-      float *ids = (float *)(idsAllocator->data + (*idsEntry)->start);
-      unsigned int *indices = (unsigned int *)(indicesAllocator->data + (*indicesEntry)->start);
-      unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + (*skyLightsEntry)->start);
-      unsigned char *torchLights = (unsigned char *)(torchLightsAllocator->data + (*torchLightsEntry)->start);
+      float *positions = (float *)(positionsAllocator->data + subparcel->vegetationPositionsEntry->spec.start);
+      float *uvs = (float *)(uvsAllocator->data + subparcel->vegetationUvsEntry->spec.start);
+      float *ids = (float *)(idsAllocator->data + subparcel->vegetationIdsEntry->spec.start);
+      unsigned int *indices = (unsigned int *)(indicesAllocator->data + subparcel->vegetationIndicesEntry->spec.start);
+      unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + subparcel->vegetationSkyLightsEntry->spec.start);
+      unsigned char *torchLights = (unsigned char *)(torchLightsAllocator->data + subparcel->vegetationTorchLightsEntry->spec.start);
 
-      unsigned int indexOffset = (*positionsEntry)->start/sizeof(float)/3;
+      unsigned int indexOffset = subparcel->vegetationPositionsEntry->spec.start/sizeof(float)/3;
 
-      doMarchObjects(geometrySet, x, y, z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
-    } */
-
-    // XXX re-march objects
+      Subparcel *subparcels = nullptr;
+      unsigned int numSubparcels = 0;
+      doMarchObjects(geometrySet, sdx, sdy, sdz, subparcel.get(), subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+    }
 
     result.push_back(subparcel);
   }

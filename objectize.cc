@@ -1110,6 +1110,8 @@ std::function<void(Message *)> METHOD_FNS[] = {
     unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
+    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
+    index += sizeof(GeometrySet *);
     char *nameChar = (char *)(Message->args + index);
     index += MAX_NAME_LENGTH;
     float *position = (float *)(Message->args + index);
@@ -1118,7 +1120,33 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += 4*sizeof(float);
 
     std::string name(nameChar);
-    std::vector<std::shared_ptr<Subparcel>> addSpecs = doAddObject(tracker, OBJECT_TYPE::VEGETATION, name, position, quaternion);
+    std::vector<std::shared_ptr<Subparcel>> newSubparcels = doAddObject(tracker, geometrySet, OBJECT_TYPE::VEGETATION, name, position, quaternion);
+    
+    index = 0;
+    *((unsigned int *)(Message->args + index)) = newSubparcels.size();
+    index += sizeof(unsigned int);
+    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+      
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
+      index += sizeof(FreeEntry *);
+    }
+
+    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+      *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
+      index += sizeof(std::shared_ptr<Subparcel> *);
+    }
   },
   [](Message *Message) -> void { // removeObject
     unsigned int index = 0;
@@ -1129,7 +1157,44 @@ std::function<void(Message *)> METHOD_FNS[] = {
     unsigned int objectId = *((int *)(Message->args + index));
     index += sizeof(unsigned int);
 
-    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doRemoveObject(tracker, meshIndex, objectId);
+    std::vector<std::shared_ptr<Subparcel>> newSubparcels = doRemoveObject(tracker, meshIndex, objectId);
+    
+    index = 0;
+    *((unsigned int *)(Message->args + index)) = newSubparcels.size();
+    index += sizeof(unsigned int);
+    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+      
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
+      index += sizeof(FreeEntry *);
+    }
+
+    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+      *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
+      index += sizeof(std::shared_ptr<Subparcel> *);
+    }
+  },
+  [](Message *Message) -> void { // releaseAddRemoveObject
+    /* unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+    int meshIndex = *((int *)(Message->args + index));
+    index += sizeof(int);
+    unsigned int objectId = *((int *)(Message->args + index));
+    index += sizeof(unsigned int);
+
+    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doRemoveObject(tracker, meshIndex, objectId); */
   },
 };
 

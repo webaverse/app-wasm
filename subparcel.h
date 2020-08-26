@@ -175,6 +175,7 @@ enum class METHODS : int {
   light,
   addObject,
   removeObject,
+  releaseAddRemoveObject,
 };
 enum class MESSAGES : int {
   updateGeometry = -1,
