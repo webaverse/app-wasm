@@ -446,7 +446,8 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySe
       quaternion[2],
       quaternion[3],
     };
-    subparcel->objects[subparcel->numObjects++] = o;
+    subparcel->objects[subparcel->numObjects] = o;
+    subparcel->numObjects++;
 
     // re-polygonalize
     {
