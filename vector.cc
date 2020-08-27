@@ -33,10 +33,10 @@ Matrix::Matrix(const Vec &position, const Quat &quaternion, const Vec &scale) {
 }
 
 Matrix &Matrix::compose(const Vec &position, const Quat &quaternion, const Vec &scale) {
-  float *te = elements;
+  float *te = this->elements;
 
   const float x = quaternion.x, y = quaternion.y, z = quaternion.z, w = quaternion.w;
-  const float x2 = x + x, y2 = y + y, z2 = z + z;
+  const float x2 = x + x,	y2 = y + y, z2 = z + z;
   const float xx = x * x2, xy = x * y2, xz = x * z2;
   const float yy = y * y2, yz = y * z2, zz = z * z2;
   const float wx = w * x2, wy = w * y2, wz = w * z2;

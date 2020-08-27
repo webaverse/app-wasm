@@ -334,6 +334,7 @@ class Vec {
         Vec &applyQuaternion(const Quat &q);
 
         Vec &applyMatrix(const Matrix &m) {
+          const float x = this->x, y = this->y, z = this->z;
           const float *e = m.elements;
 
           const float w = 1.0f / ( e[ 3 ] * x + e[ 7 ] * y + e[ 11 ] * z + e[ 15 ] );
@@ -390,6 +391,13 @@ class Quat {
       y = axis.y * s;
       z = axis.z * s;
       w = std::cos(halfAngle);
+    }
+    Quat &operator=(const Quat &q) {
+      x = q.x;
+      y = q.y;
+      z = q.z;
+      w = q.w;
+      return *this;
     }
 
     Quat &setFromRotationMatrix(const Matrix &m) {
