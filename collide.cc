@@ -516,11 +516,15 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
 
   // frustum cull
   std::vector<std::shared_ptr<Subparcel>> frustumSubparcels;
-  frustumSubparcels.reserve(tracker->subparcels.size());
-  for (auto &iter : tracker->subparcels) {
-    std::shared_ptr<Subparcel> &subparcel = iter.second;
-    if (frustum.intersectsSphere(subparcel->boundingSphere)) {
-      frustumSubparcels.push_back(subparcel);
+  {
+    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+
+    frustumSubparcels.reserve(tracker->subparcels.size());
+    for (auto &iter : tracker->subparcels) {
+      std::shared_ptr<Subparcel> &subparcel = iter.second;
+      if (frustum.intersectsSphere(subparcel->boundingSphere)) {
+        frustumSubparcels.push_back(subparcel);
+      }
     }
   }
   std::sort(frustumSubparcels.begin(), frustumSubparcels.end(), [&](std::shared_ptr<Subparcel> &a, std::shared_ptr<Subparcel> &b) -> bool {
