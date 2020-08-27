@@ -96,8 +96,8 @@ EMSCRIPTEN_KEEPALIVE void releaseBakedGeometry(PxDefaultMemoryOutputStream *writ
 EMSCRIPTEN_KEEPALIVE void unregisterGeometry(GeometrySpec *geometrySpec) {
   doUnregisterGeometry(geometrySpec);
 } */
-EMSCRIPTEN_KEEPALIVE void raycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, Object *object) {
-  doRaycast(&tracker->physicer, origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *object);
+EMSCRIPTEN_KEEPALIVE void raycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, Vec *outPosition, Quat *outQuaternion) {
+  doRaycast(&tracker->physicer, origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *outPosition, *outQuaternion);
 }
 EMSCRIPTEN_KEEPALIVE void collide(Tracker *tracker, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded) {
   doCollide(&tracker->physicer, radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded);
