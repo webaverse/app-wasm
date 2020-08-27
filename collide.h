@@ -23,12 +23,13 @@
 using namespace physx;
 
 class Physicer;
+class Object;
 class PhysicsGeometry {
 public:
-  PhysicsGeometry(unsigned int meshId, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer);
+  PhysicsGeometry(Object *object, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer);
   ~PhysicsGeometry();
 
-  unsigned int meshId;
+  Object *object;
   PxTriangleMesh *triangleMesh;
   PxGeometry *meshGeom;
   Vec position;
@@ -64,9 +65,9 @@ public:
   // cookingParams.midphaseDesc = PxMeshMidPhase::eBVH34;
   cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
 } */
-std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, unsigned int meshId, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion);
-std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned int meshId, float *position, float *quaternion, float w, float h, float d);
-std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, unsigned int meshId, float *position, float *quaternion, float radius, float halfHeight);
+std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, Object *object, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion);
+std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, Object *object, float *position, float *quaternion, float w, float h, float d);
+std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, Object *object, float *position, float *quaternion, float radius, float halfHeight);
 PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices);
 /* void doUnregisterGeometry(PhysicsGeometry * geometrySpec) {
   {
@@ -90,7 +91,7 @@ extern std::map<std::string, Shape> PHYSICS_SHAPES;
 void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions, unsigned int numLandPositions);
 void doObjectPhysics(Tracker *tracker, Subparcel *subparcel);
 
-void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &meshId, unsigned int &faceIndex);
+void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, Object &object);
 void doCollide(Physicer *physicer, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
 extern int PEEK_FACE_INDICES[];
 /* (() => {
