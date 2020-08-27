@@ -1117,16 +1117,27 @@ std::function<void(Message *)> METHOD_FNS[] = {
     }
   },
   [](Message *Message) -> void { // removeObject
-    /* unsigned int index = 0;
+    unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
-    int meshIndex = *((int *)(Message->args + index));
+    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
+    index += sizeof(GeometrySet *);
+    int sx = *((int *)(Message->args + index));
     index += sizeof(int);
-    unsigned int objectId = *((int *)(Message->args + index));
+    int sy = *((int *)(Message->args + index));
+    index += sizeof(int);
+    int sz = *((int *)(Message->args + index));
+    index += sizeof(int);
+    unsigned int objectId = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
 
-    std::vector<std::shared_ptr<Subparcel>> newSubparcels = doRemoveObject(tracker, meshIndex, objectId);
-    
+    int subparcelIndex = getSubparcelIndex(sx, sy, sz);
+    std::vector<std::shared_ptr<Subparcel>> newSubparcels = doRemoveObject(tracker, geometrySet, subparcelIndex, objectId);
+
+    for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
+      doObjectPhysics(tracker, subparcel.get());
+    }
+
     index = 0;
     *((unsigned int *)(Message->args + index)) = newSubparcels.size();
     index += sizeof(unsigned int);
@@ -1151,7 +1162,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
       std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
       *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
       index += sizeof(std::shared_ptr<Subparcel> *);
-    } */
+    }
   },
   [](Message *Message) -> void { // releaseAddRemoveObject
     unsigned int index = 0;
