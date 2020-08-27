@@ -259,6 +259,20 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsig
   }
 }
 
+bool checkSubparcelIndicesLive(Tracker *tracker, const std::vector<int> indices) {
+  std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+  for (int index : indices) {
+    auto iter = tracker->subparcels.find(index);
+    if (iter != tracker->subparcels.end()) {
+      std::shared_ptr<Subparcel> &subparcel = iter->second;
+      if (!subparcel->live) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
   [](ThreadPool *threadPool, Message *Message) -> void { // makeArenaAllocator
     abort();
@@ -1032,37 +1046,68 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     float delta = *((float *)(Message->args + index));
     index += sizeof(float);
 
-    std::vector<std::shared_ptr<Subparcel>> newSubparcels = doMine(tracker, position, delta);
-
-    index = 0;
-    *((unsigned int *)(Message->args + index)) = newSubparcels.size();
-    index += sizeof(unsigned int);
-    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
-      std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-      
-      *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry.get();
-      index += sizeof(FreeEntry *);
+    std::vector<int> indices;
+    {
+      int x = (int)std::floor(position[0]);
+      int y = (int)std::floor(position[1]);
+      int z = (int)std::floor(position[2]);
+      constexpr int radius = 1;
+      for (int dy = -radius - 1; dy <= radius + 1; dy++) {
+        const int ay = y + dy;
+        for (int dz = -radius - 1; dz <= radius + 1; dz++) {
+          const int az = z + dz;
+          for (int dx = -radius - 1; dx <= radius + 1; dx++) {
+            const int ax = x + dx;
+            const int sx = (int)std::floor((float)ax/(float)SUBPARCEL_SIZE);
+            const int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
+            const int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
+            const int index = getSubparcelIndex(sx, sy, sz);
+            auto iter = std::find(indices.begin(), indices.end(), index);
+            if (iter == indices.end()) {
+              indices.push_back(index);
+            }
+          }
+        }
+      }
     }
+    std::function<bool()> guardFn = [tracker, indices{std::move(indices)}]() -> bool {
+      return checkSubparcelIndicesLive(tracker, indices);
+    };
+    if (guardFn) {
+      std::vector<std::shared_ptr<Subparcel>> newSubparcels = doMine(tracker, position, delta);
 
-    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
-      std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-      *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
-      index += sizeof(std::shared_ptr<Subparcel> *);
+      index = 0;
+      *((unsigned int *)(Message->args + index)) = newSubparcels.size();
+      index += sizeof(unsigned int);
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        
+        *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry.get();
+        index += sizeof(FreeEntry *);
+      }
+
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
+        index += sizeof(std::shared_ptr<Subparcel> *);
+      }
+
+      threadPool->outbox.push(Message);
+    } else {
+      threadPool->dependencyInbox.push(guardFn, Message);
     }
-
-    threadPool->outbox.push(Message);
   },
   [](ThreadPool *threadPool, Message *Message) -> void { // releaseMine
     unsigned int index = 0;
