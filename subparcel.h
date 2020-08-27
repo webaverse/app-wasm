@@ -300,9 +300,9 @@ enum class OBJECT_TYPE : int {
 };
 class Object {
 public:
-  /* Object();
+  Object();
   Object(const Object &object);
-  Object &operator=(const Object &object); */
+  Object &operator=(const Object &object);
 
   unsigned int id;
   OBJECT_TYPE type;
