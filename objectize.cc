@@ -228,7 +228,13 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsig
     // std::cout << "out messages b " << outMessages.size() << std::endl;
     *outNumEntries = outMessages.size();
   }
-
+  {
+    Message *message;
+    while ((message = threadPool->dependencyInbox.pop())) {
+      message->priority = 1;
+      threadPool->inbox.queue(message);
+    }
+  }
   {
     std::vector<Message *> inMessages(numEntries);
     unsigned int index = 0;
@@ -253,17 +259,18 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsig
   }
 }
 
-std::function<void(Message *)> METHOD_FNS[] = {
-  [](Message *Message) -> void { // makeArenaAllocator
-    unsigned int index = 0;
+std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
+  [](ThreadPool *threadPool, Message *Message) -> void { // makeArenaAllocator
+    abort();
+    /* unsigned int index = 0;
     unsigned int size = *((unsigned int *)(Message->args + index));
     index += sizeof(unsigned int);
     ArenaAllocator **arenaAllocator = (ArenaAllocator **)(Message->args + index);
     index += sizeof(ArenaAllocator *);
 
-    *arenaAllocator = makeArenaAllocator(size);
+    *arenaAllocator = makeArenaAllocator(size); v*/
   },
-  [](Message *Message) -> void { // arenaAlloc
+  [](ThreadPool *threadPool, Message *Message) -> void { // arenaAlloc
     abort();
     /* unsigned int index = 0;
     ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(Message->args + index));
@@ -275,7 +282,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
 
     *entry = arenaAlloc(arenaAllocator, size); */
   },
-  [](Message *Message) -> void { // arenaFree
+  [](ThreadPool *threadPool, Message *Message) -> void { // arenaFree
     abort();
     /* unsigned int index = 0;
     ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(Message->args + index));
@@ -285,19 +292,22 @@ std::function<void(Message *)> METHOD_FNS[] = {
 
     arenaFree(arenaAllocator, entry); */
   },
-  [](Message *Message) -> void { // makeGeometrySet
-    GeometrySet **geometrySet = (GeometrySet **)Message->args;
-    *geometrySet = new GeometrySet();
+  [](ThreadPool *threadPool, Message *Message) -> void { // makeGeometrySet
+    abort();
+    /* GeometrySet **geometrySet = (GeometrySet **)Message->args;
+    *geometrySet = new GeometrySet(); */
   },
-  [](Message *Message) -> void { // loadBake
+  [](ThreadPool *threadPool, Message *Message) -> void { // loadBake
     GeometrySet *geometrySet = *((GeometrySet **)Message->args);
     unsigned char *data = *((unsigned char **)(Message->args + sizeof(GeometrySet *)));
     unsigned int dataSize = *((unsigned int *)(Message->args + sizeof(GeometrySet *) + sizeof(unsigned char *)));
     // std::cout << "load bake 1 " << (unsigned int)(void *)geometrySet << " " << (unsigned int)data << " " << dataSize << std::endl;
     loadBake(geometrySet, data, dataSize);
     // std::cout << "load bake 2" << std::endl;
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // getGeometry
+  [](ThreadPool *threadPool, Message *Message) -> void { // getGeometry
     unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
     index += sizeof(GeometrySet *);
@@ -319,8 +329,10 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(unsigned int *);
 
     getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices);
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // getAnimalGeometry
+  [](ThreadPool *threadPool, Message *Message) -> void { // getAnimalGeometry
     unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
     index += sizeof(GeometrySet *);
@@ -353,6 +365,8 @@ std::function<void(Message *)> METHOD_FNS[] = {
 
     getAnimalGeometry(geometrySet, hash, positions, colors, indices, heads, legs, numPositions, numColors, numIndices, numHeads, numLegs, headPivot, aabb);
 
+    threadPool->outbox.push(Message);
+
     /* unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
     index += sizeof(GeometrySet *);
@@ -375,7 +389,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
 
     getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices); */
   },
-  [](Message *Message) -> void { // marchObjects
+  [](ThreadPool *threadPool, Message *Message) -> void { // marchObjects
     abort();
     /* unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
@@ -478,7 +492,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
 
     // std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl; */
   },
-  [](Message *Message) -> void { // getHeight
+  [](ThreadPool *threadPool, Message *Message) -> void { // getHeight
     unsigned int index = 0;
     int seed = *((int *)(Message->args + index));
     index += sizeof(int);
@@ -493,8 +507,10 @@ std::function<void(Message *)> METHOD_FNS[] = {
     float *height = (float *)(Message->args + index);
     index += sizeof(float *);
     *height = getHeight(seed, x, y, z, baseHeight);
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // noise
+  [](ThreadPool *threadPool, Message *Message) -> void { // noise
     abort();
     /* unsigned int index = 0;
 
@@ -526,7 +542,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
 
     noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset); */
   },
-  [](Message *Message) -> void { // marchingCubes
+  [](ThreadPool *threadPool, Message *Message) -> void { // marchingCubes
     abort();
     /* unsigned int index = 0;
 
@@ -670,7 +686,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
     memcpy(torchLightsAllocator->data + (*torchLightsEntry)->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
     memcpy(peeksAllocator->data + (*peeksEntry)->start, peeks.data(), numPeeks*sizeof(unsigned char)); */
   },
-  [](Message *Message) -> void { // bakeGeometry
+  [](ThreadPool *threadPool, Message *Message) -> void { // bakeGeometry
     abort();
     /* unsigned int index = 0;
 
@@ -693,7 +709,7 @@ std::function<void(Message *)> METHOD_FNS[] = {
     bakeGeometry(positions, indices, numPositions, numIndices, writeStream);
     // std::cout << "bake 2" << std::endl; */
   },
-  [](Message *Message) -> void { // getSubparcel
+  [](ThreadPool *threadPool, Message *Message) -> void { // getSubparcel
     unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
@@ -725,14 +741,18 @@ std::function<void(Message *)> METHOD_FNS[] = {
     index += sizeof(std::shared_ptr<Subparcel> *);
     *((Subparcel **)(Message->args + index)) = subparcel.get();
     index += sizeof(Subparcel *);
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // releaseSubparcel
+  [](ThreadPool *threadPool, Message *Message) -> void { // releaseSubparcel
     unsigned int index = 0;
     std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
     index += sizeof(std::shared_ptr<Subparcel> *);
     delete subparcelSharedPtr;
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // chunk
+  [](ThreadPool *threadPool, Message *Message) -> void { // chunk
     unsigned int index = 0;
     int seed = *((int *)(Message->args + index));
     index += sizeof(int);
@@ -999,9 +1019,11 @@ std::function<void(Message *)> METHOD_FNS[] = {
       abort();
     }
 
+    threadPool->outbox.push(Message);
+
     // std::cout << "return update " << (void *)subparcelSharedPtr << " " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
   },
-  [](Message *Message) -> void { // mine
+  [](ThreadPool *threadPool, Message *Message) -> void { // mine
     unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
@@ -1039,8 +1061,10 @@ std::function<void(Message *)> METHOD_FNS[] = {
       *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
       index += sizeof(std::shared_ptr<Subparcel> *);
     }
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // releaseMine
+  [](ThreadPool *threadPool, Message *Message) -> void { // releaseMine
     unsigned int index = 0;
 
     Tracker *tracker = *((Tracker **)(Message->args + index));
@@ -1059,9 +1083,12 @@ std::function<void(Message *)> METHOD_FNS[] = {
         delete subparcelSharedPtr;
       }
     }
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // light
-    unsigned int index = 0;
+  [](ThreadPool *threadPool, Message *Message) -> void { // light
+    abort();
+    /* unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
     float *position = (float *)(Message->args + index);
@@ -1069,9 +1096,9 @@ std::function<void(Message *)> METHOD_FNS[] = {
     float delta = *((float *)(Message->args + index));
     index += sizeof(float);
 
-    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doLight(tracker, position, delta);
+    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doLight(tracker, position, delta); */
   },
-  [](Message *Message) -> void { // addObject
+  [](ThreadPool *threadPool, Message *Message) -> void { // addObject
     unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
@@ -1115,8 +1142,10 @@ std::function<void(Message *)> METHOD_FNS[] = {
       *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
       index += sizeof(std::shared_ptr<Subparcel> *);
     }
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // removeObject
+  [](ThreadPool *threadPool, Message *Message) -> void { // removeObject
     unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
@@ -1163,8 +1192,10 @@ std::function<void(Message *)> METHOD_FNS[] = {
       *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
       index += sizeof(std::shared_ptr<Subparcel> *);
     }
+
+    threadPool->outbox.push(Message);
   },
-  [](Message *Message) -> void { // releaseAddRemoveObject
+  [](ThreadPool *threadPool, Message *Message) -> void { // releaseAddRemoveObject
     unsigned int index = 0;
     Tracker *tracker = *((Tracker **)(Message->args + index));
     index += sizeof(Tracker *);
@@ -1181,6 +1212,8 @@ std::function<void(Message *)> METHOD_FNS[] = {
         delete subparcelSharedPtr;
       }
     }
+
+    threadPool->outbox.push(Message);
   },
 };
 

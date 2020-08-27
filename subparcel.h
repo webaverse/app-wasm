@@ -3,6 +3,7 @@
 
 #include "vector.h"
 #include "collide.h"
+#include <list>
 #include <deque>
 #include <map>
 #include <set>
@@ -79,7 +80,7 @@ class Mailbox {
 public:
   void queue(M *message) {
     std::lock_guard<std::mutex> lock(mutex);
-    if (message->priority) {
+    if (message->priority > 0) {
       messages.push_front(message);
     } else {
       messages.push_back(message);
@@ -89,7 +90,7 @@ public:
   void queueAll(std::vector<M *> &&ms) {
     std::lock_guard<std::mutex> lock(mutex);
     for (M *m : ms) {
-      if (m->priority) {
+      if (m->priority > 0) {
         messages.push_front(m);
       } else {
         messages.push_back(m);
@@ -154,6 +155,41 @@ public:
   Semaphore semaphore;
   std::mutex mutex;
 };
+template<typename M>
+class DependencyMailbox {
+public:
+  void push(std::function<bool()> fn, M* message) {
+    std::lock_guard<std::mutex> lock(mutex);
+
+    queue.push_back(std::pair<std::function<bool()>, M *>(fn, message));
+  }
+  M *pop() {
+    std::lock_guard<std::mutex> lock(mutex);
+
+    for (auto iter = queue.begin(); iter != queue.end(); iter++) {
+      std::pair<std::function<bool()>, M *> &entry = *iter;
+      std::function<bool()> &fn = entry.first;
+      M *message = entry.second;
+      if (fn()) {
+        queue.erase(iter);
+        return message;
+      }
+    }
+    return nullptr;
+  }
+
+  std::list<std::pair<std::function<bool()>, M *>> queue;
+  std::mutex mutex;
+};
+
+class ThreadPool {
+public:
+  ThreadPool(unsigned int numThreads);
+
+  Mailbox<Message> inbox;
+  DependencyMailbox<Message> dependencyInbox;
+  Mailbox<Message> outbox;
+};
 
 enum class METHODS : int {
   makeArenaAllocator = 0,
@@ -182,16 +218,8 @@ enum class MESSAGES : int {
   updateGeometry = -1,
 };
 extern "C" {
-  extern std::function<void(Message *)> METHOD_FNS[];
+  extern std::function<void(ThreadPool *, Message *)> METHOD_FNS[];
 }
-
-class ThreadPool {
-public:
-  ThreadPool(unsigned int numThreads);
-
-  Mailbox<Message> inbox;
-  Mailbox<Message> outbox;
-};
 
 class Coord {
 public:

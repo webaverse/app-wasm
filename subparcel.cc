@@ -110,25 +110,24 @@ void ArenaAllocator::updateFreeList() {
 ThreadPool::ThreadPool(unsigned int numThreads) {
   for (unsigned int i = 0; i < numThreads; i++) {
     // std::cout << "starting thread " << i << std::endl;
-    std::thread thread([this]() -> void {
+    std::thread([this]() -> void {
       // std::cout << "thread pool running" << std::endl;
       for (;;) {
         Message *message = inbox.wait();
         // std::cout << "got request message method " << (unsigned int)message->method << std::endl;
         auto &fn = METHOD_FNS[message->method];
         // std::cout << "got request message method b" << std::endl;
-        fn(message);
+        fn(this, message);
 
-        if (message->id != 0) {
+        /* if (message->id != 0) {
           outbox.push(message);
         } else {
         	free(message);
-        }
+        } */
 
         // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
       }
-    });
-    thread.detach();
+    }).detach();
   }
 }
 
