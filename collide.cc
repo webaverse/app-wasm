@@ -545,16 +545,20 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
     std::shared_ptr<Subparcel> &subparcel = queue.front();
 
     for (const Group &group : subparcel->landGroups) {
-      CullResult &cullResult = landCullResults[numLandCullResults++];
-      cullResult.start = group.start;
-      cullResult.count = group.count;
-      cullResult.materialIndex = group.materialIndex;
+      if (group.count > 0) {
+        CullResult &cullResult = landCullResults[numLandCullResults++];
+        cullResult.start = group.start;
+        cullResult.count = group.count;
+        cullResult.materialIndex = group.materialIndex;
+      }
     }
     for (const Group &group : subparcel->vegetationGroups) {
-      CullResult &cullResult = vegetationCullResults[numVegetationCullResults++];
-      cullResult.start = group.start;
-      cullResult.count = group.count;
-      cullResult.materialIndex = group.materialIndex;
+      if (group.count > 0) {
+        CullResult &cullResult = vegetationCullResults[numVegetationCullResults++];
+        cullResult.start = group.start;
+        cullResult.count = group.count;
+        cullResult.materialIndex = group.materialIndex;
+      }
     }
 
     for (const PeekDirection &enterPeekDirection : PEEK_DIRECTIONS) {
