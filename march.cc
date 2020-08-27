@@ -964,23 +964,7 @@ std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position
       landPositions = (float *)(positionsAllocator->data + subparcel->landPositionsEntry->spec.start);
       numLandPositions = numOpaquePositions;
     }
-    if (numLandPositions > 0) {
-      PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, landPositions, nullptr, numLandPositions, 0);
-      float meshPosition[3] = {
-        (float)subparcel->coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
-        (float)subparcel->coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
-        (float)subparcel->coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
-      };
-      float meshQuaternion[4] = {
-        0,
-        0,
-        0,
-        1,
-      };
-      subparcel->physxGeometry = doMakeBakedGeometry(&tracker->physicer, tracker->meshId, writeStream, meshPosition, meshQuaternion);
-    } else {
-      subparcel->physxGeometry = nullptr;
-    }
+    doLandPhysics(tracker, subparcel.get(), landPositions, numLandPositions);
   }
 
   return std::move(newSubparcels);
