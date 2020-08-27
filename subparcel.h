@@ -294,7 +294,7 @@ public:
   unsigned int materialIndex;
 };
 
-enum class OBJECT_TYPE : unsigned int {
+enum class OBJECT_TYPE : int {
   VEGETATION = 1,
   PACKAGE = 2,
 };
