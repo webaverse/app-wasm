@@ -65,6 +65,8 @@ std::shared_ptr<FreeEntry> ArenaAllocator::alloc(unsigned int size) {
       return std::shared_ptr<FreeEntry>(new FreeEntry(entry, this));
     }
   }
+  std::cout << "arena alloc failed" << std::endl;
+  abort();
   return std::shared_ptr<FreeEntry>();
 }
 void ArenaAllocator::freeSpec(const FreeEntrySpec &spec) {
