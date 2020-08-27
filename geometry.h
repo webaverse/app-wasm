@@ -473,11 +473,11 @@ void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *
   subparcel->vegetationGroups[0].materialIndex = 0;
 }
 
-std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySet *geometrySet, OBJECT_TYPE type, const char *name, float *position, float *quaternion) {
-  const int sdx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
-  const int sdy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
-  const int sdz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
-  int index = getSubparcelIndex(sdx, sdy, sdz);
+std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tracker, GeometrySet *geometrySet, OBJECT_TYPE type, const char *name, float *position, float *quaternion) {
+  const int sx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
+  const int sy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
+  const int sz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
+  int index = getSubparcelIndex(sx, sy, sz);
   
   std::shared_ptr<Subparcel> subparcel;
   {
@@ -492,8 +492,9 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySe
         subparcel->copyLand(*oldSubparcel);
         oldSubparcel->live = false;
       } else {
-        std::cout << "cannot edit dead index " << sdx << " " << sdy << " " << sdz << std::endl;
-        abort();
+      	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
+        // std::cout << "cannot edit dead index " << sx << " " << sy << " " << sz << std::endl;
+        // abort();
       }
     }
   }
@@ -521,9 +522,9 @@ std::vector<std::shared_ptr<Subparcel>> doAddObject(Tracker *tracker, GeometrySe
 
     result.push_back(subparcel);
   }
-  return std::move(result);
+  return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(result));
 }
-std::vector<std::shared_ptr<Subparcel>> doRemoveObject(Tracker *tracker, GeometrySet *geometrySet, int index, unsigned int objectId) {
+std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doRemoveObject(Tracker *tracker, GeometrySet *geometrySet, int index, unsigned int objectId) {
   std::shared_ptr<Subparcel> subparcel;
   {
     std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
@@ -537,8 +538,9 @@ std::vector<std::shared_ptr<Subparcel>> doRemoveObject(Tracker *tracker, Geometr
         subparcel->copyLand(*oldSubparcel);
         oldSubparcel->live = false;
       } else {
-        std::cout << "cannot edit dead index " << index << std::endl;
-        abort();
+      	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
+        // std::cout << "cannot edit dead index " << index << std::endl;
+        // abort();
       }
     }
   }
@@ -561,5 +563,5 @@ std::vector<std::shared_ptr<Subparcel>> doRemoveObject(Tracker *tracker, Geometr
       result.push_back(subparcel);
     }
   }
-  return std::move(result);
+  return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(result));
 }

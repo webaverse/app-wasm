@@ -721,13 +721,13 @@ void marchingCubes2(float meshId, int dims[3], float *potential, unsigned char *
   numTransparentPositions = positionIndex - numOpaquePositions;
 }
 
-std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position, float delta) {
+std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doMine(Tracker *tracker, float *position, float delta) {
   int x = (int)std::floor(position[0]);
   int y = (int)std::floor(position[1]);
   int z = (int)std::floor(position[2]);
   
   // collect subparcels
-  std::vector<std::shared_ptr<Subparcel>> newSubparcels;
+  std::vector<std::shared_ptr<Subparcel>> oldSubparcels;
   constexpr int radius = 1;
   {
     std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
@@ -742,24 +742,19 @@ std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position
           const int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
           const int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
           const int index = getSubparcelIndex(sx, sy, sz);
-          auto existingSubparcelIter = std::find_if(newSubparcels.begin(), newSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
+          auto existingSubparcelIter = std::find_if(oldSubparcels.begin(), oldSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
             return subparcel->coord.index == index;
           });
-          if (existingSubparcelIter == newSubparcels.end()) {
+          if (existingSubparcelIter == oldSubparcels.end()) {
             auto oldSubparcelIter = tracker->subparcels.find(index);
             if (oldSubparcelIter != tracker->subparcels.end()) {
-              
               std::shared_ptr<Subparcel> &oldSubparcel = oldSubparcelIter->second;
               if (oldSubparcel->live) {
-                std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
-                
-                newSubparcel->copyVegetation(*oldSubparcel);
-                oldSubparcel->live = false;
-                
-                newSubparcels.push_back(std::move(newSubparcel));
+                oldSubparcels.push_back(oldSubparcel);
               } else {
-                std::cout << "cannot edit dead index " << ax << " " << ay << " " << az << std::endl;
-                abort();
+              	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
+                // std::cout << "cannot edit dead index " << ax << " " << ay << " " << az << std::endl;
+                // abort();
               }
             }
           }
@@ -767,6 +762,18 @@ std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position
       }
     }
   }
+  // clone
+  std::vector<std::shared_ptr<Subparcel>> newSubparcels;
+  newSubparcels.reserve(oldSubparcels.size());
+  for (unsigned int i = 0; i < oldSubparcels.size(); i++) {
+  	std::shared_ptr<Subparcel> &oldSubparcel = oldSubparcels[i];
+    std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
+                
+		newSubparcel->copyVegetation(*oldSubparcel);
+		oldSubparcel->live = false;
+
+		newSubparcels.push_back(std::move(newSubparcel));
+	}
   // apply edit
   {
     int dimsP3[3] = {
@@ -967,7 +974,7 @@ std::vector<std::shared_ptr<Subparcel>> doMine(Tracker *tracker, float *position
     doLandPhysics(tracker, subparcel.get(), landPositions, numLandPositions);
   }
 
-  return std::move(newSubparcels);
+  return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(newSubparcels));
   
   /* const _mine = async (mineSpecs, explodePosition) => {
   const slabs = mineSpecs.map(spec => currentChunkMesh.getSlab(spec.x, spec.y, spec.z));
@@ -1126,7 +1133,7 @@ const _applyPotentialDelta = async (position, delta) => {
   await _mine(mineSpecs, delta < 0 ? applyPosition : null);
 }; */
 }
-std::vector<std::shared_ptr<Subparcel>> doLight(Tracker *tracker, float *position, float delta) {
+std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doLight(Tracker *tracker, float *position, float delta) {
   int x = (int)position[0];
   int y = (int)position[1];
   int z = (int)position[2];
@@ -1203,5 +1210,5 @@ std::vector<std::shared_ptr<Subparcel>> doLight(Tracker *tracker, float *positio
     }
   }
 
-  return std::move(mineSpecs);
+  return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(mineSpecs));
 }
