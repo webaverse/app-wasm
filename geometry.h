@@ -522,7 +522,7 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tr
 
     polygonalizeObjects(tracker, geometrySet, subparcel.get());
 
-    result.push_back(subparcel);
+    result.push_back(std::move(subparcel));
   }
   return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(result));
 }
@@ -563,9 +563,8 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doRemoveObject(Tracker 
       subparcel->numObjects--;
 
       polygonalizeObjects(tracker, geometrySet, subparcel.get());
-
-      result.push_back(subparcel);
     }
+    result.push_back(std::move(subparcel));
   }
   return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(result));
 }
