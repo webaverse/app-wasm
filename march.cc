@@ -727,10 +727,11 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doMine(Tracker *tracker
   int z = (int)std::floor(position[2]);
   
   // collect subparcels
-  std::vector<std::shared_ptr<Subparcel>> oldSubparcels;
+  std::vector<std::shared_ptr<Subparcel>> newSubparcels;
   constexpr int radius = 1;
   {
     std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+    newSubparcels.reserve(tracker->subparcels.size());
 
     for (int dy = -radius - 1; dy <= radius + 1; dy++) {
       const int ay = y + dy;
@@ -742,15 +743,15 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doMine(Tracker *tracker
           const int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
           const int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
           const int index = getSubparcelIndex(sx, sy, sz);
-          auto existingSubparcelIter = std::find_if(oldSubparcels.begin(), oldSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
+          auto existingSubparcelIter = std::find_if(newSubparcels.begin(), newSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
             return subparcel->coord.index == index;
           });
-          if (existingSubparcelIter == oldSubparcels.end()) {
+          if (existingSubparcelIter == newSubparcels.end()) {
             auto oldSubparcelIter = tracker->subparcels.find(index);
             if (oldSubparcelIter != tracker->subparcels.end()) {
               std::shared_ptr<Subparcel> &oldSubparcel = oldSubparcelIter->second;
               if (oldSubparcel->live) {
-                oldSubparcels.push_back(oldSubparcel);
+                newSubparcels.push_back(oldSubparcel);
               } else {
               	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
                 // std::cout << "cannot edit dead index " << ax << " " << ay << " " << az << std::endl;
@@ -761,19 +762,15 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doMine(Tracker *tracker
         }
       }
     }
-  }
-  // clone
-  std::vector<std::shared_ptr<Subparcel>> newSubparcels;
-  newSubparcels.reserve(oldSubparcels.size());
-  for (unsigned int i = 0; i < oldSubparcels.size(); i++) {
-  	std::shared_ptr<Subparcel> &oldSubparcel = oldSubparcels[i];
-    std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
-                
-		newSubparcel->copyVegetation(*oldSubparcel);
-		oldSubparcel->live = false;
 
-		newSubparcels.push_back(std::move(newSubparcel));
-	}
+    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+			std::shared_ptr<Subparcel> &oldSubparcel = newSubparcels[i];
+			std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
+			newSubparcel->copyVegetation(*oldSubparcel);
+			oldSubparcel->live = false;
+			newSubparcels[i] = std::move(newSubparcel);
+		}
+  }
   // apply edit
   {
     int dimsP3[3] = {
