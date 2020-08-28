@@ -88,8 +88,7 @@ void ArenaAllocator::updateFreeList() {
         if (nextEntry.count > 0) {
           if (entry.start + entry.count == nextEntry.start) {
             entry.count += nextEntry.count;
-
-            freeList[j] = FreeEntrySpec{0, 0};
+            nextEntry.count = 0;
 
             merged = true;
           }
