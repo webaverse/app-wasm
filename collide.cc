@@ -24,13 +24,6 @@ Physicer::Physicer() {
 PhysicsGeometry::PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer) :
   objectId(objectId), objectPosition(objectPosition), objectQuaternion(objectQuaternion), triangleMesh(triangleMesh), meshGeom(meshGeom), position(position), quaternion(quaternion), boundingSphere(boundingSphere), physicer(physicer) {}
 PhysicsGeometry::~PhysicsGeometry() {
-  {
-    std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
-    for (std::set<PhysicsGeometry *> *geometrySpecSet : physicer->geometrySpecSets) {
-      geometrySpecSet->erase(this);
-    }
-  }
-  
   delete meshGeom;
   if (triangleMesh) {
     triangleMesh->release();
@@ -59,7 +52,7 @@ std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefau
 
   {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
-    physicer->geometrySpecs.insert(geometrySpec.get());
+    physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
   }
 
   return std::move(geometrySpec);
@@ -77,7 +70,7 @@ std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned 
 
   {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
-    physicer->staticGeometrySpecs.insert(geometrySpec.get());
+    physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
   }
 
  return std::move(geometrySpec);
@@ -94,7 +87,7 @@ std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, unsig
 
   {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
-    physicer->staticGeometrySpecs.insert(geometrySpec.get());
+    physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
   }
 
   return std::move(geometrySpec);
@@ -231,31 +224,32 @@ void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshP
   const PxHitFlags hitFlags = PxHitFlag::eDEFAULT;
   constexpr PxU32 maxHits = 1;
 
-  std::set<PhysicsGeometry *> &geometrySpecs = physicer->geometrySpecs;
-  std::vector<std::set<PhysicsGeometry *> *> &geometrySpecSets = physicer->geometrySpecSets;
+  std::vector<std::shared_ptr<PhysicsGeometry>> sortedGeometrySpecs;
   {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
 
-    std::vector<PhysicsGeometry *> sortedGeometrySpecs;
-    sortedGeometrySpecs.reserve(geometrySpecs.size());
-    for (std::set<PhysicsGeometry *> *geometrySpecSet : geometrySpecSets) {
-      for (PhysicsGeometry *geometrySpec : *geometrySpecSet) {
-        Sphere sphere(
-          (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
-            .applyQuaternion(q) + p,
-          geometrySpec->boundingSphere.radius
-        );
-        if (ray.intersectsSphere(sphere)) {
-          sortedGeometrySpecs.push_back(geometrySpec);
+    for (std::list<std::weak_ptr<PhysicsGeometry>> *geometrySpecSet : physicer->geometrySpecSets) {
+      for (std::weak_ptr<PhysicsGeometry> &geometrySpecPtr : *geometrySpecSet) {
+        std::shared_ptr<PhysicsGeometry> geometrySpec = geometrySpecPtr.lock();
+        if (geometrySpec) {
+          Sphere sphere(
+            (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
+              .applyQuaternion(q) + p,
+            geometrySpec->boundingSphere.radius
+          );
+          if (ray.intersectsSphere(sphere)) {
+            sortedGeometrySpecs.push_back(std::move(geometrySpec));
+          }
         }
       }
     }
     /* std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::pair<float, GeometrySpec *> &a, const std::pair<float, GeometrySpec *> &b) -> bool {
       return a.first < b.first;
     }); */
-
+  }
+  {
     hit = 0;
-    for (PhysicsGeometry *geometrySpec : sortedGeometrySpecs) {
+    for (std::shared_ptr<PhysicsGeometry> &geometrySpec : sortedGeometrySpecs) {
       PxGeometry *meshGeom = geometrySpec->meshGeom;
       PxTransform meshPose2{
         PxVec3{geometrySpec->position.x, geometrySpec->position.y, geometrySpec->position.z},
@@ -303,36 +297,35 @@ void doCollide(Physicer *physicer, float radius, float halfHeight, float *positi
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
   
-  std::set<PhysicsGeometry *> &staticGeometrySpecs = physicer->staticGeometrySpecs;
-  std::vector<std::set<PhysicsGeometry *> *> &geometrySpecSets = physicer->geometrySpecSets;
+  // std::set<PhysicsGeometry *> &staticGeometrySpecs = physicer->staticGeometrySpecs;
+  // std::vector<std::set<PhysicsGeometry *> *> &geometrySpecSets = physicer->geometrySpecSets;
+  std::vector<std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>>> sortedGeometrySpecs;
   Vec offset(0, 0, 0);
   bool anyHadHit = false;
   bool anyHadGrounded = false;
   {
-    std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
-
-    std::vector<std::tuple<bool, float, PhysicsGeometry *>> sortedGeometrySpecs;
-    unsigned int totalNumSpecs = 0;
-    for (std::set<PhysicsGeometry *> *geometrySpecSet : geometrySpecSets) {
-      totalNumSpecs += geometrySpecSet->size();
-    }
-    sortedGeometrySpecs.reserve(totalNumSpecs);
-
     for (unsigned int i = 0; i < maxIter; i++) {
       Vec capsulePosition(geomPose.p.x, geomPose.p.y, geomPose.p.z);
-      sortedGeometrySpecs.clear();
+      // sortedGeometrySpecs.clear();
 
-      for (std::set<PhysicsGeometry *> *geometrySpecSet : geometrySpecSets) {
-        for (PhysicsGeometry *geometrySpec : *geometrySpecSet) {
-          Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
-            .applyQuaternion(q) + p;
-          float distance = spherePosition.distanceTo(capsulePosition);
-          if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) {
-            sortedGeometrySpecs.push_back(std::tuple<bool, float, PhysicsGeometry *>(geometrySpecSet == &staticGeometrySpecs, distance, geometrySpec));
+      {
+        std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
+
+        for (std::list<std::weak_ptr<PhysicsGeometry>> *geometrySpecSet : physicer->geometrySpecSets) {
+          for (std::weak_ptr<PhysicsGeometry> &geometrySpecPtr : *geometrySpecSet) {
+            std::shared_ptr<PhysicsGeometry> geometrySpec = geometrySpecPtr.lock();
+            if (geometrySpec) {
+              Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
+                .applyQuaternion(q) + p;
+              float distance = spherePosition.distanceTo(capsulePosition);
+              if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) {
+                sortedGeometrySpecs.push_back(std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>>(geometrySpecSet == &physicer->staticGeometrySpecs, distance, std::move(geometrySpec)));
+              }
+            }
           }
         }
       }
-      std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::tuple<bool, float, PhysicsGeometry *> &a, const std::tuple<bool, float, PhysicsGeometry *> &b) -> bool {
+      std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>> &a, const std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>> &b) -> bool {
         const bool &aStatic = std::get<0>(a);
         const bool &bStatic = std::get<0>(b);
         if (aStatic != bStatic) {
@@ -345,8 +338,8 @@ void doCollide(Physicer *physicer, float radius, float halfHeight, float *positi
       });
 
       bool hadHit = false;
-      for (const std::tuple<bool, float, PhysicsGeometry *> &t : sortedGeometrySpecs) {
-        PhysicsGeometry *geometrySpec = std::get<2>(t);
+      for (const std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>> &t : sortedGeometrySpecs) {
+        const std::shared_ptr<PhysicsGeometry> &geometrySpec = std::get<2>(t);
         PxGeometry *meshGeom = geometrySpec->meshGeom;
         PxTransform meshPose2{
           PxVec3{geometrySpec->position.x, geometrySpec->position.y, geometrySpec->position.z},

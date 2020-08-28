@@ -14,6 +14,7 @@
 #include "extensions/PxTriangleMeshExt.h"
 #include "PxQueryReport.h"
 #include "geometry/PxGeometryQuery.h"
+#include <list>
 #include <map>
 #include <set>
 #include <deque>
@@ -48,9 +49,9 @@ public:
   PxFoundation *gFoundation = nullptr;
   PxPhysics *physics = nullptr;
   PxCooking *cooking = nullptr;
-  std::set<PhysicsGeometry *> geometrySpecs;
-  std::set<PhysicsGeometry *> staticGeometrySpecs;
-  std::vector<std::set<PhysicsGeometry *> *> geometrySpecSets{
+  std::list<std::weak_ptr<PhysicsGeometry>> geometrySpecs;
+  std::list<std::weak_ptr<PhysicsGeometry>> staticGeometrySpecs;
+  std::vector<std::list<std::weak_ptr<PhysicsGeometry>> *> geometrySpecSets{
     &staticGeometrySpecs,
     &geometrySpecs,
   };
