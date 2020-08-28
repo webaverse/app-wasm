@@ -229,6 +229,13 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsig
     *outNumEntries = outMessages.size();
   }
   {
+    Message *message;
+    while ((message = threadPool->dependencyInbox.pop())) {
+      message->priority = 1;
+      threadPool->inbox.queue(message);
+    }
+  }
+  {
     std::vector<Message *> inMessages(numEntries);
     unsigned int index = 0;
     for (unsigned int i = 0; i < numEntries; i++) {
@@ -249,13 +256,6 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsig
       index += offsetSize;
     }
     threadPool->inbox.queueAll(std::move(inMessages));
-  }
-  {
-    Message *message;
-    while ((message = threadPool->dependencyInbox.pop())) {
-      message->priority = 1;
-      threadPool->inbox.queue(message);
-    }
   }
 }
 
