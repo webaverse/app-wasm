@@ -225,6 +225,7 @@ void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshP
   constexpr PxU32 maxHits = 1;
 
   std::vector<std::shared_ptr<PhysicsGeometry>> sortedGeometrySpecs;
+  sortedGeometrySpecs.reserve(256);
   {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
 
@@ -300,6 +301,7 @@ void doCollide(Physicer *physicer, float radius, float halfHeight, float *positi
   // std::set<PhysicsGeometry *> &staticGeometrySpecs = physicer->staticGeometrySpecs;
   // std::vector<std::set<PhysicsGeometry *> *> &geometrySpecSets = physicer->geometrySpecSets;
   std::vector<std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>>> sortedGeometrySpecs;
+  sortedGeometrySpecs.reserve(256);
   Vec offset(0, 0, 0);
   bool anyHadHit = false;
   bool anyHadGrounded = false;
