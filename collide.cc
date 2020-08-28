@@ -533,47 +533,95 @@ void doCull(Culler *culler, float *positionData, float *matrixData, float slabRa
     return a.materialIndex < b.materialIndex;
   });
 } */
-void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults) {
+void doTickCull(Tracker *tracker, float *positionData, float *directionData, float *matrixData, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults) {
   Vec position(positionData[0], positionData[1], positionData[2]);
+  Vec direction(directionData[0], directionData[1], directionData[2]);
   Frustum frustum;
   frustum.setFromMatrix(matrixData);
+
+  // std::cout << "direction 1" << direction.x << " " << direction.y << " " << direction.z << std::endl;
 
   tracker->currentCullSubparcels.clear();
 
   // frustum cull
-  std::vector<std::shared_ptr<Subparcel>> frustumSubparcels;
+  std::map<int, std::shared_ptr<Subparcel>> subparcels;
+  // std::vector<std::shared_ptr<Subparcel>> frustumSubparcels;
   {
     std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
-
-    frustumSubparcels.reserve(tracker->subparcels.size());
+    subparcels = tracker->subparcels;
+    /* frustumSubparcels.reserve(tracker->subparcels.size());
     for (auto &iter : tracker->subparcels) {
       std::shared_ptr<Subparcel> &subparcel = iter.second;
+      subparcels.push_back(subparcel);
       if (frustum.intersectsSphere(subparcel->boundingSphere)) {
         frustumSubparcels.push_back(subparcel);
       }
-    }
+    } */
   }
-  std::sort(frustumSubparcels.begin(), frustumSubparcels.end(), [&](std::shared_ptr<Subparcel> &a, std::shared_ptr<Subparcel> &b) -> bool {
+  // std::cout << "direction 2 " << subparcels.size() << std::endl;
+  /* std::sort(frustumSubparcels.begin(), frustumSubparcels.end(), [&](std::shared_ptr<Subparcel> &a, std::shared_ptr<Subparcel> &b) -> bool {
     return a->boundingSphere.center.distanceTo(position) < b->boundingSphere.center.distanceTo(position);
-  });
+  }); */
 
   // intialize queue
-  std::deque<std::shared_ptr<Subparcel>> queue;
-  std::set<std::shared_ptr<Subparcel>> seenQueue;
-  for (int i = 0; i < frustumSubparcels.size(); i++) {
-    std::shared_ptr<Subparcel> &subparcel = frustumSubparcels[i];
-    if (subparcel->boundingSphere.center.distanceTo(position) < slabRadius*2.0f) {
-      queue.push_back(subparcel);
-      seenQueue.insert(subparcel);
-    }
+  std::deque<std::tuple<PEEK_FACES, float, std::shared_ptr<Subparcel>>> queue;
+  // std::set<Subparcel *> seenQueue;
+  int sx = (int)std::floor(position.x/(float)SUBPARCEL_SIZE);
+  int sy = (int)std::floor(position.y/(float)SUBPARCEL_SIZE);
+  int sz = (int)std::floor(position.z/(float)SUBPARCEL_SIZE);
+  int index = getSubparcelIndex(sx, sy, sz);
+  auto startIter = subparcels.find(index);
+  if (startIter != subparcels.end()) {
+    std::shared_ptr<Subparcel> &subparcel = startIter->second;
+    queue.push_back(std::tuple<PEEK_FACES, float, std::shared_ptr<Subparcel>>(PEEK_FACES::NONE, 0, subparcel));
+    // seenQueue.insert(subparcel.get());
   }
 
+  // std::cout << "direction 3 " << queue.size() << std::endl;
+
   // run queue
+  while (queue.size() > 0) {
+    // std::cout << "tick queue " << queue.size() << std::endl;
+    std::tuple<PEEK_FACES, float, std::shared_ptr<Subparcel>> &spec = queue.front();
+    PEEK_FACES &enterFace = std::get<0>(spec);
+    float &distance = std::get<1>(spec);
+    std::shared_ptr<Subparcel> &subparcel = std::get<2>(spec);
+
+    // seenQueue.insert(subparcel.get());
+
+    for (const PeekDirection &exitPeekDirection : PEEK_DIRECTIONS) {
+      const Vec &exitNormal = exitPeekDirection.normal;
+      const PEEK_FACES &exitFace = exitPeekDirection.face;
+      const int *exitINormal = exitPeekDirection.inormal;
+      const Vec direction = subparcel->boundingSphere.center
+        + (exitNormal * (float)SUBPARCEL_SIZE/2.0f)
+        - position;
+      if (subparcel->coord.x == -1 && subparcel->coord.y == 0 && subparcel->coord.z == -1 && exitPeekDirection.normal.y < 0) {
+        int index = getSubparcelIndex(subparcel->coord.x + exitINormal[0], subparcel->coord.y + exitINormal[1], subparcel->coord.z + exitINormal[2]);
+        auto nextSubparcelIter = subparcels.find(index);
+      }
+      if (enterFace == PEEK_FACES::NONE || (direction.dot(exitNormal) > 0 && subparcel->peeks[PEEK_FACE_INDICES[(int)enterFace << 4 | (int)exitFace]])) {
+        int index = getSubparcelIndex(subparcel->coord.x + exitINormal[0], subparcel->coord.y + exitINormal[1], subparcel->coord.z + exitINormal[2]);
+        auto nextSubparcelIter = subparcels.find(index);
+        if (nextSubparcelIter != subparcels.end()) {
+          std::shared_ptr<Subparcel> &nextSubparcel = nextSubparcelIter->second;
+          // if (seenQueue.find(nextSubparcel) == seenQueue.end()) {
+          if (frustum.intersectsSphere(nextSubparcel->boundingSphere)) {
+            queue.push_back(std::tuple<PEEK_FACES, float, std::shared_ptr<Subparcel>>((PEEK_FACES)PEEK_FACE_OPPOSITES[(int)exitFace], 0, nextSubparcel));
+            // seenQueue.insert(nextSubparcel.get());
+          }
+        }
+      }
+    }
+
+    tracker->currentCullSubparcels.insert(std::move(subparcel));
+    queue.pop_front();
+  }
+  // std::cout << "direction 4" << std::endl;
+  // collect groups
   numLandCullResults = 0;
   numVegetationCullResults = 0;
-  while (queue.size() > 0) {
-    std::shared_ptr<Subparcel> &subparcel = queue.front();
-
+  for (const std::shared_ptr<Subparcel> &subparcel : tracker->currentCullSubparcels) {
     for (const Group &group : subparcel->landGroups) {
       if (group.count > 0) {
         CullResult &cullResult = landCullResults[numLandCullResults++];
@@ -590,43 +638,10 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
         cullResult.materialIndex = group.materialIndex;
       }
     }
-
-    for (const PeekDirection &enterPeekDirection : PEEK_DIRECTIONS) {
-      const Vec &enterNormal = enterPeekDirection.normal;
-      const int *enterINormal = enterPeekDirection.inormal;
-      const PEEK_FACES &enterFace = enterPeekDirection.face;
-      const Vec direction = subparcel->boundingSphere.center
-        + (enterNormal * (float)SUBPARCEL_SIZE/2.0f)
-        - position;
-      if (direction.dot(enterNormal) <= 0) {
-        for (const PeekDirection &exitPeekDirection : PEEK_DIRECTIONS) {
-          const Vec &exitNormal = exitPeekDirection.normal;
-          const PEEK_FACES &exitFace = exitPeekDirection.face;
-          const int *exitINormal = exitPeekDirection.inormal;
-          const Vec direction = subparcel->boundingSphere.center
-            + (exitNormal * (float)SUBPARCEL_SIZE/2.0f)
-            - position;
-          if (direction.dot(exitNormal) >= 0 && subparcel->peeks[PEEK_FACE_INDICES[(int)enterFace << 4 | (int)exitFace]]) {
-            int index = getSubparcelIndex(subparcel->coord.x + exitINormal[0], subparcel->coord.y + exitINormal[1], subparcel->coord.z + exitINormal[2]);
-            auto nextSubparcelIter = std::find_if(frustumSubparcels.begin(), frustumSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
-              return subparcel->coord.index == index;
-            });
-            if (nextSubparcelIter != frustumSubparcels.end()) {
-              std::shared_ptr<Subparcel> nextSubparcel = *nextSubparcelIter;
-              if (nextSubparcel != nullptr && seenQueue.find(nextSubparcel) == seenQueue.end()) {
-                queue.push_back(nextSubparcel);
-                seenQueue.insert(nextSubparcel);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    tracker->currentCullSubparcels.push_back(std::move(subparcel));
-    queue.pop_front();
   }
+  // std::cout << "direction 5" << std::endl;
   std::sort(landCullResults, landCullResults + numLandCullResults, [&](const CullResult &a, const CullResult &b) -> bool {
     return a.materialIndex < b.materialIndex;
   });
+  // std::cout << "direction 6" << std::endl;
 }
