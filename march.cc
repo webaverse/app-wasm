@@ -347,27 +347,27 @@ inline void _floodFill(int x, int y, int z, int startFace, std::function<float(i
       const int z = queue[queueStart * 3 + 2];
 
       if (getPotential(x, y, z) <= 0) { // if empty space
-        if (z == minZ && startFace != (int)PEEK_FACES::BACK) {
+        if (z == minZ) {
           seenFaces[(int)PEEK_FACES::BACK] = 1;
           // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::BACK]] = 1;
         }
-        if (z == maxZ-1 && startFace != (int)PEEK_FACES::FRONT) {
+        if (z == maxZ-1) {
           seenFaces[(int)PEEK_FACES::FRONT] = 1;
           // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::FRONT]] = 1;
         }
-        if (x == minX && startFace != (int)PEEK_FACES::LEFT) {
+        if (x == minX) {
           seenFaces[(int)PEEK_FACES::LEFT] = 1;
           // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::LEFT]] = 1;
         }
-        if (x == maxX-1 && startFace != (int)PEEK_FACES::RIGHT) {
+        if (x == maxX-1) {
           seenFaces[(int)PEEK_FACES::RIGHT] = 1;
           // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::RIGHT]] = 1;
         }
-        if (y == maxY-1 && startFace != (int)PEEK_FACES::TOP) {
+        if (y == maxY-1) {
           seenFaces[(int)PEEK_FACES::TOP] = 1;
           // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::TOP]] = 1;
         }
-        if (y == minY && startFace != (int)PEEK_FACES::BOTTOM) {
+        if (y == minY) {
           seenFaces[(int)PEEK_FACES::BOTTOM] = 1;
           // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::BOTTOM]] = 1;
         }
