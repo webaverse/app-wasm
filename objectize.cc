@@ -758,6 +758,30 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     *((Subparcel **)(Message->args + index)) = subparcel.get();
     index += sizeof(Subparcel *);
 
+    *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry.get();
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry.get();
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry.get();
+    index += sizeof(FreeEntry *);
+    *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry.get();
+    index += sizeof(FreeEntry *);
+
+    *((unsigned char **)(Message->args + index)) = subparcel->peeks;
+    index += sizeof(unsigned char *);
+
+    std::cout << "get peeks " << (unsigned int)(Message->args + index) << " " << (unsigned int)subparcel->peeks << " ";
+    for (int i = 0; i < 15; i++) {
+      std::cout << (int)subparcel->peeks[i] << " ";
+    }
+    std::cout << std::endl;
+
     threadPool->outbox.push(Message);
   },
   [](ThreadPool *threadPool, Message *Message) -> void { // releaseSubparcel
