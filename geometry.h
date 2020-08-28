@@ -496,6 +496,8 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tr
         // std::cout << "cannot edit dead index " << sx << " " << sy << " " << sz << std::endl;
         // abort();
       }
+    } else {
+      return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
     }
   }
   
@@ -542,6 +544,8 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doRemoveObject(Tracker 
         // std::cout << "cannot edit dead index " << index << std::endl;
         // abort();
       }
+    } else {
+      return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
     }
   }
   

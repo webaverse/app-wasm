@@ -757,7 +757,9 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doMine(Tracker *tracker
                 // std::cout << "cannot edit dead index " << ax << " " << ay << " " << az << std::endl;
                 // abort();
               }
-            }
+            } else {
+	          	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
+	          }
           }
         }
       }

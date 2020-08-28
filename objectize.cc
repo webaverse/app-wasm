@@ -268,6 +268,8 @@ bool checkSubparcelIndicesLive(Tracker *tracker, const std::vector<int> indices)
       if (!subparcel->live) {
         return false;
       }
+    } else {
+      return false;
     }
   }
   return true;
@@ -1047,7 +1049,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     index += sizeof(float);
 
     std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> spec = doMine(tracker, position, delta);
-    if (spec.first) {
+    const bool &doable = spec.first;
+    if (doable) {
       std::vector<std::shared_ptr<Subparcel>> &newSubparcels = spec.second;
 
       index = 0;
@@ -1125,7 +1128,11 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
         index += sizeof(std::shared_ptr<Subparcel> *);
 
-        tracker->subparcels[(*subparcelSharedPtr)->coord.index] = *subparcelSharedPtr;
+        int index = (*subparcelSharedPtr)->coord.index;
+        auto oldIter = tracker->subparcels.find(index);
+        if (oldIter != tracker->subparcels.end()) {
+          tracker->subparcels[index] = *subparcelSharedPtr;
+        }
         delete subparcelSharedPtr;
       }
     }
@@ -1276,7 +1283,11 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
         index += sizeof(std::shared_ptr<Subparcel> *);
 
-        tracker->subparcels[(*subparcelSharedPtr)->coord.index] = *subparcelSharedPtr;
+        int index = (*subparcelSharedPtr)->coord.index;
+        auto oldIter = tracker->subparcels.find(index);
+        if (oldIter != tracker->subparcels.end()) {
+          tracker->subparcels[index] = *subparcelSharedPtr;
+        }
         delete subparcelSharedPtr;
       }
     }
