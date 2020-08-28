@@ -215,50 +215,43 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
         removedCoords.push_back(lastNeededCoord);
       }
     }
+    {
+      std::lock_guard<std::mutex> lock(subparcelsMutex);
 
-    for (const Coord &addedCoord : addedCoords) {
-      std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
-      {
-        std::lock_guard<std::mutex> lock(subparcelsMutex);
-        subparcels[addedCoord.index] = subparcel;
-      }
+      for (const Coord &addedCoord : addedCoords) {
+        std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
+        loadingSubparcels[addedCoord.index] = subparcel;
+        /* {
+          std::lock_guard<std::mutex> lock(subparcelsMutex);
+          subparcels[addedCoord.index] = subparcel;
+        } */
 
-      unsigned int count = 128;
-      Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
-      message->id = -1;
-      message->method = (int)METHODS::chunk;
-      message->priority = 0;
-      message->count = count;
+        unsigned int count = 128;
+        Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
+        message->id = -1;
+        message->method = (int)METHODS::chunk;
+        message->priority = 0;
+        message->count = count;
 
-      {
-        unsigned int *u32 = (unsigned int *)message->args;
-        u32[0] = seed;
-        u32[1] = (unsigned int)this;
-        u32[2] = (unsigned int)geometrySet;
-        u32[3] = (unsigned int)(new std::shared_ptr<Subparcel>(subparcel));
-      }
-
-      threadPool->inbox.queue(message);
-    }
-    for (const Coord &removedCoord : removedCoords) {
-      threadPool->inbox.filterQueue([&](Message *message) -> bool {
-        if (message->method == (int)METHODS::chunk) {
+        {
           unsigned int *u32 = (unsigned int *)message->args;
-          std::shared_ptr<Subparcel> *subparcel = *((std::shared_ptr<Subparcel> **)(u32 + 3));
-          if ((*subparcel)->coord != removedCoord) {
-          	return true;
-          } else {
-          	delete subparcel;
-          	return false;
-          }
-        } else {
-          return true;
+          u32[0] = seed;
+          u32[1] = (unsigned int)this;
+          u32[2] = (unsigned int)geometrySet;
+          u32[3] = (unsigned int)(new std::shared_ptr<Subparcel>(subparcel));
         }
-      });
 
-      {
-        std::lock_guard<std::mutex> lock(subparcelsMutex);
+        threadPool->inbox.queue(message);
+      }
+
+      for (const Coord &removedCoord : removedCoords) {
         subparcels.erase(removedCoord.index);
+
+        auto loadingSubparcelsIter = loadingSubparcels.find(removedCoord.index);
+        if (loadingSubparcelsIter != loadingSubparcels.end()) {
+          loadingSubparcelsIter->second->live = false;
+          loadingSubparcels.erase(loadingSubparcelsIter);
+        }
       }
     }
 

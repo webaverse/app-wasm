@@ -762,8 +762,18 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
   },
   [](ThreadPool *threadPool, Message *Message) -> void { // releaseSubparcel
     unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
     std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
     index += sizeof(std::shared_ptr<Subparcel> *);
+
+    {
+      std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
+      if ((*subparcelSharedPtr)->live) {
+        tracker->subparcels[(*subparcelSharedPtr)->coord.index] = *subparcelSharedPtr;
+        tracker->loadingSubparcels.erase((*subparcelSharedPtr)->coord.index);
+      }
+    }
     delete subparcelSharedPtr;
 
     threadPool->outbox.push(Message);
@@ -782,262 +792,265 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     Tracker *tracker = (Tracker *)trackerByteOffset;
     GeometrySet *geometrySet = (GeometrySet *)geometrySetByteOffset;
     std::shared_ptr<Subparcel> *subparcelSharedPtr = (std::shared_ptr<Subparcel> *)subparcelSharedPtrByteOffset;
-    std::shared_ptr<Subparcel> subparcel(*subparcelSharedPtr);
 
-    {
-      constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
-      constexpr float wormRate = 2;
-      constexpr float wormRadiusBase = 2;
-      constexpr float wormRadiusRate = 2;
-      constexpr float objectsRate = 3;
-      constexpr float potentialDefault = -0.5;
+    if ((*subparcelSharedPtr)->live) { // check for abort
+      std::shared_ptr<Subparcel> subparcel(*subparcelSharedPtr);
 
-      // std::cout << "execute chunk " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
-      noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcel.get());
+      {
+        constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
+        constexpr float wormRate = 2;
+        constexpr float wormRadiusBase = 2;
+        constexpr float wormRadiusRate = 2;
+        constexpr float objectsRate = 3;
+        constexpr float potentialDefault = -0.5;
+
+        // std::cout << "execute chunk " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
+        noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcel.get());
+      }
+
+      float *landPositions;
+      unsigned int numLandPositions;
+      {
+        float meshId = tracker->meshId;
+        int dims[3] = {
+          SUBPARCEL_SIZE,
+          SUBPARCEL_SIZE,
+          SUBPARCEL_SIZE,
+        };
+        float *potential = subparcel->potentials;
+        unsigned char *biomes = subparcel->biomes;
+        char *heightfield = subparcel->heightfield;
+        unsigned char *lightfield = subparcel->lightfield;
+        float shift[3] = {
+          (float)subparcel->coord.x*(float)SUBPARCEL_SIZE,
+          (float)subparcel->coord.y*(float)SUBPARCEL_SIZE,
+          (float)subparcel->coord.z*(float)SUBPARCEL_SIZE,
+        };
+        float scale[3] = {1, 1, 1};
+
+        ArenaAllocator *positionsAllocator = tracker->landPositionsAllocator;
+        ArenaAllocator *normalsAllocator = tracker->landNormalsAllocator;
+        ArenaAllocator *uvsAllocator = tracker->landUvsAllocator;
+        // ArenaAllocator *barycentricsAllocator = tracker->landBarycentricsAllocator;
+        ArenaAllocator *aosAllocator = tracker->landAosAllocator;
+        ArenaAllocator *idsAllocator = tracker->landIdsAllocator;
+        ArenaAllocator *skyLightsAllocator = tracker->landSkyLightsAllocator;
+        ArenaAllocator *torchLightsAllocator = tracker->landTorchLightsAllocator;
+
+        unsigned int numOpaquePositions;
+        unsigned int numTransparentPositions;
+
+        constexpr int bufferSize = 1024*1024;
+        std::vector<float> positions(bufferSize);
+        std::vector<float> normals(bufferSize);
+        std::vector<float> uvs(bufferSize);
+        // std::vector<float> barycentrics(bufferSize);
+        std::vector<unsigned char> aos(bufferSize);
+        std::vector<float> ids(bufferSize);
+        std::vector<unsigned char> skyLights(bufferSize);
+        std::vector<unsigned char> torchLights(bufferSize);
+        constexpr unsigned int numPeeks = 15;
+        std::vector<unsigned char> peeks(numPeeks);
+        unsigned int numPositions;
+        unsigned int numNormals;
+        unsigned int numUvs;
+        // unsigned int numBarycentrics;
+        unsigned int numAos;
+        unsigned int numIds;
+        unsigned int numSkyLights;
+        unsigned int numTorchLights;
+        marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), /*barycentrics.data(),*/ aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, /*numBarycentrics,*/ numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks.data());
+
+        subparcel->landPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
+        if (!subparcel->landPositionsEntry) {
+          std::cout << "could not allocate chunk marchingCubes positions" << std::endl;
+          abort();
+        }
+        subparcel->landNormalsEntry = normalsAllocator->alloc(numNormals*sizeof(float));
+        if (!subparcel->landNormalsEntry) {
+          std::cout << "could not allocate chunk marchingCubes normals" << std::endl;
+          abort();
+        }
+        subparcel->landUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
+        if (!subparcel->landUvsEntry) {
+          std::cout << "could not allocate chunk marchingCubes uvs" << std::endl;
+          abort();
+        }
+        /* subparcel->landBarycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float)); // XXX maybe not needed
+        if (!subparcel->landBarycentricsEntry) {
+          std::cout << "could not allocate chunk marchingCubes barycentrics" << std::endl;
+          abort();
+        } */
+        subparcel->landAosEntry = aosAllocator->alloc(numAos*sizeof(unsigned char));
+        if (!subparcel->landAosEntry) {
+          std::cout << "could not allocate chunk marchingCubes aos" << std::endl;
+          abort();
+        }
+        subparcel->landIdsEntry = idsAllocator->alloc(numIds*sizeof(float));
+        if (!subparcel->landIdsEntry) {
+          std::cout << "could not allocate chunk marchingCubes ids" << std::endl;
+          abort();
+        }
+        subparcel->landSkyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
+        if (!subparcel->landSkyLightsEntry) {
+          std::cout << "could not allocate chunk marchingCubes skyLights" << std::endl;
+          abort();
+        }
+        subparcel->landTorchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
+        if (!subparcel->landTorchLightsEntry) {
+          std::cout << "could not allocate chunk marchingCubes torchLights" << std::endl;
+          abort();
+        }
+
+        memcpy(positionsAllocator->data + subparcel->landPositionsEntry->spec.start, positions.data(), numPositions*sizeof(float));
+        memcpy(normalsAllocator->data + subparcel->landNormalsEntry->spec.start, normals.data(), numNormals*sizeof(float));
+        memcpy(uvsAllocator->data + subparcel->landUvsEntry->spec.start, uvs.data(), numUvs*sizeof(float));
+        // memcpy(barycentricsAllocator->data + subparcel->landBarycentricsEntry->start, barycentrics.data(), numBarycentrics*sizeof(float));
+        memcpy(aosAllocator->data + subparcel->landAosEntry->spec.start, aos.data(), numAos*sizeof(unsigned char));
+        memcpy(idsAllocator->data + subparcel->landIdsEntry->spec.start, ids.data(), numIds*sizeof(float));
+        memcpy(skyLightsAllocator->data + subparcel->landSkyLightsEntry->spec.start, skyLights.data(), numSkyLights*sizeof(unsigned char));
+        memcpy(torchLightsAllocator->data + subparcel->landTorchLightsEntry->spec.start, torchLights.data(), numTorchLights*sizeof(unsigned char));
+        memcpy(subparcel->peeks, peeks.data(), numPeeks*sizeof(unsigned char));
+
+        // groups
+        subparcel->landGroups[0].start = subparcel->landPositionsEntry->spec.start/sizeof(float)/3;
+        subparcel->landGroups[0].count = numOpaquePositions/3;
+        subparcel->landGroups[0].materialIndex = 0;
+        subparcel->landGroups[1].start = subparcel->landGroups[0].start + subparcel->landGroups[0].count;
+        subparcel->landGroups[1].count = numTransparentPositions/3;
+        subparcel->landGroups[1].materialIndex = 1;
+
+        // latch
+        landPositions = (float *)(positionsAllocator->data + subparcel->landPositionsEntry->spec.start);
+        numLandPositions = numOpaquePositions;
+      }
+      {
+        // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
+
+        unsigned int numPositions;
+        unsigned int numUvs;
+        unsigned int numIds;
+        unsigned int numIndices;
+        unsigned int numSkyLights;
+        unsigned int numTorchLights;
+        doGetMarchObjectStats(geometrySet, subparcel.get(), numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
+
+        ArenaAllocator *positionsAllocator = tracker->vegetationPositionsAllocator;
+        ArenaAllocator *uvsAllocator = tracker->vegetationUvsAllocator;
+        ArenaAllocator *idsAllocator = tracker->vegetationIdsAllocator;
+        ArenaAllocator *indicesAllocator = tracker->vegetationIndicesAllocator;
+        ArenaAllocator *skyLightsAllocator = tracker->vegetationSkyLightsAllocator;
+        ArenaAllocator *torchLightsAllocator = tracker->vegetationTorchLightsAllocator;
+
+        subparcel->vegetationPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
+        if (!subparcel->vegetationPositionsEntry) {
+          std::cout << "could not allocate chunk marchObjects positions" << std::endl;
+          abort();
+        }
+        subparcel->vegetationUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
+        if (!subparcel->vegetationUvsEntry) {
+          std::cout << "could not allocate chunk marchObjects uvs" << std::endl;
+          abort();
+        }
+        subparcel->vegetationIdsEntry = idsAllocator->alloc(numIds*sizeof(float));
+        if (!subparcel->vegetationIdsEntry) {
+          std::cout << "could not allocate chunk marchObjects ids" << std::endl;
+          abort();
+        }
+        subparcel->vegetationIndicesEntry = indicesAllocator->alloc(numIndices*sizeof(unsigned int));
+        if (!subparcel->vegetationIndicesEntry) {
+          std::cout << "could not allocate chunk marchObjects indices" << std::endl;
+          abort();
+        }
+        subparcel->vegetationSkyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
+        if (!subparcel->vegetationSkyLightsEntry) {
+          std::cout << "could not allocate chunk marchObjects skyLights" << std::endl;
+          abort();
+        }
+        subparcel->vegetationTorchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
+        if (!subparcel->vegetationTorchLightsEntry) {
+          std::cout << "could not allocate chunk marchObjects torchLights" << std::endl;
+          abort();
+        }
+
+        float *positions = (float *)(positionsAllocator->data + subparcel->vegetationPositionsEntry->spec.start);
+        float *uvs = (float *)(uvsAllocator->data + subparcel->vegetationUvsEntry->spec.start);
+        float *ids = (float *)(idsAllocator->data + subparcel->vegetationIdsEntry->spec.start);
+        unsigned int *indices = (unsigned int *)(indicesAllocator->data + subparcel->vegetationIndicesEntry->spec.start);
+        unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + subparcel->vegetationSkyLightsEntry->spec.start);
+        unsigned char *torchLights = (unsigned char *)(torchLightsAllocator->data + subparcel->vegetationTorchLightsEntry->spec.start);
+
+        /* slab => (slab.position.byteOffset - geometry.attributes.position.array.byteOffset)/Float32Array.BYTES_PER_ELEMENT;
+        const indexOffset = vegetationMesh.getSlabPositionOffset(slab)/3;
+        for (let i = 0; i < spec.indices.length; i++) {
+          spec.indices[i] += indexOffset;
+        } */
+        Subparcel *subparcels = nullptr;
+        unsigned int numSubparcels = 0;
+        unsigned int indexOffset = subparcel->vegetationPositionsEntry->spec.start/sizeof(float)/3;
+        doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+
+        // groups
+        subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
+        subparcel->vegetationGroups[0].count = subparcel->vegetationIndicesEntry->spec.count/sizeof(unsigned int);
+        subparcel->vegetationGroups[0].materialIndex = 0;
+      }
+      doLandPhysics(tracker, subparcel.get(), landPositions, numLandPositions);
+      doObjectPhysics(tracker, subparcel.get());
+
+      // output
+      // std::cout << "return 1" << std::endl;
+      Message->method = (int)MESSAGES::updateGeometry;
+
+      // std::cout << "return 2" << std::endl;
+
+      index = 0;
+      *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
+      index += sizeof(FreeEntry *);
+      /* *((FreeEntry **)(Message->args + index)) = subparcel->landBarycentricsEntry.get();
+      index += sizeof(FreeEntry *); */
+      *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry.get();
+      index += sizeof(FreeEntry *);
+
+      // std::cout << "return 3" << std::endl;
+
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
+      index += sizeof(FreeEntry *);
+
+      *((std::shared_ptr<Subparcel> **)(Message->args + index)) = subparcelSharedPtr;
+      index += sizeof(std::shared_ptr<Subparcel> *);
+
+      // std::cout << "return 4" << std::endl;
+
+      if (index/sizeof(unsigned int) > Message->count) {
+        std::cout << "message overflow " << index << " " << Message->count << std::endl;
+        abort();
+      }
+
+      threadPool->outbox.push(Message);
+
+      // std::cout << "return update " << (void *)subparcelSharedPtr << " " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
     }
-
-    float *landPositions;
-    unsigned int numLandPositions;
-    {
-      float meshId = tracker->meshId;
-      int dims[3] = {
-        SUBPARCEL_SIZE,
-        SUBPARCEL_SIZE,
-        SUBPARCEL_SIZE,
-      };
-      float *potential = subparcel->potentials;
-      unsigned char *biomes = subparcel->biomes;
-      char *heightfield = subparcel->heightfield;
-      unsigned char *lightfield = subparcel->lightfield;
-      float shift[3] = {
-        (float)subparcel->coord.x*(float)SUBPARCEL_SIZE,
-        (float)subparcel->coord.y*(float)SUBPARCEL_SIZE,
-        (float)subparcel->coord.z*(float)SUBPARCEL_SIZE,
-      };
-      float scale[3] = {1, 1, 1};
-
-      ArenaAllocator *positionsAllocator = tracker->landPositionsAllocator;
-      ArenaAllocator *normalsAllocator = tracker->landNormalsAllocator;
-      ArenaAllocator *uvsAllocator = tracker->landUvsAllocator;
-      // ArenaAllocator *barycentricsAllocator = tracker->landBarycentricsAllocator;
-      ArenaAllocator *aosAllocator = tracker->landAosAllocator;
-      ArenaAllocator *idsAllocator = tracker->landIdsAllocator;
-      ArenaAllocator *skyLightsAllocator = tracker->landSkyLightsAllocator;
-      ArenaAllocator *torchLightsAllocator = tracker->landTorchLightsAllocator;
-
-      unsigned int numOpaquePositions;
-      unsigned int numTransparentPositions;
-
-      constexpr int bufferSize = 1024*1024;
-      std::vector<float> positions(bufferSize);
-      std::vector<float> normals(bufferSize);
-      std::vector<float> uvs(bufferSize);
-      // std::vector<float> barycentrics(bufferSize);
-      std::vector<unsigned char> aos(bufferSize);
-      std::vector<float> ids(bufferSize);
-      std::vector<unsigned char> skyLights(bufferSize);
-      std::vector<unsigned char> torchLights(bufferSize);
-      constexpr unsigned int numPeeks = 15;
-      std::vector<unsigned char> peeks(numPeeks);
-      unsigned int numPositions;
-      unsigned int numNormals;
-      unsigned int numUvs;
-      // unsigned int numBarycentrics;
-      unsigned int numAos;
-      unsigned int numIds;
-      unsigned int numSkyLights;
-      unsigned int numTorchLights;
-      marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), /*barycentrics.data(),*/ aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, /*numBarycentrics,*/ numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks.data());
-
-      subparcel->landPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
-      if (!subparcel->landPositionsEntry) {
-        std::cout << "could not allocate chunk marchingCubes positions" << std::endl;
-        abort();
-      }
-      subparcel->landNormalsEntry = normalsAllocator->alloc(numNormals*sizeof(float));
-      if (!subparcel->landNormalsEntry) {
-        std::cout << "could not allocate chunk marchingCubes normals" << std::endl;
-        abort();
-      }
-      subparcel->landUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
-      if (!subparcel->landUvsEntry) {
-        std::cout << "could not allocate chunk marchingCubes uvs" << std::endl;
-        abort();
-      }
-      /* subparcel->landBarycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float)); // XXX maybe not needed
-      if (!subparcel->landBarycentricsEntry) {
-        std::cout << "could not allocate chunk marchingCubes barycentrics" << std::endl;
-        abort();
-      } */
-      subparcel->landAosEntry = aosAllocator->alloc(numAos*sizeof(unsigned char));
-      if (!subparcel->landAosEntry) {
-        std::cout << "could not allocate chunk marchingCubes aos" << std::endl;
-        abort();
-      }
-      subparcel->landIdsEntry = idsAllocator->alloc(numIds*sizeof(float));
-      if (!subparcel->landIdsEntry) {
-        std::cout << "could not allocate chunk marchingCubes ids" << std::endl;
-        abort();
-      }
-      subparcel->landSkyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
-      if (!subparcel->landSkyLightsEntry) {
-        std::cout << "could not allocate chunk marchingCubes skyLights" << std::endl;
-        abort();
-      }
-      subparcel->landTorchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
-      if (!subparcel->landTorchLightsEntry) {
-        std::cout << "could not allocate chunk marchingCubes torchLights" << std::endl;
-        abort();
-      }
-
-      memcpy(positionsAllocator->data + subparcel->landPositionsEntry->spec.start, positions.data(), numPositions*sizeof(float));
-      memcpy(normalsAllocator->data + subparcel->landNormalsEntry->spec.start, normals.data(), numNormals*sizeof(float));
-      memcpy(uvsAllocator->data + subparcel->landUvsEntry->spec.start, uvs.data(), numUvs*sizeof(float));
-      // memcpy(barycentricsAllocator->data + subparcel->landBarycentricsEntry->start, barycentrics.data(), numBarycentrics*sizeof(float));
-      memcpy(aosAllocator->data + subparcel->landAosEntry->spec.start, aos.data(), numAos*sizeof(unsigned char));
-      memcpy(idsAllocator->data + subparcel->landIdsEntry->spec.start, ids.data(), numIds*sizeof(float));
-      memcpy(skyLightsAllocator->data + subparcel->landSkyLightsEntry->spec.start, skyLights.data(), numSkyLights*sizeof(unsigned char));
-      memcpy(torchLightsAllocator->data + subparcel->landTorchLightsEntry->spec.start, torchLights.data(), numTorchLights*sizeof(unsigned char));
-      memcpy(subparcel->peeks, peeks.data(), numPeeks*sizeof(unsigned char));
-
-      // groups
-      subparcel->landGroups[0].start = subparcel->landPositionsEntry->spec.start/sizeof(float)/3;
-      subparcel->landGroups[0].count = numOpaquePositions/3;
-      subparcel->landGroups[0].materialIndex = 0;
-      subparcel->landGroups[1].start = subparcel->landGroups[0].start + subparcel->landGroups[0].count;
-      subparcel->landGroups[1].count = numTransparentPositions/3;
-      subparcel->landGroups[1].materialIndex = 1;
-
-      // latch
-      landPositions = (float *)(positionsAllocator->data + subparcel->landPositionsEntry->spec.start);
-      numLandPositions = numOpaquePositions;
-    }
-    {
-      // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
-
-      unsigned int numPositions;
-      unsigned int numUvs;
-      unsigned int numIds;
-      unsigned int numIndices;
-      unsigned int numSkyLights;
-      unsigned int numTorchLights;
-      doGetMarchObjectStats(geometrySet, subparcel.get(), numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
-
-      ArenaAllocator *positionsAllocator = tracker->vegetationPositionsAllocator;
-      ArenaAllocator *uvsAllocator = tracker->vegetationUvsAllocator;
-      ArenaAllocator *idsAllocator = tracker->vegetationIdsAllocator;
-      ArenaAllocator *indicesAllocator = tracker->vegetationIndicesAllocator;
-      ArenaAllocator *skyLightsAllocator = tracker->vegetationSkyLightsAllocator;
-      ArenaAllocator *torchLightsAllocator = tracker->vegetationTorchLightsAllocator;
-
-      subparcel->vegetationPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
-      if (!subparcel->vegetationPositionsEntry) {
-        std::cout << "could not allocate chunk marchObjects positions" << std::endl;
-        abort();
-      }
-      subparcel->vegetationUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
-      if (!subparcel->vegetationUvsEntry) {
-        std::cout << "could not allocate chunk marchObjects uvs" << std::endl;
-        abort();
-      }
-      subparcel->vegetationIdsEntry = idsAllocator->alloc(numIds*sizeof(float));
-      if (!subparcel->vegetationIdsEntry) {
-        std::cout << "could not allocate chunk marchObjects ids" << std::endl;
-        abort();
-      }
-      subparcel->vegetationIndicesEntry = indicesAllocator->alloc(numIndices*sizeof(unsigned int));
-      if (!subparcel->vegetationIndicesEntry) {
-        std::cout << "could not allocate chunk marchObjects indices" << std::endl;
-        abort();
-      }
-      subparcel->vegetationSkyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
-      if (!subparcel->vegetationSkyLightsEntry) {
-        std::cout << "could not allocate chunk marchObjects skyLights" << std::endl;
-        abort();
-      }
-      subparcel->vegetationTorchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
-      if (!subparcel->vegetationTorchLightsEntry) {
-        std::cout << "could not allocate chunk marchObjects torchLights" << std::endl;
-        abort();
-      }
-
-      float *positions = (float *)(positionsAllocator->data + subparcel->vegetationPositionsEntry->spec.start);
-      float *uvs = (float *)(uvsAllocator->data + subparcel->vegetationUvsEntry->spec.start);
-      float *ids = (float *)(idsAllocator->data + subparcel->vegetationIdsEntry->spec.start);
-      unsigned int *indices = (unsigned int *)(indicesAllocator->data + subparcel->vegetationIndicesEntry->spec.start);
-      unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + subparcel->vegetationSkyLightsEntry->spec.start);
-      unsigned char *torchLights = (unsigned char *)(torchLightsAllocator->data + subparcel->vegetationTorchLightsEntry->spec.start);
-
-      /* slab => (slab.position.byteOffset - geometry.attributes.position.array.byteOffset)/Float32Array.BYTES_PER_ELEMENT;
-      const indexOffset = vegetationMesh.getSlabPositionOffset(slab)/3;
-      for (let i = 0; i < spec.indices.length; i++) {
-        spec.indices[i] += indexOffset;
-      } */
-      Subparcel *subparcels = nullptr;
-      unsigned int numSubparcels = 0;
-      unsigned int indexOffset = subparcel->vegetationPositionsEntry->spec.start/sizeof(float)/3;
-      doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
-
-      // groups
-      subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
-      subparcel->vegetationGroups[0].count = subparcel->vegetationIndicesEntry->spec.count/sizeof(unsigned int);
-      subparcel->vegetationGroups[0].materialIndex = 0;
-    }
-    doLandPhysics(tracker, subparcel.get(), landPositions, numLandPositions);
-    doObjectPhysics(tracker, subparcel.get());
-
-    // output
-    // std::cout << "return 1" << std::endl;
-    Message->method = (int)MESSAGES::updateGeometry;
-
-    // std::cout << "return 2" << std::endl;
-
-    index = 0;
-    *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
-    index += sizeof(FreeEntry *);
-    /* *((FreeEntry **)(Message->args + index)) = subparcel->landBarycentricsEntry.get();
-    index += sizeof(FreeEntry *); */
-    *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry.get();
-    index += sizeof(FreeEntry *);
-
-    // std::cout << "return 3" << std::endl;
-
-    *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
-    index += sizeof(FreeEntry *);
-    *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
-    index += sizeof(FreeEntry *);
-
-    *((std::shared_ptr<Subparcel> **)(Message->args + index)) = subparcelSharedPtr;
-    index += sizeof(std::shared_ptr<Subparcel> *);
-
-    // std::cout << "return 4" << std::endl;
-
-    if (index/sizeof(unsigned int) > Message->count) {
-      std::cout << "message overflow " << index << " " << Message->count << std::endl;
-      abort();
-    }
-
-    threadPool->outbox.push(Message);
-
-    // std::cout << "return update " << (void *)subparcelSharedPtr << " " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
   },
   [](ThreadPool *threadPool, Message *Message) -> void { // mine
     unsigned int index = 0;

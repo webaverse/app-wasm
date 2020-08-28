@@ -307,7 +307,10 @@ public:
 
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;
+
   std::map<int, std::shared_ptr<Subparcel>> subparcels;
+  std::map<int, std::shared_ptr<Subparcel>> loadingSubparcels;
+  std::vector<std::shared_ptr<Subparcel>> currentCullSubparcels;
   std::mutex subparcelsMutex;
 
   Physicer physicer;

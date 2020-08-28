@@ -525,6 +525,8 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
   Frustum frustum;
   frustum.setFromMatrix(matrixData);
 
+  tracker->currentCullSubparcels.clear();
+
   // frustum cull
   std::vector<std::shared_ptr<Subparcel>> frustumSubparcels;
   {
@@ -608,6 +610,7 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
       }
     }
 
+    tracker->currentCullSubparcels.push_back(std::move(subparcel));
     queue.pop_front();
   }
   std::sort(landCullResults, landCullResults + numLandCullResults, [&](const CullResult &a, const CullResult &b) -> bool {
