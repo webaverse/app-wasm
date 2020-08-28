@@ -400,6 +400,15 @@ void doCollide(Tracker *tracker, float radius, float halfHeight, float *position
     hit = 0;
   }
 }
+int PEEK_FACE_OPPOSITES[] = {
+  0, // NONE
+  (int)PEEK_FACES::BACK, // FRONT -> BACK
+  (int)PEEK_FACES::FRONT, // BACK -> FRONT
+  (int)PEEK_FACES::RIGHT, // LEFT -> RIGHT
+  (int)PEEK_FACES::LEFT, // RIGHT -> LEFT
+  (int)PEEK_FACES::BOTTOM, // TOP -> BOTTOM
+  (int)PEEK_FACES::TOP, // BOTTOM -> TOP
+};
 int PEEK_FACE_INDICES[] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,0,1,2,3,4,255,255,255,255,255,255,255,255,255,255,0,255,5,6,7,8,255,255,255,255,255,255,255,255,255,255,1,5,255,9,10,11,255,255,255,255,255,255,255,255,255,255,2,6,9,255,12,13,255,255,255,255,255,255,255,255,255,255,3,7,10,12,255,14,255,255,255,255,255,255,255,255,255,255,4,8,11,13,14,255};
 
 /* GroupSet::GroupSet(int x, int y, int z, int index, const Sphere &boundingSphere, unsigned char *peeks, Group *groups, unsigned int numGroups) :

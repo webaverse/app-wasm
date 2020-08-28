@@ -4,6 +4,7 @@
 #include <vector>
 
 enum class PEEK_FACES : int {
+  NONE = 0,
   FRONT = 1,
   BACK,
   LEFT,
@@ -11,6 +12,7 @@ enum class PEEK_FACES : int {
   TOP,
   BOTTOM,
 };
+extern int PEEK_FACE_OPPOSITES[];
 extern int PEEK_FACE_INDICES[];
 
 class Tracker;
