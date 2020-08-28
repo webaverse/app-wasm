@@ -50,10 +50,10 @@ std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefau
   Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
   std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, Vec(), Quat(), triangleMesh, meshGeom, Vec(), Quat(), boundingSphere, physicer));
 
-  {
+  /* {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
     physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
-  }
+  } */
 
   return std::move(geometrySpec);
 }
@@ -68,10 +68,10 @@ std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned 
   Sphere boundingSphere(0, 0, 0, halfScale.magnitude());
   std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, op, oq, nullptr, meshGeom, p, q, boundingSphere, physicer));
 
-  {
+  /* {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
     physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
-  }
+  } */
 
  return std::move(geometrySpec);
 }
@@ -85,10 +85,10 @@ std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, unsig
   Sphere boundingSphere(0, 0, 0, radius + halfHeight);
   std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, op, oq, nullptr, meshGeom, p, q, boundingSphere, physicer));
 
-  {
+  /* {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
     physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
-  }
+  } */
 
   return std::move(geometrySpec);
 }
@@ -208,7 +208,7 @@ void doObjectPhysics(Tracker *tracker, Subparcel *subparcel) {
   delete geometrySpec;
 } */
 
-void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, Vec &outPosition, Quat &outQuaternion) {
+void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, Vec &outPosition, Quat &outQuaternion) {
   PxVec3 originVec{origin[0], origin[1], origin[2]};
   PxVec3 directionVec{direction[0], direction[1], direction[2]};
   Ray ray(Vec{origin[0], origin[1], origin[2]}, Vec{direction[0], direction[1], direction[2]});
@@ -227,28 +227,31 @@ void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshP
   std::vector<std::shared_ptr<PhysicsGeometry>> sortedGeometrySpecs;
   sortedGeometrySpecs.reserve(256);
   {
-    std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
+    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
 
-    for (std::vector<std::weak_ptr<PhysicsGeometry>> *geometrySpecSet : physicer->geometrySpecSets) {
-      std::vector<std::weak_ptr<PhysicsGeometry>> newList;
-      newList.reserve(geometrySpecSet->size());
-      std::copy_if(geometrySpecSet->begin(), geometrySpecSet->end(), std::back_inserter(newList), [&](std::weak_ptr<PhysicsGeometry> &geometrySpecPtr) -> bool {
-        std::shared_ptr<PhysicsGeometry> geometrySpec = geometrySpecPtr.lock();
-        if (geometrySpec) {
-          Sphere sphere(
-            (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
-              .applyQuaternion(q) + p,
-            geometrySpec->boundingSphere.radius
-          );
-          if (ray.intersectsSphere(sphere)) {
-            sortedGeometrySpecs.push_back(std::move(geometrySpec));
-          }
-          return true;
-        } else {
-          return false;
+    for (auto &iter : tracker->subparcels) {
+      std::shared_ptr<Subparcel> &subparcel = iter.second;
+      {
+        std::shared_ptr<PhysicsGeometry> &geometrySpec = subparcel->physxGeometry;
+        Sphere sphere(
+          (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
+            .applyQuaternion(q) + p,
+          geometrySpec->boundingSphere.radius
+        );
+        if (ray.intersectsSphere(sphere)) {
+          sortedGeometrySpecs.push_back(geometrySpec);
         }
-      });
-      *geometrySpecSet = std::move(newList);
+      }
+      for (std::shared_ptr<PhysicsGeometry> &geometrySpec : subparcel->objectPhysxGeometries) {
+        Sphere sphere(
+          (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
+            .applyQuaternion(q) + p,
+          geometrySpec->boundingSphere.radius
+        );
+        if (ray.intersectsSphere(sphere)) {
+          sortedGeometrySpecs.push_back(geometrySpec);
+        }
+      }
     }
     /* std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::pair<float, GeometrySpec *> &a, const std::pair<float, GeometrySpec *> &b) -> bool {
       return a.first < b.first;
@@ -290,7 +293,7 @@ void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshP
   }
 }
 
-void doCollide(Physicer *physicer, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded) {
+void doCollide(Tracker *tracker, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded) {
   PxCapsuleGeometry geom(radius, halfHeight);
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
@@ -317,26 +320,27 @@ void doCollide(Physicer *physicer, float radius, float halfHeight, float *positi
       // sortedGeometrySpecs.clear();
 
       {
-        std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
+        std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
 
-        for (std::vector<std::weak_ptr<PhysicsGeometry>> *geometrySpecSet : physicer->geometrySpecSets) {
-          std::vector<std::weak_ptr<PhysicsGeometry>> newList;
-          newList.reserve(geometrySpecSet->size());
-          std::copy_if(geometrySpecSet->begin(), geometrySpecSet->end(), std::back_inserter(newList), [&](std::weak_ptr<PhysicsGeometry> &geometrySpecPtr) -> bool {
-            std::shared_ptr<PhysicsGeometry> geometrySpec = geometrySpecPtr.lock();
-            if (geometrySpec) {
-              Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
-                .applyQuaternion(q) + p;
-              float distance = spherePosition.distanceTo(capsulePosition);
-              if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) {
-                sortedGeometrySpecs.push_back(std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>>(geometrySpecSet == &physicer->staticGeometrySpecs, distance, std::move(geometrySpec)));
-              }
-              return true;
-            } else {
-              return false;
+        for (auto &iter : tracker->subparcels) {
+          std::shared_ptr<Subparcel> &subparcel = iter.second;
+          {
+            std::shared_ptr<PhysicsGeometry> &geometrySpec = subparcel->physxGeometry;
+            Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
+              .applyQuaternion(q) + p;
+            float distance = spherePosition.distanceTo(capsulePosition);
+            if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) {
+              sortedGeometrySpecs.push_back(std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>>(true, distance, geometrySpec));
             }
-          });
-          *geometrySpecSet = std::move(newList);
+          }
+          for (std::shared_ptr<PhysicsGeometry> &geometrySpec : subparcel->objectPhysxGeometries) {
+            Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
+              .applyQuaternion(q) + p;
+            float distance = spherePosition.distanceTo(capsulePosition);
+            if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) {
+              sortedGeometrySpecs.push_back(std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>>(false, distance, geometrySpec));
+            }
+          }
         }
       }
       std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>> &a, const std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>> &b) -> bool {

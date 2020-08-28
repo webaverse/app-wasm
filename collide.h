@@ -49,13 +49,6 @@ public:
   PxFoundation *gFoundation = nullptr;
   PxPhysics *physics = nullptr;
   PxCooking *cooking = nullptr;
-  std::vector<std::weak_ptr<PhysicsGeometry>> geometrySpecs;
-  std::vector<std::weak_ptr<PhysicsGeometry>> staticGeometrySpecs;
-  std::vector<std::vector<std::weak_ptr<PhysicsGeometry>> *> geometrySpecSets{
-    &staticGeometrySpecs,
-    &geometrySpecs,
-  };
-  std::mutex gPhysicsMutex;
 };
 
 /* void doInitPhysx() {
@@ -94,8 +87,8 @@ extern std::map<std::string, Shape> PHYSICS_SHAPES;
 void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions, unsigned int numLandPositions);
 void doObjectPhysics(Tracker *tracker, Subparcel *subparcel);
 
-void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, Vec &outPosition, Quat &outQuaternion);
-void doCollide(Physicer *physicer, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
+void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, Vec &outPosition, Quat &outQuaternion);
+void doCollide(Tracker *tracker, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
 extern int PEEK_FACE_INDICES[];
 /* (() => {
   const directionsLookup = {
