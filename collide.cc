@@ -229,8 +229,10 @@ void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshP
   {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
 
-    for (std::list<std::weak_ptr<PhysicsGeometry>> *geometrySpecSet : physicer->geometrySpecSets) {
-      for (std::weak_ptr<PhysicsGeometry> &geometrySpecPtr : *geometrySpecSet) {
+    for (std::vector<std::weak_ptr<PhysicsGeometry>> *geometrySpecSet : physicer->geometrySpecSets) {
+      std::vector<std::weak_ptr<PhysicsGeometry>> newList;
+      newList.reserve(geometrySpecSet->size());
+      std::copy_if(geometrySpecSet->begin(), geometrySpecSet->end(), std::back_inserter(newList), [&](std::weak_ptr<PhysicsGeometry> &geometrySpecPtr) -> bool {
         std::shared_ptr<PhysicsGeometry> geometrySpec = geometrySpecPtr.lock();
         if (geometrySpec) {
           Sphere sphere(
@@ -241,8 +243,12 @@ void doRaycast(Physicer *physicer, float *origin, float *direction, float *meshP
           if (ray.intersectsSphere(sphere)) {
             sortedGeometrySpecs.push_back(std::move(geometrySpec));
           }
+          return true;
+        } else {
+          return false;
         }
-      }
+      });
+      *geometrySpecSet = std::move(newList);
     }
     /* std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::pair<float, GeometrySpec *> &a, const std::pair<float, GeometrySpec *> &b) -> bool {
       return a.first < b.first;
@@ -313,8 +319,10 @@ void doCollide(Physicer *physicer, float radius, float halfHeight, float *positi
       {
         std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
 
-        for (std::list<std::weak_ptr<PhysicsGeometry>> *geometrySpecSet : physicer->geometrySpecSets) {
-          for (std::weak_ptr<PhysicsGeometry> &geometrySpecPtr : *geometrySpecSet) {
+        for (std::vector<std::weak_ptr<PhysicsGeometry>> *geometrySpecSet : physicer->geometrySpecSets) {
+          std::vector<std::weak_ptr<PhysicsGeometry>> newList;
+          newList.reserve(geometrySpecSet->size());
+          std::copy_if(geometrySpecSet->begin(), geometrySpecSet->end(), std::back_inserter(newList), [&](std::weak_ptr<PhysicsGeometry> &geometrySpecPtr) -> bool {
             std::shared_ptr<PhysicsGeometry> geometrySpec = geometrySpecPtr.lock();
             if (geometrySpec) {
               Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
@@ -323,8 +331,12 @@ void doCollide(Physicer *physicer, float radius, float halfHeight, float *positi
               if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) {
                 sortedGeometrySpecs.push_back(std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>>(geometrySpecSet == &physicer->staticGeometrySpecs, distance, std::move(geometrySpec)));
               }
+              return true;
+            } else {
+              return false;
             }
-          }
+          });
+          *geometrySpecSet = std::move(newList);
         }
       }
       std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>> &a, const std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>> &b) -> bool {

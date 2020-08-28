@@ -49,9 +49,9 @@ public:
   PxFoundation *gFoundation = nullptr;
   PxPhysics *physics = nullptr;
   PxCooking *cooking = nullptr;
-  std::list<std::weak_ptr<PhysicsGeometry>> geometrySpecs;
-  std::list<std::weak_ptr<PhysicsGeometry>> staticGeometrySpecs;
-  std::vector<std::list<std::weak_ptr<PhysicsGeometry>> *> geometrySpecSets{
+  std::vector<std::weak_ptr<PhysicsGeometry>> geometrySpecs;
+  std::vector<std::weak_ptr<PhysicsGeometry>> staticGeometrySpecs;
+  std::vector<std::vector<std::weak_ptr<PhysicsGeometry>> *> geometrySpecSets{
     &staticGeometrySpecs,
     &geometrySpecs,
   };
