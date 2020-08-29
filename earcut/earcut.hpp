@@ -22,11 +22,13 @@ namespace detail {
 template <typename N = uint32_t>
 class Earcut {
 public:
-    std::vector<N> indices;
+    std::vector<N> &indices;
     std::size_t vertices = 0;
 
     template <typename Polygon>
     void operator()(const Polygon& points);
+
+    Earcut(std::vector<N> &indices) : indices(indices) {}
 
 private:
     struct Node {
@@ -806,9 +808,9 @@ void Earcut<N>::removeNode(Node* p) {
 }
 
 template <typename N = uint32_t, typename Polygon>
-std::vector<N> earcut(const Polygon& poly) {
-    mapbox::detail::Earcut<N> earcut;
+void earcut(const Polygon& poly, std::vector<N> &indices) {
+    mapbox::detail::Earcut<N> earcut(indices);
     earcut(poly);
-    return std::move(earcut.indices);
+    // return std::move(earcut.indices);
 }
 }
