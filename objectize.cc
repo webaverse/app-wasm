@@ -4,6 +4,7 @@
 #include "noise.h"
 #include "march.h"
 #include "collide.h"
+#include <earcut.hpp>
 // #include <iostream>
 
 #include <deque>
@@ -173,6 +174,192 @@ EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, ThreadPool *threadPool, 
 
 EMSCRIPTEN_KEEPALIVE void doChunk(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, /*unsigned int *barycentricIndex,*/ unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
   marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, /**barycentricIndex,*/ *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
+}
+
+// earcut
+
+class EarcutResult {
+public:
+  float *positions;
+  unsigned int numPositions;
+  uint32_t *indices;
+  unsigned int numIndices;
+};
+
+EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z) {
+  std::vector<std::vector<std::array<float, 2>>> polygon;
+  std::map<unsigned int, std::vector<unsigned int>> connectivity;
+
+  // add regular points
+  unsigned int numCoreVertices = 0;
+  unsigned int numVertices = 0;
+  unsigned int numIndices = 0;
+  {
+    unsigned int offset = 0;
+    for (unsigned int i = 0; i < numCounts; i++) {
+      unsigned int count = counts[i];
+      std::vector<std::array<float, 2>> points;
+      points.reserve(count);
+      for (unsigned int j = 0; j < count; j++) {
+        points.push_back(std::array<float, 2>{positions[offset], positions[offset+1]});
+        offset += 2;
+
+        unsigned int nextIndex = (j+1 < count) ? (numIndices+1) : (numIndices+1-count);
+        connectivity[numIndices].push_back(nextIndex);
+        connectivity[nextIndex].push_back(numIndices);
+
+        numCoreVertices += 3;
+        numVertices += 3;
+        numIndices++;
+      }
+      polygon.push_back(std::move(points));
+    }
+  }
+  // add hole points
+  {
+    unsigned int offset = 0;
+    for (unsigned int i = 0; i < numPoints; i++) {
+      float srcPoint[2] = {
+        points[i*2],
+        points[i*2+1],
+      };
+      std::vector<std::array<float, 2>> points{
+        {
+          srcPoint[0],
+          srcPoint[1] + 0.01f,
+        },
+        {
+          srcPoint[0] - 0.01f,
+          srcPoint[1] - 0.01f,
+        },
+        {
+          srcPoint[0] + 0.01f,
+          srcPoint[1] - 0.01f,
+        },
+      };
+      polygon.push_back(std::move(points));
+
+      connectivity[numIndices] = {
+        numIndices + 1,
+        numIndices + 2,
+      };
+      connectivity[numIndices+1] = {
+        numIndices,
+        numIndices + 2,
+      };
+      connectivity[numIndices+2] = {
+        numIndices,
+        numIndices + 1,
+      };
+
+      numVertices += 9;
+      numIndices += 3;
+    }
+  }
+
+  // Run tessellation
+  // Returns array of indices that refer to the vertices of the input polygon.
+  // e.g: the index 6 would refer to {25, 75} in this example.
+  // Three subsequent indices form a triangle. Output triangles are clockwise.
+  std::vector<uint32_t> *indicesPtr = new std::vector<uint32_t>();
+  std::vector<uint32_t> &indices = *indicesPtr;
+  mapbox::earcut<uint32_t>(polygon, indices);
+
+  // collapse hole points
+  {
+    unsigned int offset = 0;
+    for (unsigned int i = 0; i < numPoints; i++) {
+      float srcPoint[2] = {
+        points[i*2],
+        points[i*2+1],
+      };
+      auto &line = polygon[polygon.size() - numPoints + i];
+      for (auto &point : line) {
+        point[0] = srcPoint[0];
+        point[1] = srcPoint[1];
+      }
+    }
+  }
+  for (unsigned int i = 0; i < indices.size(); i++) {
+    if (indices[i] > numCoreVertices/3) {
+      indices[i] = (indices[i]/3)*3;
+    }
+  }
+
+  if (z > 0) {
+    // double-layer points
+    unsigned int halfSize = indices.size();
+    indices.resize(halfSize*2);
+    for (unsigned int i = 0; i < halfSize; i++) {
+      indices[halfSize + i] = indices[i] + numVertices/3;
+    }
+
+    // connect layers
+    for (unsigned int i = 0; i < halfSize; i += 3) {
+      unsigned int ai = indices[i];
+      unsigned int bi = indices[i+1];
+      unsigned int ci = indices[i+2];
+      unsigned int dai = indices[halfSize + i];
+      unsigned int dbi = indices[halfSize + i+1];
+      unsigned int dci = indices[halfSize + i+2];
+
+      auto &aConnectivity = connectivity[ai];
+      auto &bConnectivity = connectivity[bi];
+      auto &cConnectivity = connectivity[ci];
+
+      if (std::find(aConnectivity.begin(), aConnectivity.end(), bi) != aConnectivity.end()) {
+        indices.push_back(ai);
+        indices.push_back(bi);
+        indices.push_back(dai);
+        indices.push_back(bi);
+        indices.push_back(dbi);
+        indices.push_back(dai);
+      }
+      if (std::find(bConnectivity.begin(), bConnectivity.end(), ci) != bConnectivity.end()) {
+        indices.push_back(bi);
+        indices.push_back(ci);
+        indices.push_back(dbi);
+        indices.push_back(ci);
+        indices.push_back(dci);
+        indices.push_back(dbi);
+      }
+      if (std::find(cConnectivity.begin(), cConnectivity.end(), ai) != cConnectivity.end()) {
+        indices.push_back(ci);
+        indices.push_back(ai);
+        indices.push_back(dci);
+        indices.push_back(ai);
+        indices.push_back(dai);
+        indices.push_back(dci);
+      }
+    }
+
+    // flip back points
+    for (unsigned int i = 0; i < halfSize; i += 3) {
+      std::swap(indices[i + 1], indices[i + 2]);
+    }
+  }
+  std::vector<float> *outPositionsPtr = new std::vector<float>(numVertices*2);
+  std::vector<float> &outPositions = *outPositionsPtr;
+  {
+    unsigned int i = 0;
+    for (float dz = 0; dz <= z; dz += z) {
+      for (auto &line : polygon) {
+        for (auto &point : line) {
+          outPositions[i*3] = point[0];
+          outPositions[i*3+1] = point[1];
+          outPositions[i*3+2] = dz;
+          i++;
+        }
+      }
+    }
+  }
+
+  EarcutResult *result = new EarcutResult();
+  result->positions = outPositions.data();
+  result->numPositions = outPositions.size();
+  result->indices = indices.data();
+  result->numIndices = indices.size();
+  return result;
 }
 
 // requests
