@@ -182,6 +182,8 @@ class EarcutResult {
 public:
   float *positions;
   unsigned int numPositions;
+  float *uvs;
+  unsigned int numUvs;
   uint32_t *indices;
   unsigned int numIndices;
 };
@@ -356,9 +358,46 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
     }
   }
 
+  float min[2] = {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
+  float max[2] = {-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()};
+  for (unsigned int i = 0; i < outPositions.size(); i += 3) {
+    float x = outPositions[i];
+    float y = outPositions[i+1];
+    if (x < min[0]) min[0] = x;
+    if (y < min[1]) min[1] = y;
+    if (x > max[0]) max[0] = x;
+    if (y > max[1]) max[1] = y;
+  }
+  float width = max[0] - min[0];
+  float height = max[1] - min[1];
+
+  std::vector<float> *uvsPtr = new std::vector<float>(outPositions.size()/3*2);
+  std::vector<float> &uvs = *uvsPtr;
+  {
+    float backAtlas[] = {0.5, 1, 0.5, 1}; // xywh
+    float frontAtlas[] = {0, 0.5, 0.5, 1}; // xywh
+
+    unsigned int i = 0;
+    unsigned int j = 0;
+    for (; i < numVertices; i += 3, j += 2) {
+      float u = (outPositions[i] - min[0])/width;
+      float v = (outPositions[i+1] - min[1])/height;
+      uvs[j] = backAtlas[0] + u * backAtlas[2];
+      uvs[j+1] = backAtlas[1] + v * backAtlas[3];
+    }
+    for (; i < numVertices*2; i += 3, j += 2) {
+      float u = (outPositions[i] - min[0])/width;
+      float v = (outPositions[i+1] - min[1])/height;
+      uvs[j] = frontAtlas[0] + u * frontAtlas[2];
+      uvs[j+1] = frontAtlas[1] + v * frontAtlas[3];
+    }
+  }
+
   EarcutResult *result = new EarcutResult();
   result->positions = outPositions.data();
   result->numPositions = outPositions.size();
+  result->uvs = uvs.data();
+  result->numUvs = uvs.size();
   result->indices = indices.data();
   result->numIndices = indices.size();
   return result;
