@@ -288,58 +288,6 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
     }
   }
 
-  if (z > 0) {
-    // double-layer points
-    unsigned int halfSize = indices.size();
-    indices.resize(halfSize*2);
-    for (unsigned int i = 0; i < halfSize; i++) {
-      indices[halfSize + i] = indices[i] + numVertices/3;
-    }
-
-    // connect layers
-    for (unsigned int i = 0; i < halfSize; i += 3) {
-      unsigned int ai = indices[i];
-      unsigned int bi = indices[i+1];
-      unsigned int ci = indices[i+2];
-      unsigned int dai = indices[halfSize + i];
-      unsigned int dbi = indices[halfSize + i+1];
-      unsigned int dci = indices[halfSize + i+2];
-
-      auto &aConnectivity = connectivity[ai];
-      auto &bConnectivity = connectivity[bi];
-      auto &cConnectivity = connectivity[ci];
-
-      if (std::find(aConnectivity.begin(), aConnectivity.end(), bi) != aConnectivity.end()) {
-        indices.push_back(ai);
-        indices.push_back(bi);
-        indices.push_back(dai);
-        indices.push_back(bi);
-        indices.push_back(dbi);
-        indices.push_back(dai);
-      }
-      if (std::find(bConnectivity.begin(), bConnectivity.end(), ci) != bConnectivity.end()) {
-        indices.push_back(bi);
-        indices.push_back(ci);
-        indices.push_back(dbi);
-        indices.push_back(ci);
-        indices.push_back(dci);
-        indices.push_back(dbi);
-      }
-      if (std::find(cConnectivity.begin(), cConnectivity.end(), ai) != cConnectivity.end()) {
-        indices.push_back(ci);
-        indices.push_back(ai);
-        indices.push_back(dci);
-        indices.push_back(ai);
-        indices.push_back(dai);
-        indices.push_back(dci);
-      }
-    }
-
-    // flip back points
-    for (unsigned int i = 0; i < halfSize; i += 3) {
-      std::swap(indices[i + 1], indices[i + 2]);
-    }
-  }
   std::vector<float> *outPositionsPtr = new std::vector<float>(numVertices*2);
   std::vector<float> &outPositions = *outPositionsPtr;
   {
@@ -355,6 +303,165 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
           j++;
         }
       }
+    }
+  }
+
+  if (z > 0) {
+    // double-layer points
+    unsigned int halfSize = indices.size();
+    indices.resize(halfSize*2);
+    for (unsigned int i = 0; i < halfSize; i++) {
+      indices[halfSize + i] = indices[i] + numVertices/3;
+    }
+
+    // connect layers
+    std::map<unsigned int, unsigned int> duplicatedIndices;
+    for (unsigned int i = 0; i < halfSize; i += 3) {
+      unsigned int ai = indices[i];
+      unsigned int bi = indices[i+1];
+      unsigned int ci = indices[i+2];
+      unsigned int dai = indices[halfSize + i];
+      unsigned int dbi = indices[halfSize + i+1];
+      unsigned int dci = indices[halfSize + i+2];
+
+      auto &aConnectivity = connectivity[ai];
+      auto &bConnectivity = connectivity[bi];
+      auto &cConnectivity = connectivity[ci];
+
+      if (std::find(aConnectivity.begin(), aConnectivity.end(), bi) != aConnectivity.end()) {
+        unsigned int dupeAIndex;
+        unsigned int dupeBIndex;
+        unsigned int dupeDAIndex;
+        unsigned int dupeDBIndex;
+        auto dupeAIter = duplicatedIndices.find(ai);
+        if (dupeAIter == duplicatedIndices.end()) {
+          dupeAIndex = duplicatedIndices[ai] = outPositions.size()/3;
+          outPositions.push_back(outPositions[ai*3]);
+          outPositions.push_back(outPositions[ai*3+1]);
+          outPositions.push_back(outPositions[ai*3+2]);
+
+          dupeDAIndex = duplicatedIndices[dai] = outPositions.size()/3;
+          outPositions.push_back(outPositions[dai*3]);
+          outPositions.push_back(outPositions[dai*3+1]);
+          outPositions.push_back(outPositions[dai*3+2]);
+        } else {
+          dupeAIndex = dupeAIter->second;
+          dupeDAIndex = duplicatedIndices[dai];
+        }
+        auto dupeBIter = duplicatedIndices.find(bi);
+        if (dupeBIter == duplicatedIndices.end()) {
+          dupeBIndex = duplicatedIndices[bi] = outPositions.size()/3;
+          outPositions.push_back(outPositions[bi*3]);
+          outPositions.push_back(outPositions[bi*3+1]);
+          outPositions.push_back(outPositions[bi*3+2]);
+
+          dupeDBIndex = duplicatedIndices[dbi] = outPositions.size()/3;
+          outPositions.push_back(outPositions[dbi*3]);
+          outPositions.push_back(outPositions[dbi*3+1]);
+          outPositions.push_back(outPositions[dbi*3+2]);
+        } else {
+          dupeBIndex = dupeBIter->second;
+          dupeDBIndex = duplicatedIndices[dbi];
+        }
+
+        indices.push_back(dupeAIndex);
+        indices.push_back(dupeBIndex);
+        indices.push_back(dupeDAIndex);
+        indices.push_back(dupeBIndex);
+        indices.push_back(dupeDBIndex);
+        indices.push_back(dupeDAIndex);
+      }
+      if (std::find(bConnectivity.begin(), bConnectivity.end(), ci) != bConnectivity.end()) {
+        unsigned int dupeBIndex;
+        unsigned int dupeCIndex;
+        unsigned int dupeDBIndex;
+        unsigned int dupeDCIndex;
+        auto dupeBIter = duplicatedIndices.find(bi);
+        if (dupeBIter == duplicatedIndices.end()) {
+          dupeBIndex = duplicatedIndices[bi] = outPositions.size()/3;
+          outPositions.push_back(outPositions[bi*3]);
+          outPositions.push_back(outPositions[bi*3+1]);
+          outPositions.push_back(outPositions[bi*3+2]);
+
+          dupeDBIndex = duplicatedIndices[dbi] = outPositions.size()/3;
+          outPositions.push_back(outPositions[dbi*3]);
+          outPositions.push_back(outPositions[dbi*3+1]);
+          outPositions.push_back(outPositions[dbi*3+2]);
+        } else {
+          dupeBIndex = dupeBIter->second;
+          dupeDBIndex = duplicatedIndices[dbi];
+        }
+        auto dupeCIter = duplicatedIndices.find(ci);
+        if (dupeCIter == duplicatedIndices.end()) {
+          dupeCIndex = duplicatedIndices[ci] = outPositions.size()/3;
+          outPositions.push_back(outPositions[ci*3]);
+          outPositions.push_back(outPositions[ci*3+1]);
+          outPositions.push_back(outPositions[ci*3+2]);
+
+          dupeDCIndex = duplicatedIndices[dci] = outPositions.size()/3;
+          outPositions.push_back(outPositions[dci*3]);
+          outPositions.push_back(outPositions[dci*3+1]);
+          outPositions.push_back(outPositions[dci*3+2]);
+        } else {
+          dupeCIndex = dupeCIter->second;
+          dupeDCIndex = duplicatedIndices[dci];
+        }
+
+        indices.push_back(dupeBIndex);
+        indices.push_back(dupeCIndex);
+        indices.push_back(dupeDBIndex);
+        indices.push_back(dupeCIndex);
+        indices.push_back(dupeDCIndex);
+        indices.push_back(dupeDBIndex);
+      }
+      if (std::find(cConnectivity.begin(), cConnectivity.end(), ai) != cConnectivity.end()) {
+        unsigned int dupeCIndex;
+        unsigned int dupeAIndex;
+        unsigned int dupeDCIndex;
+        unsigned int dupeDAIndex;
+        auto dupeCIter = duplicatedIndices.find(bi);
+        if (dupeCIter == duplicatedIndices.end()) {
+          dupeCIndex = duplicatedIndices[ci] = outPositions.size()/3;
+          outPositions.push_back(outPositions[ci*3]);
+          outPositions.push_back(outPositions[ci*3+1]);
+          outPositions.push_back(outPositions[ci*3+2]);
+
+          dupeDCIndex = duplicatedIndices[dci] = outPositions.size()/3;
+          outPositions.push_back(outPositions[dci*3]);
+          outPositions.push_back(outPositions[dci*3+1]);
+          outPositions.push_back(outPositions[dci*3+2]);
+        } else {
+          dupeCIndex = dupeCIter->second;
+          dupeDCIndex = duplicatedIndices[dci];
+        }
+        auto dupeAIter = duplicatedIndices.find(ai);
+        if (dupeAIter == duplicatedIndices.end()) {
+          dupeAIndex = duplicatedIndices[ai] = outPositions.size()/3;
+          outPositions.push_back(outPositions[ai*3]);
+          outPositions.push_back(outPositions[ai*3+1]);
+          outPositions.push_back(outPositions[ai*3+2]);
+
+          dupeDAIndex = duplicatedIndices[dai] = outPositions.size()/3;
+          outPositions.push_back(outPositions[dai*3]);
+          outPositions.push_back(outPositions[dai*3+1]);
+          outPositions.push_back(outPositions[dai*3+2]);
+        } else {
+          dupeAIndex = dupeAIter->second;
+          dupeDAIndex = duplicatedIndices[dai];
+        }
+
+        indices.push_back(dupeCIndex);
+        indices.push_back(dupeAIndex);
+        indices.push_back(dupeDCIndex);
+        indices.push_back(dupeAIndex);
+        indices.push_back(dupeDAIndex);
+        indices.push_back(dupeDCIndex);
+      }
+    }
+
+    // flip back points
+    for (unsigned int i = 0; i < halfSize; i += 3) {
+      std::swap(indices[i + 1], indices[i + 2]);
     }
   }
 
