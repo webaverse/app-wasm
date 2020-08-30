@@ -360,7 +360,7 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
 
   float min[2] = {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
   float max[2] = {-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()};
-  for (unsigned int i = 0; i < outPositions.size(); i += 3) {
+  for (unsigned int i = 0; i < numVertices; i += 3) {
     float x = outPositions[i];
     float y = outPositions[i+1];
     if (x < min[0]) min[0] = x;
