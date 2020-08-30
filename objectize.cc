@@ -186,7 +186,7 @@ public:
   unsigned int numIndices;
 };
 
-EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z) {
+EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z, float *zs) {
   std::vector<std::vector<std::array<float, 2>>> polygon;
   std::map<unsigned int, std::vector<unsigned int>> connectivity;
 
@@ -343,12 +343,14 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
   {
     unsigned int i = 0;
     for (float dz = 0; dz <= z; dz += z) {
+      unsigned int j = 0;
       for (auto &line : polygon) {
         for (auto &point : line) {
           outPositions[i*3] = point[0];
           outPositions[i*3+1] = point[1];
-          outPositions[i*3+2] = dz;
+          outPositions[i*3+2] = dz + zs[j];
           i++;
+          j++;
         }
       }
     }
