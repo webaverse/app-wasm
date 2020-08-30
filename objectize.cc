@@ -482,7 +482,7 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
         indices.push_back(dupeDAIndex);
       }
       if (std::find(bConnectivity.begin(), bConnectivity.end(), ci) != bConnectivity.end()) {
-        unsigned int islandIndex = islandIndices[ai];
+        unsigned int islandIndex = islandIndices[bi];
         CustomRect &rect = rects[2 + islandIndex];
 
         unsigned int dupeBIndex;
