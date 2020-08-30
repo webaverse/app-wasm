@@ -5,6 +5,7 @@
 #include "march.h"
 #include "collide.h"
 #include <earcut.hpp>
+#include <RectBinPack/MaxRects.hpp>
 // #include <iostream>
 
 #include <deque>
@@ -188,6 +189,24 @@ public:
   unsigned int numIndices;
 };
 
+struct CustomRect {
+  CustomRect() : x(0), y(0), w(1), h(1) {}
+  float x, y, w, h;
+  bool unpacked;
+};
+constexpr unsigned int size = 4096;
+inline RectBinPack::Rect toRect(const CustomRect& value) {
+  return {(unsigned int)(value.x * size), (unsigned int)(value.y * size), (unsigned int)(value.w * size), (unsigned int)(value.h * size)};
+}
+inline void fromBinRect(CustomRect& value, RectBinPack::BinRect rect) {
+  value.x = (float)rect.rect.x/(float)size;
+  value.y = (float)rect.rect.y/(float)size;
+  value.w = (float)rect.rect.width/(float)size;
+  value.h = (float)rect.rect.height/(float)size;
+
+  // If bin is not set, set rectangle to unpacked
+  value.unpacked = rect.bin == RectBinPack::InvalidBin;
+}
 EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z, float *zs) {
   std::vector<std::vector<std::array<float, 2>>> polygon;
   std::map<unsigned int, std::vector<unsigned int>> connectivity;
@@ -306,6 +325,24 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
     }
   }
 
+  std::vector<CustomRect> rects{
+    CustomRect(),
+    CustomRect(),
+  };
+
+  float min[2] = {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
+  float max[2] = {-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()};
+  for (unsigned int i = 0; i < numVertices; i += 3) {
+    float x = outPositions[i];
+    float y = outPositions[i+1];
+    if (x < min[0]) min[0] = x;
+    if (y < min[1]) min[1] = y;
+    if (x > max[0]) max[0] = x;
+    if (y > max[1]) max[1] = y;
+  }
+  float width = max[0] - min[0];
+  float height = max[1] - min[1];
+
   if (z > 0) {
     // double-layer points
     unsigned int halfSize = indices.size();
@@ -314,7 +351,7 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
       indices[halfSize + i] = indices[i] + numVertices/3;
     }
 
-    // connect layers
+    // connect layers and deduplicate
     std::map<unsigned int, unsigned int> duplicatedIndices;
     for (unsigned int i = 0; i < halfSize; i += 3) {
       unsigned int ai = indices[i];
@@ -458,6 +495,85 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
         indices.push_back(dupeDCIndex);
       }
     }
+    // collect connection islands
+    std::list<std::set<unsigned int>> islands;
+    for (unsigned int i = halfSize*2; i < indices.size(); i += 3) {
+      unsigned int a = indices[i];
+      unsigned int b = indices[i+1];
+      unsigned int c = indices[i+2];
+
+      auto aIter = std::find_if(islands.begin(), islands.end(), [&](std::set<unsigned int> &island) -> bool {
+        return island.find(a) != island.end();
+      });
+      auto bIter = std::find_if(islands.begin(), islands.end(), [&](std::set<unsigned int> &island) -> bool {
+        return island.find(b) != island.end();
+      });
+      auto cIter = std::find_if(islands.begin(), islands.end(), [&](std::set<unsigned int> &island) -> bool {
+        return island.find(c) != island.end();
+      });
+      decltype(aIter) iter;
+      if (aIter != islands.end()) {
+        iter = aIter;
+      } else if (bIter != islands.end()) {
+        iter = bIter;
+      } else if (cIter != islands.end()) {
+        iter = cIter;
+      } else {
+        iter = islands.end();
+      }
+      if (
+        (aIter != islands.end())
+      ) {
+        if (bIter != islands.end() && bIter != aIter) {
+          iter->insert(bIter->begin(), bIter->end());
+          islands.erase(bIter);
+          bIter = islands.end();
+        }
+        if (cIter != islands.end() && cIter != aIter) {
+          iter->insert(cIter->begin(), cIter->end());
+          islands.erase(cIter);
+          cIter = islands.end();
+        }
+      }
+      if (
+        (bIter != islands.end())
+      ) {
+        if (aIter != islands.end() && aIter != bIter) {
+          iter->insert(aIter->begin(), aIter->end());
+          islands.erase(aIter);
+          aIter = islands.end();
+        }
+        if (cIter != islands.end() && cIter != bIter) {
+          iter->insert(cIter->begin(), cIter->end());
+          islands.erase(cIter);
+          cIter = islands.end();
+        }
+      }
+      if (
+        (cIter != islands.end())
+      ) {
+        if (aIter != islands.end() && aIter != cIter) {
+          iter->insert(aIter->begin(), aIter->end());
+          islands.erase(aIter);
+          aIter = islands.end();
+        }
+        if (bIter != islands.end() && bIter != cIter) {
+          iter->insert(bIter->begin(), bIter->end());
+          islands.erase(bIter);
+          bIter = islands.end();
+        }
+      }
+      if (iter != islands.end()) {
+        std::set<unsigned int> &island = *iter;
+        island.insert(a);
+        island.insert(b);
+        island.insert(c);
+      } else {
+        std::set<unsigned int> island{a, b, c};
+        islands.push_back(std::move(island));
+      }
+    }
+    // std::cout << "num islands " << islands.size() << std::endl;
 
     // flip back points
     for (unsigned int i = 0; i < halfSize; i += 3) {
@@ -465,24 +581,23 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
     }
   }
 
-  float min[2] = {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
-  float max[2] = {-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()};
-  for (unsigned int i = 0; i < numVertices; i += 3) {
-    float x = outPositions[i];
-    float y = outPositions[i+1];
-    if (x < min[0]) min[0] = x;
-    if (y < min[1]) min[1] = y;
-    if (x > max[0]) max[0] = x;
-    if (y > max[1]) max[1] = y;
+  {
+    // Initialize configuration (size x size, 1 bin, no flipping, BestAreaFit)
+    RectBinPack::MaxRectsConfiguration config {
+      size, size, 1, 1, false, RectBinPack::MaxRectsHeuristic::BestAreaFit
+    };
+
+    // Pack rectangles
+    RectBinPack::packMaxRects(config, rects);
   }
-  float width = max[0] - min[0];
-  float height = max[1] - min[1];
 
   std::vector<float> *uvsPtr = new std::vector<float>(outPositions.size()/3*2);
   std::vector<float> &uvs = *uvsPtr;
   {
-    float backAtlas[] = {0.5, 1, 0.5, 1}; // xywh
-    float frontAtlas[] = {0, 0.5, 0.5, 1}; // xywh
+    CustomRect &backRect = rects[0];
+    CustomRect &frontRect = rects[1];
+    float backAtlas[] = {(float)backRect.x/(float)size, (float)backRect.y/(float)size, (float)backRect.w/(float)size, (float)backRect.h/(float)size}; // xywh
+    float frontAtlas[] = {(float)frontRect.x/(float)size, (float)frontRect.y/(float)size, (float)frontRect.w/(float)size, (float)frontRect.h/(float)size}; // xywh
 
     unsigned int i = 0;
     unsigned int j = 0;
@@ -498,6 +613,14 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
       uvs[j] = frontAtlas[0] + u * frontAtlas[2];
       uvs[j+1] = frontAtlas[1] + v * frontAtlas[3];
     }
+    /* unsigned int endC = 0;
+    for (; i < outPositions.size(); i += 3, j += 2) {
+      // float u = (outPositions[i] - min[0])/width;
+      // float v = (outPositions[i+1] - min[1])/height;
+      //uvs[j] = frontAtlas[0] + u * frontAtlas[2];
+      uvs[j+1] = (float)(endC % 5)/5.0f;
+      endC++;
+    } */
   }
 
   EarcutResult *result = new EarcutResult();
