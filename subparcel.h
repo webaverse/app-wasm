@@ -213,6 +213,8 @@ enum class METHODS : int {
   addObject,
   removeObject,
   releaseAddRemoveObject,
+  addThingGeometry,
+  addThing,
 };
 enum class MESSAGES : int {
   updateGeometry = -1,
@@ -342,6 +344,14 @@ public:
   Quat quaternion;
 };
 
+class Thing {
+public:
+  unsigned int id;
+  char name[MAX_NAME_LENGTH];
+  Vec position;
+  Quat quaternion;
+};
+
 class Subparcel {
 public:
   Subparcel(const Coord &coord, Tracker *tracker);
@@ -369,6 +379,8 @@ public:
   unsigned char lightfield[SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 * SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned int numObjects;
   Object objects[PLANET_OBJECT_SLOTS];
+  unsigned int numThings;
+  Thing things[PLANET_OBJECT_SLOTS];
 
   // transient state
   Tracker *tracker;
@@ -399,6 +411,7 @@ public:
 
   std::shared_ptr<PhysicsGeometry> physxGeometry;
   std::vector<std::shared_ptr<PhysicsGeometry>> objectPhysxGeometries;
+  std::vector<std::shared_ptr<PhysicsGeometry>> thingPhysxGeometries;
 };
 
 #endif

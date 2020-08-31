@@ -283,6 +283,8 @@ Object &Object::operator=(const Object &object) {
 
 Subparcel::Subparcel(const Coord &coord, Tracker *tracker) :
   coord(coord),
+  numObjects(0),
+  numThings(0),
   tracker(tracker),
   boundingSphere(
     Vec{(float)coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, (float)coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, (float)coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f},
@@ -302,6 +304,8 @@ Subparcel *Subparcel::clone() const {
   memcpy(subparcel->lightfield, lightfield, sizeof(lightfield));
   subparcel->numObjects = numObjects;
   memcpy(subparcel->objects, objects, sizeof(objects));
+  subparcel->numThings = numThings;
+  memcpy(subparcel->things, things, sizeof(things));
 
   return subparcel;
 }

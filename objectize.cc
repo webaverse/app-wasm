@@ -190,8 +190,8 @@ public:
   unsigned int numUvs;
   uint32_t *indices;
   unsigned int numIndices;
-  std::shared_ptr<PhysicsGeometry> physicsGeometry;
-  PhysicsGeometry *physicsGeometryPtr;
+  /* std::shared_ptr<PhysicsGeometry> physicsGeometry;
+  PhysicsGeometry *physicsGeometryPtr; */
 };
 
 struct CustomRect {
@@ -219,7 +219,7 @@ inline void fromBinRect(CustomRect& value, RectBinPack::BinRect rect) {
   // If bin is not set, set rectangle to unpacked
   value.packed = rect.bin != RectBinPack::InvalidBin;
 }
-EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z, float *zs) {
+EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z, float *zs) {
   std::vector<std::vector<std::array<float, 2>>> polygon;
   std::map<unsigned int, std::vector<unsigned int>> connectivity;
   std::vector<unsigned int> islandIndices;
@@ -697,11 +697,11 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, un
     }
   }
 
-  PxDefaultMemoryOutputStream *physicsGeometryDataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
+  /* PxDefaultMemoryOutputStream *physicsGeometryDataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
   float meshPosition[] = {0, 0, 0};
   float meshQuaternion[] = {0, 0, 0, 1};
   std::shared_ptr<PhysicsGeometry> physicsGeometry = doMakeBakedGeometry(&tracker->physicer, physicsGeometryDataStream, meshPosition, meshQuaternion);
-  delete physicsGeometryDataStream;
+  delete physicsGeometryDataStream; */
 
   EarcutResult *result = new EarcutResult();
   result->positions = outPositions.data();
@@ -710,8 +710,8 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, un
   result->numUvs = uvs.size();
   result->indices = indices.data();
   result->numIndices = indices.size();
-  result->physicsGeometry = std::move(physicsGeometry);
-  result->physicsGeometryPtr = result->physicsGeometry.get();
+  /* result->physicsGeometry = std::move(physicsGeometry);
+  result->physicsGeometryPtr = result->physicsGeometry.get(); */
   return result;
 }
 
@@ -1536,7 +1536,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         subparcel->vegetationGroups[0].materialIndex = 0;
       }
       doLandPhysics(tracker, subparcel.get(), landPositions, numLandPositions);
-      doObjectPhysics(tracker, subparcel.get());
+      doObjectPhysics(tracker, geometrySet, subparcel.get());
 
       // output
       // std::cout << "return 1" << std::endl;
@@ -1792,7 +1792,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       std::vector<std::shared_ptr<Subparcel>> &newSubparcels = spec.second;
 
       for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
-        doObjectPhysics(tracker, subparcel.get());
+        doObjectPhysics(tracker, geometrySet, subparcel.get());
       }
 
       index = 0;
@@ -1855,7 +1855,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       std::vector<std::shared_ptr<Subparcel>> &newSubparcels = spec.second;
 
       for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
-        doObjectPhysics(tracker, subparcel.get());
+        doObjectPhysics(tracker, geometrySet, subparcel.get());
       }
 
       index = 0;
@@ -1914,6 +1914,112 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     }
 
     threadPool->outbox.push(Message);
+  },
+  [](ThreadPool *threadPool, Message *Message) -> void { // addThingGeometry
+    unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
+    index += sizeof(GeometrySet *);
+    char *nameCharPtr = (char *)(Message->args + index);
+    index += MAX_NAME_LENGTH;
+    float *positions = *((float **)(Message->args + index));
+    index += sizeof(float *);
+    float *uvs = *((float **)(Message->args + index));
+    index += sizeof(float *);
+    unsigned int *indices = *((unsigned int **)(Message->args + index));
+    index += sizeof(unsigned int *);
+    unsigned int numPositions = *((unsigned int *)(Message->args + index));
+    index += sizeof(unsigned int);
+    unsigned int numUvs = *((unsigned int *)(Message->args + index));
+    index += sizeof(unsigned int);
+    unsigned int numIndices = *((unsigned int *)(Message->args + index));
+    index += sizeof(unsigned int);
+    unsigned char *texture = *((unsigned char **)(Message->args + index));
+    index += sizeof(unsigned char *);
+    unsigned int textureLength = *((unsigned int *)(Message->args + index));
+    index += sizeof(unsigned int);
+
+    Geometry *geometry = new Geometry();
+    geometry->name = std::string(nameCharPtr);
+    geometry->positions.resize(numPositions);
+    memcpy(geometry->positions.data(), positions, numPositions * sizeof(float));
+    geometry->uvs.resize(numUvs);
+    memcpy(geometry->uvs.data(), uvs, numUvs * sizeof(float));
+    geometry->indices.resize(numIndices);
+    memcpy(geometry->indices.data(), indices, numIndices * sizeof(float));
+    geometry->aabb.setFromPositions(positions, numPositions);
+    geometry->texture = texture;
+    geometry->textureLength = textureLength;
+
+    PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, positions, indices, numPositions, numIndices);
+    std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> spec = doMakeBakedGeometryRaw(&tracker->physicer, writeStream); // XXX GC the TriangleMesh
+    geometry->physxGeometry = spec.second;
+
+    geometrySet->thingGeometries.push_back(geometry);
+    geometrySet->geometryMap[geometry->name] = geometry;
+
+    threadPool->outbox.push(Message);
+  },
+  [](ThreadPool *threadPool, Message *Message) -> void { // addThing
+    unsigned int index = 0;
+    Tracker *tracker = *((Tracker **)(Message->args + index));
+    index += sizeof(Tracker *);
+    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
+    index += sizeof(GeometrySet *);
+    char *name = (char *)(Message->args + index);
+    index += MAX_NAME_LENGTH;
+    float *position = (float *)(Message->args + index);
+    index += 3*sizeof(float);
+    float *quaternion = (float *)(Message->args + index);
+    index += 4*sizeof(float *);
+
+    std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> spec = doAddThing(tracker, geometrySet, name, position, quaternion);
+    if (spec.first) {
+      std::vector<std::shared_ptr<Subparcel>> &newSubparcels = spec.second;
+
+      for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
+        doObjectPhysics(tracker, geometrySet, subparcel.get());
+      }
+
+      index = 0;
+      *((unsigned int *)(Message->args + index)) = newSubparcels.size();
+      index += sizeof(unsigned int);
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
+        index += sizeof(FreeEntry *);
+      }
+
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
+        index += sizeof(std::shared_ptr<Subparcel> *);
+      }
+
+      threadPool->outbox.push(Message);
+    } else {
+      const int sx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
+      const int sy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
+      const int sz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
+      const int subparcelIndex = getSubparcelIndex(sx, sy, sz);
+      std::vector<int> indices{subparcelIndex};
+      std::function<bool()> guardFn = [tracker, indices{std::move(indices)}]() -> bool {
+        return checkSubparcelIndicesLive(tracker, indices);
+      };
+      threadPool->dependencyInbox.push(guardFn, Message);
+    }
   },
 };
 

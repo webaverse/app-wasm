@@ -353,7 +353,7 @@ emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=2 -s TO
   -IPhysX/physx/source/geomutils/src/sweep \
   -Iearcut \
   -IRectBinPack/include \
-  objectize.cc vector.cc subparcel.cc collide.cc \
+  objectize.cc vector.cc subparcel.cc geometry.cc collide.cc \
   FastNoise.cpp noise.cc march.cc biomes.cc \
   draco.o physx.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
