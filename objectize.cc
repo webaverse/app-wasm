@@ -88,11 +88,14 @@ EMSCRIPTEN_KEEPALIVE void registerBoxGeometry(unsigned int meshId, float *positi
 }
 EMSCRIPTEN_KEEPALIVE void registerCapsuleGeometry(unsigned int meshId, float *position, float *quaternion, float radius, float halfHeight, uintptr_t *result) {
   *result = (uintptr_t)doRegisterCapsuleGeometry(meshId, position, quaternion, radius, halfHeight);
+} */
+EMSCRIPTEN_KEEPALIVE PxDefaultMemoryOutputStream *bakeGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices) {
+  return doBakeGeometry(physicer, positions, indices, numPositions, numIndices);
 }
-EMSCRIPTEN_KEEPALIVE void bakeGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, PxDefaultMemoryOutputStream **writeStream) {
-  *writeStream = doBakeGeometry(positions, indices, numPositions, numIndices);
+EMSCRIPTEN_KEEPALIVE PxDefaultMemoryOutputStream *bakeConvexGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices) {
+  return doBakeConvexGeometry(physicer, positions, indices, numPositions, numIndices);
 }
-EMSCRIPTEN_KEEPALIVE void releaseBakedGeometry(PxDefaultMemoryOutputStream *writeStream) {
+/* EMSCRIPTEN_KEEPALIVE void releaseBakedGeometry(PxDefaultMemoryOutputStream *writeStream) {
   delete writeStream;
 }
 EMSCRIPTEN_KEEPALIVE void unregisterGeometry(GeometrySpec *geometrySpec) {
@@ -187,6 +190,8 @@ public:
   unsigned int numUvs;
   uint32_t *indices;
   unsigned int numIndices;
+  std::shared_ptr<PhysicsGeometry> physicsGeometry;
+  PhysicsGeometry *physicsGeometryPtr;
 };
 
 struct CustomRect {
@@ -214,7 +219,7 @@ inline void fromBinRect(CustomRect& value, RectBinPack::BinRect rect) {
   // If bin is not set, set rectangle to unpacked
   value.packed = rect.bin != RectBinPack::InvalidBin;
 }
-EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z, float *zs) {
+EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z, float *zs) {
   std::vector<std::vector<std::array<float, 2>>> polygon;
   std::map<unsigned int, std::vector<unsigned int>> connectivity;
   std::vector<unsigned int> islandIndices;
@@ -692,6 +697,12 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
     }
   }
 
+  PxDefaultMemoryOutputStream *physicsGeometryDataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
+  float meshPosition[] = {0, 0, 0};
+  float meshQuaternion[] = {0, 0, 0, 1};
+  std::shared_ptr<PhysicsGeometry> physicsGeometry = doMakeBakedGeometry(&tracker->physicer, physicsGeometryDataStream, meshPosition, meshQuaternion);
+  delete physicsGeometryDataStream;
+
   EarcutResult *result = new EarcutResult();
   result->positions = outPositions.data();
   result->numPositions = outPositions.size();
@@ -699,6 +710,8 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
   result->numUvs = uvs.size();
   result->indices = indices.data();
   result->numIndices = indices.size();
+  result->physicsGeometry = std::move(physicsGeometry);
+  result->physicsGeometryPtr = result->physicsGeometry.get();
   return result;
 }
 

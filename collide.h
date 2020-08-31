@@ -27,14 +27,15 @@ class Physicer;
 class Object;
 class PhysicsGeometry {
 public:
-  PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer);
+  PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxConvexMesh *convexMesh, PxGeometry *geometry, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer);
   ~PhysicsGeometry();
 
   unsigned int objectId;
   Vec objectPosition;
   Quat objectQuaternion;
   PxTriangleMesh *triangleMesh;
-  PxGeometry *meshGeom;
+  PxConvexMesh *convexMesh;
+  PxGeometry *geometry;
   Vec position;
   Quat quaternion;
   Sphere boundingSphere;
@@ -62,9 +63,11 @@ public:
   cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
 } */
 std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion);
+std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion);
 std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float w, float h, float d);
 std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float radius, float halfHeight);
 PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices);
+PxDefaultMemoryOutputStream *doBakeConvexGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices);
 /* void doUnregisterGeometry(PhysicsGeometry * geometrySpec) {
   {
     std::lock_guard<std::mutex> lock(gPhysicsMutex);

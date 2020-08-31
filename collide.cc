@@ -21,12 +21,15 @@ Physicer::Physicer() {
   cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
 }
 
-PhysicsGeometry::PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxGeometry *meshGeom, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer) :
-  objectId(objectId), objectPosition(objectPosition), objectQuaternion(objectQuaternion), triangleMesh(triangleMesh), meshGeom(meshGeom), position(position), quaternion(quaternion), boundingSphere(boundingSphere), physicer(physicer) {}
+PhysicsGeometry::PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxConvexMesh *convexMesh, PxGeometry *geometry, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer) :
+  objectId(objectId), objectPosition(objectPosition), objectQuaternion(objectQuaternion), triangleMesh(triangleMesh), convexMesh(convexMesh), geometry(geometry), position(position), quaternion(quaternion), boundingSphere(boundingSphere), physicer(physicer) {}
 PhysicsGeometry::~PhysicsGeometry() {
-  delete meshGeom;
+  delete geometry;
   if (triangleMesh) {
     triangleMesh->release();
+  }
+  if (convexMesh) {
+    convexMesh->release();
   }
 }
 
@@ -46,14 +49,26 @@ std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefau
   PxTriangleMesh *triangleMesh = physicer->physics->createTriangleMesh(readBuffer);
   delete writeStream;
 
-  PxTriangleMeshGeometry *meshGeom = new PxTriangleMeshGeometry(triangleMesh);
+  PxTriangleMeshGeometry *triangleMeshGeom = new PxTriangleMeshGeometry(triangleMesh);
   Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, Vec(), Quat(), triangleMesh, meshGeom, Vec(), Quat(), boundingSphere, physicer));
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, Vec(), Quat(), triangleMesh, nullptr, triangleMeshGeom, Vec(), Quat(), boundingSphere, physicer));
 
   /* {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
     physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
   } */
+
+  return std::move(geometrySpec);
+}
+
+std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion) {
+  PxDefaultMemoryInputData readBuffer((PxU8 *)writeStream->getData(), writeStream->getSize());
+  PxConvexMesh *convexMesh = physicer->physics->createConvexMesh(readBuffer);
+  delete writeStream;
+
+  PxConvexMeshGeometry *convexMeshGeom = new PxConvexMeshGeometry(convexMesh);
+  Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, Vec(), Quat(), nullptr, convexMesh, convexMeshGeom, Vec(), Quat(), boundingSphere, physicer));
 
   return std::move(geometrySpec);
 }
@@ -66,7 +81,7 @@ std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned 
   Vec halfScale(w/2.0f, h/2.0f, d/2.0f);
   PxBoxGeometry *meshGeom = new PxBoxGeometry(halfScale.x, halfScale.y, halfScale.z);
   Sphere boundingSphere(0, 0, 0, halfScale.magnitude());
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, op, oq, nullptr, meshGeom, p, q, boundingSphere, physicer));
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, op, oq, nullptr, nullptr, meshGeom, p, q, boundingSphere, physicer));
 
   /* {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
@@ -83,7 +98,7 @@ std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, unsig
   Quat q(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
   PxCapsuleGeometry *meshGeom = new PxCapsuleGeometry(radius, halfHeight);
   Sphere boundingSphere(0, 0, 0, radius + halfHeight);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, op, oq, nullptr, meshGeom, p, q, boundingSphere, physicer));
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, op, oq, nullptr, nullptr, meshGeom, p, q, boundingSphere, physicer));
 
   /* {
     std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
@@ -110,6 +125,34 @@ PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions
 
   PxDefaultMemoryOutputStream *writeBuffer = new PxDefaultMemoryOutputStream();
   bool status = physicer->cooking->cookTriangleMesh(meshDesc, *writeBuffer);
+  if (status) {
+    return writeBuffer;
+  } else {
+    delete writeBuffer;
+    return nullptr;
+  }
+}
+
+PxDefaultMemoryOutputStream *doBakeConvexGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices) {
+  PxVec3 *verts = (PxVec3 *)positions;
+  PxU32 nbVerts = numPositions/3;
+  PxU32 *indices32 = (PxU32 *)indices;
+  PxU32 triCount = numIndices/3;
+
+  PxConvexMeshDesc meshDesc;
+  meshDesc.points.count           = nbVerts;
+  meshDesc.points.stride          = sizeof(PxVec3);
+  meshDesc.points.data            = verts;
+
+  meshDesc.indices.count        = triCount;
+  meshDesc.indices.stride       = 3*sizeof(PxU32);
+  meshDesc.indices.data         = indices32;
+
+  meshDesc.flags            = PxConvexFlag::eCOMPUTE_CONVEX;
+  // meshDesc.maxVerts         = 10;
+
+  PxDefaultMemoryOutputStream *writeBuffer = new PxDefaultMemoryOutputStream();
+  bool status = physicer->cooking->cookConvexMesh(meshDesc, *writeBuffer);
   if (status) {
     return writeBuffer;
   } else {
@@ -262,7 +305,9 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
   {
     hit = 0;
     for (std::shared_ptr<PhysicsGeometry> &geometrySpec : sortedGeometrySpecs) {
-      PxGeometry *meshGeom = geometrySpec->meshGeom;
+      // doRaycastSingle(geometrySpec, meshPose);
+
+      PxGeometry *geometry = geometrySpec->geometry;
       PxTransform meshPose2{
         PxVec3{geometrySpec->position.x, geometrySpec->position.y, geometrySpec->position.z},
         PxQuat{geometrySpec->quaternion.x, geometrySpec->quaternion.y, geometrySpec->quaternion.z, geometrySpec->quaternion.w}
@@ -271,7 +316,7 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
       PxTransform meshPose4 = meshPose2 * meshPose;
 
       PxU32 hitCount = PxGeometryQuery::raycast(originVec, directionVec,
-                                                *meshGeom,
+                                                *geometry,
                                                 meshPose3,
                                                 maxDist,
                                                 hitFlags,
@@ -362,7 +407,7 @@ void doCollide(Tracker *tracker, float radius, float halfHeight, float *position
       bool hadHit = false;
       for (const std::tuple<bool, float, std::shared_ptr<PhysicsGeometry>> &t : sortedGeometrySpecs) {
         const std::shared_ptr<PhysicsGeometry> &geometrySpec = std::get<2>(t);
-        PxGeometry *meshGeom = geometrySpec->meshGeom;
+        PxGeometry *geometry = geometrySpec->geometry;
         PxTransform meshPose2{
           PxVec3{geometrySpec->position.x, geometrySpec->position.y, geometrySpec->position.z},
           PxQuat{geometrySpec->quaternion.x, geometrySpec->quaternion.y, geometrySpec->quaternion.z, geometrySpec->quaternion.w}
@@ -371,7 +416,7 @@ void doCollide(Tracker *tracker, float radius, float halfHeight, float *position
 
         PxVec3 directionVec;
         PxReal depthFloat;
-        bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, geom, geomPose, *meshGeom, meshPose3);
+        bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, geom, geomPose, *geometry, meshPose3);
         if (result) {
           anyHadHit = true;
           hadHit = true;
