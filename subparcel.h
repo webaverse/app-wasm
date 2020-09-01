@@ -284,11 +284,18 @@ public:
 
     ArenaAllocator *vegetationPositionsAllocator,
     ArenaAllocator *vegetationUvsAllocator,
-    ArenaAllocator *vegetationAtlasUvsAllocator,
     ArenaAllocator *vegetationIdsAllocator,
     ArenaAllocator *vegetationIndicesAllocator,
     ArenaAllocator *vegetationSkyLightsAllocator,
-    ArenaAllocator *vegetationTorchLightsAllocator
+    ArenaAllocator *vegetationTorchLightsAllocator,
+
+    ArenaAllocator *thingPositionsAllocator,
+    ArenaAllocator *thingUvsAllocator,
+    ArenaAllocator *thingAtlasUvsAllocator,
+    ArenaAllocator *thingIdsAllocator,
+    ArenaAllocator *thingIndicesAllocator,
+    ArenaAllocator *thingSkyLightsAllocator,
+    ArenaAllocator *thingTorchLightsAllocator
   );
   void updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z);
 
@@ -307,11 +314,18 @@ public:
 
   ArenaAllocator *vegetationPositionsAllocator;
   ArenaAllocator *vegetationUvsAllocator;
-  ArenaAllocator *vegetationAtlasUvsAllocator;
   ArenaAllocator *vegetationIdsAllocator;
   ArenaAllocator *vegetationIndicesAllocator;
   ArenaAllocator *vegetationSkyLightsAllocator;
   ArenaAllocator *vegetationTorchLightsAllocator;
+
+  ArenaAllocator *thingPositionsAllocator;
+  ArenaAllocator *thingUvsAllocator;
+  ArenaAllocator *thingAtlasUvsAllocator;
+  ArenaAllocator *thingIdsAllocator;
+  ArenaAllocator *thingIndicesAllocator;
+  ArenaAllocator *thingSkyLightsAllocator;
+  ArenaAllocator *thingTorchLightsAllocator;
 
   std::vector<unsigned char> atlasTexture;
   std::map<std::string, std::pair<float, float>> atlasTextureMap;
@@ -411,14 +425,22 @@ public:
 
   std::shared_ptr<FreeEntry> vegetationPositionsEntry;
   std::shared_ptr<FreeEntry> vegetationUvsEntry;
-  std::shared_ptr<FreeEntry> vegetationAtlasUvsEntry;
   std::shared_ptr<FreeEntry> vegetationIdsEntry;
   std::shared_ptr<FreeEntry> vegetationIndicesEntry;
   std::shared_ptr<FreeEntry> vegetationSkyLightsEntry;
   std::shared_ptr<FreeEntry> vegetationTorchLightsEntry;
 
+  std::shared_ptr<FreeEntry> thingPositionsEntry;
+  std::shared_ptr<FreeEntry> thingUvsEntry;
+  std::shared_ptr<FreeEntry> thingAtlasUvsEntry;
+  std::shared_ptr<FreeEntry> thingIdsEntry;
+  std::shared_ptr<FreeEntry> thingIndicesEntry;
+  std::shared_ptr<FreeEntry> thingSkyLightsEntry;
+  std::shared_ptr<FreeEntry> thingTorchLightsEntry;
+
   Group landGroups[2];
   Group vegetationGroups[1];
+  Group thingGroups[1];
 
   std::shared_ptr<PhysicsGeometry> physxGeometry;
   std::vector<std::shared_ptr<PhysicsGeometry>> objectPhysxGeometries;

@@ -146,11 +146,18 @@ Tracker::Tracker(
 
   ArenaAllocator *vegetationPositionsAllocator,
   ArenaAllocator *vegetationUvsAllocator,
-  ArenaAllocator *vegetationAtlasUvsAllocator,
   ArenaAllocator *vegetationIdsAllocator,
   ArenaAllocator *vegetationIndicesAllocator,
   ArenaAllocator *vegetationSkyLightsAllocator,
-  ArenaAllocator *vegetationTorchLightsAllocator
+  ArenaAllocator *vegetationTorchLightsAllocator,
+
+  ArenaAllocator *thingPositionsAllocator,
+  ArenaAllocator *thingUvsAllocator,
+  ArenaAllocator *thingAtlasUvsAllocator,
+  ArenaAllocator *thingIdsAllocator,
+  ArenaAllocator *thingIndicesAllocator,
+  ArenaAllocator *thingSkyLightsAllocator,
+  ArenaAllocator *thingTorchLightsAllocator
 ) :
   seed(seed),
   meshId(meshId),
@@ -168,11 +175,18 @@ Tracker::Tracker(
 
   vegetationPositionsAllocator(vegetationPositionsAllocator),
   vegetationUvsAllocator(vegetationUvsAllocator),
-  vegetationAtlasUvsAllocator(vegetationAtlasUvsAllocator),
   vegetationIdsAllocator(vegetationIdsAllocator),
   vegetationIndicesAllocator(vegetationIndicesAllocator),
   vegetationSkyLightsAllocator(vegetationSkyLightsAllocator),
   vegetationTorchLightsAllocator(vegetationTorchLightsAllocator),
+
+  thingPositionsAllocator(thingPositionsAllocator),
+  thingUvsAllocator(thingUvsAllocator),
+  thingAtlasUvsAllocator(thingAtlasUvsAllocator),
+  thingIdsAllocator(thingIdsAllocator),
+  thingIndicesAllocator(thingIndicesAllocator),
+  thingSkyLightsAllocator(thingSkyLightsAllocator),
+  thingTorchLightsAllocator(thingTorchLightsAllocator),
 
   atlasTexture(atlasTextureSize * atlasTextureSize * 4),
   atlasFreeList(maxAtlasTextures)
