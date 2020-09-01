@@ -252,6 +252,10 @@ public:
   int index;
 };
 
+constexpr unsigned int atlasTextureSize = 4096;
+constexpr unsigned int objectTextureSize = 512;
+constexpr unsigned int maxAtlasTextures = (atlasTextureSize * atlasTextureSize) / (objectTextureSize * objectTextureSize);
+constexpr unsigned int maxAtlasTextureRowObjects = atlasTextureSize / objectTextureSize;
 class GeometrySet;
 class FreeEntry;
 class Subparcel;
@@ -308,6 +312,10 @@ public:
   ArenaAllocator *vegetationIndicesAllocator;
   ArenaAllocator *vegetationSkyLightsAllocator;
   ArenaAllocator *vegetationTorchLightsAllocator;
+
+  std::vector<unsigned char> atlasTexture;
+  std::map<std::string, std::pair<float, float>> atlasTextureMap;
+  std::vector<unsigned int> atlasFreeList;
 
   Coord lastCoord;
   std::vector<Coord> lastNeededCoords;

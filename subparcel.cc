@@ -172,7 +172,10 @@ Tracker::Tracker(
   vegetationIdsAllocator(vegetationIdsAllocator),
   vegetationIndicesAllocator(vegetationIndicesAllocator),
   vegetationSkyLightsAllocator(vegetationSkyLightsAllocator),
-  vegetationTorchLightsAllocator(vegetationTorchLightsAllocator)
+  vegetationTorchLightsAllocator(vegetationTorchLightsAllocator),
+
+  atlasTexture(atlasTextureSize * atlasTextureSize * 4),
+  atlasFreeList(maxAtlasTextures)
 {}
 void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z) {
   Coord coord(

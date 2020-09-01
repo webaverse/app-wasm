@@ -75,6 +75,34 @@ GeometrySet *doMakeGeometrySet() {
 	return new GeometrySet();
 }
 
+std::pair<float, float> doAllocTexture(Tracker *tracker, unsigned char *texture) {
+	unsigned int i;
+	for (i = 0; i < tracker->atlasFreeList.size(); i++) {
+		if (!tracker->atlasFreeList[i]) {
+			break;
+		}
+	}
+	if (i < tracker->atlasFreeList.size()) {
+	  tracker->atlasFreeList[i] = 1;
+    const unsigned int su = i % maxAtlasTextureRowObjects;
+    const unsigned int sv = (i - su)/maxAtlasTextureRowObjects;
+
+    const unsigned int pu = su * objectTextureSize;
+    const unsigned int pv = sv * objectTextureSize;
+    for (unsigned int dv = 0; dv < objectTextureSize; dv++) {
+    	memcpy(tracker->atlasTexture.data() + pu*4 + (pv + dv)*atlasTextureSize*4, texture + dv*atlasTextureSize*4, objectTextureSize*4);
+    }
+
+    const float u = (float)su;
+    const float v = (float)sv;
+    return std::pair<float, float>(u, v);
+	} else {
+		std::cout << "count not allocate texture" << std::endl;
+		abort();
+		return std::pair<float, float>();
+	}
+}
+
 void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size) {
   unsigned int index = 0;
   while (index < size) {
@@ -323,7 +351,7 @@ void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsig
 	  }
   }
 }
-void doMarchObjectsRaw(Geometry *geometry, Matrix &matrix, unsigned int id, float atlasUvData[2], std::vector<float> &geometryPositions, std::vector<float> &geometryUvs, std::vector<unsigned int> &geometryIndices, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &positionsIndex, unsigned int &uvsIndex, unsigned int &atlasUvsIndex, unsigned int &idsIndex, unsigned int &indicesIndex, unsigned int &skyLightsIndex, unsigned int &torchLightsIndex, unsigned int indexOffset) {
+void doMarchObjectsRaw(Matrix &matrix, unsigned int id, float atlasUvData[2], std::vector<float> &geometryPositions, std::vector<float> &geometryUvs, std::vector<unsigned int> &geometryIndices, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &positionsIndex, unsigned int &uvsIndex, unsigned int &atlasUvsIndex, unsigned int &idsIndex, unsigned int &indicesIndex, unsigned int &skyLightsIndex, unsigned int &torchLightsIndex, unsigned int indexOffset) {
   unsigned int indexOffset2 = indexOffset + positionsIndex/3;
   for (unsigned int j = 0; j < geometryIndices.size(); j++) {
     indices[indicesIndex + j] = geometryIndices[j] + indexOffset2;
@@ -368,9 +396,9 @@ void doMarchObjectsRaw(Geometry *geometry, Matrix &matrix, unsigned int id, floa
   torchLightsIndex += geometryPositions.size()/3;
 
   memcpy(uvs + uvsIndex, geometryUvs.data(), geometryUvs.size()*sizeof(float));
-  uvsIndex += geometry->uvs.size();
+  uvsIndex += geometryUvs.size();
 
-  for (unsigned int i = 0; i < geometry->uvs.size(); i += 2) {
+  for (unsigned int i = 0; i < geometryUvs.size(); i += 2) {
   	atlasUvs[i] = atlasUvData[0];
   	atlasUvs[i+1] = atlasUvData[1];
     atlasUvsIndex += 2;
@@ -379,7 +407,7 @@ void doMarchObjectsRaw(Geometry *geometry, Matrix &matrix, unsigned int id, floa
   std::fill(ids + idsIndex, ids + idsIndex + geometryPositions.size()/3, (float)id);
   idsIndex += geometryPositions.size()/3;
 }
-void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
+void doMarchObjects(Tracker *tracker, GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
   unsigned int positionsIndex = 0;
   unsigned int uvsIndex = 0;
   unsigned int atlasUvsIndex = 0;
@@ -388,11 +416,6 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
   unsigned int skyLightsIndex = 0;
   unsigned int torchLightsIndex = 0;
 
-  float atlasUvData[2] = {
-    0,
-    0,
-  };
-
   for (unsigned int i = 0; i < subparcel->numObjects; i++) {
     Object &object = subparcel->objects[i];
     std::string name(object.name);
@@ -400,10 +423,15 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
     if (iter != geometrySet->geometryMap.end()) {
     	Geometry *geometry = iter->second;
 
+    	float atlasUvData[2] = {
+		    0,
+		    0,
+		  };
+
       Matrix matrix;
 	    matrix.compose(object.position, object.quaternion, Vec{1, 1, 1});
 
-    	doMarchObjectsRaw(geometry, matrix, object.id, atlasUvData, geometry->positions, geometry->uvs, geometry->indices, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, positionsIndex, uvsIndex, atlasUvsIndex, idsIndex, indicesIndex, skyLightsIndex, torchLightsIndex, indexOffset);
+    	doMarchObjectsRaw(matrix, object.id, atlasUvData, geometry->positions, geometry->uvs, geometry->indices, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, positionsIndex, uvsIndex, atlasUvsIndex, idsIndex, indicesIndex, skyLightsIndex, torchLightsIndex, indexOffset);
 	  }
   }
   for (unsigned int i = 0; i < subparcel->numThings; i++) {
@@ -413,10 +441,22 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
     if (iter != geometrySet->geometryMap.end()) {
     	Geometry *geometry = iter->second;
 
+      float atlasUvData[2];
+    	auto texIter = tracker->atlasTextureMap.find(name);
+    	if (texIter != tracker->atlasTextureMap.end()) {
+        atlasUvData[0] = texIter->second.first;
+        atlasUvData[1] = texIter->second.second;
+    	} else {
+        std::pair<float, float> texUvs = doAllocTexture(tracker, geometry->texture);
+        tracker->atlasTextureMap[name] = texUvs;
+        atlasUvData[0] = texUvs.first;
+        atlasUvData[1] = texUvs.second;
+    	}
+
       Matrix matrix;
 	    matrix.compose(thing.position, thing.quaternion, Vec{1, 1, 1});
 
-    	doMarchObjectsRaw(geometry, matrix, thing.id, atlasUvData, geometry->positions, geometry->uvs, geometry->indices, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, positionsIndex, uvsIndex, atlasUvsIndex, idsIndex, indicesIndex, skyLightsIndex, torchLightsIndex, indexOffset);
+    	doMarchObjectsRaw(matrix, thing.id, atlasUvData, geometry->positions, geometry->uvs, geometry->indices, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, positionsIndex, uvsIndex, atlasUvsIndex, idsIndex, indicesIndex, skyLightsIndex, torchLightsIndex, indexOffset);
 	  }
   }
 }
@@ -491,7 +531,7 @@ void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *
 
   Subparcel *subparcels = nullptr;
   unsigned int numSubparcels = 0;
-  doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset);
+  doMarchObjects(tracker, geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset);
 
   subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
   subparcel->vegetationGroups[0].count = subparcel->vegetationIndicesEntry->spec.count/sizeof(unsigned int);

@@ -1538,7 +1538,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         Subparcel *subparcels = nullptr;
         unsigned int numSubparcels = 0;
         unsigned int indexOffset = subparcel->vegetationPositionsEntry->spec.start/sizeof(float)/3;
-        doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset);
+        doMarchObjects(tracker, geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset);
 
         // groups
         subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
@@ -1966,7 +1966,6 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     memcpy(geometry->indices.data(), indices, numIndices * sizeof(float));
     geometry->aabb.setFromPositions(positions, numPositions);
     geometry->texture = texture;
-    geometry->textureLength = textureLength;
 
     PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, positions, indices, numPositions, numIndices);
     std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> spec = doMakeBakedGeometryRaw(&tracker->physicer, writeStream); // XXX GC the TriangleMesh
