@@ -51,8 +51,8 @@ public:
   unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
 }; */
 void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numAtlasUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights);
-void doMarchObjects(Tracker *tracker, GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset);
+void doMarchObjects(Tracker *tracker, GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset, bool &textureUpdated);
 void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel);
 std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tracker, GeometrySet *geometrySet, OBJECT_TYPE type, const char *name, float *position, float *quaternion);
 std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doRemoveObject(Tracker *tracker, GeometrySet *geometrySet, int index, unsigned int objectId);
-std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddThing(Tracker *tracker, GeometrySet *geometrySet, const char *name, float *position, float *quaternion);
+std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool> doAddThing(Tracker *tracker, GeometrySet *geometrySet, const char *name, float *position, float *quaternion);

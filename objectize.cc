@@ -1538,7 +1538,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         Subparcel *subparcels = nullptr;
         unsigned int numSubparcels = 0;
         unsigned int indexOffset = subparcel->vegetationPositionsEntry->spec.start/sizeof(float)/3;
-        doMarchObjects(tracker, geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset);
+        bool textureUpdated;
+        doMarchObjects(tracker, geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset, textureUpdated);
 
         // groups
         subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
@@ -1953,8 +1954,6 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     index += sizeof(unsigned int);
     unsigned char *texture = *((unsigned char **)(Message->args + index));
     index += sizeof(unsigned char *);
-    unsigned int textureLength = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
 
     Geometry *geometry = new Geometry();
     geometry->name = std::string(nameCharPtr);
@@ -1989,9 +1988,11 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     float *quaternion = (float *)(Message->args + index);
     index += 4*sizeof(float *);
 
-    std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> spec = doAddThing(tracker, geometrySet, name, position, quaternion);
-    if (spec.first) {
-      std::vector<std::shared_ptr<Subparcel>> &newSubparcels = spec.second;
+    bool textureUpdated;
+    std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool> spec = doAddThing(tracker, geometrySet, name, position, quaternion);
+    if (std::get<0>(spec)) {
+      std::vector<std::shared_ptr<Subparcel>> &newSubparcels = std::get<1>(spec);
+      bool textureUpdated = std::get<2>(spec);
 
       for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
         doObjectPhysics(tracker, geometrySet, subparcel.get());
@@ -2017,6 +2018,14 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         index += sizeof(FreeEntry *);
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
         index += sizeof(FreeEntry *);
+      }
+
+      if (textureUpdated) {
+        *((unsigned char **)(Message->args + index)) = tracker->atlasTexture.data();
+        index += sizeof(unsigned char *);
+      } else {
+        *((unsigned char **)(Message->args + index)) = nullptr;
+        index += sizeof(unsigned char *);
       }
 
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {

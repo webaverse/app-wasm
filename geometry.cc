@@ -90,7 +90,7 @@ std::pair<float, float> doAllocTexture(Tracker *tracker, unsigned char *texture)
     const unsigned int pu = su * objectTextureSize;
     const unsigned int pv = sv * objectTextureSize;
     for (unsigned int dv = 0; dv < objectTextureSize; dv++) {
-    	memcpy(tracker->atlasTexture.data() + pu*4 + (pv + dv)*atlasTextureSize*4, texture + dv*atlasTextureSize*4, objectTextureSize*4);
+    	memcpy(tracker->atlasTexture.data() + pu*4 + (pv + dv)*atlasTextureSize*4, texture + dv*objectTextureSize*4, objectTextureSize*4);
     }
 
     const float u = (float)su;
@@ -407,7 +407,7 @@ void doMarchObjectsRaw(Matrix &matrix, unsigned int id, float atlasUvData[2], st
   std::fill(ids + idsIndex, ids + idsIndex + geometryPositions.size()/3, (float)id);
   idsIndex += geometryPositions.size()/3;
 }
-void doMarchObjects(Tracker *tracker, GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
+void doMarchObjects(Tracker *tracker, GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset, bool &textureUpdated) {
   unsigned int positionsIndex = 0;
   unsigned int uvsIndex = 0;
   unsigned int atlasUvsIndex = 0;
@@ -451,6 +451,8 @@ void doMarchObjects(Tracker *tracker, GeometrySet *geometrySet, int x, int y, in
         tracker->atlasTextureMap[name] = texUvs;
         atlasUvData[0] = texUvs.first;
         atlasUvData[1] = texUvs.second;
+
+        textureUpdated = true;
     	}
 
       Matrix matrix;
@@ -461,7 +463,7 @@ void doMarchObjects(Tracker *tracker, GeometrySet *geometrySet, int x, int y, in
   }
 }
 
-void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel) {
+void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel, bool &textureUpdated) {
   // re-polygonalize
   unsigned int numPositions;
   unsigned int numUvs;
@@ -531,7 +533,7 @@ void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *
 
   Subparcel *subparcels = nullptr;
   unsigned int numSubparcels = 0;
-  doMarchObjects(tracker, geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset);
+  doMarchObjects(tracker, geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset, textureUpdated);
 
   subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
   subparcel->vegetationGroups[0].count = subparcel->vegetationIndicesEntry->spec.count/sizeof(unsigned int);
@@ -585,7 +587,8 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tr
     };
     subparcel->numObjects++;
 
-    polygonalizeObjects(tracker, geometrySet, subparcel.get());
+    bool textureUpdated;
+    polygonalizeObjects(tracker, geometrySet, subparcel.get(), textureUpdated);
 
     result.push_back(std::move(subparcel));
   }
@@ -627,13 +630,14 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doRemoveObject(Tracker 
       }
       subparcel->numObjects--;
 
-      polygonalizeObjects(tracker, geometrySet, subparcel.get());
+      bool textureUpdated;
+      polygonalizeObjects(tracker, geometrySet, subparcel.get(), textureUpdated);
     }
     result.push_back(std::move(subparcel));
   }
   return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(result));
 }
-std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddThing(Tracker *tracker, GeometrySet *geometrySet, const char *name, float *position, float *quaternion) {
+std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool> doAddThing(Tracker *tracker, GeometrySet *geometrySet, const char *name, float *position, float *quaternion) {
   const int sx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
   const int sy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
   const int sz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
@@ -652,16 +656,17 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddThing(Tracker *tra
         subparcel->copyLand(*oldSubparcel);
         oldSubparcel->live = false;
       } else {
-      	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
+      	return std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool>(false, std::vector<std::shared_ptr<Subparcel>>(), false);
         // std::cout << "cannot edit dead index " << sx << " " << sy << " " << sz << std::endl;
         // abort();
       }
     } else {
-      return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
+      return std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool>(false, std::vector<std::shared_ptr<Subparcel>>(), false);
     }
   }
   
   std::vector<std::shared_ptr<Subparcel>> result;
+  bool textureUpdated = false;
   if (subparcel) {
     Thing &t = subparcel->things[subparcel->numThings];
     t.id = (unsigned int)rand();
@@ -679,9 +684,9 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddThing(Tracker *tra
     };
     subparcel->numThings++;
 
-    polygonalizeObjects(tracker, geometrySet, subparcel.get());
+    polygonalizeObjects(tracker, geometrySet, subparcel.get(), textureUpdated);
 
     result.push_back(std::move(subparcel));
   }
-  return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(result));
+  return std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool>(true, std::move(result), textureUpdated);
 }
