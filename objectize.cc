@@ -53,13 +53,13 @@ EMSCRIPTEN_KEEPALIVE void getAnimalGeometry(GeometrySet *geometrySet, unsigned i
   doGetAnimalGeometry(geometrySet, hash, positions, colors, indices, heads, legs, *numPositions, *numColors, *numIndices, *numHeads, *numLegs, headPivot, aabb);
 }
 
-EMSCRIPTEN_KEEPALIVE void getMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIds, unsigned int *numIndices, unsigned int *numSkyLights, unsigned int *numTorchLights) {
+/* EMSCRIPTEN_KEEPALIVE void getMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIds, unsigned int *numIndices, unsigned int *numSkyLights, unsigned int *numTorchLights) {
   doGetMarchObjectStats(geometrySet, subparcel, *numPositions, *numUvs, *numIds, *numIndices, *numSkyLights, *numTorchLights);
 }
 
 EMSCRIPTEN_KEEPALIVE void marchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
   doMarchObjects(geometrySet, x, y, z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
-}
+} */
 
 // land
 
@@ -67,13 +67,13 @@ EMSCRIPTEN_KEEPALIVE float doGetHeight(int seed, float ax, float ay, float az, f
   return getHeight(seed, ax, ay, az, baseHeight);
 }
 
-EMSCRIPTEN_KEEPALIVE void doNoise3(int seed, int x, int y, int z, float baseHeight, float wormRate, float wormRadiusBase, float wormRadiusRate, float objectsRate, float potentialDefault, void *subparcelByteOffset) {
+/* EMSCRIPTEN_KEEPALIVE void doNoise3(int seed, int x, int y, int z, float baseHeight, float wormRate, float wormRadiusBase, float wormRadiusRate, float objectsRate, float potentialDefault, void *subparcelByteOffset) {
   noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset);
 }
 
-EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, /*unsigned int *barycentricIndex,*/ unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
-  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, /**barycentricIndex,*/ *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
-}
+EMSCRIPTEN_KEEPALIVE void doMarchingCubes2(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
+  marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
+} */
 
 // physics
 
@@ -144,6 +144,7 @@ EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(
 
   ArenaAllocator *vegetationPositionsAllocator,
   ArenaAllocator *vegetationUvsAllocator,
+  ArenaAllocator *vegetationAtlasUvsAllocator,
   ArenaAllocator *vegetationIdsAllocator,
   ArenaAllocator *vegetationIndicesAllocator,
   ArenaAllocator *vegetationSkyLightsAllocator,
@@ -165,6 +166,7 @@ EMSCRIPTEN_KEEPALIVE Tracker *makeTracker(
 
     vegetationPositionsAllocator,
     vegetationUvsAllocator,
+    vegetationAtlasUvsAllocator,
     vegetationIdsAllocator,
     vegetationIndicesAllocator,
     vegetationSkyLightsAllocator,
@@ -1469,14 +1471,16 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
         unsigned int numPositions;
         unsigned int numUvs;
+        unsigned int numAtlasUvs;
         unsigned int numIds;
         unsigned int numIndices;
         unsigned int numSkyLights;
         unsigned int numTorchLights;
-        doGetMarchObjectStats(geometrySet, subparcel.get(), numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
+        doGetMarchObjectStats(geometrySet, subparcel.get(), numPositions, numUvs, numAtlasUvs, numIds, numIndices, numSkyLights, numTorchLights);
 
         ArenaAllocator *positionsAllocator = tracker->vegetationPositionsAllocator;
         ArenaAllocator *uvsAllocator = tracker->vegetationUvsAllocator;
+        ArenaAllocator *atlasUvsAllocator = tracker->vegetationAtlasUvsAllocator;
         ArenaAllocator *idsAllocator = tracker->vegetationIdsAllocator;
         ArenaAllocator *indicesAllocator = tracker->vegetationIndicesAllocator;
         ArenaAllocator *skyLightsAllocator = tracker->vegetationSkyLightsAllocator;
@@ -1489,6 +1493,11 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         }
         subparcel->vegetationUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
         if (!subparcel->vegetationUvsEntry) {
+          std::cout << "could not allocate chunk marchObjects uvs" << std::endl;
+          abort();
+        }
+        subparcel->vegetationAtlasUvsEntry = atlasUvsAllocator->alloc(numAtlasUvs*sizeof(float));
+        if (!subparcel->vegetationAtlasUvsEntry) {
           std::cout << "could not allocate chunk marchObjects uvs" << std::endl;
           abort();
         }
@@ -1515,6 +1524,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
         float *positions = (float *)(positionsAllocator->data + subparcel->vegetationPositionsEntry->spec.start);
         float *uvs = (float *)(uvsAllocator->data + subparcel->vegetationUvsEntry->spec.start);
+        float *atlasUvs = (float *)(atlasUvsAllocator->data + subparcel->vegetationAtlasUvsEntry->spec.start);
         float *ids = (float *)(idsAllocator->data + subparcel->vegetationIdsEntry->spec.start);
         unsigned int *indices = (unsigned int *)(indicesAllocator->data + subparcel->vegetationIndicesEntry->spec.start);
         unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + subparcel->vegetationSkyLightsEntry->spec.start);
@@ -1528,7 +1538,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         Subparcel *subparcels = nullptr;
         unsigned int numSubparcels = 0;
         unsigned int indexOffset = subparcel->vegetationPositionsEntry->spec.start/sizeof(float)/3;
-        doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+        doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset);
 
         // groups
         subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
@@ -1567,6 +1577,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
       index += sizeof(FreeEntry *);
       *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationAtlasUvsEntry.get();
       index += sizeof(FreeEntry *);
       *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
       index += sizeof(FreeEntry *);
@@ -1805,6 +1817,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         index += sizeof(FreeEntry *);
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
         index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationAtlasUvsEntry.get();
+        index += sizeof(FreeEntry *);
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
         index += sizeof(FreeEntry *);
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
@@ -1867,6 +1881,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
         index += sizeof(FreeEntry *);
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationAtlasUvsEntry.get();
         index += sizeof(FreeEntry *);
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
         index += sizeof(FreeEntry *);
@@ -1991,6 +2007,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
         index += sizeof(FreeEntry *);
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationAtlasUvsEntry.get();
         index += sizeof(FreeEntry *);
         *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
         index += sizeof(FreeEntry *);

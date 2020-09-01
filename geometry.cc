@@ -273,9 +273,10 @@ public:
   char heightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
   unsigned char lightfield[SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1*SUBPARCEL_SIZE_P1 + 1]; // align
 }; */
-void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
+void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numAtlasUvs, unsigned int &numIds, unsigned int &numIndices, unsigned int &numSkyLights, unsigned int &numTorchLights) {
   unsigned int &positionsIndex = numPositions;
   unsigned int &uvsIndex = numUvs;
+  unsigned int &atlasUvsIndex = numAtlasUvs;
   unsigned int &idsIndex = numIds;
   unsigned int &indicesIndex = numIndices;
   unsigned int &skyLightsIndex = numSkyLights;
@@ -283,6 +284,7 @@ void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsig
 
   positionsIndex = 0;
   uvsIndex = 0;
+  atlasUvsIndex = 0;
   idsIndex = 0;
   indicesIndex = 0;
   skyLightsIndex = 0;
@@ -296,6 +298,7 @@ void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsig
     	Geometry *geometry = iter->second;
 	    positionsIndex += geometry->positions.size();
 	    uvsIndex += geometry->uvs.size();
+	    atlasUvsIndex += geometry->uvs.size();
 	    idsIndex += geometry->positions.size()/3;
 	    indicesIndex += geometry->indices.size();
 	    skyLightsIndex += geometry->positions.size()/3;
@@ -310,6 +313,7 @@ void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsig
     	Geometry *geometry = iter->second;
 	    positionsIndex += geometry->positions.size();
 	    uvsIndex += geometry->uvs.size();
+	    atlasUvsIndex += geometry->uvs.size();
 	    idsIndex += geometry->positions.size()/3;
 	    indicesIndex += geometry->indices.size();
 	    skyLightsIndex += geometry->positions.size()/3;
@@ -319,7 +323,7 @@ void doGetMarchObjectStats(GeometrySet *geometrySet, Subparcel *subparcel, unsig
 	  }
   }
 }
-void doMarchObjectsRaw(Geometry *geometry, Matrix &matrix, unsigned int id, std::vector<float> &geometryPositions, std::vector<float> &geometryUvs, std::vector<unsigned int> &geometryIndices, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &positionsIndex, unsigned int &uvsIndex, unsigned int &idsIndex, unsigned int &indicesIndex, unsigned int &skyLightsIndex, unsigned int &torchLightsIndex, unsigned int indexOffset) {
+void doMarchObjectsRaw(Geometry *geometry, Matrix &matrix, unsigned int id, float atlasUvData[2], std::vector<float> &geometryPositions, std::vector<float> &geometryUvs, std::vector<unsigned int> &geometryIndices, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int &positionsIndex, unsigned int &uvsIndex, unsigned int &atlasUvsIndex, unsigned int &idsIndex, unsigned int &indicesIndex, unsigned int &skyLightsIndex, unsigned int &torchLightsIndex, unsigned int indexOffset) {
   unsigned int indexOffset2 = indexOffset + positionsIndex/3;
   for (unsigned int j = 0; j < geometryIndices.size(); j++) {
     indices[indicesIndex + j] = geometryIndices[j] + indexOffset2;
@@ -366,16 +370,28 @@ void doMarchObjectsRaw(Geometry *geometry, Matrix &matrix, unsigned int id, std:
   memcpy(uvs + uvsIndex, geometryUvs.data(), geometryUvs.size()*sizeof(float));
   uvsIndex += geometry->uvs.size();
 
+  for (unsigned int i = 0; i < geometry->uvs.size(); i += 2) {
+  	atlasUvs[i] = atlasUvData[0];
+  	atlasUvs[i+1] = atlasUvData[1];
+    atlasUvsIndex += 2;
+  }
+
   std::fill(ids + idsIndex, ids + idsIndex + geometryPositions.size()/3, (float)id);
   idsIndex += geometryPositions.size()/3;
 }
-void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
+void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *subparcel, Subparcel *subparcels, unsigned int numSubparcels, float *positions, float *uvs, float *atlasUvs, float *ids, unsigned int *indices, unsigned char *skyLights, unsigned char *torchLights, unsigned int indexOffset) {
   unsigned int positionsIndex = 0;
   unsigned int uvsIndex = 0;
+  unsigned int atlasUvsIndex = 0;
   unsigned int idsIndex = 0;
   unsigned int indicesIndex = 0;
   unsigned int skyLightsIndex = 0;
   unsigned int torchLightsIndex = 0;
+
+  float atlasUvData[2] = {
+    0,
+    0,
+  };
 
   for (unsigned int i = 0; i < subparcel->numObjects; i++) {
     Object &object = subparcel->objects[i];
@@ -387,7 +403,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
       Matrix matrix;
 	    matrix.compose(object.position, object.quaternion, Vec{1, 1, 1});
 
-    	doMarchObjectsRaw(geometry, matrix, object.id, geometry->positions, geometry->uvs, geometry->indices, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, positionsIndex, uvsIndex, idsIndex, indicesIndex, skyLightsIndex, torchLightsIndex, indexOffset);
+    	doMarchObjectsRaw(geometry, matrix, object.id, atlasUvData, geometry->positions, geometry->uvs, geometry->indices, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, positionsIndex, uvsIndex, atlasUvsIndex, idsIndex, indicesIndex, skyLightsIndex, torchLightsIndex, indexOffset);
 	  }
   }
   for (unsigned int i = 0; i < subparcel->numThings; i++) {
@@ -400,7 +416,7 @@ void doMarchObjects(GeometrySet *geometrySet, int x, int y, int z, Subparcel *su
       Matrix matrix;
 	    matrix.compose(thing.position, thing.quaternion, Vec{1, 1, 1});
 
-    	doMarchObjectsRaw(geometry, matrix, thing.id, geometry->positions, geometry->uvs, geometry->indices, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, positionsIndex, uvsIndex, idsIndex, indicesIndex, skyLightsIndex, torchLightsIndex, indexOffset);
+    	doMarchObjectsRaw(geometry, matrix, thing.id, atlasUvData, geometry->positions, geometry->uvs, geometry->indices, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, positionsIndex, uvsIndex, atlasUvsIndex, idsIndex, indicesIndex, skyLightsIndex, torchLightsIndex, indexOffset);
 	  }
   }
 }
@@ -409,14 +425,16 @@ void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *
   // re-polygonalize
   unsigned int numPositions;
   unsigned int numUvs;
+  unsigned int numAtlasUvs;
   unsigned int numIds;
   unsigned int numIndices;
   unsigned int numSkyLights;
   unsigned int numTorchLights;
-  doGetMarchObjectStats(geometrySet, subparcel, numPositions, numUvs, numIds, numIndices, numSkyLights, numTorchLights);
+  doGetMarchObjectStats(geometrySet, subparcel, numPositions, numUvs, numAtlasUvs, numIds, numIndices, numSkyLights, numTorchLights);
 
   ArenaAllocator *positionsAllocator = tracker->vegetationPositionsAllocator;
   ArenaAllocator *uvsAllocator = tracker->vegetationUvsAllocator;
+  ArenaAllocator *atlasUvsAllocator = tracker->vegetationAtlasUvsAllocator;
   ArenaAllocator *idsAllocator = tracker->vegetationIdsAllocator;
   ArenaAllocator *indicesAllocator = tracker->vegetationIndicesAllocator;
   ArenaAllocator *skyLightsAllocator = tracker->vegetationSkyLightsAllocator;
@@ -430,6 +448,11 @@ void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *
   }
   subparcel->vegetationUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
   if (!subparcel->vegetationUvsEntry) {
+    std::cout << "could not allocate marchObjects uvs" << std::endl;
+    abort();
+  }
+  subparcel->vegetationAtlasUvsEntry = atlasUvsAllocator->alloc(numAtlasUvs*sizeof(float));
+  if (!subparcel->vegetationAtlasUvsEntry) {
     std::cout << "could not allocate marchObjects uvs" << std::endl;
     abort();
   }
@@ -458,6 +481,7 @@ void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *
 
   float *positions = (float *)(positionsAllocator->data + subparcel->vegetationPositionsEntry->spec.start);
   float *uvs = (float *)(uvsAllocator->data + subparcel->vegetationUvsEntry->spec.start);
+  float *atlasUvs = (float *)(atlasUvsAllocator->data + subparcel->vegetationAtlasUvsEntry->spec.start);
   float *ids = (float *)(idsAllocator->data + subparcel->vegetationIdsEntry->spec.start);
   unsigned int *indices = (unsigned int *)(indicesAllocator->data + subparcel->vegetationIndicesEntry->spec.start);
   unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + subparcel->vegetationSkyLightsEntry->spec.start);
@@ -467,7 +491,7 @@ void polygonalizeObjects(Tracker *tracker, GeometrySet *geometrySet, Subparcel *
 
   Subparcel *subparcels = nullptr;
   unsigned int numSubparcels = 0;
-  doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, ids, indices, skyLights, torchLights, indexOffset);
+  doMarchObjects(geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel, subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset);
 
   subparcel->vegetationGroups[0].start = subparcel->vegetationIndicesEntry->spec.start/sizeof(unsigned int);
   subparcel->vegetationGroups[0].count = subparcel->vegetationIndicesEntry->spec.count/sizeof(unsigned int);

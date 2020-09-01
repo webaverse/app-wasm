@@ -146,6 +146,7 @@ Tracker::Tracker(
 
   ArenaAllocator *vegetationPositionsAllocator,
   ArenaAllocator *vegetationUvsAllocator,
+  ArenaAllocator *vegetationAtlasUvsAllocator,
   ArenaAllocator *vegetationIdsAllocator,
   ArenaAllocator *vegetationIndicesAllocator,
   ArenaAllocator *vegetationSkyLightsAllocator,
@@ -167,6 +168,7 @@ Tracker::Tracker(
 
   vegetationPositionsAllocator(vegetationPositionsAllocator),
   vegetationUvsAllocator(vegetationUvsAllocator),
+  vegetationAtlasUvsAllocator(vegetationAtlasUvsAllocator),
   vegetationIdsAllocator(vegetationIdsAllocator),
   vegetationIndicesAllocator(vegetationIndicesAllocator),
   vegetationSkyLightsAllocator(vegetationSkyLightsAllocator),

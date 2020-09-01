@@ -280,6 +280,7 @@ public:
 
     ArenaAllocator *vegetationPositionsAllocator,
     ArenaAllocator *vegetationUvsAllocator,
+    ArenaAllocator *vegetationAtlasUvsAllocator,
     ArenaAllocator *vegetationIdsAllocator,
     ArenaAllocator *vegetationIndicesAllocator,
     ArenaAllocator *vegetationSkyLightsAllocator,
@@ -302,6 +303,7 @@ public:
 
   ArenaAllocator *vegetationPositionsAllocator;
   ArenaAllocator *vegetationUvsAllocator;
+  ArenaAllocator *vegetationAtlasUvsAllocator;
   ArenaAllocator *vegetationIdsAllocator;
   ArenaAllocator *vegetationIndicesAllocator;
   ArenaAllocator *vegetationSkyLightsAllocator;
@@ -401,6 +403,7 @@ public:
 
   std::shared_ptr<FreeEntry> vegetationPositionsEntry;
   std::shared_ptr<FreeEntry> vegetationUvsEntry;
+  std::shared_ptr<FreeEntry> vegetationAtlasUvsEntry;
   std::shared_ptr<FreeEntry> vegetationIdsEntry;
   std::shared_ptr<FreeEntry> vegetationIndicesEntry;
   std::shared_ptr<FreeEntry> vegetationSkyLightsEntry;
