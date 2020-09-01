@@ -1366,6 +1366,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
       float *landPositions;
       unsigned int numLandPositions;
+      bool textureUpdated;
       {
         float meshId = tracker->meshId;
         int dims[3] = {
@@ -1551,6 +1552,85 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         subparcel->vegetationGroups[0].count = subparcel->vegetationIndicesEntry->spec.count/sizeof(unsigned int);
         subparcel->vegetationGroups[0].materialIndex = 0;
       }
+      {
+        // std::cout << "march objects ax " << (unsigned int)(void *)geometrySet << " " << (unsigned int)(void *)marchObjects << " " << numMarchObjects << std::endl;
+
+        unsigned int numPositions;
+        unsigned int numUvs;
+        unsigned int numAtlasUvs;
+        unsigned int numIds;
+        unsigned int numIndices;
+        unsigned int numSkyLights;
+        unsigned int numTorchLights;
+        doGetMarchThingStats(geometrySet, subparcel.get(), numPositions, numUvs, numAtlasUvs, numIds, numIndices, numSkyLights, numTorchLights);
+
+        ArenaAllocator *positionsAllocator = tracker->thingPositionsAllocator;
+        ArenaAllocator *uvsAllocator = tracker->thingUvsAllocator;
+        ArenaAllocator *atlasUvsAllocator = tracker->thingAtlasUvsAllocator;
+        ArenaAllocator *idsAllocator = tracker->thingIdsAllocator;
+        ArenaAllocator *indicesAllocator = tracker->thingIndicesAllocator;
+        ArenaAllocator *skyLightsAllocator = tracker->thingSkyLightsAllocator;
+        ArenaAllocator *torchLightsAllocator = tracker->thingTorchLightsAllocator;
+
+        subparcel->thingPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
+        if (!subparcel->thingPositionsEntry) {
+          std::cout << "could not allocate chunk matchThings positions" << std::endl;
+          abort();
+        }
+        subparcel->thingUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
+        if (!subparcel->thingUvsEntry) {
+          std::cout << "could not allocate chunk matchThings uvs" << std::endl;
+          abort();
+        }
+        subparcel->thingAtlasUvsEntry = uvsAllocator->alloc(numAtlasUvs*sizeof(float));
+        if (!subparcel->thingAtlasUvsEntry) {
+          std::cout << "could not allocate chunk matchThings uvs" << std::endl;
+          abort();
+        }
+        subparcel->thingIdsEntry = idsAllocator->alloc(numIds*sizeof(float));
+        if (!subparcel->thingIdsEntry) {
+          std::cout << "could not allocate chunk matchThings ids" << std::endl;
+          abort();
+        }
+        subparcel->thingIndicesEntry = indicesAllocator->alloc(numIndices*sizeof(unsigned int));
+        if (!subparcel->thingIndicesEntry) {
+          std::cout << "could not allocate chunk matchThings indices" << std::endl;
+          abort();
+        }
+        subparcel->thingSkyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
+        if (!subparcel->thingSkyLightsEntry) {
+          std::cout << "could not allocate chunk matchThings skyLights" << std::endl;
+          abort();
+        }
+        subparcel->thingTorchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
+        if (!subparcel->thingTorchLightsEntry) {
+          std::cout << "could not allocate chunk matchThings torchLights" << std::endl;
+          abort();
+        }
+
+        float *positions = (float *)(positionsAllocator->data + subparcel->thingPositionsEntry->spec.start);
+        float *uvs = (float *)(uvsAllocator->data + subparcel->thingUvsEntry->spec.start);
+        float *atlasUvs = (float *)(atlasUvsAllocator->data + subparcel->thingAtlasUvsEntry->spec.start);
+        float *ids = (float *)(idsAllocator->data + subparcel->thingIdsEntry->spec.start);
+        unsigned int *indices = (unsigned int *)(indicesAllocator->data + subparcel->thingIndicesEntry->spec.start);
+        unsigned char *skyLights = (unsigned char *)(skyLightsAllocator->data + subparcel->thingSkyLightsEntry->spec.start);
+        unsigned char *torchLights = (unsigned char *)(torchLightsAllocator->data + subparcel->thingTorchLightsEntry->spec.start);
+
+        /* slab => (slab.position.byteOffset - geometry.attributes.position.array.byteOffset)/Float32Array.BYTES_PER_ELEMENT;
+        const indexOffset = vegetationMesh.getSlabPositionOffset(slab)/3;
+        for (let i = 0; i < spec.indices.length; i++) {
+          spec.indices[i] += indexOffset;
+        } */
+        Subparcel *subparcels = nullptr;
+        unsigned int numSubparcels = 0;
+        unsigned int indexOffset = subparcel->vegetationPositionsEntry->spec.start/sizeof(float)/3;
+        doMarchThings(tracker, geometrySet, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, subparcel.get(), subparcels, numSubparcels, positions, uvs, atlasUvs, ids, indices, skyLights, torchLights, indexOffset, textureUpdated);
+
+        // groups
+        subparcel->thingGroups[0].start = subparcel->thingIndicesEntry->spec.start/sizeof(unsigned int);
+        subparcel->thingGroups[0].count = subparcel->thingIndicesEntry->spec.count/sizeof(unsigned int);
+        subparcel->thingGroups[0].materialIndex = 0;
+      }
       doLandPhysics(tracker, subparcel.get(), landPositions, numLandPositions);
       doObjectPhysics(tracker, geometrySet, subparcel.get());
       doThingPhysics(tracker, geometrySet, subparcel.get());
@@ -1593,6 +1673,29 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       index += sizeof(FreeEntry *);
       *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
       index += sizeof(FreeEntry *);
+
+      *((FreeEntry **)(Message->args + index)) = subparcel->thingPositionsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->thingUvsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->thingAtlasUvsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->thingIdsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->thingIndicesEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->thingSkyLightsEntry.get();
+      index += sizeof(FreeEntry *);
+      *((FreeEntry **)(Message->args + index)) = subparcel->thingTorchLightsEntry.get();
+      index += sizeof(FreeEntry *);
+
+      if (textureUpdated) {
+        *((unsigned char **)(Message->args + index)) = tracker->atlasTexture.data();
+        index += sizeof(unsigned char *);
+      } else {
+        *((unsigned char **)(Message->args + index)) = nullptr;
+        index += sizeof(unsigned char *);
+      }
 
       *((std::shared_ptr<Subparcel> **)(Message->args + index)) = subparcelSharedPtr;
       index += sizeof(std::shared_ptr<Subparcel> *);
@@ -1995,7 +2098,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       bool textureUpdated = std::get<2>(spec);
 
       for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
-        doObjectPhysics(tracker, geometrySet, subparcel.get());
+        doThingPhysics(tracker, geometrySet, subparcel.get());
       }
 
       index = 0;
@@ -2004,17 +2107,19 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
         
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
+        *((FreeEntry **)(Message->args + index)) = subparcel->thingPositionsEntry.get();
         index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
+        *((FreeEntry **)(Message->args + index)) = subparcel->thingUvsEntry.get();
         index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
+        *((FreeEntry **)(Message->args + index)) = subparcel->thingAtlasUvsEntry.get();
         index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
+        *((FreeEntry **)(Message->args + index)) = subparcel->thingIdsEntry.get();
         index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
+        *((FreeEntry **)(Message->args + index)) = subparcel->thingIndicesEntry.get();
         index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
+        *((FreeEntry **)(Message->args + index)) = subparcel->thingSkyLightsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(Message->args + index)) = subparcel->thingTorchLightsEntry.get();
         index += sizeof(FreeEntry *);
       }
 
