@@ -255,7 +255,8 @@ void doObjectPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subp
       subparcel->objectPhysxGeometries.push_back(std::move(physxGeometry));
     }
   }
-
+}
+void doThingPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel) {
   subparcel->thingPhysxGeometries.clear();
   subparcel->thingPhysxGeometries.reserve(subparcel->numThings);
   for (unsigned int i = 0; i < subparcel->numThings; i++) {

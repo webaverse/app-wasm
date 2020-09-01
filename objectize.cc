@@ -1553,6 +1553,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       }
       doLandPhysics(tracker, subparcel.get(), landPositions, numLandPositions);
       doObjectPhysics(tracker, geometrySet, subparcel.get());
+      doThingPhysics(tracker, geometrySet, subparcel.get());
 
       // output
       // std::cout << "return 1" << std::endl;

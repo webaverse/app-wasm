@@ -97,6 +97,7 @@ extern std::map<std::string, Shape> PHYSICS_SHAPES;
 
 void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions, unsigned int numLandPositions);
 void doObjectPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel);
+void doThingPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel);
 
 void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, Vec &outPosition, Quat &outQuaternion);
 void doCollide(Tracker *tracker, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
