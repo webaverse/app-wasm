@@ -9,6 +9,9 @@ public:
   float *points;
   unsigned int numPoints;
   Plane plane;
+  Vec center;
+  Vec tang;
+  Vec bitang;
 };
 
 ConvexHullResult *doConvexHull(float *positions, unsigned int numPositions, float *cameraPosition) {
@@ -50,6 +53,9 @@ ConvexHullResult *doConvexHull(float *positions, unsigned int numPositions, floa
   result->points = (float *)outPointsPtr->data();
   result->numPoints = outPointsPtr->size()*2;
   result->plane = plane;
+  result->center = center;
+  result->tang = tang;
+  result->bitang = bitang;
   return result;
 }
 
