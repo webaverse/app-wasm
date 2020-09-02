@@ -16,12 +16,12 @@ ConvexHullResult *doConvexHull(float *positions, unsigned int numPositions, floa
   Vec center;
   plane.setFromPoints((Vec *)positions, numPositions/3, center);
   Vec cameraPos(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-  std::cout << "plane normal 1 " << plane.normal.x << " " << plane.normal.y << " " << plane.normal.z << " " << center.x << " " << center.y << " " << center.z << std::endl;
+  // std::cout << "plane normal 1 " << plane.normal.x << " " << plane.normal.y << " " << plane.normal.z << " " << center.x << " " << center.y << " " << center.z << std::endl;
   if (plane.normal.dot(cameraPos) < plane.constant) {
-    std::cout << "flip plane normal" << std::endl;
+    // std::cout << "flip plane normal" << std::endl;
     plane.normal *= -1;
   }
-  std::cout << "plane normal 2 " << plane.normal.x << " " << plane.normal.y << " " << plane.normal.z << std::endl;
+  // std::cout << "plane normal 2 " << plane.normal.x << " " << plane.normal.y << " " << plane.normal.z << std::endl;
 
   Quat quaternion;
   quaternion.setFromUnitVectors(Vec{0, 0, 1}, plane.normal);
@@ -38,13 +38,13 @@ ConvexHullResult *doConvexHull(float *positions, unsigned int numPositions, floa
     points[i][1] = v;
   }
 
-  std::cout << "convex hull 1" << std::endl;
+  // std::cout << "convex hull 1" << std::endl;
   std::vector<int> hull = convexHull(points);
-  std::cout << "convex hull 2" << std::endl;
+  // std::cout << "convex hull 2" << std::endl;
   std::vector<std::array<float, 2>> concave = concaveman<float, 16>(points, hull, 2, 1);
-  std::cout << "convex hull 3" << std::endl;
+  // std::cout << "convex hull 3" << std::endl;
   std::vector<std::array<float, 2>> *outPointsPtr = new std::vector<std::array<float, 2>>(std::move(concave));
-  std::cout << "convex hull 4" << std::endl;
+  // std::cout << "convex hull 4" << std::endl;
 
   ConvexHullResult *result = new ConvexHullResult();
   result->points = (float *)outPointsPtr->data();
