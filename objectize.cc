@@ -235,21 +235,22 @@ inline void fromBinRect(CustomRect& value, RectBinPack::BinRect rect) {
   // If bin is not set, set rectangle to unpacked
   value.packed = rect.bin != RectBinPack::InvalidBin;
 }
-EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts, unsigned int numCounts, float *points, unsigned int numPoints, float z, float *zs) {
+EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs) {
   std::vector<std::vector<std::array<float, 2>>> polygon;
   std::map<unsigned int, std::vector<unsigned int>> connectivity;
   std::vector<unsigned int> islandIndices;
   std::vector<float> islandVs;
-  std::vector<float> islandHeights(numCounts + numPoints);
-  std::vector<float> islandV(numCounts + numPoints);
+  std::vector<float> islandHeights(1 + numHoleCounts + numPoints);
+  std::vector<float> islandV(1 + numHoleCounts + numPoints);
 
   // add regular points
   unsigned int numCoreVertices = 0;
   unsigned int numVertices = 0;
   unsigned int numIndices = 0;
   {
-    for (unsigned int i = 0; i < numCounts; i++) {
-      unsigned int count = counts[i];
+    // for (unsigned int i = 0; i < numCounts; i++) {
+      const unsigned int i = 0;
+      const unsigned int count = numPositions;
       std::vector<std::array<float, 2>> points;
       points.reserve(count);
       for (unsigned int j = 0; j < count; j++) {
@@ -268,6 +269,35 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
         numCoreVertices += 3;
         numVertices += 3;
         numIndices++;
+      }
+      polygon.push_back(std::move(points));
+    // }
+  }
+  {
+    unsigned int baseNumIndices = 0;
+    for (unsigned int i = 0; i < numHoleCounts; i++) {
+      unsigned int count = holeCounts[i];
+      std::vector<std::array<float, 2>> points;
+      points.reserve(count);
+      for (unsigned int j = 0; j < count; j++) {
+        points.push_back(std::array<float, 2>{holes[baseNumIndices*2], holes[baseNumIndices*2+1]});
+
+        unsigned int nextIndex = (j+1 < count) ? (numIndices+1) : (numIndices+1-count);
+        connectivity[numIndices].push_back(nextIndex);
+        connectivity[nextIndex].push_back(numIndices);
+
+        unsigned int baseNextIndex = (j+1 < count) ? (baseNumIndices+1) : (baseNumIndices+1-count);
+
+        islandIndices.push_back(1 + i);
+        islandVs.push_back(islandHeights[1 + i]);
+        float dx = holes[baseNumIndices*2] - holes[baseNextIndex*2];
+        float dy = holes[baseNumIndices*2+1] - holes[baseNextIndex*2+1];
+        islandHeights[i] += (float)std::sqrt(dx*dx + dy*dy);
+
+        numCoreVertices += 3;
+        numVertices += 3;
+        numIndices++;
+        baseNumIndices++;
       }
       polygon.push_back(std::move(points));
     }
@@ -308,9 +338,9 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
         numIndices + 1,
       };
 
-      islandIndices.push_back(numCounts + i);
-      islandVs.push_back(islandHeights[numCounts + i]);
-      islandHeights[numCounts + i] = 1;
+      islandIndices.push_back(1 + numHoleCounts + i);
+      islandVs.push_back(islandHeights[1 + numHoleCounts + i]);
+      islandHeights[1 + numHoleCounts + i] = 1;
 
       numVertices += 9;
       numIndices += 3;
@@ -328,7 +358,7 @@ EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int *counts
   // compute flat min max
   float min[2] = {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
   float max[2] = {-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()};
-  for (unsigned int i = 0; i < counts[0]; i += 3) {
+  for (unsigned int i = 0; i < numPositions; i += 3) {
     float x = positions[i];
     float y = positions[i+1];
     if (x < min[0]) min[0] = x;
