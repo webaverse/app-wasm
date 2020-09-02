@@ -5,23 +5,32 @@
 #ifndef DAA_CONVEXHULL_CHALGORITHMS_H
 #define DAA_CONVEXHULL_CHALGORITHMS_H
 
-using namespace std;
+// using namespace std;
 
-#include "Point.h"
 #include <vector>
 #include <algorithm>
-using namespace std;
+// using namespace std;
+
+template <class T>
+class Point{
+public:
+    T x, y;
+    Point(T x, T y){
+        this->x = x;
+        this->y = y;
+    }
+};
 
 template <class T>
 class ConvexHull{
 public:
-    vector<Point<T>> points;
-    vector<Point<T>> convex_hull_points;
-    ConvexHull(vector<Point<T>> points, int algo){
+    std::vector<Point<T>> points;
+    std::vector<Point<T>> convex_hull_points;
+    ConvexHull(std::vector<Point<T>> points, int algo){
         this->points = points;
         if(algo == 0){
             // Graham Scan
-            cout << "Graham Scan" << endl;
+            // cout << "Graham Scan" << endl;
             GrahamScan();
         }
         else if(algo == 1){
@@ -133,11 +142,11 @@ private:
         points[bottom_most] = points[0];
         points[0] = temp_Point;
 
-        cout << points[0].x << ',' << points[0].y << endl;
+        // cout << points[0].x << ',' << points[0].y << endl;
 
 
         //Finding angles with respect to point[0]
-        vector<Point<T>>angles = points;
+        std::vector<Point<T>>angles = points;
         for(auto i = 1; i < points.size(); i++){
             Point<T> temp(points[i].x - points[0].x, points[i].y - points[0].y);
             angles[i] = temp;
