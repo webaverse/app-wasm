@@ -400,6 +400,34 @@ class Quat {
       return *this;
     }
 
+    float length() const {
+      return std::sqrt( this->x * this->x + this->y * this->y + this->z * this->z + this->w * this->w );
+    }
+
+    Quat &normalize() {
+      float l = this->length();
+
+      if ( l == 0.0f ) {
+
+        this->x = 0.0f;
+        this->y = 0.0f;
+        this->z = 0.0f;
+        this->w = 1.0f;
+
+      } else {
+
+        l = 1.0f / l;
+
+        this->x = this->x * l;
+        this->y = this->y * l;
+        this->z = this->z * l;
+        this->w = this->w * l;
+
+      }
+
+      return *this;
+    }
+
     Quat &setFromRotationMatrix(const Matrix &m) {
       // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
 
@@ -449,6 +477,49 @@ class Quat {
       }
 
       return *this;
+    }
+
+    Quat &setFromUnitVectors( const Vec &vFrom, const Vec &vTo ) {
+
+      // assumes direction vectors vFrom and vTo are normalized
+
+      const float EPS = 0.000001f;
+
+      float r = vFrom.dot( vTo ) + 1.0f;
+
+      if ( r < EPS ) {
+
+        r = 0.0f;
+
+        if ( std::abs( vFrom.x ) > std::abs( vFrom.z ) ) {
+
+          this->x = - vFrom.y;
+          this->y = vFrom.x;
+          this->z = 0.0f;
+          this->w = r;
+
+        } else {
+
+          this->x = 0.0f;
+          this->y = - vFrom.z;
+          this->z = vFrom.y;
+          this->w = r;
+
+        }
+
+      } else {
+
+        // crossVectors( vFrom, vTo ); // inlined to avoid cyclic dependency on Vector3
+
+        this->x = vFrom.y * vTo.z - vFrom.z * vTo.y;
+        this->y = vFrom.z * vTo.x - vFrom.x * vTo.z;
+        this->z = vFrom.x * vTo.y - vFrom.y * vTo.x;
+        this->w = r;
+
+      }
+
+      return this->normalize();
+
     }
 
     Quat &multiply(const Quat &a, const Quat &b) {
@@ -636,6 +707,48 @@ class Ray {
     }
 };
 
+class Line {
+public:
+  Vec start;
+  Vec end;
+  Line() {}
+  Line(const Vec &start, const Vec &end) : start(start), end(end) {}
+
+  Vec delta() const {
+    return this->end - this->start;
+  }
+
+  float closestPointToPointParameter( const Vec &point, bool clampToLine ) const {
+
+    const Vec _startP = point - this->start;
+    const Vec _startEnd = this->end - this->start;
+
+    const float startEnd2 = _startEnd.dot( _startEnd );
+    const float startEnd_startP = _startEnd.dot( _startP );
+
+    float t = startEnd_startP / startEnd2;
+
+    if ( clampToLine ) {
+
+      t = std::min(std::max(t, 0.0f), 1.0f);
+
+    }
+
+    return t;
+
+  }
+
+  Vec closestPointToPoint( const Vec &point, bool clampToLine ) const {
+    const float t = this->closestPointToPointParameter( point, clampToLine );
+    return (this->delta() * t) + this->start;
+  }
+
+  float distanceTo(const Vec &p) const {
+    Vec linePoint = this->closestPointToPoint(p, true);
+    return (p - linePoint).magnitude();
+  }
+};
+
 class Plane {
   public:
     Vec normal;
@@ -658,6 +771,55 @@ class Plane {
       return *this;
     }
 
+    Plane &setFromPoints(const Vec *points, unsigned int numPoints, Vec &mean) {
+      for (unsigned int i = 0; i < numPoints; i++) {
+        mean += points[i];
+      }
+      mean /= (float)numPoints;
+
+      float smallestMeanDistance = std::numeric_limits<float>::infinity();
+      int smallestMeanDistanceIndex = -1;
+      for (unsigned int i = 0; i < numPoints; i++) {
+        float distance = (points[i] - mean).magnitude();
+        if (distance < smallestMeanDistance) {
+          smallestMeanDistance = distance;
+          smallestMeanDistanceIndex = i;
+        }
+      }
+
+      const Vec &startPoint = points[smallestMeanDistanceIndex];
+      float maxEndPointDistance = -std::numeric_limits<float>::infinity();
+      int maxEndPointDistanceIndex = -1;
+      for (unsigned int i = 0; i < numPoints; i++) {
+        float distance = (points[i] - startPoint).magnitude();
+        if (distance > maxEndPointDistance) {
+          maxEndPointDistance = distance;
+          maxEndPointDistanceIndex = i;
+        }
+      }
+      const Vec &endPoint = points[maxEndPointDistanceIndex];
+
+      const Line line(startPoint, endPoint);
+      float maxAuxPointDistance = -std::numeric_limits<float>::infinity();
+      int maxAuxPointDistanceIndex = -1;
+      for (unsigned int i = 0; i < numPoints; i++) {
+        float distance = line.distanceTo(points[i]);
+        if (distance > maxAuxPointDistance) {
+          maxAuxPointDistance = distance;
+          maxAuxPointDistanceIndex = i;
+        }
+      }
+      const Vec &auxPoint = points[maxAuxPointDistanceIndex];
+      Tri tri(startPoint, endPoint, auxPoint);
+      Vec normal = tri.normal();
+      Vec midpoint = tri.midpoint();
+      return this->setFromNormalAndCoplanarPoint(normal, midpoint);
+    }
+    Plane &setFromPoints(const Vec *points, unsigned int numPoints) {
+      Vec mean;
+      return this->setFromPoints(points, numPoints, mean);
+    }
+
     Plane &normalize() {
       float inverseNormalLength = 1.0 / normal.magnitude();
       normal *= inverseNormalLength;
@@ -668,6 +830,10 @@ class Plane {
 
     float distanceToPoint(const Vec &point) const {
       return normal.dot(point) + constant;
+    }
+
+    Vec projectPoint(const Vec &point) {
+      return (this->normal * (-distanceToPoint(point))) + point;
     }
 
     /* bool intersectLine(const Line &line, Vec &result) const {
