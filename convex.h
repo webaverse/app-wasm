@@ -19,8 +19,8 @@ ConvexHullResult *doConvexHull(float *positions, unsigned int numPositions, floa
   Vec center;
   plane.setFromPoints((Vec *)positions, numPositions/3, center);
   Vec cameraPos(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-  // std::cout << "plane normal 1 " << plane.normal.x << " " << plane.normal.y << " " << plane.normal.z << " " << center.x << " " << center.y << " " << center.z << std::endl;
-  if (plane.normal.dot(cameraPos) < plane.constant) {
+  // std::cout << "plane normal 1 " << plane.normal.x << " " << plane.normal.y << " " << plane.normal.z << " : " << cameraPos.x << " " << cameraPos.y << " " << cameraPos.z << " : " << center.x << " " << center.y << " " << center.z << " : " << plane.normal.dot(cameraPos) << " " << plane.constant << std::endl;
+  if (plane.normal.dot(cameraPos - center) < 0) {
     // std::cout << "flip plane normal" << std::endl;
     plane.normal *= -1;
   }
