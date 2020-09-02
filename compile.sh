@@ -322,6 +322,12 @@ if [ ! -f physx.o ]; then
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
 	-o physx.o
 fi
+if [ ! -f concaveman.o ]; then
+  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
+  -Iconcaveman \
+  concaveman/concaveman.cpp \
+  -o concaveman.o
+fi
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
 emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=2 -s TOTAL_MEMORY=399966208 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
@@ -353,9 +359,10 @@ emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=2 -s TO
   -IPhysX/physx/source/geomutils/src/sweep \
   -Iearcut \
   -IRectBinPack/include \
+  -Iconcaveman \
   objectize.cc vector.cc subparcel.cc geometry.cc collide.cc \
   FastNoise.cpp noise.cc march.cc biomes.cc \
-  draco.o physx.o \
+  draco.o physx.o concaveman.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
   -o bin/geometry.js
