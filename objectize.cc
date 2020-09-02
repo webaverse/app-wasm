@@ -122,8 +122,8 @@ EMSCRIPTEN_KEEPALIVE void unregisterGroupSet(Culler *culler, GroupSet *groupSet)
 EMSCRIPTEN_KEEPALIVE void cull(Culler *culler, float *positionData, float *matrixData, float slabRadius, CullResult *cullResults, unsigned int *numCullResults) {
   doCull(culler, positionData, matrixData, slabRadius, cullResults, *numCullResults);
 } */
-EMSCRIPTEN_KEEPALIVE void tickCull(Tracker *tracker, float *positionData, float *matrixData, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults) {
-  doTickCull(tracker, positionData, matrixData, landCullResults, numLandCullResults, vegetationCullResults, numVegetationCullResults);
+EMSCRIPTEN_KEEPALIVE void tickCull(Tracker *tracker, float *positionData, float *matrixData, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults, CullResult *thingCullResults, unsigned int &numThingCullResults) {
+  doTickCull(tracker, positionData, matrixData, landCullResults, numLandCullResults, vegetationCullResults, numVegetationCullResults, thingCullResults, numThingCullResults);
 }
 
 // tracking

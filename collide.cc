@@ -637,7 +637,7 @@ void doCull(Culler *culler, float *positionData, float *matrixData, float slabRa
     return a.materialIndex < b.materialIndex;
   });
 } */
-void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults) {
+void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults, CullResult *thingCullResults, unsigned int &numThingCullResults) {
   Vec position(positionData[0], positionData[1], positionData[2]);
   Frustum frustum;
   frustum.setFromMatrix(matrixData);
@@ -724,6 +724,7 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
   // collect groups
   numLandCullResults = 0;
   numVegetationCullResults = 0;
+  numThingCullResults = 0;
   for (const std::shared_ptr<Subparcel> &subparcel : tracker->currentCullSubparcels) {
     for (const Group &group : subparcel->landGroups) {
       if (group.count > 0) {
@@ -736,6 +737,14 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
     for (const Group &group : subparcel->vegetationGroups) {
       if (group.count > 0) {
         CullResult &cullResult = vegetationCullResults[numVegetationCullResults++];
+        cullResult.start = group.start;
+        cullResult.count = group.count;
+        cullResult.materialIndex = group.materialIndex;
+      }
+    }
+    for (const Group &group : subparcel->thingGroups) {
+      if (group.count > 0) {
+        CullResult &cullResult = thingCullResults[numThingCullResults++];
         cullResult.start = group.start;
         cullResult.count = group.count;
         cullResult.materialIndex = group.materialIndex;
