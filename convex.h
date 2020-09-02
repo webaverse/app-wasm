@@ -15,33 +15,19 @@ template <class T>
 class Point{
 public:
     T x, y;
-    Point(T x, T y){
+    /* Point(T x, T y){
         this->x = x;
         this->y = y;
-    }
+    } */
 };
 
 template <class T>
 class ConvexHull{
 public:
     std::vector<Point<T>> points;
-    std::vector<Point<T>> convex_hull_points;
-    ConvexHull(std::vector<Point<T>> points, int algo){
-        this->points = points;
-        if(algo == 0){
-            // Graham Scan
-            // cout << "Graham Scan" << endl;
-            GrahamScan();
-        }
-        else if(algo == 1){
-            // Jarvis March
-        }
-        else{
-            // KPS
-        }
-    }
-    ~ConvexHull(){
-
+    std::vector<Point<T>> &convex_hull_points;
+    ConvexHull(std::vector<Point<T>> points, std::vector<Point<T>> &convex_hull_points) : points(points), convex_hull_points(convex_hull_points) {
+      GrahamScan();
     }
 
 private:
@@ -148,7 +134,7 @@ private:
         //Finding angles with respect to point[0]
         std::vector<Point<T>>angles = points;
         for(auto i = 1; i < points.size(); i++){
-            Point<T> temp(points[i].x - points[0].x, points[i].y - points[0].y);
+            Point<T> temp{points[i].x - points[0].x, points[i].y - points[0].y};
             angles[i] = temp;
         }
 
@@ -191,8 +177,8 @@ private:
             convex_hull_points.pop_back();
             Point<T> second = convex_hull_points.back();
             Point<T> new_point = angles[i];
-            Point<T> val1 (first.x - second.x, first.y - second.y);
-            Point<T> val2 (new_point.x - first.x, new_point.y - first.y);
+            Point<T> val1 {first.x - second.x, first.y - second.y};
+            Point<T> val2 {new_point.x - first.x, new_point.y - first.y};
             if(crossProduct(val1, val2) < 0){
                 i--;
             }
