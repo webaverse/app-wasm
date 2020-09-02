@@ -190,4 +190,44 @@ private:
     }
 };
 
+class ConvexHullResult {
+public:
+  Point<float> *points;
+  unsigned int numPoints;
+  Plane plane;
+};
+
+ConvexHullResult *doConvexHull(float *positions, unsigned int numPositions, float *cameraPosition) {
+  Plane plane;
+  Vec center;
+  plane.setFromPoints((Vec *)positions, numPositions/3, center);
+  Vec cameraPos(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+  if (plane.normal.dot(cameraPos) < plane.constant) {
+    plane.normal *= -1;
+  }
+
+  Quat quaternion;
+  quaternion.setFromUnitVectors(Vec{0, 0, 1}, plane.normal);
+  Vec tang = Vec{1, 0, 0}.applyQuaternion(quaternion);
+  Vec bitang = Vec{0, 1, 0}.applyQuaternion(quaternion);
+
+  std::vector<Point<float>> points(numPositions/3);
+  for (unsigned int i = 0; i < numPositions; i += 3) {
+    Vec position(positions[i], positions[i+1], positions[i+2]);
+    Vec dp = position - center;
+    float u = dp.dot(tang);
+    float v = dp.dot(bitang);
+    points[i].x = u;
+    points[i].x = v;
+  }
+  std::vector<Point<float>> *outPointsPtr = new std::vector<Point<float>>();
+  ConvexHull<float>(points, *outPointsPtr);
+
+  ConvexHullResult *result = new ConvexHullResult();
+  result->points = outPointsPtr->data();
+  result->numPoints = outPointsPtr->size();
+  result->plane = plane;
+  return result;
+}
+
 #endif //DAA_CONVEXHULL_CHALGORITHMS_H

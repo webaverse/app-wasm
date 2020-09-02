@@ -4,6 +4,7 @@
 #include "noise.h"
 #include "march.h"
 #include "collide.h"
+#include "convex.h"
 #include "earcut.h"
 // #include <iostream>
 
@@ -193,6 +194,12 @@ EMSCRIPTEN_KEEPALIVE void tickTracker(Tracker *tracker, ThreadPool *threadPool, 
 
 EMSCRIPTEN_KEEPALIVE void doChunk(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int *positionIndex, unsigned int *normalIndex, unsigned int *uvIndex, /*unsigned int *barycentricIndex,*/ unsigned int *aoIndex, unsigned int *idIndex, unsigned int *skyLightsIndex, unsigned int *torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
   marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, /**barycentricIndex,*/ *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
+}
+
+// convex hull
+
+EMSCRIPTEN_KEEPALIVE ConvexHullResult *convexHull(float *positions, unsigned int numPositions, float *cameraPosition) {
+  return doConvexHull(positions, numPositions, cameraPosition);
 }
 
 // earcut
