@@ -777,17 +777,17 @@ class Plane {
       }
       mean /= (float)numPoints;
 
-      float smallestMeanDistance = std::numeric_limits<float>::infinity();
-      int smallestMeanDistanceIndex = -1;
+      float largestMeanDistance = -std::numeric_limits<float>::infinity();
+      int largestMeanDistanceIndex = -1;
       for (unsigned int i = 0; i < numPoints; i++) {
         float distance = (points[i] - mean).magnitude();
-        if (distance < smallestMeanDistance) {
-          smallestMeanDistance = distance;
-          smallestMeanDistanceIndex = i;
+        if (distance > largestMeanDistance) {
+          largestMeanDistance = distance;
+          largestMeanDistanceIndex = i;
         }
       }
 
-      const Vec &startPoint = points[smallestMeanDistanceIndex];
+      const Vec &startPoint = points[largestMeanDistanceIndex];
       float maxEndPointDistance = -std::numeric_limits<float>::infinity();
       int maxEndPointDistanceIndex = -1;
       for (unsigned int i = 0; i < numPoints; i++) {
