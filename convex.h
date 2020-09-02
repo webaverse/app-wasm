@@ -44,10 +44,10 @@ ConvexHullResult *doConvexHull(float *positions, unsigned int numPositions, floa
   // std::cout << "convex hull 1" << std::endl;
   std::vector<int> hull = convexHull(points);
   // std::cout << "convex hull 2" << std::endl;
-  std::vector<std::array<float, 2>> concave = concaveman<float, 16>(points, hull, 2, 1);
+  std::vector<std::array<float, 2>> concave = concaveman<float, 16>(points, hull, 2, 0.01);
   // std::cout << "convex hull 3" << std::endl;
   std::vector<std::array<float, 2>> *outPointsPtr = new std::vector<std::array<float, 2>>(std::move(concave));
-  // std::cout << "convex hull 4" << std::endl;
+  // std::cout << "convex hull " << points.size() << " " << hull.size() << " " << outPointsPtr->size() << std::endl;
 
   ConvexHullResult *result = new ConvexHullResult();
   result->points = (float *)outPointsPtr->data();
