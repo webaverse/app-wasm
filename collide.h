@@ -28,7 +28,7 @@ class Object;
 class GeometrySet;
 class PhysicsGeometry {
 public:
-  PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxConvexMesh *convexMesh, PxGeometry *geometry, Vec position, Quat quaternion, Sphere boundingSphere, Physicer *physicer);
+  PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxConvexMesh *convexMesh, PxGeometry *geometry, Vec position, Quat quaternion, Physicer *physicer);
   ~PhysicsGeometry();
 
   unsigned int objectId;
@@ -39,7 +39,6 @@ public:
   PxGeometry *geometry;
   Vec position;
   Quat quaternion;
-  Sphere boundingSphere;
   Physicer *physicer;
 };
 class Physicer {
