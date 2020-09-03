@@ -40,7 +40,7 @@ inline void fromBinRect(CustomRect& value, RectBinPack::BinRect rect) {
   // If bin is not set, set rectangle to unpacked
   value.packed = rect.bin != RectBinPack::InvalidBin;
 }
-EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs, float *position, float *quaternion) {
+EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs, unsigned int id, float *position, float *quaternion) {
   Vec p(position[0], position[1], position[2]);
   Quat q(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
 
@@ -554,13 +554,13 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
   std::shared_ptr<PhysicsGeometry> trianglePhysicsGeometry;
   {
     PxDefaultMemoryOutputStream *dataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-    trianglePhysicsGeometry = doMakeBakedGeometry(&tracker->physicer, dataStream, position, quaternion);
+    trianglePhysicsGeometry = doMakeBakedGeometry(&tracker->physicer, dataStream, id, position, quaternion);
     // delete dataStream;
   }
   std::shared_ptr<PhysicsGeometry> convexPhysicsGeometry;
   {
     PxDefaultMemoryOutputStream *dataStream = doBakeConvexGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-    convexPhysicsGeometry = doMakeBakedConvexGeometry(&tracker->physicer, dataStream, position, quaternion);
+    convexPhysicsGeometry = doMakeBakedConvexGeometry(&tracker->physicer, dataStream, id, position, quaternion);
     // delete dataStream;
   }
 

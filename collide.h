@@ -66,8 +66,8 @@ public:
 std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> doMakeBakedGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream);
 std::pair<PxConvexMesh *, PxConvexMeshGeometry *> doMakeBakedConvexGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream);
 
-std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion);
-std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, float *meshPosition, float *meshQuaternion);
+std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion);
+std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion);
 std::shared_ptr<PhysicsGeometry> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, float *meshPosition, float *meshQuaternion);
 
 std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float w, float h, float d);
