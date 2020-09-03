@@ -204,8 +204,8 @@ EMSCRIPTEN_KEEPALIVE ConvexHullResult *convexHull(float *positions, unsigned int
 
 // earcut
 
-EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs) {
-  return doEarcut(positions, numPositions, holes, holeCounts, numHoleCounts, points, numPoints, z, zs);
+EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs) {
+  return doEarcut(tracker, positions, numPositions, holes, holeCounts, numHoleCounts, points, numPoints, z, zs);
 }
 
 // requests
@@ -1534,6 +1534,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     index += sizeof(unsigned int);
     unsigned char *texture = *((unsigned char **)(Message->args + index));
     index += sizeof(unsigned char *);
+    PhysicsGeometry *trianglePhysicsGeometry = *((PhysicsGeometry **)(Message->args + index));
+    index += sizeof(PhysicsGeometry *);
 
     Geometry *geometry = new Geometry();
     geometry->name = std::string(nameCharPtr);
@@ -1546,9 +1548,10 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     geometry->aabb.setFromPositions(positions, numPositions);
     geometry->texture = texture;
 
-    PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, positions, indices, numPositions, numIndices);
+    /* PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, positions, indices, numPositions, numIndices);
     std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> spec = doMakeBakedGeometryRaw(&tracker->physicer, writeStream); // XXX GC the TriangleMesh
-    geometry->physxGeometry = spec.second;
+    geometry->physxGeometry = spec.second; */
+    geometry->physxGeometry = trianglePhysicsGeometry->geometry;
 
     geometrySet->thingGeometries.push_back(geometry);
     geometrySet->geometryMap[geometry->name] = geometry;

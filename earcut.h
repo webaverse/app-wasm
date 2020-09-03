@@ -9,8 +9,10 @@ public:
   unsigned int numUvs;
   uint32_t *indices;
   unsigned int numIndices;
-  /* std::shared_ptr<PhysicsGeometry> physicsGeometry;
-  PhysicsGeometry *physicsGeometryPtr; */
+  PhysicsGeometry *trianglePhysicsGeometryPtr;
+  PhysicsGeometry *convexPhysicsGeometryPtr;
+  std::shared_ptr<PhysicsGeometry> trianglePhysicsGeometry;
+  std::shared_ptr<PhysicsGeometry> convexPhysicsGeometry;
 };
 
 struct CustomRect {
@@ -38,7 +40,7 @@ inline void fromBinRect(CustomRect& value, RectBinPack::BinRect rect) {
   // If bin is not set, set rectangle to unpacked
   value.packed = rect.bin != RectBinPack::InvalidBin;
 }
-EarcutResult *doEarcut(float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs) {
+EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs) {
   std::vector<std::vector<std::array<float, 2>>> polygon;
   std::map<unsigned int, std::vector<unsigned int>> connectivity;
   std::vector<unsigned int> islandIndices;
@@ -546,11 +548,31 @@ EarcutResult *doEarcut(float *positions, unsigned int numPositions, float *holes
     }
   }
 
-  /* PxDefaultMemoryOutputStream *physicsGeometryDataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-  float meshPosition[] = {0, 0, 0};
-  float meshQuaternion[] = {0, 0, 0, 1};
-  std::shared_ptr<PhysicsGeometry> physicsGeometry = doMakeBakedGeometry(&tracker->physicer, physicsGeometryDataStream, meshPosition, meshQuaternion);
-  delete physicsGeometryDataStream; */
+  std::shared_ptr<PhysicsGeometry> trianglePhysicsGeometry;
+  {
+    std::cout << "bake 1" << std::endl;
+    PxDefaultMemoryOutputStream *dataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
+    std::cout << "bake 2" << std::endl;
+    float meshPosition[] = {0, 0, 0};
+    float meshQuaternion[] = {0, 0, 0, 1};
+    trianglePhysicsGeometry = doMakeBakedGeometry(&tracker->physicer, dataStream, meshPosition, meshQuaternion);
+    std::cout << "bake 3" << std::endl;
+    // delete dataStream;
+    std::cout << "bake 3.1" << std::endl;
+  }
+  std::shared_ptr<PhysicsGeometry> convexPhysicsGeometry;
+  {
+    std::cout << "bake 4" << std::endl;
+    PxDefaultMemoryOutputStream *dataStream = doBakeConvexGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
+    std::cout << "bake 5" << std::endl;
+    float meshPosition[] = {0, 0, 0};
+    float meshQuaternion[] = {0, 0, 0, 1};
+    std::cout << "bake 6" << std::endl;
+    convexPhysicsGeometry = doMakeBakedConvexGeometry(&tracker->physicer, dataStream, meshPosition, meshQuaternion);
+    std::cout << "bake 7" << std::endl;
+    // delete dataStream;
+    std::cout << "bake 7.1" << std::endl;
+  }
 
   EarcutResult *result = new EarcutResult();
   result->positions = outPositions.data();
@@ -559,7 +581,9 @@ EarcutResult *doEarcut(float *positions, unsigned int numPositions, float *holes
   result->numUvs = uvs.size();
   result->indices = indices.data();
   result->numIndices = indices.size();
-  /* result->physicsGeometry = std::move(physicsGeometry);
-  result->physicsGeometryPtr = result->physicsGeometry.get(); */
+  result->trianglePhysicsGeometry = std::move(trianglePhysicsGeometry);
+  result->trianglePhysicsGeometryPtr = result->trianglePhysicsGeometry.get();
+  result->convexPhysicsGeometry = std::move(convexPhysicsGeometry);
+  result->convexPhysicsGeometryPtr = result->convexPhysicsGeometry.get();
   return result;
 }
