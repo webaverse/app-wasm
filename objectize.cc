@@ -207,11 +207,11 @@ EMSCRIPTEN_KEEPALIVE void deleteConvexHullResult(ConvexHullResult *result) {
 
 // earcut
 
-EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs) {
-  return doEarcut(tracker, positions, numPositions, holes, holeCounts, numHoleCounts, points, numPoints, z, zs);
+EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs, float *position, float *quaternion) {
+  return doEarcut(tracker, positions, numPositions, holes, holeCounts, numHoleCounts, points, numPoints, z, zs, position, quaternion);
 }
-EMSCRIPTEN_KEEPALIVE void deleteEarcutResult(EarcutResult *result) {
-  doDeleteEarcutResult(result);
+EMSCRIPTEN_KEEPALIVE void deleteEarcutResult(Tracker *tracker, EarcutResult *result) {
+  doDeleteEarcutResult(tracker, result);
 }
 
 // requests

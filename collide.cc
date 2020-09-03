@@ -68,8 +68,11 @@ std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefau
   std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> spec = doMakeBakedGeometryRaw(physicer, writeStream);
   PxTriangleMeshGeometry *triangleMeshGeom = spec.second;
 
+  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+
   // Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, Vec(), Quat(), spec.first, nullptr, triangleMeshGeom, Vec(), Quat(), /*boundingSphere,*/ physicer));
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, p, q, spec.first, nullptr, triangleMeshGeom, p, q, /*boundingSphere,*/ physicer));
 
   return std::move(geometrySpec);
 }
@@ -77,8 +80,11 @@ std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometry(Physicer *physicer, P
   std::pair<PxConvexMesh *, PxConvexMeshGeometry *> spec = doMakeBakedConvexGeometryRaw(physicer, writeStream);
   PxConvexMeshGeometry *convexMeshGeom = spec.second;
 
+  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+
   // Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, Vec(), Quat(), nullptr, spec.first, convexMeshGeom, Vec(), Quat(), /*boundingSphere,*/ physicer));
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, p, q, nullptr, spec.first, convexMeshGeom, p, q, /*boundingSphere,*/ physicer));
 
   return std::move(geometrySpec);
 }
@@ -209,9 +215,12 @@ void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions,
   if (numLandPositions > 0) {
     PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, landPositions, nullptr, numLandPositions, 0);
     float meshPosition[3] = {
-      (float)subparcel->coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+      0,
+      0,
+      0,
+      /* (float)subparcel->coord.x*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
       (float)subparcel->coord.y*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
-      (float)subparcel->coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f,
+      (float)subparcel->coord.z*(float)SUBPARCEL_SIZE + (float)SUBPARCEL_SIZE/2.0f, */
     };
     float meshQuaternion[4] = {
       0,
@@ -350,6 +359,9 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
         } */
       }
     }
+    for (std::shared_ptr<PhysicsGeometry> &geometrySpec : tracker->thingPhysxGeometries) {
+      sortedGeometrySpecs.push_back(geometrySpec);
+    }
     /* std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::pair<float, GeometrySpec *> &a, const std::pair<float, GeometrySpec *> &b) -> bool {
       return a.first < b.first;
     }); */
@@ -365,7 +377,7 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
         PxQuat{geometrySpec->quaternion.x, geometrySpec->quaternion.y, geometrySpec->quaternion.z, geometrySpec->quaternion.w}
       };
       PxTransform meshPose3 = meshPose * meshPose2;
-      PxTransform meshPose4 = meshPose2 * meshPose;
+      // PxTransform meshPose4 = meshPose2 * meshPose;
 
       PxU32 hitCount = PxGeometryQuery::raycast(originVec, directionVec,
                                                 *geometry,
@@ -450,6 +462,9 @@ void doCollide(Tracker *tracker, float radius, float halfHeight, float *position
               sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsGeometry>>(false, geometrySpec));
             // }
           }
+        }
+        for (std::shared_ptr<PhysicsGeometry> &geometrySpec : tracker->thingPhysxGeometries) {
+          sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsGeometry>>(false, geometrySpec));
         }
       }
       std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::tuple<bool, std::shared_ptr<PhysicsGeometry>> &a, const std::tuple<bool, std::shared_ptr<PhysicsGeometry>> &b) -> bool {

@@ -40,7 +40,10 @@ inline void fromBinRect(CustomRect& value, RectBinPack::BinRect rect) {
   // If bin is not set, set rectangle to unpacked
   value.packed = rect.bin != RectBinPack::InvalidBin;
 }
-EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs) {
+EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs, float *position, float *quaternion) {
+  Vec p(position[0], position[1], position[2]);
+  Quat q(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+
   std::vector<std::vector<std::array<float, 2>>> polygon;
   std::map<unsigned int, std::vector<unsigned int>> connectivity;
   std::vector<unsigned int> islandIndices;
@@ -551,19 +554,17 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
   std::shared_ptr<PhysicsGeometry> trianglePhysicsGeometry;
   {
     PxDefaultMemoryOutputStream *dataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-    float meshPosition[] = {0, 0, 0};
-    float meshQuaternion[] = {0, 0, 0, 1};
-    trianglePhysicsGeometry = doMakeBakedGeometry(&tracker->physicer, dataStream, meshPosition, meshQuaternion);
+    trianglePhysicsGeometry = doMakeBakedGeometry(&tracker->physicer, dataStream, position, quaternion);
     // delete dataStream;
   }
   std::shared_ptr<PhysicsGeometry> convexPhysicsGeometry;
   {
     PxDefaultMemoryOutputStream *dataStream = doBakeConvexGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-    float meshPosition[] = {0, 0, 0};
-    float meshQuaternion[] = {0, 0, 0, 1};
-    convexPhysicsGeometry = doMakeBakedConvexGeometry(&tracker->physicer, dataStream, meshPosition, meshQuaternion);
+    convexPhysicsGeometry = doMakeBakedConvexGeometry(&tracker->physicer, dataStream, position, quaternion);
     // delete dataStream;
   }
+
+  tracker->thingPhysxGeometries.push_back(trianglePhysicsGeometry);
 
   EarcutResult *result = new EarcutResult();
   result->positions = outPositions.data();
@@ -578,6 +579,8 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
   result->convexPhysicsGeometryPtr = result->convexPhysicsGeometry.get();
   return result;
 }
-void doDeleteEarcutResult(EarcutResult *result) {
+void doDeleteEarcutResult(Tracker *tracker, EarcutResult *result) {
+  auto iter = std::find(tracker->thingPhysxGeometries.begin(), tracker->thingPhysxGeometries.end(), result->trianglePhysicsGeometry);
+  tracker->thingPhysxGeometries.erase(iter);
   delete result;
 }

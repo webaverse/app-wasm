@@ -339,6 +339,8 @@ public:
   std::set<std::shared_ptr<Subparcel>> currentCullSubparcels;
   std::mutex subparcelsMutex;
 
+  std::vector<std::shared_ptr<PhysicsGeometry>> thingPhysxGeometries;
+
   Physicer physicer;
 };
 
