@@ -550,28 +550,19 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
 
   std::shared_ptr<PhysicsGeometry> trianglePhysicsGeometry;
   {
-    std::cout << "bake 1" << std::endl;
     PxDefaultMemoryOutputStream *dataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-    std::cout << "bake 2" << std::endl;
     float meshPosition[] = {0, 0, 0};
     float meshQuaternion[] = {0, 0, 0, 1};
     trianglePhysicsGeometry = doMakeBakedGeometry(&tracker->physicer, dataStream, meshPosition, meshQuaternion);
-    std::cout << "bake 3" << std::endl;
     // delete dataStream;
-    std::cout << "bake 3.1" << std::endl;
   }
   std::shared_ptr<PhysicsGeometry> convexPhysicsGeometry;
   {
-    std::cout << "bake 4" << std::endl;
     PxDefaultMemoryOutputStream *dataStream = doBakeConvexGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-    std::cout << "bake 5" << std::endl;
     float meshPosition[] = {0, 0, 0};
     float meshQuaternion[] = {0, 0, 0, 1};
-    std::cout << "bake 6" << std::endl;
     convexPhysicsGeometry = doMakeBakedConvexGeometry(&tracker->physicer, dataStream, meshPosition, meshQuaternion);
-    std::cout << "bake 7" << std::endl;
     // delete dataStream;
-    std::cout << "bake 7.1" << std::endl;
   }
 
   EarcutResult *result = new EarcutResult();
