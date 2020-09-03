@@ -227,10 +227,10 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
   std::vector<float> *uvsPtr = new std::vector<float>(outPositions.size());
   std::vector<float> &uvs = *uvsPtr;
   {
-    unsigned int i = 0;
+    float dz = 0;
     float fi = 0;
     unsigned int index = 0;
-    for (float dz = 0; dz <= z; dz += z, i++, fi++) {
+    for (unsigned int i = 0; i < 2; dz += z, i++, fi++) {
       CustomRect &rect = rects[i];
       unsigned int index2 = 0;
       for (auto &line : polygon) {
@@ -252,15 +252,15 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
     }
   }
 
+  // double-layer points
+  unsigned int halfSize = indices.size();
+  indices.resize(halfSize*2);
+  for (unsigned int i = 0; i < halfSize; i++) {
+    indices[halfSize + i] = indices[i] + numVertices/3;
+  }
+
   // std::list<std::set<unsigned int>> islands;
   if (z > 0) {
-    // double-layer points
-    unsigned int halfSize = indices.size();
-    indices.resize(halfSize*2);
-    for (unsigned int i = 0; i < halfSize; i++) {
-      indices[halfSize + i] = indices[i] + numVertices/3;
-    }
-
     // connect layers and deduplicate
     std::map<unsigned int, unsigned int> duplicatedIndices;
     for (unsigned int i = 0; i < halfSize; i += 3) {
@@ -541,11 +541,11 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
       }
     } */
     // std::cout << "num islands " << islands.size() << std::endl;
+  }
 
-    // flip back points
-    for (unsigned int i = 0; i < halfSize; i += 3) {
-      std::swap(indices[i + 1], indices[i + 2]);
-    }
+  // flip back points
+  for (unsigned int i = 0; i < halfSize; i += 3) {
+    std::swap(indices[i + 1], indices[i + 2]);
   }
 
   std::shared_ptr<PhysicsGeometry> trianglePhysicsGeometry;
@@ -577,4 +577,7 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
   result->convexPhysicsGeometry = std::move(convexPhysicsGeometry);
   result->convexPhysicsGeometryPtr = result->convexPhysicsGeometry.get();
   return result;
+}
+void doDeleteEarcutResult(EarcutResult *result) {
+  delete result;
 }

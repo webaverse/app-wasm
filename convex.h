@@ -58,5 +58,8 @@ ConvexHullResult *doConvexHull(float *positions, unsigned int numPositions, floa
   result->bitang = bitang;
   return result;
 }
+void doDeleteConvexHullResult(ConvexHullResult *result) {
+  delete result;
+}
 
 #endif //DAA_CONVEXHULL_CHALGORITHMS_H

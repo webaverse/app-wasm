@@ -201,11 +201,17 @@ EMSCRIPTEN_KEEPALIVE void doChunk(float meshId, int dims[3], float *potential, u
 EMSCRIPTEN_KEEPALIVE ConvexHullResult *convexHull(float *positions, unsigned int numPositions, float *cameraPosition) {
   return doConvexHull(positions, numPositions, cameraPosition);
 }
+EMSCRIPTEN_KEEPALIVE void deleteConvexHullResult(ConvexHullResult *result) {
+  doDeleteConvexHullResult(result);
+}
 
 // earcut
 
 EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs) {
   return doEarcut(tracker, positions, numPositions, holes, holeCounts, numHoleCounts, points, numPoints, z, zs);
+}
+EMSCRIPTEN_KEEPALIVE void deleteEarcutResult(EarcutResult *result) {
+  doDeleteEarcutResult(result);
 }
 
 // requests
