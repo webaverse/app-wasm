@@ -99,7 +99,7 @@ void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions,
 void doObjectPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel);
 void doThingPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel);
 
-void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, Vec &outPosition, Quat &outQuaternion);
+void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
 void doCollide(Tracker *tracker, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
 extern int PEEK_FACE_INDICES[];
 /* (() => {

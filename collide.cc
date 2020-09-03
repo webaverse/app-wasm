@@ -292,7 +292,7 @@ void doThingPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subpa
   delete geometrySpec;
 } */
 
-void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, Vec &outPosition, Quat &outQuaternion) {
+void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion) {
   PxVec3 originVec{origin[0], origin[1], origin[2]};
   PxVec3 directionVec{direction[0], direction[1], direction[2]};
   Ray ray(Vec{origin[0], origin[1], origin[2]}, Vec{direction[0], direction[1], direction[2]});
@@ -385,7 +385,7 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
         objectId = geometrySpec->objectId;
         outPosition = geometrySpec->objectPosition;
         outQuaternion = geometrySpec->objectQuaternion;
-        // faceIndex = hitInfo.faceIndex;
+        faceIndex = hitInfo.faceIndex;
       }
     }
   }
