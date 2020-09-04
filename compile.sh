@@ -1,5 +1,6 @@
 mkdir -p bin
 if [ ! -f draco.o ]; then
+  echo 'building draco...'
   emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
 		draco/mesh/mesh_misc_functions.cc \
 		draco/mesh/mesh_attribute_corner_table.cc \
@@ -83,6 +84,7 @@ if [ ! -f draco.o ]; then
 fi
 if [ ! -f physx.o ]; then
   emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
+  echo 'building physx...'
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -323,11 +325,13 @@ if [ ! -f physx.o ]; then
 	-o physx.o
 fi
 if [ ! -f concaveman.o ]; then
+  echo 'building concaveman...'
   emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
   -Iconcaveman \
   concaveman/concaveman.cpp \
   -o concaveman.o
 fi
+echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
 emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=2 -s TOTAL_MEMORY=399966208 -s MODULARIZE=1 -s 'EXPORT_NAME="GeometryModule"' -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
@@ -366,3 +370,4 @@ emcc -s WASM=1 -s USE_PTHREADS=1 -s NO_FILESYSTEM=1 -s PTHREAD_POOL_SIZE=2 -s TO
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
   -o bin/geometry.js
+echo done
