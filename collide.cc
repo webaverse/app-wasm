@@ -22,8 +22,7 @@ Physicer::Physicer() {
   cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
 }
 
-PhysicsGeometry::PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxConvexMesh *convexMesh, PxGeometry *geometry, Vec position, Quat quaternion, Physicer *physicer) :
-  objectId(objectId), objectPosition(objectPosition), objectQuaternion(objectQuaternion), triangleMesh(triangleMesh), convexMesh(convexMesh), geometry(geometry), position(position), quaternion(quaternion), physicer(physicer) {}
+PhysicsGeometry::PhysicsGeometry(PxTriangleMesh *triangleMesh, PxConvexMesh *convexMesh, PxGeometry *geometry) : triangleMesh(triangleMesh), convexMesh(convexMesh), geometry(geometry) {}
 PhysicsGeometry::~PhysicsGeometry() {
   delete geometry;
   if (triangleMesh) {
@@ -33,6 +32,10 @@ PhysicsGeometry::~PhysicsGeometry() {
     convexMesh->release();
   }
 }
+
+PhysicsObject::PhysicsObject(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, std::shared_ptr<PhysicsGeometry> physicsGeometry, Vec position, Quat quaternion, Physicer *physicer) :
+  objectId(objectId), objectPosition(objectPosition), objectQuaternion(objectQuaternion), physicsGeometry(physicsGeometry), position(position), quaternion(quaternion), physicer(physicer) {}
+PhysicsObject::~PhysicsObject() {}
 
 /* void doInitPhysx() {
   gAllocator = new PxDefaultAllocator();
@@ -64,7 +67,7 @@ std::pair<PxConvexMesh *, PxConvexMeshGeometry *> doMakeBakedConvexGeometryRaw(P
   return std::pair<PxConvexMesh *, PxConvexMeshGeometry *>(convexMesh, convexMeshGeom);
 }
 
-std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
+std::shared_ptr<PhysicsObject> doMakeBakedGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
   std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> spec = doMakeBakedGeometryRaw(physicer, writeStream);
   PxTriangleMeshGeometry *triangleMeshGeom = spec.second;
 
@@ -72,11 +75,12 @@ std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefau
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
 
   // Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, p, q, spec.first, nullptr, triangleMeshGeom, p, q, /*boundingSphere,*/ physicer));
+  std::shared_ptr<PhysicsGeometry> geometry(new PhysicsGeometry(spec.first, nullptr, triangleMeshGeom));
+  std::shared_ptr<PhysicsObject> geometrySpec(new PhysicsObject(objectId, p, q, std::move(geometry), p, q, /*boundingSphere,*/ physicer));
 
   return std::move(geometrySpec);
 }
-std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
+std::shared_ptr<PhysicsObject> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
   std::pair<PxConvexMesh *, PxConvexMeshGeometry *> spec = doMakeBakedConvexGeometryRaw(physicer, writeStream);
   PxConvexMeshGeometry *convexMeshGeom = spec.second;
 
@@ -84,19 +88,20 @@ std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometry(Physicer *physicer, P
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
 
   // Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, p, q, nullptr, spec.first, convexMeshGeom, p, q, /*boundingSphere,*/ physicer));
-
-  return std::move(geometrySpec);
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(nullptr, spec.first, convexMeshGeom));
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, p, q, std::move(geometrySpec), p, q, /*boundingSphere,*/ physicer));
+  return std::move(geometryObject);
 }
-std::shared_ptr<PhysicsGeometry> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, float *meshPosition, float *meshQuaternion) {
+std::shared_ptr<PhysicsObject> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, float *meshPosition, float *meshQuaternion) {
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
   // Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(0, p, q, nullptr, nullptr, geometry, p, q, /*boundingSphere,*/ physicer));
-  return std::move(geometrySpec);
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(nullptr, nullptr, geometry));
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(0, p, q, std::move(geometrySpec), p, q, /*boundingSphere,*/ physicer));
+  return std::move(geometryObject);
 }
 
-std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float w, float h, float d) {
+std::shared_ptr<PhysicsObject> doMakeBoxGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float w, float h, float d) {
   Vec op(objectPosition[0], objectPosition[1], objectPosition[2]);
   Quat oq(objectQuaternion[0], objectQuaternion[1], objectQuaternion[2], objectQuaternion[3]);
   Vec p(position[0], position[1], position[2]);
@@ -104,31 +109,21 @@ std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned 
   Vec halfScale(w/2.0f, h/2.0f, d/2.0f);
   PxBoxGeometry *meshGeom = new PxBoxGeometry(halfScale.x, halfScale.y, halfScale.z);
   // Sphere boundingSphere(0, 0, 0, halfScale.magnitude());
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, op, oq, nullptr, nullptr, meshGeom, p, q, /*boundingSphere,*/ physicer));
-
-  /* {
-    std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
-    physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
-  } */
-
- return std::move(geometrySpec);
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(nullptr, nullptr, meshGeom));
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, op, oq, std::move(geometrySpec), p, q, /*boundingSphere,*/ physicer));
+ return std::move(geometryObject);
 }
 
-std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float radius, float halfHeight) {
+std::shared_ptr<PhysicsObject> doMakeCapsuleGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float radius, float halfHeight) {
   Vec op(objectPosition[0], objectPosition[1], objectPosition[2]);
   Quat oq(objectQuaternion[0], objectQuaternion[1], objectQuaternion[2], objectQuaternion[3]);
   Vec p(position[0], position[1], position[2]);
   Quat q(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
   PxCapsuleGeometry *meshGeom = new PxCapsuleGeometry(radius, halfHeight);
   // Sphere boundingSphere(0, 0, 0, radius + halfHeight);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(objectId, op, oq, nullptr, nullptr, meshGeom, p, q, /*boundingSphere,*/ physicer));
-
-  /* {
-    std::lock_guard<std::mutex> lock(physicer->gPhysicsMutex);
-    physicer->geometrySpecs.push_back(std::weak_ptr<PhysicsGeometry>(geometrySpec));
-  } */
-
-  return std::move(geometrySpec);
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(nullptr, nullptr, meshGeom));
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, op, oq, std::move(geometrySpec), p, q, /*boundingSphere,*/ physicer));
+  return std::move(geometryObject);
 }
 
 PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices) {
@@ -228,19 +223,19 @@ void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions,
       0,
       1,
     };
-    subparcel->physxGeometry = doMakeBakedGeometry(&tracker->physicer, writeStream, 0, meshPosition, meshQuaternion);
+    subparcel->landPhysxObject = doMakeBakedGeometry(&tracker->physicer, writeStream, 0, meshPosition, meshQuaternion);
   } else {
-    subparcel->physxGeometry = nullptr;
+    subparcel->landPhysxObject = nullptr;
   }
 }
 
 void doObjectPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel) {
-  subparcel->objectPhysxGeometries.clear();
-  subparcel->objectPhysxGeometries.reserve(subparcel->numObjects);
+  subparcel->vegetationPhysxObjects.clear();
+  subparcel->vegetationPhysxObjects.reserve(subparcel->numObjects);
   for (unsigned int i = 0; i < subparcel->numObjects; i++) {
     Object &object = subparcel->objects[i];
     if (strcmp(object.name, "spawner") != 0) {
-      std::shared_ptr<PhysicsGeometry> physxGeometry;
+      std::shared_ptr<PhysicsObject> physxObject;
       auto shapeIter = PHYSICS_SHAPES.find(object.name);
       if (shapeIter != PHYSICS_SHAPES.end()) {
         const Shape &shape = shapeIter->second;
@@ -253,21 +248,21 @@ void doObjectPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subp
         Quat quaternion;
         Vec scale;
         matrix.decompose(position, quaternion, scale);
-        physxGeometry = doMakeBoxGeometry(&tracker->physicer, object.id, position.data, quaternion.data, position.data, quaternion.data, shape.scale.x, shape.scale.y, shape.scale.z);
+        physxObject = doMakeBoxGeometry(&tracker->physicer, object.id, position.data, quaternion.data, position.data, quaternion.data, shape.scale.x, shape.scale.y, shape.scale.z);
       } else {
         Vec position = object.position;
         position += Vec{0, (2.0f+0.5f)/2.0f, 0};
         Quat quaternion = object.quaternion;
         quaternion.multiply(Quat(Vec{0, 0, 1}, PI/2.0f));
-        physxGeometry = doMakeCapsuleGeometry(&tracker->physicer, object.id, object.position.data, object.quaternion.data, position.data, quaternion.data, 0.5, 2);
+        physxObject = doMakeCapsuleGeometry(&tracker->physicer, object.id, object.position.data, object.quaternion.data, position.data, quaternion.data, 0.5, 2);
       }
-      subparcel->objectPhysxGeometries.push_back(std::move(physxGeometry));
+      subparcel->vegetationPhysxObjects.push_back(std::move(physxObject));
     }
   }
 }
 void doThingPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subparcel) {
-  subparcel->thingPhysxGeometries.clear();
-  subparcel->thingPhysxGeometries.reserve(subparcel->numThings);
+  subparcel->thingPhysxObjects.clear();
+  subparcel->thingPhysxObjects.reserve(subparcel->numThings);
   for (unsigned int i = 0; i < subparcel->numThings; i++) {
     Thing &thing = subparcel->things[i];
     std::string name(thing.name);
@@ -277,8 +272,8 @@ void doThingPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subpa
       Geometry *geometry = iter->second;
       PxGeometry *physxGeometrySrc = geometry->physxGeometry;
       if (physxGeometrySrc) {
-        std::shared_ptr<PhysicsGeometry> physxGeometry = doMakeGeometry(&tracker->physicer, physxGeometrySrc, thing.position.data, thing.quaternion.data);
-        subparcel->thingPhysxGeometries.push_back(std::move(physxGeometry));
+        std::shared_ptr<PhysicsObject> physxGeometry = doMakeGeometry(&tracker->physicer, physxGeometrySrc, thing.position.data, thing.quaternion.data);
+        subparcel->thingPhysxObjects.push_back(std::move(physxGeometry));
       } else {
         std::cout << "no physx geometry for " << name << std::endl;
         abort();
@@ -317,7 +312,7 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
   const PxHitFlags hitFlags = PxHitFlag::eDEFAULT;
   constexpr PxU32 maxHits = 1;
 
-  std::vector<std::shared_ptr<PhysicsGeometry>> sortedGeometrySpecs;
+  std::vector<std::shared_ptr<PhysicsObject>> sortedGeometrySpecs;
   sortedGeometrySpecs.reserve(256);
   {
     std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
@@ -325,7 +320,7 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
     for (auto &iter : tracker->subparcels) {
       std::shared_ptr<Subparcel> &subparcel = iter.second;
       {
-        std::shared_ptr<PhysicsGeometry> &geometrySpec = subparcel->physxGeometry;
+        std::shared_ptr<PhysicsObject> &geometrySpec = subparcel->landPhysxObject;
         if (geometrySpec) {
           /* Sphere sphere(
             (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
@@ -337,7 +332,7 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
           // }
         }
       }
-      for (std::shared_ptr<PhysicsGeometry> &geometrySpec : subparcel->objectPhysxGeometries) {
+      for (std::shared_ptr<PhysicsObject> &geometrySpec : subparcel->vegetationPhysxObjects) {
         /*  Sphere sphere(
           (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
             .applyQuaternion(q) + p,
@@ -347,7 +342,7 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
           sortedGeometrySpecs.push_back(geometrySpec);
         // }
       }
-      for (std::shared_ptr<PhysicsGeometry> &geometrySpec : subparcel->thingPhysxGeometries) {
+      for (std::shared_ptr<PhysicsObject> &geometrySpec : subparcel->thingPhysxObjects) {
         sortedGeometrySpecs.push_back(geometrySpec);
         /* Sphere sphere(
           (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
@@ -359,7 +354,7 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
         } */
       }
     }
-    for (std::shared_ptr<PhysicsGeometry> &geometrySpec : tracker->thingPhysxGeometries) {
+    for (std::shared_ptr<PhysicsObject> &geometrySpec : tracker->thingPhysxObjects) {
       sortedGeometrySpecs.push_back(geometrySpec);
     }
     /* std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::pair<float, GeometrySpec *> &a, const std::pair<float, GeometrySpec *> &b) -> bool {
@@ -368,10 +363,10 @@ void doRaycast(Tracker *tracker, float *origin, float *direction, float *meshPos
   }
   {
     hit = 0;
-    for (std::shared_ptr<PhysicsGeometry> &geometrySpec : sortedGeometrySpecs) {
+    for (std::shared_ptr<PhysicsObject> &geometrySpec : sortedGeometrySpecs) {
       // doRaycastSingle(geometrySpec, meshPose);
 
-      PxGeometry *geometry = geometrySpec->geometry;
+      PxGeometry *geometry = geometrySpec->physicsGeometry->geometry;
       PxTransform meshPose2{
         PxVec3{geometrySpec->position.x, geometrySpec->position.y, geometrySpec->position.z},
         PxQuat{geometrySpec->quaternion.x, geometrySpec->quaternion.y, geometrySpec->quaternion.z, geometrySpec->quaternion.w}
@@ -418,9 +413,9 @@ void doCollide(Tracker *tracker, float radius, float halfHeight, float *position
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
   
-  // std::set<PhysicsGeometry *> &staticGeometrySpecs = physicer->staticGeometrySpecs;
-  // std::vector<std::set<PhysicsGeometry *> *> &geometrySpecSets = physicer->geometrySpecSets;
-  std::vector<std::tuple<bool, std::shared_ptr<PhysicsGeometry>>> sortedGeometrySpecs;
+  // std::set<PhysicsObject *> &staticGeometrySpecs = physicer->staticGeometrySpecs;
+  // std::vector<std::set<PhysicsObject *> *> &geometrySpecSets = physicer->geometrySpecSets;
+  std::vector<std::tuple<bool, std::shared_ptr<PhysicsObject>>> sortedGeometrySpecs;
   sortedGeometrySpecs.reserve(256);
   Vec offset(0, 0, 0);
   bool anyHadHit = false;
@@ -436,38 +431,38 @@ void doCollide(Tracker *tracker, float radius, float halfHeight, float *position
         for (auto &iter : tracker->subparcels) {
           std::shared_ptr<Subparcel> &subparcel = iter.second;
           {
-            std::shared_ptr<PhysicsGeometry> &geometrySpec = subparcel->physxGeometry;
+            std::shared_ptr<PhysicsObject> &geometrySpec = subparcel->landPhysxObject;
             if (geometrySpec) {
               /* Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
                 .applyQuaternion(q) + p;
               float distance = spherePosition.distanceTo(capsulePosition);
               if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) { */
-                sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsGeometry>>(true, geometrySpec));
+                sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsObject>>(true, geometrySpec));
               // }
             }
           }
-          for (std::shared_ptr<PhysicsGeometry> &geometrySpec : subparcel->objectPhysxGeometries) {
+          for (std::shared_ptr<PhysicsObject> &geometrySpec : subparcel->vegetationPhysxObjects) {
             /* Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
               .applyQuaternion(q) + p;
             float distance = spherePosition.distanceTo(capsulePosition);
             if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) { */
-              sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsGeometry>>(false, geometrySpec));
+              sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsObject>>(false, geometrySpec));
             // }
           }
-          for (std::shared_ptr<PhysicsGeometry> &geometrySpec : subparcel->thingPhysxGeometries) {
+          for (std::shared_ptr<PhysicsObject> &geometrySpec : subparcel->thingPhysxObjects) {
             /* Vec spherePosition = (geometrySpec->boundingSphere.center.clone().applyQuaternion(geometrySpec->quaternion) + geometrySpec->position)
               .applyQuaternion(q) + p;
             float distance = spherePosition.distanceTo(capsulePosition);
             if (distance < (geometrySpec->boundingSphere.radius + halfHeight + radius)) { */
-              sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsGeometry>>(false, geometrySpec));
+              sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsObject>>(false, geometrySpec));
             // }
           }
         }
-        for (std::shared_ptr<PhysicsGeometry> &geometrySpec : tracker->thingPhysxGeometries) {
-          sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsGeometry>>(false, geometrySpec));
+        for (std::shared_ptr<PhysicsObject> &geometrySpec : tracker->thingPhysxObjects) {
+          sortedGeometrySpecs.push_back(std::tuple<bool, std::shared_ptr<PhysicsObject>>(false, geometrySpec));
         }
       }
-      std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::tuple<bool, std::shared_ptr<PhysicsGeometry>> &a, const std::tuple<bool, std::shared_ptr<PhysicsGeometry>> &b) -> bool {
+      std::sort(sortedGeometrySpecs.begin(), sortedGeometrySpecs.end(), [](const std::tuple<bool, std::shared_ptr<PhysicsObject>> &a, const std::tuple<bool, std::shared_ptr<PhysicsObject>> &b) -> bool {
         const bool &aStatic = std::get<0>(a);
         const bool &bStatic = std::get<0>(b);
         return aStatic > bStatic;
@@ -481,9 +476,9 @@ void doCollide(Tracker *tracker, float radius, float halfHeight, float *position
       });
 
       bool hadHit = false;
-      for (const std::tuple<bool, std::shared_ptr<PhysicsGeometry>> &t : sortedGeometrySpecs) {
-        const std::shared_ptr<PhysicsGeometry> &geometrySpec = std::get<1>(t);
-        PxGeometry *geometry = geometrySpec->geometry;
+      for (const std::tuple<bool, std::shared_ptr<PhysicsObject>> &t : sortedGeometrySpecs) {
+        const std::shared_ptr<PhysicsObject> &geometrySpec = std::get<1>(t);
+        PxGeometry *geometry = geometrySpec->physicsGeometry->geometry;
         PxTransform meshPose2{
           PxVec3{geometrySpec->position.x, geometrySpec->position.y, geometrySpec->position.z},
           PxQuat{geometrySpec->quaternion.x, geometrySpec->quaternion.y, geometrySpec->quaternion.z, geometrySpec->quaternion.w}

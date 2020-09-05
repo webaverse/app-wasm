@@ -339,7 +339,7 @@ public:
   std::set<std::shared_ptr<Subparcel>> currentCullSubparcels;
   std::mutex subparcelsMutex;
 
-  std::vector<std::shared_ptr<PhysicsGeometry>> thingPhysxGeometries;
+  std::vector<std::shared_ptr<PhysicsObject>> thingPhysxObjects;
 
   Physicer physicer;
 };
@@ -444,9 +444,9 @@ public:
   Group vegetationGroups[1];
   Group thingGroups[1];
 
-  std::shared_ptr<PhysicsGeometry> physxGeometry;
-  std::vector<std::shared_ptr<PhysicsGeometry>> objectPhysxGeometries;
-  std::vector<std::shared_ptr<PhysicsGeometry>> thingPhysxGeometries;
+  std::shared_ptr<PhysicsObject> landPhysxObject;
+  std::vector<std::shared_ptr<PhysicsObject>> vegetationPhysxObjects;
+  std::vector<std::shared_ptr<PhysicsObject>> thingPhysxObjects;
 };
 
 #endif

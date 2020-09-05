@@ -28,15 +28,22 @@ class Object;
 class GeometrySet;
 class PhysicsGeometry {
 public:
-  PhysicsGeometry(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, PxTriangleMesh *triangleMesh, PxConvexMesh *convexMesh, PxGeometry *geometry, Vec position, Quat quaternion, Physicer *physicer);
+  PhysicsGeometry(PxTriangleMesh *triangleMesh, PxConvexMesh *convexMesh, PxGeometry *geometry);
   ~PhysicsGeometry();
+
+  PxTriangleMesh *triangleMesh;
+  PxConvexMesh *convexMesh;
+  PxGeometry *geometry;
+};
+class PhysicsObject {
+public:
+  PhysicsObject(unsigned int objectId, Vec objectPosition, Quat objectQuaternion, std::shared_ptr<PhysicsGeometry> physicsGeometry, Vec position, Quat quaternion, Physicer *physicer);
+  ~PhysicsObject();
 
   unsigned int objectId;
   Vec objectPosition;
   Quat objectQuaternion;
-  PxTriangleMesh *triangleMesh;
-  PxConvexMesh *convexMesh;
-  PxGeometry *geometry;
+  std::shared_ptr<PhysicsGeometry> physicsGeometry;
   Vec position;
   Quat quaternion;
   Physicer *physicer;
@@ -66,12 +73,12 @@ public:
 std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> doMakeBakedGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream);
 std::pair<PxConvexMesh *, PxConvexMeshGeometry *> doMakeBakedConvexGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream);
 
-std::shared_ptr<PhysicsGeometry> doMakeBakedGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion);
-std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion);
-std::shared_ptr<PhysicsGeometry> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, float *meshPosition, float *meshQuaternion);
+std::shared_ptr<PhysicsObject> doMakeBakedGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion);
+std::shared_ptr<PhysicsObject> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion);
+std::shared_ptr<PhysicsObject> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, float *meshPosition, float *meshQuaternion);
 
-std::shared_ptr<PhysicsGeometry> doMakeBoxGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float w, float h, float d);
-std::shared_ptr<PhysicsGeometry> doMakeCapsuleGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float radius, float halfHeight);
+std::shared_ptr<PhysicsObject> doMakeBoxGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float w, float h, float d);
+std::shared_ptr<PhysicsObject> doMakeCapsuleGeometry(Physicer *physicer, unsigned int objectId, float *objectPosition, float *objectQuaternion, float *position, float *quaternion, float radius, float halfHeight);
 
 PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices);
 PxDefaultMemoryOutputStream *doBakeConvexGeometry(Physicer *physicer, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices);

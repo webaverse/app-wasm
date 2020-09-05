@@ -9,10 +9,10 @@ public:
   unsigned int numUvs;
   uint32_t *indices;
   unsigned int numIndices;
-  PhysicsGeometry *trianglePhysicsGeometryPtr;
-  PhysicsGeometry *convexPhysicsGeometryPtr;
-  std::shared_ptr<PhysicsGeometry> trianglePhysicsGeometry;
-  std::shared_ptr<PhysicsGeometry> convexPhysicsGeometry;
+  PhysicsObject *trianglePhysicsObjectPtr;
+  PhysicsObject *convexPhysicsObjectPtr;
+  std::shared_ptr<PhysicsObject> trianglePhysicsObject;
+  std::shared_ptr<PhysicsObject> convexPhysicsObject;
 };
 
 struct CustomRect {
@@ -551,20 +551,20 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
     std::swap(indices[i + 1], indices[i + 2]);
   }
 
-  std::shared_ptr<PhysicsGeometry> trianglePhysicsGeometry;
+  std::shared_ptr<PhysicsObject> trianglePhysicsObject;
   {
     PxDefaultMemoryOutputStream *dataStream = doBakeGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-    trianglePhysicsGeometry = doMakeBakedGeometry(&tracker->physicer, dataStream, id, position, quaternion);
+    trianglePhysicsObject = doMakeBakedGeometry(&tracker->physicer, dataStream, id, position, quaternion);
     // delete dataStream;
   }
-  std::shared_ptr<PhysicsGeometry> convexPhysicsGeometry;
+  std::shared_ptr<PhysicsObject> convexPhysicsObject;
   {
     PxDefaultMemoryOutputStream *dataStream = doBakeConvexGeometry(&tracker->physicer, outPositions.data(), indices.data(), outPositions.size(), indices.size());
-    convexPhysicsGeometry = doMakeBakedConvexGeometry(&tracker->physicer, dataStream, id, position, quaternion);
+    convexPhysicsObject = doMakeBakedConvexGeometry(&tracker->physicer, dataStream, id, position, quaternion);
     // delete dataStream;
   }
 
-  tracker->thingPhysxGeometries.push_back(trianglePhysicsGeometry);
+  tracker->thingPhysxObjects.push_back(trianglePhysicsObject);
 
   EarcutResult *result = new EarcutResult();
   result->positions = outPositions.data();
@@ -573,14 +573,14 @@ EarcutResult *doEarcut(Tracker *tracker, float *positions, unsigned int numPosit
   result->numUvs = uvs.size();
   result->indices = indices.data();
   result->numIndices = indices.size();
-  result->trianglePhysicsGeometry = std::move(trianglePhysicsGeometry);
-  result->trianglePhysicsGeometryPtr = result->trianglePhysicsGeometry.get();
-  result->convexPhysicsGeometry = std::move(convexPhysicsGeometry);
-  result->convexPhysicsGeometryPtr = result->convexPhysicsGeometry.get();
+  result->trianglePhysicsObject = std::move(trianglePhysicsObject);
+  result->trianglePhysicsObjectPtr = result->trianglePhysicsObject.get();
+  result->convexPhysicsObject = std::move(convexPhysicsObject);
+  result->convexPhysicsObjectPtr = result->convexPhysicsObject.get();
   return result;
 }
 void doDeleteEarcutResult(Tracker *tracker, EarcutResult *result) {
-  auto iter = std::find(tracker->thingPhysxGeometries.begin(), tracker->thingPhysxGeometries.end(), result->trianglePhysicsGeometry);
-  tracker->thingPhysxGeometries.erase(iter);
+  auto iter = std::find(tracker->thingPhysxObjects.begin(), tracker->thingPhysxObjects.end(), result->trianglePhysicsObject);
+  tracker->thingPhysxObjects.erase(iter);
   delete result;
 }
