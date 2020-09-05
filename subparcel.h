@@ -253,20 +253,6 @@ public:
   int index;
 };
 
-class NeededCoords {
-public:
-  NeededCoords(std::vector<Coord> &&addedCoords) : addedCoords(std::move(addedCoords)), numLoadedCoords(0), numGenerateCoords(0) {
-    addedCoordsPtr = this->addedCoords.data();
-    numAddedCoords = this->addedCoords.size();
-  }
-
-  Coord *addedCoordsPtr;
-  unsigned int numAddedCoords;
-  unsigned int numLoadedCoords;
-  unsigned int numGenerateCoords;
-  std::vector<Coord> addedCoords;
-};
-
 constexpr unsigned int atlasTextureSize = 4096;
 constexpr unsigned int objectTextureSize = 512;
 constexpr unsigned int maxAtlasTextures = (atlasTextureSize * atlasTextureSize) / (objectTextureSize * objectTextureSize);
@@ -274,6 +260,7 @@ constexpr unsigned int maxAtlasTextureRowObjects = atlasTextureSize / objectText
 class GeometrySet;
 class FreeEntry;
 class Subparcel;
+class NeededCoords;
 namespace physx {
   class PxDefaultAllocator;
   class PxDefaultErrorCallback;
@@ -313,7 +300,8 @@ public:
     ArenaAllocator *thingTorchLightsAllocator
   );
   NeededCoords *updateNeededCoords(float x, float y, float z);
-  void finishUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, NeededCoords *neededCoords);
+  void subparcelUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, NeededCoords *neededCoords, Subparcel *subparcel, unsigned int generate);
+  void finishUpdate(NeededCoords *neededCoords);
 
   int seed;
   unsigned int meshId;
@@ -464,6 +452,23 @@ public:
   std::shared_ptr<PhysicsObject> landPhysxObject;
   std::vector<std::shared_ptr<PhysicsObject>> vegetationPhysxObjects;
   std::vector<std::shared_ptr<PhysicsObject>> thingPhysxObjects;
+};
+
+class NeededCoords {
+public:
+  NeededCoords(std::map<int, std::shared_ptr<Subparcel>> &&subparcelMap) : subparcelMap(std::move(subparcelMap)), numAddedSubparcels(0) {
+    subparcels.reserve(this->subparcelMap.size());
+    for (const auto &iter : this->subparcelMap) {
+      subparcels.push_back(iter.second.get());
+    }
+    subparcelsPtr = subparcels.data();
+    numAddedSubparcels = subparcels.size();
+  }
+
+  Subparcel **subparcelsPtr;
+  unsigned int numAddedSubparcels;
+  std::map<int, std::shared_ptr<Subparcel>> subparcelMap;
+  std::vector<Subparcel *> subparcels;
 };
 
 #endif

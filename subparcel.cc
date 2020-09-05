@@ -227,6 +227,17 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
         }
       }
 
+      std::map<int, std::shared_ptr<Subparcel>> subparcelMap;
+      {
+        std::lock_guard<std::mutex> lock(subparcelsMutex);
+
+        for (const Coord &addedCoord : addedCoords) {
+          std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
+          loadingSubparcels[addedCoord.index] = subparcel;
+        }
+        subparcelMap = loadingSubparcels;
+      }
+
       std::vector<Coord> removedCoords;
       removedCoords.reserve(256);
       for (const Coord &lastNeededCoord : lastNeededCoords) {
@@ -260,7 +271,7 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
 
       updatePending = true;
 
-      return new NeededCoords(std::move(addedCoords));
+      return new NeededCoords(std::move(subparcelMap));
     } else {
       return nullptr;
     }
@@ -268,9 +279,8 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
     return nullptr;
   }
 }
-inline void subparcelFinishUpdate(Tracker *tracker, ThreadPool *threadPool, GeometrySet *geometrySet, const Coord &addedCoord, bool generate) {
-  std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, tracker));
-  tracker->loadingSubparcels[addedCoord.index] = subparcel;
+void Tracker::subparcelUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, NeededCoords *neededCoords, Subparcel *subparcel, unsigned int generate) {
+  std::shared_ptr<Subparcel> &subparcelSharedPtr = neededCoords->subparcelMap[subparcel->coord.index];
 
   unsigned int count = 5;
   Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
@@ -281,32 +291,17 @@ inline void subparcelFinishUpdate(Tracker *tracker, ThreadPool *threadPool, Geom
 
   {
     unsigned int *u32 = (unsigned int *)message->args;
-    u32[0] = tracker->seed;
-    u32[1] = (unsigned int)tracker;
+    u32[0] = seed;
+    u32[1] = (unsigned int)this;
     u32[2] = (unsigned int)geometrySet;
-    u32[3] = (unsigned int)(new std::shared_ptr<Subparcel>(subparcel));
-    u32[4] = (unsigned int)generate;
+    u32[3] = (unsigned int)(new std::shared_ptr<Subparcel>(subparcelSharedPtr));
+    u32[4] = generate;
   }
 
   threadPool->inbox.queue(message);
 }
-void Tracker::finishUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, NeededCoords *neededCoords) {
-  {
-    std::lock_guard<std::mutex> lock(subparcelsMutex);
-
-    std::cout << "finish update " << neededCoords->numLoadedCoords << " " << neededCoords->numGenerateCoords << std::endl;
-    unsigned int index = 0;
-    for (unsigned int i = 0; i < neededCoords->numLoadedCoords; i++, index++) {
-      const Coord &addedCoord = neededCoords->addedCoordsPtr[index];
-      subparcelFinishUpdate(this, threadPool, geometrySet, addedCoord, false);
-    }
-    for (unsigned int i = 0; i < neededCoords->numGenerateCoords; i++, index++) {
-      const Coord &addedCoord = neededCoords->addedCoordsPtr[index];
-      subparcelFinishUpdate(this, threadPool, geometrySet, addedCoord, true);
-    }
-  }
+void Tracker::finishUpdate(NeededCoords *neededCoords) {
   delete neededCoords;
-
   updatePending = false;
 }
 
