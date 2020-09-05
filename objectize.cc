@@ -821,16 +821,19 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
     threadPool->outbox.push(Message);
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // chunk
+  [](ThreadPool *threadPool, Message *message) -> void { // chunk
     unsigned int index = 0;
-    int seed = *((int *)(Message->args + index));
+    int seed = *((int *)(message->args + index));
     index += sizeof(int);
-    void *trackerByteOffset = *((void **)(Message->args + index));
+    void *trackerByteOffset = *((void **)(message->args + index));
     index += sizeof(void *);
-    void *geometrySetByteOffset = *((void **)(Message->args + index));
+    void *geometrySetByteOffset = *((void **)(message->args + index));
     index += sizeof(void *);
-    void *subparcelSharedPtrByteOffset = *((void **)(Message->args + index));
+    void *subparcelSharedPtrByteOffset = *((void **)(message->args + index));
     index += sizeof(void *);
+
+    free(message);
+    message = nullptr;
 
     Tracker *tracker = (Tracker *)trackerByteOffset;
     GeometrySet *geometrySet = (GeometrySet *)geometrySetByteOffset;
@@ -849,6 +852,23 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
         // std::cout << "execute chunk " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
         noise3(seed, subparcel->coord.x, subparcel->coord.y, subparcel->coord.z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcel.get());
+      }
+
+      {
+        unsigned int count = 2;
+        Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
+        message->id = -1;
+        message->method = (int)MESSAGES::updateSubparcel;
+        message->priority = 0;
+        message->count = count;
+
+        unsigned int index = 0;
+        *((Subparcel **)(message->args + index)) = subparcel.get();
+        index += sizeof(Subparcel *);
+        *((unsigned int *)(message->args + index)) = offsetof(Subparcel, things) + sizeof(Subparcel::things);
+        index += sizeof(unsigned int);
+
+        threadPool->outbox.push(message);
       }
 
       float *landPositions;
@@ -1123,78 +1143,76 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       doThingPhysics(tracker, geometrySet, subparcel.get());
 
       // output
-      // std::cout << "return 1" << std::endl;
-      Message->method = (int)MESSAGES::updateGeometry;
+      {
+        unsigned int count = 128;
+        Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
+        message->id = -1;
+        message->method = (int)MESSAGES::updateGeometry;
+        message->priority = 0;
+        message->count = count;
 
-      // std::cout << "return 2" << std::endl;
+        unsigned int index = 0;
+        *((FreeEntry **)(message->args + index)) = subparcel->landPositionsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->landNormalsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->landUvsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->landAosEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->landIdsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->landSkyLightsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->landTorchLightsEntry.get();
+        index += sizeof(FreeEntry *);
 
-      index = 0;
-      *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
-      index += sizeof(FreeEntry *);
-      /* *((FreeEntry **)(Message->args + index)) = subparcel->landBarycentricsEntry.get();
-      index += sizeof(FreeEntry *); */
-      *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry.get();
-      index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->vegetationPositionsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->vegetationUvsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->vegetationIdsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->vegetationIndicesEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
+        index += sizeof(FreeEntry *);
 
-      // std::cout << "return 3" << std::endl;
+        *((FreeEntry **)(message->args + index)) = subparcel->thingPositionsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->thingUvsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->thingAtlasUvsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->thingIdsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->thingIndicesEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->thingSkyLightsEntry.get();
+        index += sizeof(FreeEntry *);
+        *((FreeEntry **)(message->args + index)) = subparcel->thingTorchLightsEntry.get();
+        index += sizeof(FreeEntry *);
 
-      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
-      index += sizeof(FreeEntry *);
+        if (textureUpdated) {
+          *((unsigned char **)(message->args + index)) = tracker->atlasTexture.data();
+          index += sizeof(unsigned char *);
+        } else {
+          *((unsigned char **)(message->args + index)) = nullptr;
+          index += sizeof(unsigned char *);
+        }
 
-      *((FreeEntry **)(Message->args + index)) = subparcel->thingPositionsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->thingUvsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->thingAtlasUvsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->thingIdsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->thingIndicesEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->thingSkyLightsEntry.get();
-      index += sizeof(FreeEntry *);
-      *((FreeEntry **)(Message->args + index)) = subparcel->thingTorchLightsEntry.get();
-      index += sizeof(FreeEntry *);
+        *((std::shared_ptr<Subparcel> **)(message->args + index)) = subparcelSharedPtr;
+        index += sizeof(std::shared_ptr<Subparcel> *);
 
-      if (textureUpdated) {
-        *((unsigned char **)(Message->args + index)) = tracker->atlasTexture.data();
-        index += sizeof(unsigned char *);
-      } else {
-        *((unsigned char **)(Message->args + index)) = nullptr;
-        index += sizeof(unsigned char *);
+        /* if (index/sizeof(unsigned int) > message->count) {
+          std::cout << "message overflow " << index << " " << message->count << std::endl;
+          abort();
+        } */
+
+        threadPool->outbox.push(message);
       }
-
-      *((std::shared_ptr<Subparcel> **)(Message->args + index)) = subparcelSharedPtr;
-      index += sizeof(std::shared_ptr<Subparcel> *);
-
-      // std::cout << "return 4" << std::endl;
-
-      if (index/sizeof(unsigned int) > Message->count) {
-        std::cout << "message overflow " << index << " " << Message->count << std::endl;
-        abort();
-      }
-
-      threadPool->outbox.push(Message);
 
       // std::cout << "return update " << (void *)subparcelSharedPtr << " " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
     }

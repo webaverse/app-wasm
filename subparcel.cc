@@ -279,7 +279,7 @@ void Tracker::finishUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, Nee
         std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
         loadingSubparcels[addedCoord.index] = subparcel;
 
-        unsigned int count = 128;
+        unsigned int count = 4;
         Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
         message->id = -1;
         message->method = (int)METHODS::chunk;

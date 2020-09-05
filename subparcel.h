@@ -217,7 +217,8 @@ enum class METHODS : int {
   addThing,
 };
 enum class MESSAGES : int {
-  updateGeometry = -1,
+  updateSubparcel = -1,
+  updateGeometry = -2,
 };
 extern "C" {
   extern std::function<void(ThreadPool *, Message *)> METHOD_FNS[];
