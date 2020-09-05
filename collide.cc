@@ -82,11 +82,11 @@ std::shared_ptr<PhysicsObject> doMakeBakedConvexGeometry(Physicer *physicer, PxD
   std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, p, q, std::move(geometrySpec), p, q, physicer));
   return std::move(geometryObject);
 }
-std::shared_ptr<PhysicsObject> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, float *meshPosition, float *meshQuaternion) {
+std::shared_ptr<PhysicsObject> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
   std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(nullptr, nullptr, geometry));
-  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(0, p, q, std::move(geometrySpec), p, q, physicer));
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, p, q, std::move(geometrySpec), p, q, physicer));
   return std::move(geometryObject);
 }
 
@@ -261,7 +261,7 @@ void doThingPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subpa
       Geometry *geometry = iter->second;
       PxGeometry *physxGeometrySrc = geometry->physicsGeometry->geometry;
       if (physxGeometrySrc) {
-        std::shared_ptr<PhysicsObject> physxGeometry = doMakeGeometry(&tracker->physicer, physxGeometrySrc, thing.position.data, thing.quaternion.data);
+        std::shared_ptr<PhysicsObject> physxGeometry = doMakeGeometry(&tracker->physicer, physxGeometrySrc, thing.id, thing.position.data, thing.quaternion.data);
         subparcel->thingPhysxObjects.push_back(std::move(physxGeometry));
       } else {
         std::cout << "no physx geometry for " << name << std::endl;
