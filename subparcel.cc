@@ -162,7 +162,9 @@ Tracker::Tracker(
   seed(seed),
   meshId(meshId),
   chunkDistance(chunkDistance),
+
   lastCoord(0, 256, 0),
+  updatePending(false),
 
   landPositionsAllocator(landPositionsAllocator),
   landNormalsAllocator(landNormalsAllocator),
@@ -191,59 +193,91 @@ Tracker::Tracker(
   atlasTexture(atlasTextureSize * atlasTextureSize * 4),
   atlasFreeList(maxAtlasTextures)
 {}
-void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z) {
-  Coord coord(
-    (int)std::floor(x/(float)SUBPARCEL_SIZE),
-    (int)std::floor(y/(float)SUBPARCEL_SIZE),
-    (int)std::floor(z/(float)SUBPARCEL_SIZE)
-  );
+NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
+  if (!updatePending) {
+    Coord coord(
+      (int)std::floor(x/(float)SUBPARCEL_SIZE),
+      (int)std::floor(y/(float)SUBPARCEL_SIZE),
+      (int)std::floor(z/(float)SUBPARCEL_SIZE)
+    );
 
-  // std::cout << "check coord " << x << " " << y << " " << z << " " << coord.x << " " << coord.y << " " << coord.z << " " << coord.index << " : " << lastCoord.x << " " << lastCoord.y << " " << lastCoord.z << " " << lastCoord.index << " " << (coord != lastCoord) << std::endl;
-  if (coord != lastCoord) {
-    std::vector<Coord> neededCoords;
-    neededCoords.reserve(256);
-    std::vector<Coord> addedCoords;
-    addedCoords.reserve(256);
-    for (int dx = -chunkDistance; dx <= chunkDistance; dx++) {
-      const int ax = dx + coord.x;
-      for (int dy = -chunkDistance; dy <= chunkDistance; dy++) {
-        const int ay = dy + coord.y;
-        for (int dz = -chunkDistance; dz <= chunkDistance; dz++) {
-          const int az = dz + coord.z;
-          Coord aCoord(ax, ay, az);
-          neededCoords.push_back(aCoord);
+    // std::cout << "check coord " << x << " " << y << " " << z << " " << coord.x << " " << coord.y << " " << coord.z << " " << coord.index << " : " << lastCoord.x << " " << lastCoord.y << " " << lastCoord.z << " " << lastCoord.index << " " << (coord != lastCoord) << std::endl;
+    if (coord != lastCoord) {
+      std::vector<Coord> neededCoords;
+      neededCoords.reserve(256);
+      std::vector<Coord> addedCoords;
+      addedCoords.reserve(256);
+      for (int dx = -chunkDistance; dx <= chunkDistance; dx++) {
+        const int ax = dx + coord.x;
+        for (int dy = -chunkDistance; dy <= chunkDistance; dy++) {
+          const int ay = dy + coord.y;
+          for (int dz = -chunkDistance; dz <= chunkDistance; dz++) {
+            const int az = dz + coord.z;
+            Coord aCoord(ax, ay, az);
+            neededCoords.push_back(aCoord);
 
-          auto iter = std::find_if(lastNeededCoords.begin(), lastNeededCoords.end(), [&](const Coord &coord2) -> bool {
-            return coord2.index == aCoord.index;
-          });
-          if (iter == lastNeededCoords.end()) {
-          	// std::cout << "add index " << coord.x << " " << coord.y << " " << coord.z << " " << aCoord.x << " " << aCoord.y << " " << aCoord.z << " " << aCoord.index << " " << dx << " " << dy << " " << dz << std::endl;
-            addedCoords.push_back(aCoord);
+            auto iter = std::find_if(lastNeededCoords.begin(), lastNeededCoords.end(), [&](const Coord &coord2) -> bool {
+              return coord2.index == aCoord.index;
+            });
+            if (iter == lastNeededCoords.end()) {
+            	// std::cout << "add index " << coord.x << " " << coord.y << " " << coord.z << " " << aCoord.x << " " << aCoord.y << " " << aCoord.z << " " << aCoord.index << " " << dx << " " << dy << " " << dz << std::endl;
+              addedCoords.push_back(aCoord);
+            }
           }
         }
       }
-    }
 
-    std::vector<Coord> removedCoords;
-    removedCoords.reserve(256);
-    for (const Coord &lastNeededCoord : lastNeededCoords) {
-      auto iter = std::find_if(neededCoords.begin(), neededCoords.end(), [&](const Coord &coord2) -> bool {
-        return coord2.index == lastNeededCoord.index;
-      });
-      if (iter == neededCoords.end()) {
-        removedCoords.push_back(lastNeededCoord);
+      std::vector<Coord> removedCoords;
+      removedCoords.reserve(256);
+      for (const Coord &lastNeededCoord : lastNeededCoords) {
+        auto iter = std::find_if(neededCoords.begin(), neededCoords.end(), [&](const Coord &coord2) -> bool {
+          return coord2.index == lastNeededCoord.index;
+        });
+        if (iter == neededCoords.end()) {
+          removedCoords.push_back(lastNeededCoord);
+        }
       }
-    }
-    {
-      std::lock_guard<std::mutex> lock(subparcelsMutex);
+      {
+        std::lock_guard<std::mutex> lock(subparcelsMutex);
 
-      for (const Coord &addedCoord : addedCoords) {
+        for (const Coord &removedCoord : removedCoords) {
+          subparcels.erase(removedCoord.index);
+
+          auto loadingSubparcelsIter = loadingSubparcels.find(removedCoord.index);
+          if (loadingSubparcelsIter != loadingSubparcels.end()) {
+            loadingSubparcelsIter->second->live = false;
+            loadingSubparcels.erase(loadingSubparcelsIter);
+          }
+        }
+      }
+
+      lastNeededCoords = std::move(neededCoords);
+      lastCoord = coord;
+
+      // if (addedCoords.size() > 0 || removedCoords.size() > 0) {
+        // std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
+      // }
+
+      updatePending = true;
+
+      return new NeededCoords(std::move(addedCoords));
+    } else {
+      return nullptr;
+    }
+  } else {
+    return nullptr;
+  }
+}
+void Tracker::finishUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, NeededCoords *neededCoords) {
+  {
+    std::lock_guard<std::mutex> lock(subparcelsMutex);
+
+    for (unsigned int i = 0; i < neededCoords->numAddedCoords; i++) {
+      const Coord &addedCoord = neededCoords->addedCoordsPtr[i];
+      // auto iter = subparcels.find(addedCoord.index);
+      // if (iter == subparcels.end()) {
         std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
         loadingSubparcels[addedCoord.index] = subparcel;
-        /* {
-          std::lock_guard<std::mutex> lock(subparcelsMutex);
-          subparcels[addedCoord.index] = subparcel;
-        } */
 
         unsigned int count = 128;
         Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
@@ -261,26 +295,12 @@ void Tracker::updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySe
         }
 
         threadPool->inbox.queue(message);
-      }
-
-      for (const Coord &removedCoord : removedCoords) {
-        subparcels.erase(removedCoord.index);
-
-        auto loadingSubparcelsIter = loadingSubparcels.find(removedCoord.index);
-        if (loadingSubparcelsIter != loadingSubparcels.end()) {
-          loadingSubparcelsIter->second->live = false;
-          loadingSubparcels.erase(loadingSubparcelsIter);
-        }
-      }
+      // }
     }
-
-    lastNeededCoords = std::move(neededCoords);
-    lastCoord = coord;
-
-    // if (addedCoords.size() > 0 || removedCoords.size() > 0) {
-      std::cout << "added removed coords " << addedCoords.size() << " : " << removedCoords.size() << std::endl;
-    // }
   }
+  delete neededCoords;
+
+  updatePending = false;
 }
 
 Object::Object() : id(0) {}

@@ -252,6 +252,18 @@ public:
   int index;
 };
 
+class NeededCoords {
+public:
+  NeededCoords(std::vector<Coord> &&addedCoords) : addedCoords(std::move(addedCoords)) {
+    addedCoordsPtr = addedCoords.data();
+    numAddedCoords = addedCoords.size();
+  }
+
+  Coord *addedCoordsPtr;
+  unsigned int numAddedCoords;
+  std::vector<Coord> addedCoords;
+};
+
 constexpr unsigned int atlasTextureSize = 4096;
 constexpr unsigned int objectTextureSize = 512;
 constexpr unsigned int maxAtlasTextures = (atlasTextureSize * atlasTextureSize) / (objectTextureSize * objectTextureSize);
@@ -297,11 +309,16 @@ public:
     ArenaAllocator *thingSkyLightsAllocator,
     ArenaAllocator *thingTorchLightsAllocator
   );
-  void updateNeededCoords(ThreadPool *threadPool, GeometrySet *geometrySet, float x, float y, float z);
+  NeededCoords *updateNeededCoords(float x, float y, float z);
+  void finishUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, NeededCoords *neededCoords);
 
   int seed;
   unsigned int meshId;
   int chunkDistance;
+
+  Coord lastCoord;
+  std::vector<Coord> lastNeededCoords;
+  bool updatePending;
 
   ArenaAllocator *landPositionsAllocator;
   ArenaAllocator *landNormalsAllocator;
@@ -330,9 +347,6 @@ public:
   std::vector<unsigned char> atlasTexture;
   std::map<std::string, std::pair<float, float>> atlasTextureMap;
   std::vector<unsigned int> atlasFreeList;
-
-  Coord lastCoord;
-  std::vector<Coord> lastNeededCoords;
 
   std::map<int, std::shared_ptr<Subparcel>> subparcels;
   std::map<int, std::shared_ptr<Subparcel>> loadingSubparcels;
