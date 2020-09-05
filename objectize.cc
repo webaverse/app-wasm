@@ -1390,15 +1390,18 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     float *quaternion = (float *)(Message->args + index);
     index += 4*sizeof(float);
 
-    std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> spec = doAddObject(tracker, geometrySet, OBJECT_TYPE::VEGETATION, name, position, quaternion);
-    if (spec.first) {
-      std::vector<std::shared_ptr<Subparcel>> &newSubparcels = spec.second;
+    std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>> spec = doAddObject(tracker, geometrySet, OBJECT_TYPE::VEGETATION, name, position, quaternion);
+    if (std::get<0>(spec)) {
+      unsigned int objectId = std::get<1>(spec);
+      std::vector<std::shared_ptr<Subparcel>> &newSubparcels = std::get<2>(spec);
 
       for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
         doObjectPhysics(tracker, geometrySet, subparcel.get());
       }
 
       index = 0;
+      *((unsigned int *)(Message->args + index)) = objectId;
+      index += sizeof(unsigned int);
       *((unsigned int *)(Message->args + index)) = newSubparcels.size();
       index += sizeof(unsigned int);
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
@@ -1579,16 +1582,19 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     index += 4*sizeof(float *);
 
     bool textureUpdated;
-    std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool> spec = doAddThing(tracker, geometrySet, name, position, quaternion);
+    std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>, bool> spec = doAddThing(tracker, geometrySet, name, position, quaternion);
     if (std::get<0>(spec)) {
-      std::vector<std::shared_ptr<Subparcel>> &newSubparcels = std::get<1>(spec);
-      bool textureUpdated = std::get<2>(spec);
+      unsigned int objectId = std::get<1>(spec);
+      std::vector<std::shared_ptr<Subparcel>> &newSubparcels = std::get<2>(spec);
+      bool textureUpdated = std::get<3>(spec);
 
       for (const std::shared_ptr<Subparcel> &subparcel : newSubparcels) {
         doThingPhysics(tracker, geometrySet, subparcel.get());
       }
 
       index = 0;
+      *((unsigned int *)(Message->args + index)) = objectId;
+      index += sizeof(unsigned int);
       *((unsigned int *)(Message->args + index)) = newSubparcels.size();
       index += sizeof(unsigned int);
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {

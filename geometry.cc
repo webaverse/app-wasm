@@ -634,7 +634,7 @@ void polygonalizeThings(Tracker *tracker, GeometrySet *geometrySet, Subparcel *s
   subparcel->thingGroups[0].materialIndex = 0;
 }
 
-std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tracker, GeometrySet *geometrySet, OBJECT_TYPE type, const char *name, float *position, float *quaternion) {
+std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tracker, GeometrySet *geometrySet, OBJECT_TYPE type, const char *name, float *position, float *quaternion) {
   const int sx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
   const int sy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
   const int sz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
@@ -653,19 +653,22 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tr
         subparcel->copyLand(*oldSubparcel);
         oldSubparcel->live = false;
       } else {
-      	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
+      	return std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>>(false, 0, std::vector<std::shared_ptr<Subparcel>>());
         // std::cout << "cannot edit dead index " << sx << " " << sy << " " << sz << std::endl;
         // abort();
       }
     } else {
-      return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
+      return std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>>(false, 0, std::vector<std::shared_ptr<Subparcel>>());
     }
   }
   
   std::vector<std::shared_ptr<Subparcel>> result;
+  unsigned int objectId = 0;
   if (subparcel) {
+    objectId = (unsigned int)rand();
+
     Object &o = subparcel->objects[subparcel->numObjects];
-    o.id = (unsigned int)rand();
+    o.id = objectId;
     o.type = type;
     memcpy(o.name, name, sizeof(o.name));
     o.position = Vec{
@@ -685,7 +688,7 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doAddObject(Tracker *tr
 
     result.push_back(std::move(subparcel));
   }
-  return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(result));
+  return std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>>(true, objectId, std::move(result));
 }
 std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doRemoveObject(Tracker *tracker, GeometrySet *geometrySet, int index, unsigned int objectId) {
   std::shared_ptr<Subparcel> subparcel;
@@ -729,7 +732,7 @@ std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doRemoveObject(Tracker 
   }
   return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(result));
 }
-std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool> doAddThing(Tracker *tracker, GeometrySet *geometrySet, const char *name, float *position, float *quaternion) {
+std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>, bool> doAddThing(Tracker *tracker, GeometrySet *geometrySet, const char *name, float *position, float *quaternion) {
   const int sx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
   const int sy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
   const int sz = (int)std::floor(position[2]/(float)SUBPARCEL_SIZE);
@@ -748,20 +751,23 @@ std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool> doAddThing(Track
         subparcel->copyLand(*oldSubparcel);
         oldSubparcel->live = false;
       } else {
-      	return std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool>(false, std::vector<std::shared_ptr<Subparcel>>(), false);
+      	return std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>, bool>(false, 0, std::vector<std::shared_ptr<Subparcel>>(), false);
         // std::cout << "cannot edit dead index " << sx << " " << sy << " " << sz << std::endl;
         // abort();
       }
     } else {
-      return std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool>(false, std::vector<std::shared_ptr<Subparcel>>(), false);
+      return std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>, bool>(false, 0, std::vector<std::shared_ptr<Subparcel>>(), false);
     }
   }
   
   std::vector<std::shared_ptr<Subparcel>> result;
+  unsigned int objectId = 0;
   bool textureUpdated = false;
   if (subparcel) {
+    objectId = (unsigned int)rand();
+
     Thing &t = subparcel->things[subparcel->numThings];
-    t.id = (unsigned int)rand();
+    t.id = objectId;
     memcpy(t.name, name, sizeof(t.name));
     t.position = Vec{
       position[0],
@@ -780,5 +786,5 @@ std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool> doAddThing(Track
 
     result.push_back(std::move(subparcel));
   }
-  return std::tuple<bool, std::vector<std::shared_ptr<Subparcel>>, bool>(true, std::move(result), textureUpdated);
+  return std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>, bool>(true, objectId, std::move(result), textureUpdated);
 }
