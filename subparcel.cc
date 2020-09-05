@@ -268,34 +268,41 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
     return nullptr;
   }
 }
+inline void subparcelFinishUpdate(Tracker *tracker, ThreadPool *threadPool, GeometrySet *geometrySet, const Coord &addedCoord, bool generate) {
+  std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, tracker));
+  tracker->loadingSubparcels[addedCoord.index] = subparcel;
+
+  unsigned int count = 5;
+  Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
+  message->id = -1;
+  message->method = (int)METHODS::chunk;
+  message->priority = 0;
+  message->count = count;
+
+  {
+    unsigned int *u32 = (unsigned int *)message->args;
+    u32[0] = tracker->seed;
+    u32[1] = (unsigned int)tracker;
+    u32[2] = (unsigned int)geometrySet;
+    u32[3] = (unsigned int)(new std::shared_ptr<Subparcel>(subparcel));
+    u32[4] = (unsigned int)generate;
+  }
+
+  threadPool->inbox.queue(message);
+}
 void Tracker::finishUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, NeededCoords *neededCoords) {
   {
     std::lock_guard<std::mutex> lock(subparcelsMutex);
 
-    for (unsigned int i = 0; i < neededCoords->numAddedCoords; i++) {
-      const Coord &addedCoord = neededCoords->addedCoordsPtr[i];
-      // auto iter = subparcels.find(addedCoord.index);
-      // if (iter == subparcels.end()) {
-        std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
-        loadingSubparcels[addedCoord.index] = subparcel;
-
-        unsigned int count = 4;
-        Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
-        message->id = -1;
-        message->method = (int)METHODS::chunk;
-        message->priority = 0;
-        message->count = count;
-
-        {
-          unsigned int *u32 = (unsigned int *)message->args;
-          u32[0] = seed;
-          u32[1] = (unsigned int)this;
-          u32[2] = (unsigned int)geometrySet;
-          u32[3] = (unsigned int)(new std::shared_ptr<Subparcel>(subparcel));
-        }
-
-        threadPool->inbox.queue(message);
-      // }
+    std::cout << "finish update " << neededCoords->numLoadedCoords << " " << neededCoords->numGenerateCoords << std::endl;
+    unsigned int index = 0;
+    for (unsigned int i = 0; i < neededCoords->numLoadedCoords; i++, index++) {
+      const Coord &addedCoord = neededCoords->addedCoordsPtr[index];
+      subparcelFinishUpdate(this, threadPool, geometrySet, addedCoord, false);
+    }
+    for (unsigned int i = 0; i < neededCoords->numGenerateCoords; i++, index++) {
+      const Coord &addedCoord = neededCoords->addedCoordsPtr[index];
+      subparcelFinishUpdate(this, threadPool, geometrySet, addedCoord, true);
     }
   }
   delete neededCoords;

@@ -831,6 +831,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     index += sizeof(void *);
     void *subparcelSharedPtrByteOffset = *((void **)(message->args + index));
     index += sizeof(void *);
+    unsigned int generate = *((unsigned int *)(message->args + index));
+    index += sizeof(unsigned int);
 
     free(message);
     message = nullptr;
@@ -842,7 +844,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     if ((*subparcelSharedPtr)->live) { // check for abort
       std::shared_ptr<Subparcel> subparcel(*subparcelSharedPtr);
 
-      {
+      if (generate) {
         constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
         constexpr float wormRate = 2;
         constexpr float wormRadiusBase = 2;

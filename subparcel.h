@@ -255,13 +255,15 @@ public:
 
 class NeededCoords {
 public:
-  NeededCoords(std::vector<Coord> &&addedCoords) : addedCoords(std::move(addedCoords)) {
+  NeededCoords(std::vector<Coord> &&addedCoords) : addedCoords(std::move(addedCoords)), numLoadedCoords(0), numGenerateCoords(0) {
     addedCoordsPtr = this->addedCoords.data();
     numAddedCoords = this->addedCoords.size();
   }
 
   Coord *addedCoordsPtr;
   unsigned int numAddedCoords;
+  unsigned int numLoadedCoords;
+  unsigned int numGenerateCoords;
   std::vector<Coord> addedCoords;
 };
 
