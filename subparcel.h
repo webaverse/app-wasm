@@ -255,8 +255,8 @@ public:
 class NeededCoords {
 public:
   NeededCoords(std::vector<Coord> &&addedCoords) : addedCoords(std::move(addedCoords)) {
-    addedCoordsPtr = addedCoords.data();
-    numAddedCoords = addedCoords.size();
+    addedCoordsPtr = this->addedCoords.data();
+    numAddedCoords = this->addedCoords.size();
   }
 
   Coord *addedCoordsPtr;
