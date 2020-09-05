@@ -20,7 +20,8 @@ public:
   Box aabb;
   unsigned char *texture;
 
-  PxGeometry *physxGeometry;
+  std::shared_ptr<PhysicsGeometry> physicsGeometry;
+  std::shared_ptr<PhysicsGeometry> dynamicPhysicsGeometry;
 };
 class GeometrySet {
 public:

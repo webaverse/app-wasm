@@ -48,56 +48,45 @@ PhysicsObject::~PhysicsObject() {}
   cooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, cookingParams);
 } */
 
-std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> doMakeBakedGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream) {
+std::shared_ptr<PhysicsGeometry> doMakeBakedGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer((PxU8 *)writeStream->getData(), writeStream->getSize());
   PxTriangleMesh *triangleMesh = physicer->physics->createTriangleMesh(readBuffer);
   delete writeStream;
 
   PxTriangleMeshGeometry *triangleMeshGeom = new PxTriangleMeshGeometry(triangleMesh);
-  // triangleMesh->release();
-  return std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *>(triangleMesh, triangleMeshGeom);
+  return std::shared_ptr<PhysicsGeometry>(new PhysicsGeometry(triangleMesh, nullptr, triangleMeshGeom));
 }
-std::pair<PxConvexMesh *, PxConvexMeshGeometry *> doMakeBakedConvexGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream) {
+std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer((PxU8 *)writeStream->getData(), writeStream->getSize());
   PxConvexMesh *convexMesh = physicer->physics->createConvexMesh(readBuffer);
   delete writeStream;
 
   PxConvexMeshGeometry *convexMeshGeom = new PxConvexMeshGeometry(convexMesh);
-  // convexMesh->release();
-  return std::pair<PxConvexMesh *, PxConvexMeshGeometry *>(convexMesh, convexMeshGeom);
+  return std::shared_ptr<PhysicsGeometry>(new PhysicsGeometry(nullptr, convexMesh, convexMeshGeom));
 }
 
 std::shared_ptr<PhysicsObject> doMakeBakedGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
-  std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> spec = doMakeBakedGeometryRaw(physicer, writeStream);
-  PxTriangleMeshGeometry *triangleMeshGeom = spec.second;
-
+  std::shared_ptr<PhysicsGeometry> geometrySpec = doMakeBakedGeometryRaw(physicer, writeStream);
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
 
-  // Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
-  std::shared_ptr<PhysicsGeometry> geometry(new PhysicsGeometry(spec.first, nullptr, triangleMeshGeom));
-  std::shared_ptr<PhysicsObject> geometrySpec(new PhysicsObject(objectId, p, q, std::move(geometry), p, q, /*boundingSphere,*/ physicer));
-
-  return std::move(geometrySpec);
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, p, q, std::move(geometrySpec), p, q, physicer));
+  return std::move(geometryObject);
 }
 std::shared_ptr<PhysicsObject> doMakeBakedConvexGeometry(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
-  std::pair<PxConvexMesh *, PxConvexMeshGeometry *> spec = doMakeBakedConvexGeometryRaw(physicer, writeStream);
-  PxConvexMeshGeometry *convexMeshGeom = spec.second;
+  std::shared_ptr<PhysicsGeometry> geometrySpec = doMakeBakedConvexGeometryRaw(physicer, writeStream);
 
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
 
-  // Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
-  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(nullptr, spec.first, convexMeshGeom));
-  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, p, q, std::move(geometrySpec), p, q, /*boundingSphere,*/ physicer));
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, p, q, std::move(geometrySpec), p, q, physicer));
   return std::move(geometryObject);
 }
 std::shared_ptr<PhysicsObject> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, float *meshPosition, float *meshQuaternion) {
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
-  // Sphere boundingSphere(meshPosition[0], meshPosition[1], meshPosition[2], slabRadius);
   std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(nullptr, nullptr, geometry));
-  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(0, p, q, std::move(geometrySpec), p, q, /*boundingSphere,*/ physicer));
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(0, p, q, std::move(geometrySpec), p, q, physicer));
   return std::move(geometryObject);
 }
 
@@ -270,7 +259,7 @@ void doThingPhysics(Tracker *tracker, GeometrySet *geometrySet, Subparcel *subpa
     auto iter = geometrySet->geometryMap.find(name);
     if (iter != geometrySet->geometryMap.end()) {
       Geometry *geometry = iter->second;
-      PxGeometry *physxGeometrySrc = geometry->physxGeometry;
+      PxGeometry *physxGeometrySrc = geometry->physicsGeometry->geometry;
       if (physxGeometrySrc) {
         std::shared_ptr<PhysicsObject> physxGeometry = doMakeGeometry(&tracker->physicer, physxGeometrySrc, thing.position.data, thing.quaternion.data);
         subparcel->thingPhysxObjects.push_back(std::move(physxGeometry));

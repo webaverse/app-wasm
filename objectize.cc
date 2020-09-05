@@ -1540,8 +1540,10 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     index += sizeof(unsigned int);
     unsigned char *texture = *((unsigned char **)(Message->args + index));
     index += sizeof(unsigned char *);
-    PhysicsGeometry *trianglePhysicsGeometry = *((PhysicsGeometry **)(Message->args + index));
-    index += sizeof(PhysicsGeometry *);
+    std::shared_ptr<PhysicsGeometry> *trianglePhysicsGeometryPtr = *((std::shared_ptr<PhysicsGeometry> **)(Message->args + index));
+    index += sizeof(std::shared_ptr<PhysicsGeometry> *);
+    std::shared_ptr<PhysicsGeometry> *convexPhysicsGeometryPtr = *((std::shared_ptr<PhysicsGeometry> **)(Message->args + index));
+    index += sizeof(std::shared_ptr<PhysicsGeometry> *);
 
     Geometry *geometry = new Geometry();
     geometry->name = std::string(nameCharPtr);
@@ -1554,12 +1556,11 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     geometry->aabb.setFromPositions(positions, numPositions);
     geometry->texture = texture;
 
-    /* PxDefaultMemoryOutputStream *writeStream = doBakeGeometry(&tracker->physicer, positions, indices, numPositions, numIndices);
-    std::pair<PxTriangleMesh *, PxTriangleMeshGeometry *> spec = doMakeBakedGeometryRaw(&tracker->physicer, writeStream); // XXX GC the TriangleMesh
-    geometry->physxGeometry = spec.second; */
-    geometry->physxGeometry = trianglePhysicsGeometry->geometry;
+    PxDefaultMemoryOutputStream *writeStream1 = doBakeGeometry(&tracker->physicer, positions, indices, numPositions, numIndices);
+    geometry->physicsGeometry = doMakeBakedGeometryRaw(&tracker->physicer, writeStream1);
+    PxDefaultMemoryOutputStream *writeStream2 = doBakeConvexGeometry(&tracker->physicer, positions, indices, numPositions, numIndices);
+    geometry->dynamicPhysicsGeometry = doMakeBakedConvexGeometryRaw(&tracker->physicer, writeStream2);
 
-    geometrySet->thingGeometries.push_back(geometry);
     geometrySet->geometryMap[geometry->name] = geometry;
 
     threadPool->outbox.push(Message);
