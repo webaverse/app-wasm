@@ -251,7 +251,11 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
         std::lock_guard<std::mutex> lock(subparcelsMutex);
 
         for (const Coord &removedCoord : removedCoords) {
-          subparcels.erase(removedCoord.index);
+          auto subparcelsIter = subparcels.find(removedCoord.index);
+          if (subparcelsIter != subparcels.end()) {
+            auto &subparcel = *subparcelsIter->second;
+            subparcels.erase(subparcelsIter);
+          }
 
           auto loadingSubparcelsIter = loadingSubparcels.find(removedCoord.index);
           if (loadingSubparcelsIter != loadingSubparcels.end()) {
