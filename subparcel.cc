@@ -227,7 +227,6 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
         }
       }
 
-      std::map<int, std::shared_ptr<Subparcel>> subparcelMap;
       {
         std::lock_guard<std::mutex> lock(subparcelsMutex);
 
@@ -235,7 +234,6 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
           std::shared_ptr<Subparcel> subparcel(new Subparcel(addedCoord, this));
           loadingSubparcels[addedCoord.index] = subparcel;
         }
-        subparcelMap = loadingSubparcels;
       }
 
       std::vector<Coord> removedCoords;
@@ -248,6 +246,7 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
           removedCoords.push_back(lastNeededCoord);
         }
       }
+      std::map<int, std::shared_ptr<Subparcel>> subparcelMap;
       {
         std::lock_guard<std::mutex> lock(subparcelsMutex);
 
@@ -260,6 +259,8 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
             loadingSubparcels.erase(loadingSubparcelsIter);
           }
         }
+
+        subparcelMap = loadingSubparcels;
       }
 
       lastNeededCoords = std::move(neededCoords);
