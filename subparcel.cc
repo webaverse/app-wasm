@@ -259,7 +259,7 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
 
           auto loadingSubparcelsIter = loadingSubparcels.find(removedCoord.index);
           if (loadingSubparcelsIter != loadingSubparcels.end()) {
-            loadingSubparcelsIter->second->live = false;
+            // loadingSubparcelsIter->second->live = false;
             loadingSubparcels.erase(loadingSubparcelsIter);
           }
         }
@@ -299,7 +299,7 @@ void Tracker::subparcelUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, 
     u32[0] = seed;
     u32[1] = (unsigned int)this;
     u32[2] = (unsigned int)geometrySet;
-    u32[3] = (unsigned int)(new std::shared_ptr<Subparcel>(subparcelSharedPtr));
+    u32[3] = (unsigned int)(new std::weak_ptr<Subparcel>(subparcelSharedPtr));
     u32[4] = generate;
   }
 

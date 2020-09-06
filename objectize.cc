@@ -832,18 +832,17 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     index += sizeof(void *);
     void *geometrySetByteOffset = *((void **)(message->args + index));
     index += sizeof(void *);
-    void *subparcelSharedPtrByteOffset = *((void **)(message->args + index));
+    void *subparcelWeakPtrByteOffset = *((void **)(message->args + index));
     index += sizeof(void *);
     unsigned int generate = *((unsigned int *)(message->args + index));
     index += sizeof(unsigned int);
 
     Tracker *tracker = (Tracker *)trackerByteOffset;
     GeometrySet *geometrySet = (GeometrySet *)geometrySetByteOffset;
-    std::shared_ptr<Subparcel> *subparcelSharedPtr = (std::shared_ptr<Subparcel> *)subparcelSharedPtrByteOffset;
+    std::weak_ptr<Subparcel> *subparcelWeakPtr = (std::weak_ptr<Subparcel> *)subparcelWeakPtrByteOffset;
 
-    if ((*subparcelSharedPtr)->live) { // check for abort
-      std::shared_ptr<Subparcel> subparcel(*subparcelSharedPtr);
-
+    std::shared_ptr<Subparcel> subparcel = subparcelWeakPtr->lock();
+    if (subparcel) { // check for abort
       if (generate) {
         constexpr float baseHeight = (float)PARCEL_SIZE/2.0f-10.0f;
         constexpr float wormRate = 2;
@@ -1205,7 +1204,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
           index += sizeof(unsigned char *);
         }
 
-        *((std::shared_ptr<Subparcel> **)(message->args + index)) = subparcelSharedPtr;
+        *((std::shared_ptr<Subparcel> **)(message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
         index += sizeof(std::shared_ptr<Subparcel> *);
 
         /* if (index/sizeof(unsigned int) > message->count) {
@@ -1217,8 +1216,6 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       }
 
       free(message);
-
-      // std::cout << "return update " << (void *)subparcelSharedPtr << " " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
     }
   },
   [](ThreadPool *threadPool, Message *Message) -> void { // mine
