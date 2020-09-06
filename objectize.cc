@@ -837,9 +837,6 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     unsigned int generate = *((unsigned int *)(message->args + index));
     index += sizeof(unsigned int);
 
-    free(message);
-    message = nullptr;
-
     Tracker *tracker = (Tracker *)trackerByteOffset;
     GeometrySet *geometrySet = (GeometrySet *)geometrySetByteOffset;
     std::shared_ptr<Subparcel> *subparcelSharedPtr = (std::shared_ptr<Subparcel> *)subparcelSharedPtrByteOffset;
@@ -1218,6 +1215,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
         threadPool->outbox.push(message);
       }
+
+      free(message);
 
       // std::cout << "return update " << (void *)subparcelSharedPtr << " " << subparcel->coord.x << " " << subparcel->coord.y << " " << subparcel->coord.z << std::endl;
     }
