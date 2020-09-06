@@ -83,8 +83,8 @@ if [ ! -f draco.o ]; then
 		-o draco.o
 fi
 if [ ! -f physx.o ]; then
-  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
   echo 'building physx...'
+  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
