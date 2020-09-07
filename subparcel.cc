@@ -253,7 +253,7 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
         for (const Coord &removedCoord : removedCoords) {
           auto subparcelsIter = subparcels.find(removedCoord.index);
           if (subparcelsIter != subparcels.end()) {
-            auto &subparcel = *subparcelsIter->second;
+            // auto &subparcel = *subparcelsIter->second;
             subparcels.erase(subparcelsIter);
           }
 
