@@ -121,7 +121,7 @@ PxDefaultMemoryOutputStream *doBakeGeometry(Physicer *physicer, float *positions
   PxU32 *indices32 = (PxU32 *)indices;
   PxU32 triCount = numIndices/3;
 
-  PxTriangleMeshDesc meshDesc;
+  PxTriangleMeshDesc meshDesc{};
   meshDesc.points.count           = nbVerts;
   meshDesc.points.stride          = sizeof(PxVec3);
   meshDesc.points.data            = verts;
@@ -146,7 +146,7 @@ PxDefaultMemoryOutputStream *doBakeConvexGeometry(Physicer *physicer, float *pos
   PxU32 *indices32 = (PxU32 *)indices;
   PxU32 triCount = numIndices/3;
 
-  PxConvexMeshDesc meshDesc;
+  PxConvexMeshDesc meshDesc{};
   meshDesc.points.count           = nbVerts;
   meshDesc.points.stride          = sizeof(PxVec3);
   meshDesc.points.data            = verts;
