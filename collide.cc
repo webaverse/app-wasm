@@ -49,7 +49,7 @@ PhysicsObject::~PhysicsObject() {}
 } */
 
 std::shared_ptr<PhysicsGeometry> doMakeBakedGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream) {
-  PxDefaultMemoryInputData readBuffer((PxU8 *)writeStream->getData(), writeStream->getSize());
+  PxDefaultMemoryInputData readBuffer(writeStream->getData(), writeStream->getSize());
   PxTriangleMesh *triangleMesh = physicer->physics->createTriangleMesh(readBuffer);
   delete writeStream;
 
@@ -57,7 +57,7 @@ std::shared_ptr<PhysicsGeometry> doMakeBakedGeometryRaw(Physicer *physicer, PxDe
   return std::shared_ptr<PhysicsGeometry>(new PhysicsGeometry(triangleMesh, nullptr, triangleMeshGeom));
 }
 std::shared_ptr<PhysicsGeometry> doMakeBakedConvexGeometryRaw(Physicer *physicer, PxDefaultMemoryOutputStream *writeStream) {
-  PxDefaultMemoryInputData readBuffer((PxU8 *)writeStream->getData(), writeStream->getSize());
+  PxDefaultMemoryInputData readBuffer(writeStream->getData(), writeStream->getSize());
   PxConvexMesh *convexMesh = physicer->physics->createConvexMesh(readBuffer);
   delete writeStream;
 
