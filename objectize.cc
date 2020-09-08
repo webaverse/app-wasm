@@ -1214,9 +1214,10 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
         threadPool->outbox.push(message);
       }
-
-      free(message);
     }
+    
+    free(message);
+    delete subparcelWeakPtr;
   },
   [](ThreadPool *threadPool, Message *Message) -> void { // mine
     unsigned int index = 0;
