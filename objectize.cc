@@ -321,7 +321,9 @@ bool checkSubparcelIndicesLive(Tracker *tracker, const std::vector<int> indices)
   return true;
 }
 
-std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
+std::function<void(ThreadPool *, Message *)> *METHOD_FNS = nullptr;
+EMSCRIPTEN_KEEPALIVE void globalInit() {
+METHOD_FNS = new std::function<void(ThreadPool *, Message *)>[]{
   [](ThreadPool *threadPool, Message *Message) -> void { // makeArenaAllocator
     abort();
     /* unsigned int index = 0;
@@ -1668,5 +1670,8 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     }
   },
 };
+}
+
+}
 
 }
