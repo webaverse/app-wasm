@@ -323,7 +323,31 @@ int edgeIndex[12][2] = {
   {3,7}
 };
 
-inline void _floodFill(int x, int y, int z, int startFace, std::function<float(int, int, int)> getPotential, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, unsigned char *peeks, unsigned char *seenPeeks, int dimsP1[3]) {
+inline int getPotentialIndex(int x, int y, int z, int dimsP3[3]) {
+  return (x + 1) +
+    (z + 1) * dimsP3[0] +
+    (y + 1) * dimsP3[0] * dimsP3[1];
+}
+inline char maxChar(char a, char b) {
+  return a >= b ? a : b;
+}
+template<bool transparent>
+inline float adjustPotential(float *potential, int x, int y, int z, int dimsP3[3], float shift[3]) {
+	if (transparent) {
+	  float ay = shift[1] + (float)y;
+	  if (ay < waterLevel) {
+	    int index = getPotentialIndex(x, y, z, dimsP3);
+	    return -potential[index];
+	  } else {
+	    return -0.5f;
+	  }
+	} else {
+		int index = getPotentialIndex(x, y, z, dimsP3);
+    return potential[index];
+	}
+}
+template<bool transparent>
+inline void _floodFill(int x, int y, int z, int startFace, float *potential, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, unsigned char *peeks, unsigned char *seenPeeks, int dimsP1[3], int dimsP3[3], float shift[3]) {
   const int peekIndex = x +
     z * dimsP1[0] +
     y * dimsP1[0] * dimsP1[1];
@@ -345,8 +369,9 @@ inline void _floodFill(int x, int y, int z, int startFace, std::function<float(i
       const int x = queue[queueStart * 3 + 0];
       const int y = queue[queueStart * 3 + 1];
       const int z = queue[queueStart * 3 + 2];
+      const float s = adjustPotential<transparent>(potential, x, y, z, dimsP3, shift);
 
-      if (getPotential(x, y, z) <= 0) { // if empty space
+      if (s <= 0) { // if empty space
         if (z == minZ) {
           seenFaces[(int)PEEK_FACES::BACK] = 1;
           // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::BACK]] = 1;
@@ -411,16 +436,6 @@ inline void _floodFill(int x, int y, int z, int startFace, std::function<float(i
     }
   }
 }
-
-inline int getPotentialIndex(int x, int y, int z, int dimsP3[3]) {
-  return (x + 1) +
-    (z + 1) * dimsP3[0] +
-    (y + 1) * dimsP3[0] * dimsP3[1];
-}
-inline char maxChar(char a, char b) {
-  return a >= b ? a : b;
-}
-
 inline void setLights(const std::array<float, 3> &v, std::function<unsigned char(int)> getField, unsigned char *lights, unsigned int lightIndex, int dims[3]) {
   int x = (int)std::floor(v[0]);
   int y = (int)std::floor(v[1]);
@@ -434,7 +449,8 @@ inline void setUvs(const std::tuple<float, float> &color, float *uvs, unsigned i
   uvs[uvIndex] = std::get<0>(color);
   uvs[uvIndex+1] = std::get<1>(color);
 }
-inline unsigned char getAo(int x, int y, int z, std::function<float(int, int, int)> getPotential) {
+template<bool transparent>
+inline unsigned char getAo(int x, int y, int z, float *potential, int dimsP3[3], float shift[3]) {
   unsigned char numOpens = 0;
   for(int dy = -1; dy <= 1; dy++) {
     int ay = y + dy;
@@ -442,8 +458,8 @@ inline unsigned char getAo(int x, int y, int z, std::function<float(int, int, in
       int az = z + dz;
       for(int dx = -1; dx <= 1; dx++) {
         int ax = x + dx;
-        float potential = getPotential(ax, ay, az);
-        if (potential < 0) {
+        float s = adjustPotential<transparent>(potential, ax, ay, az, dimsP3, shift);
+        if (s < 0) {
           numOpens++;
         }
       }
@@ -451,9 +467,8 @@ inline unsigned char getAo(int x, int y, int z, std::function<float(int, int, in
   }
   return numOpens;
 }
-
 template<bool transparent>
-inline void marchingCubesRaw(float meshId, int dimsP1[3], std::function<float(int, int, int)> getPotential, std::function<unsigned char(int)> getBiome, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float yLimit, float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int &positionIndex, unsigned int &normalIndex, unsigned int &uvIndex, /*unsigned int &barycentricIndex,*/ unsigned int &aoIndex, unsigned int &idIndex, unsigned int &skyLightsIndex, unsigned int &torchLightsIndex, unsigned char *peeks) {
+inline void marchingCubesRaw(float meshId, int dimsP1[3], int dimsP3[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float yLimit, float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int &positionIndex, unsigned int &normalIndex, unsigned int &uvIndex, /*unsigned int &barycentricIndex,*/ unsigned int &aoIndex, unsigned int &idIndex, unsigned int &skyLightsIndex, unsigned int &torchLightsIndex, unsigned char *peeks) {
   int n = 0;
   float grid[8] = {0};
   std::array<std::array<float, 3>, 12> edges;
@@ -467,7 +482,10 @@ inline void marchingCubesRaw(float meshId, int dimsP1[3], std::function<float(in
     int cube_index = 0;
     for(int i=0; i<8; ++i) {
       int *v = cubeVerts[i];
-      float s = getPotential(x[0]+v[0], x[1]+v[1], x[2]+v[2]);
+      int ax = x[0]+v[0];
+      int ay = x[1]+v[1];
+      int az = x[2]+v[2];
+      float s = adjustPotential<transparent>(potential, ax, ay, az, dimsP3, shift);
       grid[i] = s;
       cube_index |= (s > 0) ? 1 << i : 0;
     }
@@ -536,7 +554,22 @@ inline void marchingCubesRaw(float meshId, int dimsP1[3], std::function<float(in
         // Vec center(std::min({a[0], b[0], c[0]}), std::min({a[1], b[1], c[1]}), std::min({a[2], b[2], c[2]}));
         int biomeIndex = x +
           (z * dimsP1[0]);
-        int biome = (int)getBiome(biomeIndex);
+        int biome = (int)biomes[biomeIndex];
+        if (transparent) {
+			    switch (biome) {
+			      case (int)BIOME::biOcean:
+			      case (int)BIOME::biRiver:
+			        biome = (int)BIOME::waterOcean;
+			        break;
+			      case (int)BIOME::biFrozenOcean:
+			      case (int)BIOME::biFrozenRiver:
+			        biome = (int)BIOME::waterOceanFrozen;
+			        break;
+			      default:
+			        biome = (int)BIOME::waterOcean;
+			        break;
+			    }
+        }
         const std::tuple<float, float> &color = groundColors[biome];
 
         setUvs(color, uvs, uvIndex);
@@ -550,23 +583,29 @@ inline void marchingCubesRaw(float meshId, int dimsP1[3], std::function<float(in
         uvIndex += 2;
       }
       {
-        aos[aoIndex++] = getAo(
+        aos[aoIndex++] = getAo<transparent>(
           (int)std::round(a[0]),
           (int)std::round(a[1]),
           (int)std::round(a[2]),
-          getPotential
+          potential,
+          dimsP3,
+          shift
         );
-        aos[aoIndex++] = getAo(
+        aos[aoIndex++] = getAo<transparent>(
           (int)std::round(b[0]),
           (int)std::round(b[1]),
           (int)std::round(b[2]),
-          getPotential
+          potential,
+          dimsP3,
+          shift
         );
-        aos[aoIndex++] = getAo(
+        aos[aoIndex++] = getAo<transparent>(
           (int)std::round(c[0]),
           (int)std::round(c[1]),
           (int)std::round(c[2]),
-          getPotential
+          potential,
+          dimsP3,
+          shift
         );
       }
     }
@@ -635,32 +674,32 @@ inline void marchingCubesRaw(float meshId, int dimsP1[3], std::function<float(in
     memset(seenPeeks, 0, sizeof(seenPeeks));
     for (int x = 0; x < dimsP1[0]; x++) {
       for (int y = 0; y < dimsP1[0]; y++) {
-        _floodFill(x, y, dimsP1[2]-1, (int)PEEK_FACES::FRONT, getPotential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1);
+        _floodFill<transparent>(x, y, dimsP1[2]-1, (int)PEEK_FACES::FRONT, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
       }
     }
     for (int x = 0; x < dimsP1[0]; x++) {
       for (int y = 0; y < dimsP1[0]; y++) {
-        _floodFill(x, y, 0, (int)PEEK_FACES::BACK, getPotential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1);
+        _floodFill<transparent>(x, y, 0, (int)PEEK_FACES::BACK, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
       }
     }
     for (int z = 0; z < dimsP1[0]; z++) {
       for (int y = 0; y < dimsP1[0]; y++) {
-        _floodFill(0, y, z, (int)PEEK_FACES::LEFT, getPotential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1);
+        _floodFill<transparent>(0, y, z, (int)PEEK_FACES::LEFT, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
       }
     }
     for (int z = 0; z < dimsP1[0]; z++) {
       for (int y = 0; y < dimsP1[0]; y++) {
-        _floodFill(dimsP1[0]-1, y, z, (int)PEEK_FACES::RIGHT, getPotential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1);
+        _floodFill<transparent>(dimsP1[0]-1, y, z, (int)PEEK_FACES::RIGHT, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
       }
     }
     for (int x = 0; x < dimsP1[0]; x++) {
       for (int z = 0; z < dimsP1[0]; z++) {
-        _floodFill(x, dimsP1[1]-1, z, (int)PEEK_FACES::TOP, getPotential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1);
+        _floodFill<transparent>(x, dimsP1[1]-1, z, (int)PEEK_FACES::TOP, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
       }
     }
     for (int x = 0; x < dimsP1[0]; x++) {
       for (int z = 0; z < dimsP1[0]; z++) {
-        _floodFill(x, 0, z, (int)PEEK_FACES::BOTTOM, getPotential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1);
+        _floodFill<transparent>(x, 0, z, (int)PEEK_FACES::BOTTOM, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
       }
     }
   }
@@ -690,34 +729,10 @@ void marchingCubes2(float meshId, int dims[3], float *potential, unsigned char *
     dims[2]+3,
   };
 
-  marchingCubesRaw<false>(meshId, dimsP1, [&](int x, int y, int z) -> float {
-    int index = getPotentialIndex(x, y, z, dimsP3);
-    return potential[index];
-  }, [&](int index) -> unsigned char {
-    return biomes[index];
-  }, heightfield, lightfield, shift, scale, 0.0f, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, positionIndex, normalIndex, uvIndex, /*barycentricIndex,*/ aoIndex, idIndex, skyLightsIndex, torchLightsIndex, peeks);
+  marchingCubesRaw<false>(meshId, dimsP1, dimsP3, potential, biomes, heightfield, lightfield, shift, scale, 0.0f, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, positionIndex, normalIndex, uvIndex, /*barycentricIndex,*/ aoIndex, idIndex, skyLightsIndex, torchLightsIndex, peeks);
   numOpaquePositions = positionIndex;
 
-  marchingCubesRaw<true>(meshId, dimsP1, [&](int x, int y, int z) -> float {
-    int ay = shift[1] + y;
-    if (ay < waterLevel) {
-      int index = getPotentialIndex(x, y, z, dimsP3);
-      return -potential[index];
-    } else {
-      return -0.5f;
-    }
-  }, [&](int index) -> unsigned char {
-    unsigned char biome = biomes[index];
-    switch (biome) {
-      case (unsigned char)BIOME::biOcean:
-      case (unsigned char)BIOME::biRiver:
-        return (unsigned char)BIOME::waterOcean;
-      case (unsigned char)BIOME::biFrozenOcean:
-      case (unsigned char)BIOME::biFrozenRiver:
-        return (unsigned char)BIOME::waterOceanFrozen;
-      default: return (unsigned char)BIOME::waterOcean;
-    }
-  }, heightfield, lightfield, shift, scale, 4.0f, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, positionIndex, normalIndex, uvIndex, /*barycentricIndex,*/ aoIndex, idIndex, skyLightsIndex, torchLightsIndex, peeks);
+  marchingCubesRaw<true>(meshId, dimsP1, dimsP3, potential, biomes, heightfield, lightfield, shift, scale, 4.0f, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, positionIndex, normalIndex, uvIndex, /*barycentricIndex,*/ aoIndex, idIndex, skyLightsIndex, torchLightsIndex, peeks);
   numTransparentPositions = positionIndex - numOpaquePositions;
 }
 
