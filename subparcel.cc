@@ -1,5 +1,6 @@
 #include "subparcel.h"
 #include "collide.h"
+#include <pthread.h>
 #include <iostream>
 
 int absi(int n) {
@@ -106,28 +107,53 @@ void ArenaAllocator::updateFreeList() {
   }
 }
 
+// ThreadPool * volatile gThreadPool = nullptr;
 ThreadPool::ThreadPool(unsigned int numThreads) {
+  // gThreadPool = this;
+  
+  // std::cout << "cons thread pool " << (void *)this << " " << (void *)gThreadPool << std::endl;
+  
   for (unsigned int i = 0; i < numThreads; i++) {
     // std::cout << "starting thread " << i << std::endl;
-    std::thread([this]() -> void {
-      // std::cout << "thread pool running" << std::endl;
-      for (;;) {
-        Message *message = inbox.wait();
-        // std::cout << "got request message method " << (unsigned int)message->method << std::endl;
-        auto &fn = METHOD_FNS[message->method];
-        // std::cout << "got request message method b" << std::endl;
-        fn(this, message);
-
-        /* if (message->id != 0) {
-          outbox.push(message);
-        } else {
-        	free(message);
-        } */
-
-        // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
-      }
-    }).detach();
+    pthread_t pthread;
+    // pthread_attr_t attr;
+    // pthread_attr_init(&attr);
+    // pthread_attr_setstacksize(&attr, 10*1024*1024);
+    pthread_create(&pthread, nullptr/*&attr*/, ThreadPool::runFn, this);
   }
+}
+ThreadPool::~ThreadPool() {
+  // std::cout << "destroy thread pool" << std::endl;
+  abort();
+}
+void *ThreadPool::runFn(void *arg) {
+  ThreadPool *threadPool = (ThreadPool *)arg;
+  // std::cout << "thread pool inner" << std::endl;
+  // ThreadPool::runFn();
+  
+  if (!threadPool) {
+    abort();
+  }
+  
+  // std::cout << "thread pool running" << std::endl;
+  for (;;) {
+    // std::cout << "thread pool wait 1 " << (void *)gThreadPool << (void *)&gThreadPool->inbox << " " << (void *)&gThreadPool->inbox.semaphore << std::endl;
+    Message *message = threadPool->inbox.wait();
+    // std::cout << "thread pool wait 2 " << (int)message->method << std::endl;
+    // std::cout << "got request message method " << (unsigned int)message->method << std::endl;
+    auto &fn = METHOD_FNS[message->method];
+    // std::cout << "got request message method b" << std::endl;
+    fn(threadPool, message);
+
+    /* if (message->id != 0) {
+      outbox.push(message);
+    } else {
+      free(message);
+    } */
+
+    // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
+  }
+  return nullptr;
 }
 
 Tracker::Tracker(

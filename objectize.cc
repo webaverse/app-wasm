@@ -35,6 +35,12 @@ EMSCRIPTEN_KEEPALIVE void arenaFree(ArenaAllocator *arenaAllocator, FreeEntry *e
   arenaAllocator->free(entry);
 } */
 
+// main
+
+/* EMSCRIPTEN_KEEPALIVE ThreadPool *getThreadPool() {
+  return gThreadPool;
+} */
+
 // vegetation
 
 EMSCRIPTEN_KEEPALIVE GeometrySet *makeGeometrySet() {
@@ -1668,4 +1674,5 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     }
   },
 };
+
 }

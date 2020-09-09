@@ -186,10 +186,13 @@ class ThreadPool {
 public:
   ThreadPool(unsigned int numThreads);
 
+  static void *runFn(void *arg);
+
   Mailbox<Message> inbox;
   DependencyMailbox<Message> dependencyInbox;
   Mailbox<Message> outbox;
 };
+// extern ThreadPool * volatile gThreadPool;
 
 enum class METHODS : int {
   makeArenaAllocator = 0,
