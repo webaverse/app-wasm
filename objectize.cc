@@ -1669,5 +1669,3 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
   },
 };
 }
-
-}
