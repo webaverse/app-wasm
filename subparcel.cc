@@ -122,10 +122,6 @@ ThreadPool::ThreadPool(unsigned int numThreads) {
     pthread_create(&pthread, nullptr/*&attr*/, ThreadPool::runFn, this);
   }
 }
-ThreadPool::~ThreadPool() {
-  // std::cout << "destroy thread pool" << std::endl;
-  abort();
-}
 void *ThreadPool::runFn(void *arg) {
   ThreadPool *threadPool = (ThreadPool *)arg;
   // std::cout << "thread pool inner" << std::endl;
