@@ -333,7 +333,7 @@ if [ ! -f concaveman.o ]; then
 fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
-emcc -s WASM=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=1 -s TOTAL_MEMORY=399966208 -O3 -s MALLOC=emmalloc -s EMULATE_FUNCTION_POINTER_CASTS=1 \
+emcc -s WASM=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=1 -s TOTAL_MEMORY=399966208 -s TOTAL_STACK=10485760 -s DEFAULT_PTHREAD_STACK_SIZE=10485760 -s MALLOC=emmalloc -s EMULATE_FUNCTION_POINTER_CASTS=1 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
