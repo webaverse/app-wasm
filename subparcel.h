@@ -221,7 +221,7 @@ enum class MESSAGES : int {
   updateGeometry = -2,
 };
 extern "C" {
-  extern std::function<void(ThreadPool *, Message *)> *METHOD_FNS;
+  extern std::function<void(ThreadPool *, Message *)> METHOD_FNS[];
 }
 
 class Coord {
