@@ -459,6 +459,7 @@ void doMarchThings(Tracker *tracker, GeometrySet *geometrySet, int x, int y, int
   unsigned int indicesIndex = 0;
   unsigned int skyLightsIndex = 0;
   unsigned int torchLightsIndex = 0;
+  textureUpdated = false;
 
   for (unsigned int i = 0; i < subparcel->numThings; i++) {
     Thing &thing = subparcel->things[i];
