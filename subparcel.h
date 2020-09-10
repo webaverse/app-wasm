@@ -66,31 +66,101 @@ public:
   friend class FreeEntry;
 };
 
+class MessagePusher;
 class Message {
 public:
+  operator bool() const {
+    return id != 0;
+  }
+  void copyMetadata(const Message &m) {
+    id = m.id;
+    method = m.method;
+    priority = m.priority;
+  }
+
   int id;
   int method;
   int priority;
-  unsigned int count;
-  unsigned char args[4];
+protected:
+  unsigned char args[32 * sizeof(unsigned int)];
+
+  friend class MessagePuller;
+  friend class MessagePusher;
+};
+class MessagePuller {
+public:
+  MessagePuller(const Message &message) : message(message), offset(0) {}
+
+  template <typename T>
+  inline T pull() {
+    if (offset + sizeof(T) <= sizeof(message.args)) {
+      T o;
+      memcpy(&o, message.args + offset, sizeof(T));
+      offset += sizeof(T);
+      return std::move(o);
+    } else {
+      std::cout << "message arg pull overflow: " << offset << ":" << sizeof(T) << std::endl;
+      abort();
+      return T{};
+    }
+  }
+  template <typename T, unsigned int count>
+  inline T *pull() {
+    if (offset + sizeof(T) * count <= sizeof(message.args)) {
+      T *o = (T *)(message.args + offset);
+      offset += sizeof(T) * count;
+      return o;
+    } else {
+      std::cout << "message arg pull array overflow: " << offset << ":" << sizeof(T) << ":" << count << std::endl;
+      abort();
+      return nullptr;
+    }
+  }
+  const Message &message;
+  unsigned int offset;
+};
+class MessagePusher {
+public:
+  MessagePusher(Message &message) : message(message), offset(0) {}
+
+  template <typename T>
+  inline void push(const T &o) {
+    if (offset + sizeof(T) <= sizeof(message.args)) {
+      memcpy(message.args + offset, &o, sizeof(T));
+      offset += sizeof(T);
+    } else {
+      std::cout << "message arg push overflow: " << offset << ":" << sizeof(T) << std::endl;
+      abort();
+    }
+  }
+  Message &message;
+  unsigned int offset;
 };
 
 template <typename M>
 class Mailbox {
 public:
-  void queue(M *message) {
+  void queue(M &message) {
     std::lock_guard<std::mutex> lock(mutex);
-    if (message->priority > 0) {
+    if (message.priority > 0) {
       messages.push_front(message);
     } else {
       messages.push_back(message);
     }
     semaphore.release();
   }
-  void queueAll(std::vector<M *> &&ms) {
+  void queueAll(M *ms, unsigned int numMessages) {
+    // std::cout << "queue all " << (void *)ms << std::endl;
     std::lock_guard<std::mutex> lock(mutex);
-    for (M *m : ms) {
-      if (m->priority > 0) {
+    for (unsigned int i = 0; i < numMessages; i++) {
+      const M &m = ms[i];
+      // std::cout << "queue " << (void *)&m << " " << m.id << " " << m.method << " " << sizeof(Message) << std::endl;
+      /* if (m.method > 0 && m.method < 256) {
+      } else {
+        std::cout << "invalid method" << std::endl;
+        abort();
+      } */
+      if (m.priority > 0) {
         messages.push_front(m);
       } else {
         messages.push_back(m);
@@ -98,87 +168,78 @@ public:
       semaphore.release();
     }
   }
-  M *wait() {
+  M wait() {
     for(;;) {
       semaphore.acquire();
       std::lock_guard<std::mutex> lock(mutex);
-      M *message = messages.front();
+      M message = messages.front();
       messages.pop_front();
       if (message) {
         return message;
       }
     }
   }
-  void push(M *message) {
+  void push(M &message) {
     std::lock_guard<std::mutex> lock(mutex);
     messages.push_back(message);
     // std::cout << "push messages a " << messages.size() << std::endl;
     // semaphore.release();
   }
-  M *pop() {
-    M *message;
+  M pop() {
+    M message{};
     {
       std::lock_guard<std::mutex> lock(mutex);
       if (messages.size() > 0) {
         message = messages.front();
         messages.pop_front();
         // semaphore.acquire();
-      } else {
-        message = nullptr;
       }
     }
     return message;
   }
-  void popAll(std::vector<M *> &ms) {
+  /* void popAll(std::deque<M> &ms) {
     std::lock_guard<std::mutex> lock(mutex);
-    // std::cout << "pop all a " << messages.size() << std::endl;
-    ms.reserve(messages.size());
-    for (Message *message : messages) {
-      ms.push_back(message);
-    }
-    messages.clear();
-    // std::cout << "pop all b " << ms.size() << std::endl;
-  }
-  void filterQueue(std::function<bool(Message *message)> testFn) {
+    ms = std::move(messages);
+  } */
+  void filterQueue(std::function<bool(const Message &message)> testFn) {
     std::lock_guard<std::mutex> lock(mutex);
 
-    for (auto iter = messages.begin(); iter != messages.end(); iter++) {
-      Message *message = *iter;
-      if (message && !testFn(message)) {
-        free(message);
-        *iter = nullptr;
-      }
-    }
+    std::deque<M> newMessages;
+    newMessages.reserve(messages.size());
+    std::copy_if(messages.begin(), messages.end(), std::back_inserter(newMessages), [](const Message &message) -> bool {
+      return message.id > 0;
+    });
+    messages = std::move(newMessages);
   }
 
-  std::deque<M *> messages;
+  std::deque<M> messages;
   Semaphore semaphore;
   std::mutex mutex;
 };
 template<typename M>
 class DependencyMailbox {
 public:
-  void push(std::function<bool()> fn, M* message) {
+  void push(std::function<bool()> fn, M &message) {
     std::lock_guard<std::mutex> lock(mutex);
 
-    queue.push_back(std::pair<std::function<bool()>, M *>(fn, message));
+    queue.push_back(std::pair<std::function<bool()>, M>(fn, message));
   }
-  M *pop() {
+  M pop() {
     std::lock_guard<std::mutex> lock(mutex);
 
     for (auto iter = queue.begin(); iter != queue.end(); iter++) {
-      std::pair<std::function<bool()>, M *> &entry = *iter;
+      std::pair<std::function<bool()>, M> &entry = *iter;
       std::function<bool()> &fn = entry.first;
-      M *message = entry.second;
+      const M &message = entry.second;
       if (fn()) {
         queue.erase(iter);
         return message;
       }
     }
-    return nullptr;
+    return Message{};
   }
 
-  std::list<std::pair<std::function<bool()>, M *>> queue;
+  std::list<std::pair<std::function<bool()>, M>> queue;
   std::mutex mutex;
 };
 
@@ -195,7 +256,7 @@ public:
 // extern ThreadPool * volatile gThreadPool;
 
 enum class METHODS : int {
-  makeArenaAllocator = 0,
+  makeArenaAllocator = 1,
   arenaAlloc,
   arenaFree,
   makeGeometrySet,
@@ -224,7 +285,7 @@ enum class MESSAGES : int {
   updateGeometry = -2,
 };
 extern "C" {
-  extern std::function<void(ThreadPool *, Message *)> METHOD_FNS[];
+  extern std::function<void(ThreadPool *, const Message &)> METHOD_FNS[];
 }
 
 class Coord {

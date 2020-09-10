@@ -134,20 +134,12 @@ void *ThreadPool::runFn(void *arg) {
   // std::cout << "thread pool running" << std::endl;
   for (;;) {
     // std::cout << "thread pool wait 1 " << (void *)gThreadPool << (void *)&gThreadPool->inbox << " " << (void *)&gThreadPool->inbox.semaphore << std::endl;
-    Message *message = threadPool->inbox.wait();
+    Message message = threadPool->inbox.wait();
     // std::cout << "thread pool wait 2 " << (int)message->method << std::endl;
     // std::cout << "got request message method " << (unsigned int)message->method << std::endl;
-    auto &fn = METHOD_FNS[message->method];
+    auto &fn = METHOD_FNS[message.method];
     // std::cout << "got request message method b" << std::endl;
     fn(threadPool, message);
-
-    /* if (message->id != 0) {
-      outbox.push(message);
-    } else {
-      free(message);
-    } */
-
-    // std::cout << "push message " << outbox << " " << outbox.messages.size() << std::endl;
   }
   return nullptr;
 }
@@ -309,20 +301,18 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
 void Tracker::subparcelUpdate(ThreadPool *threadPool, GeometrySet *geometrySet, NeededCoords *neededCoords, Subparcel *subparcel, unsigned int generate) {
   std::shared_ptr<Subparcel> &subparcelSharedPtr = neededCoords->subparcelMap[subparcel->coord.index];
 
-  unsigned int count = 5;
-  Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
-  message->id = -1;
-  message->method = (int)METHODS::chunk;
-  message->priority = 0;
-  message->count = count;
+  Message message{};
+  MessagePusher pusher(message);
+  message.id = -1;
+  message.method = (int)METHODS::chunk;
+  message.priority = 0;
 
   {
-    unsigned int *u32 = (unsigned int *)message->args;
-    u32[0] = seed;
-    u32[1] = (unsigned int)this;
-    u32[2] = (unsigned int)geometrySet;
-    u32[3] = (unsigned int)(new std::weak_ptr<Subparcel>(subparcelSharedPtr));
-    u32[4] = generate;
+    pusher.push(seed);
+    pusher.push(this);
+    pusher.push(geometrySet);
+    pusher.push(new std::weak_ptr<Subparcel>(subparcelSharedPtr));
+    pusher.push(generate);
   }
 
   threadPool->inbox.queue(message);

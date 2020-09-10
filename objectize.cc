@@ -252,62 +252,33 @@ EMSCRIPTEN_KEEPALIVE unsigned int popResponse(ThreadPool *threadPool) {
   }
 } */
 
-EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, unsigned char *ptr, unsigned int numEntries, unsigned char *outPtr, unsigned int *outNumEntries) {
+EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, Message *inMessages, unsigned int numInMessages, Message *outMessages, unsigned int *numOutMessages) {
+  // std::cout << "tick A " << (void *)threadPool << " " << numInMessages << " " << (void *)numOutMessages << std::endl;
+  unsigned int maxNumOutMessages = *numOutMessages;
+  // std::cout << "tick B " << (void *)threadPool << " " << numInMessages << " " << maxNumOutMessages << std::endl;
+
   {
-    std::vector<Message *> outMessages;
-    threadPool->outbox.popAll(outMessages);
-    // std::cout << "out messages a " << outMessages.size() << std::endl;
-    unsigned int index = 0;
-    int i = 0;
-    for (Message *outMessage : outMessages) {
-      Message *clientMessage = (Message *)(outPtr + index);
-
-      unsigned int offsetCount = outMessage->count;
-      unsigned int offsetSize = sizeof(Message) - 4 + offsetCount*sizeof(unsigned int);
-      memcpy(clientMessage, outMessage, offsetSize);
-
-      // std::cout << "out id " << i << " " << outMessages.size() << " " << clientMessage->id << " " << index << " " << (unsigned int)clientMessage << std::endl;
-      /* if (!clientMessage->id || clientMessage->id > 100) {
-        std::cout << "no id a " << clientMessage->id << " " << index << std::endl;
-        abort();
-      } */
-
-      index += offsetSize;
-
-      free(outMessage);
-      i++;
+    (*numOutMessages) = 0;
+    for (unsigned int i = 0; i < maxNumOutMessages; i++) {
+      Message oldMessage = threadPool->outbox.pop();
+      // std::cout << "out message " << oldMessage.id << " " << oldMessage.method << std::endl;
+      if (oldMessage) {
+        outMessages[i] = oldMessage;
+        (*numOutMessages)++;
+      } else {
+        break;
+      }
     }
-    // std::cout << "out messages b " << outMessages.size() << std::endl;
-    *outNumEntries = outMessages.size();
   }
   {
-    Message *message;
+    Message message;
     while ((message = threadPool->dependencyInbox.pop())) {
-      message->priority = 1;
+      message.priority = 1;
       threadPool->inbox.queue(message);
     }
   }
   {
-    std::vector<Message *> inMessages(numEntries);
-    unsigned int index = 0;
-    for (unsigned int i = 0; i < numEntries; i++) {
-      Message *clientMessage = (Message *)(ptr + index);
-
-      unsigned int offsetCount = clientMessage->count;
-      unsigned int offsetSize = sizeof(Message) - 4 + offsetCount*sizeof(unsigned int);
-
-      Message *newMessage = (Message *)malloc(offsetSize);
-      memcpy(newMessage, clientMessage, offsetSize);
-      // std::cout << "in id " << newMessage->id << std::endl;
-      /* if (!newMessage->id || newMessage->id > 100) {
-        std::cout << "no id b " << newMessage->id << " " << index << std::endl;
-        abort();
-      } */
-
-      inMessages[i] = newMessage;
-      index += offsetSize;
-    }
-    threadPool->inbox.queueAll(std::move(inMessages));
+    threadPool->inbox.queueAll(inMessages, numInMessages);
   }
 }
 
@@ -327,8 +298,12 @@ bool checkSubparcelIndicesLive(Tracker *tracker, const std::vector<int> indices)
   return true;
 }
 
-std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
-  [](ThreadPool *threadPool, Message *Message) -> void { // makeArenaAllocator
+std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
+  [](ThreadPool *threadPool, const Message &message) -> void { // null
+    std::cout << "called null message method" << std::endl;
+    abort();
+  },
+  [](ThreadPool *threadPool, const Message &message) -> void { // makeArenaAllocator
     abort();
     /* unsigned int index = 0;
     unsigned int size = *((unsigned int *)(Message->args + index));
@@ -338,7 +313,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
     *arenaAllocator = makeArenaAllocator(size); v*/
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // arenaAlloc
+  [](ThreadPool *threadPool, const Message &message) -> void { // arenaAlloc
     abort();
     /* unsigned int index = 0;
     ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(Message->args + index));
@@ -350,7 +325,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
     *entry = arenaAlloc(arenaAllocator, size); */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // arenaFree
+  [](ThreadPool *threadPool, const Message &message) -> void { // arenaFree
     abort();
     /* unsigned int index = 0;
     ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(Message->args + index));
@@ -360,80 +335,67 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
     arenaFree(arenaAllocator, entry); */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // makeGeometrySet
+  [](ThreadPool *threadPool, const Message &message) -> void { // makeGeometrySet
     abort();
     /* GeometrySet **geometrySet = (GeometrySet **)Message->args;
     *geometrySet = new GeometrySet(); */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // loadBake
-    GeometrySet *geometrySet = *((GeometrySet **)Message->args);
-    unsigned char *data = *((unsigned char **)(Message->args + sizeof(GeometrySet *)));
-    unsigned int dataSize = *((unsigned int *)(Message->args + sizeof(GeometrySet *) + sizeof(unsigned char *)));
-    // std::cout << "load bake 1 " << (unsigned int)(void *)geometrySet << " " << (unsigned int)data << " " << dataSize << std::endl;
+  [](ThreadPool *threadPool, const Message &message) -> void { // loadBake
+    MessagePuller puller(message);
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    unsigned char *data = puller.pull<unsigned char *>();
+    unsigned int dataSize = puller.pull<unsigned int>();
+
     loadBake(geometrySet, data, dataSize);
-    // std::cout << "load bake 2" << std::endl;
 
-    threadPool->outbox.push(Message);
+    threadPool->outbox.push(*const_cast<Message *>(&message));
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // getGeometry
-    unsigned int index = 0;
-    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
-    index += sizeof(GeometrySet *);
-    char *nameData = *((char **)(Message->args + index));
-    index += sizeof(char *);
-    unsigned int nameSize = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
-    float **positions = (float **)(Message->args + index);
-    index += sizeof(float **);
-    float **uvs = (float **)(Message->args + index);
-    index += sizeof(float **);
-    unsigned int **indices = (unsigned int **)(Message->args + index);
-    index += sizeof(unsigned int **);
-    unsigned int *numPositions = (unsigned int *)(Message->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *numUvs = (unsigned int *)(Message->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *numIndices = (unsigned int *)(Message->args + index);
-    index += sizeof(unsigned int *);
+  [](ThreadPool *threadPool, const Message &message) -> void { // getGeometry
+    MessagePuller puller(message);
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    char *nameData = puller.pull<char *>();
+    unsigned int nameSize = puller.pull<unsigned int>();
 
-    getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices);
+    float *positions;
+    float *uvs;
+    unsigned int *indices;
+    unsigned int numPositions;
+    unsigned int numUvs;
+    unsigned int numIndices;
 
-    threadPool->outbox.push(Message);
+    getGeometry(geometrySet, nameData, nameSize, &positions, &uvs, &indices, &numPositions, &numUvs, &numIndices);
+
+    Message message2{};
+    message2.copyMetadata(message);
+    MessagePusher pusher(message2);
+    pusher.push(positions);
+    pusher.push(uvs);
+    pusher.push(indices);
+    pusher.push(numPositions);
+    pusher.push(numUvs);
+    pusher.push(numIndices);
+    threadPool->outbox.push(message2);
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // getAnimalGeometry
-    unsigned int index = 0;
-    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
-    index += sizeof(GeometrySet *);
-    unsigned int hash = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
-    float **positions = (float **)(Message->args + index);
-    index += sizeof(float **);
-    unsigned char **colors = (unsigned char **)(Message->args + index);
-    index += sizeof(unsigned char **);
-    unsigned int **indices = (unsigned int **)(Message->args + index);
-    index += sizeof(unsigned int **);
-    float **heads = (float **)(Message->args + index);
-    index += sizeof(float **);
-    float **legs = (float **)(Message->args + index);
-    index += sizeof(float **);
-    unsigned int *numPositions = (unsigned int *)(Message->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *numColors = (unsigned int *)(Message->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *numIndices = (unsigned int *)(Message->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *numHeads = (unsigned int *)(Message->args + index);
-    index += sizeof(unsigned int *);
-    unsigned int *numLegs = (unsigned int *)(Message->args + index);
-    index += sizeof(unsigned int *);
-    float *headPivot = (float *)(Message->args + index);
-    index += 3*sizeof(float *);
-    float *aabb = (float *)(Message->args + index);
-    index += 6*sizeof(float *);
+  [](ThreadPool *threadPool, const Message &message) -> void { // getAnimalGeometry
+    MessagePuller puller(message);
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    unsigned int hash = puller.pull<unsigned int>();
+    float **positions = puller.pull<float **>();
+    unsigned char **colors = puller.pull<unsigned char **>();
+    unsigned int **indices = puller.pull<unsigned int **>();
+    float **heads = puller.pull<float **>();
+    float **legs = puller.pull<float **>();
+    unsigned int *numPositions = puller.pull<unsigned int *>();
+    unsigned int *numColors = puller.pull<unsigned int *>();
+    unsigned int *numIndices = puller.pull<unsigned int *>();
+    unsigned int *numHeads = puller.pull<unsigned int *>();
+    unsigned int *numLegs = puller.pull<unsigned int *>();
+    float *headPivot = puller.pull<float, 3>();
+    float *aabb = puller.pull<float, 6>();
 
     getAnimalGeometry(geometrySet, hash, positions, colors, indices, heads, legs, numPositions, numColors, numIndices, numHeads, numLegs, headPivot, aabb);
 
-    threadPool->outbox.push(Message);
+    threadPool->outbox.push(*const_cast<Message *>(&message));
 
     /* unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
@@ -457,7 +419,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
     getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices); */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // marchObjects
+  [](ThreadPool *threadPool, const Message &message) -> void { // marchObjects
     abort();
     /* unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
@@ -560,25 +522,23 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
     // std::cout << "march objects d " << numIndices << " " << indices[0] << " " << indices[1] << " " << indices[2] << " " << (unsigned int)(void *)positionsAllocator << " " << (unsigned int)(void *)indicesAllocator << " " << (unsigned int)(void *)indicesAllocator->data << " " << (*indicesEntry)->start << std::endl; */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // getHeight
-    unsigned int index = 0;
-    int seed = *((int *)(Message->args + index));
-    index += sizeof(int);
-    float x = *((float *)(Message->args + index));
-    index += sizeof(float);
-    float y = *((float *)(Message->args + index));
-    index += sizeof(float);
-    float z = *((float *)(Message->args + index));
-    index += sizeof(float);
-    float baseHeight = *((float *)(Message->args + index));
-    index += sizeof(float);
-    float *height = (float *)(Message->args + index);
-    index += sizeof(float *);
-    *height = getHeight(seed, x, y, z, baseHeight);
+  [](ThreadPool *threadPool, const Message &message) -> void { // getHeight
+    MessagePuller puller(message);
+    int seed = puller.pull<int>();
+    float x = puller.pull<float>();
+    float y = puller.pull<float>();
+    float z = puller.pull<float>();
+    float baseHeight = puller.pull<float>();
 
-    threadPool->outbox.push(Message);
+    float height = getHeight(seed, x, y, z, baseHeight);
+
+    Message message2{};
+    message2.copyMetadata(message);
+    MessagePusher pusher(message2);
+    pusher.push(height);
+    threadPool->outbox.push(message2);
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // noise
+  [](ThreadPool *threadPool, const Message &message) -> void { // noise
     abort();
     /* unsigned int index = 0;
 
@@ -610,7 +570,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
     noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset); */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // marchingCubes
+  [](ThreadPool *threadPool, const Message &message) -> void { // marchingCubes
     abort();
     /* unsigned int index = 0;
 
@@ -754,7 +714,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     memcpy(torchLightsAllocator->data + (*torchLightsEntry)->start, torchLights.data(), numTorchLights*sizeof(unsigned char));
     memcpy(peeksAllocator->data + (*peeksEntry)->start, peeks.data(), numPeeks*sizeof(unsigned char)); */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // bakeGeometry
+  [](ThreadPool *threadPool, const Message &message) -> void { // bakeGeometry
     abort();
     /* unsigned int index = 0;
 
@@ -777,16 +737,13 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     bakeGeometry(positions, indices, numPositions, numIndices, writeStream);
     // std::cout << "bake 2" << std::endl; */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // getSubparcel
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    int x = *((int *)(Message->args + index));
-    index += sizeof(int);
-    int y = *((int *)(Message->args + index));
-    index += sizeof(void *);
-    int z = *((int *)(Message->args + index));
-    index += sizeof(void *);
+  [](ThreadPool *threadPool, const Message &message) -> void { // getSubparcel
+    abort();
+    /* MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    int x = puller.pull<int>();
+    int y = puller.pull<int>();
+    int z = puller.pull<int>();
 
     std::shared_ptr<Subparcel> subparcel;
     {
@@ -804,20 +761,20 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       subparcelPtr = nullptr;
     }
 
-    index = 0;
-    *((std::shared_ptr<Subparcel> **)(Message->args + index)) = subparcelPtr;
-    index += sizeof(std::shared_ptr<Subparcel> *);
-    *((Subparcel **)(Message->args + index)) = subparcel.get();
-    index += sizeof(Subparcel *);
+    {
+      Message message2{};
+      message2.copyMetadata(message);
+      MessagePusher pusher(message2);
+      pusher.push(subparcel.get());
+      pusher.push(subparcelPtr);
 
-    threadPool->outbox.push(Message);
+      threadPool->outbox.push(message2);
+    } */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // releaseSubparcel
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
-    index += sizeof(std::shared_ptr<Subparcel> *);
+  [](ThreadPool *threadPool, const Message &message) -> void { // releaseSubparcel
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    std::shared_ptr<Subparcel> *subparcelSharedPtr = puller.pull<std::shared_ptr<Subparcel> *>();
 
     {
       std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
@@ -828,20 +785,15 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
     }
     delete subparcelSharedPtr;
 
-    threadPool->outbox.push(Message);
+    threadPool->outbox.push(*const_cast<Message *>(&message));
   },
-  [](ThreadPool *threadPool, Message *message) -> void { // chunk
-    unsigned int index = 0;
-    int seed = *((int *)(message->args + index));
-    index += sizeof(int);
-    void *trackerByteOffset = *((void **)(message->args + index));
-    index += sizeof(void *);
-    void *geometrySetByteOffset = *((void **)(message->args + index));
-    index += sizeof(void *);
-    void *subparcelWeakPtrByteOffset = *((void **)(message->args + index));
-    index += sizeof(void *);
-    unsigned int generate = *((unsigned int *)(message->args + index));
-    index += sizeof(unsigned int);
+  [](ThreadPool *threadPool, const Message &message) -> void { // chunk
+    MessagePuller puller(message);
+    int seed = puller.pull<int>();
+    void *trackerByteOffset = puller.pull<void *>();
+    void *geometrySetByteOffset = puller.pull<void *>();
+    void *subparcelWeakPtrByteOffset = puller.pull<void *>();
+    unsigned int generate = puller.pull<unsigned int>();
 
     Tracker *tracker = (Tracker *)trackerByteOffset;
     GeometrySet *geometrySet = (GeometrySet *)geometrySetByteOffset;
@@ -862,18 +814,14 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       }
 
       {
-        unsigned int count = 2;
-        Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
-        message->id = -1;
-        message->method = (int)MESSAGES::updateSubparcel;
-        message->priority = 0;
-        message->count = count;
+        Message message{};
+        MessagePusher pusher(message);
+        message.id = -1;
+        message.method = (int)MESSAGES::updateSubparcel;
+        message.priority = 0;
 
-        unsigned int index = 0;
-        *((Subparcel **)(message->args + index)) = subparcel.get();
-        index += sizeof(Subparcel *);
-        *((unsigned int *)(message->args + index)) = offsetof(Subparcel, things) + sizeof(Subparcel::things);
-        index += sizeof(unsigned int);
+        pusher.push(subparcel.get());
+        pusher.push<unsigned int>(offsetof(Subparcel, things) + sizeof(Subparcel::things));
 
         threadPool->outbox.push(message);
       }
@@ -1151,67 +1099,42 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
       // output
       {
-        unsigned int count = 128;
-        Message *message = (Message *)malloc(sizeof(Message) - 4 + count*sizeof(unsigned int));
-        message->id = -1;
-        message->method = (int)MESSAGES::updateGeometry;
-        message->priority = 0;
-        message->count = count;
+        Message message{};
+        MessagePusher pusher(message);
+        message.id = -1;
+        message.method = (int)MESSAGES::updateGeometry;
+        message.priority = 0;
 
-        unsigned int index = 0;
-        *((FreeEntry **)(message->args + index)) = subparcel->landPositionsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->landNormalsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->landUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->landAosEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->landIdsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->landSkyLightsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->landTorchLightsEntry.get();
-        index += sizeof(FreeEntry *);
+        pusher.push(subparcel->landPositionsEntry.get());
+        pusher.push(subparcel->landNormalsEntry.get());
+        pusher.push(subparcel->landUvsEntry.get());
+        pusher.push(subparcel->landAosEntry.get());
+        pusher.push(subparcel->landIdsEntry.get());
+        pusher.push(subparcel->landSkyLightsEntry.get());
+        pusher.push(subparcel->landTorchLightsEntry.get());
 
-        *((FreeEntry **)(message->args + index)) = subparcel->vegetationPositionsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->vegetationUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->vegetationIdsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->vegetationIndicesEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
-        index += sizeof(FreeEntry *);
+        pusher.push(subparcel->vegetationPositionsEntry.get());
+        pusher.push(subparcel->vegetationUvsEntry.get());
+        pusher.push(subparcel->vegetationIdsEntry.get());
+        pusher.push(subparcel->vegetationIndicesEntry.get());
+        pusher.push(subparcel->vegetationSkyLightsEntry.get());
+        pusher.push(subparcel->vegetationTorchLightsEntry.get());
 
-        *((FreeEntry **)(message->args + index)) = subparcel->thingPositionsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->thingUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->thingAtlasUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->thingIdsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->thingIndicesEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->thingSkyLightsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(message->args + index)) = subparcel->thingTorchLightsEntry.get();
-        index += sizeof(FreeEntry *);
+        pusher.push(subparcel->thingPositionsEntry.get());
+        pusher.push(subparcel->thingUvsEntry.get());
+        pusher.push(subparcel->thingAtlasUvsEntry.get());
+        pusher.push(subparcel->thingIdsEntry.get());
+        pusher.push(subparcel->thingIndicesEntry.get());
+        pusher.push(subparcel->thingSkyLightsEntry.get());
+        pusher.push(subparcel->thingTorchLightsEntry.get());
 
         if (textureUpdated) {
-          *((unsigned char **)(message->args + index)) = tracker->atlasTexture.data();
-          index += sizeof(unsigned char *);
+          pusher.push(tracker->atlasTexture.data());
         } else {
-          *((unsigned char **)(message->args + index)) = nullptr;
-          index += sizeof(unsigned char *);
+          pusher.push<unsigned char *>(nullptr);
         }
 
-        *((std::shared_ptr<Subparcel> **)(message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
-        index += sizeof(std::shared_ptr<Subparcel> *);
+        pusher.push(new std::shared_ptr<Subparcel>(subparcel));
 
         /* if (index/sizeof(unsigned int) > message->count) {
           std::cout << "message overflow " << index << " " << message->count << std::endl;
@@ -1222,52 +1145,42 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       }
     }
     
-    free(message);
+    // free(message);
     delete subparcelWeakPtr;
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // mine
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    float *position = (float *)(Message->args + index);
-    index += 3*sizeof(float);
-    float delta = *((float *)(Message->args + index));
-    index += sizeof(float);
+  [](ThreadPool *threadPool, const Message &message) -> void { // mine
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    float *position = puller.pull<float *>();
+    float delta = puller.pull<float>();
 
     std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> spec = doMine(tracker, position, delta);
     const bool &doable = spec.first;
     if (doable) {
       std::vector<std::shared_ptr<Subparcel>> &newSubparcels = spec.second;
 
-      index = 0;
-      *((unsigned int *)(Message->args + index)) = newSubparcels.size();
-      index += sizeof(unsigned int);
+      Message message2{};
+      message2.copyMetadata(message);
+      MessagePusher pusher(message2);
+      pusher.push<unsigned int>(newSubparcels.size());
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        
-        *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry.get();
-        index += sizeof(FreeEntry *);
+
+        pusher.push(subparcel->landPositionsEntry.get());
+        pusher.push(subparcel->landNormalsEntry.get());
+        pusher.push(subparcel->landUvsEntry.get());
+        pusher.push(subparcel->landAosEntry.get());
+        pusher.push(subparcel->landIdsEntry.get());
+        pusher.push(subparcel->landSkyLightsEntry.get());
+        pusher.push(subparcel->landTorchLightsEntry.get());
       }
 
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
-        index += sizeof(std::shared_ptr<Subparcel> *);
+        pusher.push(new std::shared_ptr<Subparcel>(subparcel));
       }
 
-      threadPool->outbox.push(Message);
+      threadPool->outbox.push(message2);
     } else {
       std::vector<int> indices;
       {
@@ -1296,23 +1209,18 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       std::function<bool()> guardFn = [tracker, indices{std::move(indices)}]() -> bool {
         return checkSubparcelIndicesLive(tracker, indices);
       };
-      threadPool->dependencyInbox.push(guardFn, Message);
+      threadPool->dependencyInbox.push(guardFn, *const_cast<Message *>(&message));
     }
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // releaseMine
-    unsigned int index = 0;
-
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-
-    unsigned int numSubparcels = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
+  [](ThreadPool *threadPool, const Message &message) -> void { // releaseMine
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    unsigned int numSubparcels = puller.pull<unsigned int>();
 
     {
       std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
       for (unsigned int i = 0; i < numSubparcels; i++) {
-        std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
-        index += sizeof(std::shared_ptr<Subparcel> *);
+        std::shared_ptr<Subparcel> *subparcelSharedPtr = puller.pull<std::shared_ptr<Subparcel> *>();
 
         if ((*subparcelSharedPtr)->live) {
           tracker->subparcels[(*subparcelSharedPtr)->coord.index] = *subparcelSharedPtr;
@@ -1321,51 +1229,41 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       }
     }
 
-    threadPool->outbox.push(Message);
+    threadPool->outbox.push(*const_cast<Message *>(&message));
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // light
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    float *position = (float *)(Message->args + index);
-    index += 3*sizeof(float);
-    float delta = *((float *)(Message->args + index));
-    index += sizeof(float);
+  [](ThreadPool *threadPool, const Message &message) -> void { // light
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    float *position = puller.pull<float *>();
+    float delta = puller.pull<float>();
 
     std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> spec = doLight(tracker, position, delta);
     const bool &doable = spec.first;
     if (doable) {
       std::vector<std::shared_ptr<Subparcel>> &newSubparcels = spec.second;
 
-      index = 0;
-      *((unsigned int *)(Message->args + index)) = newSubparcels.size();
-      index += sizeof(unsigned int);
+      Message message2{};
+      message2.copyMetadata(message);
+      MessagePusher pusher(message2);
+      pusher.push<unsigned int>(newSubparcels.size());
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        
-        *((FreeEntry **)(Message->args + index)) = subparcel->landPositionsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landNormalsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landAosEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landIdsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landSkyLightsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->landTorchLightsEntry.get();
-        index += sizeof(FreeEntry *);
+
+        pusher.push(subparcel->landPositionsEntry.get());
+        pusher.push(subparcel->landNormalsEntry.get());
+        pusher.push(subparcel->landUvsEntry.get());
+        pusher.push(subparcel->landAosEntry.get());
+        pusher.push(subparcel->landIdsEntry.get());
+        pusher.push(subparcel->landSkyLightsEntry.get());
+        pusher.push(subparcel->landTorchLightsEntry.get());
       }
 
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
-        index += sizeof(std::shared_ptr<Subparcel> *);
+        pusher.push(new std::shared_ptr<Subparcel>(subparcel));
       }
 
-      threadPool->outbox.push(Message);
+      threadPool->outbox.push(message2);
     } else {
       std::vector<int> indices;
       {
@@ -1394,31 +1292,16 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       std::function<bool()> guardFn = [tracker, indices{std::move(indices)}]() -> bool {
         return checkSubparcelIndicesLive(tracker, indices);
       };
-      threadPool->dependencyInbox.push(guardFn, Message);
+      threadPool->dependencyInbox.push(guardFn, *const_cast<Message *>(&message));
     }
-
-    /* unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    float *position = (float *)(Message->args + index);
-    index += 3*sizeof(float);
-    float delta = *((float *)(Message->args + index));
-    index += sizeof(float);
-
-    std::vector<std::shared_ptr<Subparcel>> mineSpecs = doLight(tracker, position, delta); */
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // addObject
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
-    index += sizeof(GeometrySet *);
-    char *name = (char *)(Message->args + index);
-    index += MAX_NAME_LENGTH;
-    float *position = (float *)(Message->args + index);
-    index += 3*sizeof(float);
-    float *quaternion = (float *)(Message->args + index);
-    index += 4*sizeof(float);
+  [](ThreadPool *threadPool, const Message &message) -> void { // addObject
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    char *name = puller.pull<char, MAX_NAME_LENGTH>();
+    float *position = puller.pull<float, 3>();
+    float *quaternion = puller.pull<float, 4>();
 
     std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>> spec = doAddObject(tracker, geometrySet, OBJECT_TYPE::VEGETATION, name, position, quaternion);
     if (std::get<0>(spec)) {
@@ -1429,35 +1312,28 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         doObjectPhysics(tracker, geometrySet, subparcel.get());
       }
 
-      index = 0;
-      *((unsigned int *)(Message->args + index)) = objectId;
-      index += sizeof(unsigned int);
-      *((unsigned int *)(Message->args + index)) = newSubparcels.size();
-      index += sizeof(unsigned int);
+      Message message2{};
+      message2.copyMetadata(message);
+      MessagePusher pusher(message2);
+      pusher.push(objectId);
+      pusher.push<unsigned int>(newSubparcels.size());
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
-        index += sizeof(FreeEntry *);
+
+        pusher.push(subparcel->vegetationPositionsEntry.get());
+        pusher.push(subparcel->vegetationUvsEntry.get());
+        pusher.push(subparcel->vegetationIdsEntry.get());
+        pusher.push(subparcel->vegetationIndicesEntry.get());
+        pusher.push(subparcel->vegetationSkyLightsEntry.get());
+        pusher.push(subparcel->vegetationTorchLightsEntry.get());
       }
 
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
-        index += sizeof(std::shared_ptr<Subparcel> *);
+        pusher.push(new std::shared_ptr<Subparcel>(subparcel));
       }
 
-      threadPool->outbox.push(Message);
+      threadPool->outbox.push(message2);
     } else {
       const int sx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
       const int sy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
@@ -1467,23 +1343,17 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       std::function<bool()> guardFn = [tracker, indices{std::move(indices)}]() -> bool {
         return checkSubparcelIndicesLive(tracker, indices);
       };
-      threadPool->dependencyInbox.push(guardFn, Message);
+      threadPool->dependencyInbox.push(guardFn, *const_cast<Message *>(&message));
     }
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // removeObject
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
-    index += sizeof(GeometrySet *);
-    int sx = *((int *)(Message->args + index));
-    index += sizeof(int);
-    int sy = *((int *)(Message->args + index));
-    index += sizeof(int);
-    int sz = *((int *)(Message->args + index));
-    index += sizeof(int);
-    unsigned int objectId = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
+  [](ThreadPool *threadPool, const Message &message) -> void { // removeObject
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    int sx = puller.pull<int>();
+    int sy = puller.pull<int>();
+    int sz = puller.pull<int>();
+    unsigned int objectId = puller.pull<unsigned int>();
 
     const int subparcelIndex = getSubparcelIndex(sx, sy, sz);
     std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> spec = doRemoveObject(tracker, geometrySet, subparcelIndex, objectId);
@@ -1494,53 +1364,44 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         doObjectPhysics(tracker, geometrySet, subparcel.get());
       }
 
-      index = 0;
-      *((unsigned int *)(Message->args + index)) = newSubparcels.size();
-      index += sizeof(unsigned int);
+      Message message2{};
+      message2.copyMetadata(message);
+      MessagePusher pusher(message2);
+      pusher.push<unsigned int>(newSubparcels.size());
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationPositionsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIdsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationIndicesEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationSkyLightsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->vegetationTorchLightsEntry.get();
-        index += sizeof(FreeEntry *);
+
+        pusher.push(subparcel->vegetationPositionsEntry.get());
+        pusher.push(subparcel->vegetationUvsEntry.get());
+        pusher.push(subparcel->vegetationIdsEntry.get());
+        pusher.push(subparcel->vegetationIndicesEntry.get());
+        pusher.push(subparcel->vegetationSkyLightsEntry.get());
+        pusher.push(subparcel->vegetationTorchLightsEntry.get());
       }
 
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
-        index += sizeof(std::shared_ptr<Subparcel> *);
+        pusher.push(new std::shared_ptr<Subparcel>(subparcel));
       }
 
-      threadPool->outbox.push(Message);
+      threadPool->outbox.push(message2);
     } else {
       std::vector<int> indices{subparcelIndex};
       std::function<bool()> guardFn = [tracker, indices{std::move(indices)}]() -> bool {
         return checkSubparcelIndicesLive(tracker, indices);
       };
-      threadPool->dependencyInbox.push(guardFn, Message);
+      threadPool->dependencyInbox.push(guardFn, *const_cast<Message *>(&message));
     }
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // releaseAddRemoveObject
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    unsigned int numSubparcels = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
+  [](ThreadPool *threadPool, const Message &message) -> void { // releaseAddRemoveObject
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    unsigned int numSubparcels = puller.pull<unsigned int>();
 
     {
       std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
       for (unsigned int i = 0; i < numSubparcels; i++) {
-        std::shared_ptr<Subparcel> *subparcelSharedPtr = *((std::shared_ptr<Subparcel> **)(Message->args + index));
-        index += sizeof(std::shared_ptr<Subparcel> *);
+        std::shared_ptr<Subparcel> *subparcelSharedPtr = puller.pull<std::shared_ptr<Subparcel> *>();
 
         if ((*subparcelSharedPtr)->live) {
           tracker->subparcels[(*subparcelSharedPtr)->coord.index] = *subparcelSharedPtr;
@@ -1549,34 +1410,22 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       }
     }
 
-    threadPool->outbox.push(Message);
+    threadPool->outbox.push(*const_cast<Message *>(&message));
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // addThingGeometry
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
-    index += sizeof(GeometrySet *);
-    char *nameCharPtr = (char *)(Message->args + index);
-    index += MAX_NAME_LENGTH;
-    float *positions = *((float **)(Message->args + index));
-    index += sizeof(float *);
-    float *uvs = *((float **)(Message->args + index));
-    index += sizeof(float *);
-    unsigned int *indices = *((unsigned int **)(Message->args + index));
-    index += sizeof(unsigned int *);
-    unsigned int numPositions = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
-    unsigned int numUvs = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
-    unsigned int numIndices = *((unsigned int *)(Message->args + index));
-    index += sizeof(unsigned int);
-    unsigned char *texture = *((unsigned char **)(Message->args + index));
-    index += sizeof(unsigned char *);
-    std::shared_ptr<PhysicsGeometry> *trianglePhysicsGeometryPtr = *((std::shared_ptr<PhysicsGeometry> **)(Message->args + index));
-    index += sizeof(std::shared_ptr<PhysicsGeometry> *);
-    std::shared_ptr<PhysicsGeometry> *convexPhysicsGeometryPtr = *((std::shared_ptr<PhysicsGeometry> **)(Message->args + index));
-    index += sizeof(std::shared_ptr<PhysicsGeometry> *);
+  [](ThreadPool *threadPool, const Message &message) -> void { // addThingGeometry
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    char *nameCharPtr = puller.pull<char, MAX_NAME_LENGTH>();
+    float *positions = puller.pull<float *>();
+    float *uvs = puller.pull<float *>();
+    unsigned int *indices = puller.pull<unsigned int *>();
+    unsigned int numPositions = puller.pull<unsigned int>();
+    unsigned int numUvs = puller.pull<unsigned int>();
+    unsigned int numIndices = puller.pull<unsigned int>();
+    unsigned char *texture = puller.pull<unsigned char *>();
+    std::shared_ptr<PhysicsGeometry> *trianglePhysicsGeometryPtr = puller.pull<std::shared_ptr<PhysicsGeometry> *>();
+    std::shared_ptr<PhysicsGeometry> *convexPhysicsGeometryPtr = puller.pull<std::shared_ptr<PhysicsGeometry> *>();
 
     Geometry *geometry = new Geometry();
     geometry->name = std::string(nameCharPtr);
@@ -1596,20 +1445,15 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
 
     geometrySet->geometryMap[geometry->name] = geometry;
 
-    threadPool->outbox.push(Message);
+    threadPool->outbox.push(*const_cast<Message *>(&message));
   },
-  [](ThreadPool *threadPool, Message *Message) -> void { // addThing
-    unsigned int index = 0;
-    Tracker *tracker = *((Tracker **)(Message->args + index));
-    index += sizeof(Tracker *);
-    GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
-    index += sizeof(GeometrySet *);
-    char *name = (char *)(Message->args + index);
-    index += MAX_NAME_LENGTH;
-    float *position = (float *)(Message->args + index);
-    index += 3*sizeof(float);
-    float *quaternion = (float *)(Message->args + index);
-    index += 4*sizeof(float *);
+  [](ThreadPool *threadPool, const Message &message) -> void { // addThing
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    char *name = puller.pull<char, MAX_NAME_LENGTH>();
+    float *position = puller.pull<float, 3>();
+    float *quaternion = puller.pull<float, 4>();
 
     bool textureUpdated;
     std::tuple<bool, unsigned int, std::vector<std::shared_ptr<Subparcel>>, bool> spec = doAddThing(tracker, geometrySet, name, position, quaternion);
@@ -1622,45 +1466,34 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
         doThingPhysics(tracker, geometrySet, subparcel.get());
       }
 
-      index = 0;
-      *((unsigned int *)(Message->args + index)) = objectId;
-      index += sizeof(unsigned int);
-      *((unsigned int *)(Message->args + index)) = newSubparcels.size();
-      index += sizeof(unsigned int);
+      Message message2{};
+      message2.copyMetadata(message);
+      MessagePusher pusher(message2);
+      pusher.push(objectId);
+      pusher.push<unsigned int>(newSubparcels.size());
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        
-        *((FreeEntry **)(Message->args + index)) = subparcel->thingPositionsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->thingUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->thingAtlasUvsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->thingIdsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->thingIndicesEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->thingSkyLightsEntry.get();
-        index += sizeof(FreeEntry *);
-        *((FreeEntry **)(Message->args + index)) = subparcel->thingTorchLightsEntry.get();
-        index += sizeof(FreeEntry *);
+
+        pusher.push(subparcel->thingPositionsEntry.get());
+        pusher.push(subparcel->thingUvsEntry.get());
+        pusher.push(subparcel->thingAtlasUvsEntry.get());
+        pusher.push(subparcel->thingIdsEntry.get());
+        pusher.push(subparcel->thingIndicesEntry.get());
+        pusher.push(subparcel->thingSkyLightsEntry.get());
+        pusher.push(subparcel->thingTorchLightsEntry.get());
       }
 
       if (textureUpdated) {
-        *((unsigned char **)(Message->args + index)) = tracker->atlasTexture.data();
-        index += sizeof(unsigned char *);
+        pusher.push(tracker->atlasTexture.data());
       } else {
-        *((unsigned char **)(Message->args + index)) = nullptr;
-        index += sizeof(unsigned char *);
+        pusher.push<unsigned char *>(nullptr);
       }
 
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
-        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
-        *((std::shared_ptr<Subparcel> **)(Message->args + index)) = new std::shared_ptr<Subparcel>(subparcel);
-        index += sizeof(std::shared_ptr<Subparcel> *);
+        pusher.push(new std::shared_ptr<Subparcel>(newSubparcels[i]));
       }
 
-      threadPool->outbox.push(Message);
+      threadPool->outbox.push(message2);
     } else {
       const int sx = (int)std::floor(position[0]/(float)SUBPARCEL_SIZE);
       const int sy = (int)std::floor(position[1]/(float)SUBPARCEL_SIZE);
@@ -1670,7 +1503,7 @@ std::function<void(ThreadPool *, Message *)> METHOD_FNS[] = {
       std::function<bool()> guardFn = [tracker, indices{std::move(indices)}]() -> bool {
         return checkSubparcelIndicesLive(tracker, indices);
       };
-      threadPool->dependencyInbox.push(guardFn, Message);
+      threadPool->dependencyInbox.push(guardFn, *const_cast<Message *>(&message));
     }
   },
 };
