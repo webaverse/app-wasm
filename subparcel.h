@@ -93,28 +93,28 @@ public:
 
   template <typename T>
   inline T pull() {
-    if (offset + sizeof(T) <= sizeof(message.args)) {
+    // if (offset + sizeof(T) <= sizeof(message.args)) {
       T o;
       memcpy(&o, message.args + offset, sizeof(T));
       offset += sizeof(T);
       return std::move(o);
-    } else {
+    /* } else {
       std::cout << "message arg pull overflow: " << offset << ":" << sizeof(T) << std::endl;
       abort();
       return T{};
-    }
+    } */
   }
   template <typename T, unsigned int count>
   inline T *pull() {
-    if (offset + sizeof(T) * count <= sizeof(message.args)) {
+    // if (offset + sizeof(T) * count <= sizeof(message.args)) {
       T *o = (T *)(message.args + offset);
       offset += sizeof(T) * count;
       return o;
-    } else {
+    /* } else {
       std::cout << "message arg pull array overflow: " << offset << ":" << sizeof(T) << ":" << count << std::endl;
       abort();
       return nullptr;
-    }
+    } */
   }
   const Message &message;
   unsigned int offset;
@@ -125,13 +125,13 @@ public:
 
   template <typename T>
   inline void push(const T &o) {
-    if (offset + sizeof(T) <= sizeof(message.args)) {
+    // if (offset + sizeof(T) <= sizeof(message.args)) {
       memcpy(message.args + offset, &o, sizeof(T));
       offset += sizeof(T);
-    } else {
+    /* } else {
       std::cout << "message arg push overflow: " << offset << ":" << sizeof(T) << std::endl;
       abort();
-    }
+    } */
   }
   Message &message;
   unsigned int offset;
