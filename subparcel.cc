@@ -268,13 +268,15 @@ NeededCoords *Tracker::updateNeededCoords(float x, float y, float z) {
         for (const Coord &removedCoord : removedCoords) {
           auto subparcelsIter = subparcels.find(removedCoord.index);
           if (subparcelsIter != subparcels.end()) {
-            // auto &subparcel = *subparcelsIter->second;
+            auto &subparcel = *subparcelsIter->second;
+            subparcel.live = false;
             subparcels.erase(subparcelsIter);
           }
 
           auto loadingSubparcelsIter = loadingSubparcels.find(removedCoord.index);
           if (loadingSubparcelsIter != loadingSubparcels.end()) {
-            // loadingSubparcelsIter->second->live = false;
+            auto &subparcel = *loadingSubparcelsIter->second;
+            subparcel.live = false;
             loadingSubparcels.erase(loadingSubparcelsIter);
           }
         }
