@@ -700,10 +700,6 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
       const Vec direction = subparcel->boundingSphere.center
         + (exitNormal * (float)SUBPARCEL_SIZE/2.0f)
         - position;
-      if (subparcel->coord.x == -1 && subparcel->coord.y == 0 && subparcel->coord.z == -1 && exitPeekDirection.normal.y < 0) {
-        int index = getSubparcelIndex(subparcel->coord.x + exitINormal[0], subparcel->coord.y + exitINormal[1], subparcel->coord.z + exitINormal[2]);
-        auto nextSubparcelIter = subparcels.find(index);
-      }
       if (enterFace == PEEK_FACES::NONE || (direction.dot(exitNormal) > 0 && subparcel->peeks[PEEK_FACE_INDICES[(int)enterFace << 4 | (int)exitFace]])) {
         int index = getSubparcelIndex(subparcel->coord.x + exitINormal[0], subparcel->coord.y + exitINormal[1], subparcel->coord.z + exitINormal[2]);
         auto nextSubparcelIter = subparcels.find(index);
