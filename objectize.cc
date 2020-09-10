@@ -868,8 +868,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
         std::vector<float> ids(bufferSize);
         std::vector<unsigned char> skyLights(bufferSize);
         std::vector<unsigned char> torchLights(bufferSize);
-        constexpr unsigned int numPeeks = 15;
-        std::vector<unsigned char> peeks(numPeeks);
+        unsigned char peeks[15];
         unsigned int numPositions;
         unsigned int numNormals;
         unsigned int numUvs;
@@ -878,7 +877,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
         unsigned int numIds;
         unsigned int numSkyLights;
         unsigned int numTorchLights;
-        marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), /*barycentrics.data(),*/ aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, /*numBarycentrics,*/ numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks.data());
+        marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), /*barycentrics.data(),*/ aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, /*numBarycentrics,*/ numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks);
 
         subparcel->landPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
         if (!subparcel->landPositionsEntry) {
@@ -929,7 +928,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
         memcpy(idsAllocator->data + subparcel->landIdsEntry->spec.start, ids.data(), numIds*sizeof(float));
         memcpy(skyLightsAllocator->data + subparcel->landSkyLightsEntry->spec.start, skyLights.data(), numSkyLights*sizeof(unsigned char));
         memcpy(torchLightsAllocator->data + subparcel->landTorchLightsEntry->spec.start, torchLights.data(), numTorchLights*sizeof(unsigned char));
-        memcpy(subparcel->peeks, peeks.data(), numPeeks*sizeof(unsigned char));
+        memcpy(subparcel->peeks, peeks, sizeof(peeks));
 
         // groups
         subparcel->landGroups[0].start = subparcel->landPositionsEntry->spec.start/sizeof(float)/3;
