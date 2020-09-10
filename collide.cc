@@ -638,6 +638,28 @@ void doCull(Culler *culler, float *positionData, float *matrixData, float slabRa
     return a.materialIndex < b.materialIndex;
   });
 } */
+inline void collapseGroups(CullResult *cullResults, unsigned int &numCullResults) {
+  unsigned int srcNumCullResults = numCullResults;
+  unsigned int &dstIndex = numCullResults;
+  dstIndex = 0;
+  for (unsigned int srcIndex = 0; srcIndex < srcNumCullResults;) {
+    CullResult &startGroup = cullResults[srcIndex];
+
+    unsigned int endIndex = srcIndex;
+    for (unsigned int j = srcIndex+1; j < srcNumCullResults; j++) {
+      CullResult &endGroup = cullResults[j];
+      if (startGroup.start + startGroup.count == endGroup.start) {
+        startGroup.count += endGroup.count;
+        endIndex = j;
+      } else {
+        break;
+      }
+    }
+
+    cullResults[dstIndex++] = cullResults[srcIndex];
+    srcIndex = endIndex + 1;
+  }
+}
 void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullResult *landCullResults, unsigned int &numLandCullResults, CullResult *vegetationCullResults, unsigned int &numVegetationCullResults, CullResult *thingCullResults, unsigned int &numThingCullResults) {
   Vec position(positionData[0], positionData[1], positionData[2]);
   Frustum frustum;
@@ -717,7 +739,7 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
     tracker->currentCullSubparcels.insert(std::move(subparcel));
     queue.pop_front();
   }
-  // std::cout << "direction 4" << std::endl;
+
   // collect groups
   numLandCullResults = 0;
   numVegetationCullResults = 0;
@@ -748,9 +770,27 @@ void doTickCull(Tracker *tracker, float *positionData, float *matrixData, CullRe
       }
     }
   }
-  // std::cout << "direction 5" << std::endl;
-  std::sort(landCullResults, landCullResults + numLandCullResults, [&](const CullResult &a, const CullResult &b) -> bool {
-    return a.materialIndex < b.materialIndex;
-  });
-  // std::cout << "direction 6" << std::endl;
+  // collapse groups
+  if (numLandCullResults >= 2) {
+    std::sort(landCullResults, landCullResults + numLandCullResults, [&](const CullResult &a, const CullResult &b) -> bool {
+      if (a.materialIndex != b.materialIndex) {
+        return a.materialIndex < b.materialIndex;
+      } else {
+        return a.start < b.start;
+      }
+    });
+    collapseGroups(landCullResults, numLandCullResults);
+  }
+  if (numVegetationCullResults >= 2) {
+    std::sort(vegetationCullResults, vegetationCullResults + numVegetationCullResults, [&](const CullResult &a, const CullResult &b) -> bool {
+      return a.start < b.start;
+    });
+    collapseGroups(vegetationCullResults, numVegetationCullResults);
+  }
+  if (numThingCullResults >= 2) {
+    std::sort(thingCullResults, thingCullResults + numThingCullResults, [&](const CullResult &a, const CullResult &b) -> bool {
+      return a.start < b.start;
+    });
+    collapseGroups(thingCullResults, numThingCullResults);
+  }
 }
