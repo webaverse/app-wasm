@@ -481,9 +481,6 @@ public:
   Tracker *tracker;
   Sphere boundingSphere;
 
-  // build state
-  bool live;
-
   unsigned char peeks[16];
   std::shared_ptr<FreeEntry> landPositionsEntry;
   std::shared_ptr<FreeEntry> landNormalsEntry;
@@ -516,6 +513,9 @@ public:
   std::shared_ptr<PhysicsObject> landPhysxObject;
   std::vector<std::shared_ptr<PhysicsObject>> vegetationPhysxObjects;
   std::vector<std::shared_ptr<PhysicsObject>> thingPhysxObjects;
+
+  // build state
+  bool live;
 };
 
 class NeededCoords {
