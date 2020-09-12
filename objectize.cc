@@ -1150,7 +1150,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
   [](ThreadPool *threadPool, const Message &message) -> void { // mine
     MessagePuller puller(message);
     Tracker *tracker = puller.pull<Tracker *>();
-    float *position = puller.pull<float *>();
+    float *position = puller.pull<float, 3>();
     float delta = puller.pull<float>();
 
     std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> spec = doMine(tracker, position, delta);
