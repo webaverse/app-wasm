@@ -66,6 +66,7 @@ public:
   friend class FreeEntry;
 };
 
+constexpr unsigned int maxNumMessageArgs = 32;
 class MessagePusher;
 class Message {
 public:
@@ -82,7 +83,7 @@ public:
   int method;
   int priority;
 protected:
-  unsigned char args[32 * sizeof(unsigned int)];
+  unsigned char args[maxNumMessageArgs * sizeof(unsigned int)];
 
   friend class MessagePuller;
   friend class MessagePusher;
@@ -447,6 +448,32 @@ public:
   Quat quaternion;
 };
 
+class SubparcelArenaSpec {
+public:
+  FreeEntrySpec *landPositions;
+  FreeEntrySpec *landNormals;
+  FreeEntrySpec *landUvs;
+  FreeEntrySpec *landAos;
+  FreeEntrySpec *landIds;
+  FreeEntrySpec *landSkyLights;
+  FreeEntrySpec *landTorchLights;
+
+  FreeEntrySpec *vegetationPositions;
+  FreeEntrySpec *vegetationUvs;
+  FreeEntrySpec *vegetationIds;
+  FreeEntrySpec *vegetationIndices;
+  FreeEntrySpec *vegetationSkyLights;
+  FreeEntrySpec *vegetationTorchLights;
+
+  FreeEntrySpec *thingPositions;
+  FreeEntrySpec *thingUvs;
+  FreeEntrySpec *thingAtlasUvs;
+  FreeEntrySpec *thingIds;
+  FreeEntrySpec *thingIndices;
+  FreeEntrySpec *thingSkyLights;
+  FreeEntrySpec *thingTorchLights;
+};
+
 class Subparcel {
 public:
   Subparcel(const Coord &coord, Tracker *tracker);
@@ -465,6 +492,7 @@ public:
   Subparcel *clone() const;
   void copyLand(const Subparcel &subparcel);
   void copyVegetation(const Subparcel &subparcel);
+  void getArenaSpec(SubparcelArenaSpec *arenaSpec) const;
 
   // data
   Coord coord;
@@ -485,7 +513,6 @@ public:
   std::shared_ptr<FreeEntry> landPositionsEntry;
   std::shared_ptr<FreeEntry> landNormalsEntry;
   std::shared_ptr<FreeEntry> landUvsEntry;
-  // std::shared_ptr<FreeEntry> landBarycentricsEntry;
   std::shared_ptr<FreeEntry> landAosEntry;
   std::shared_ptr<FreeEntry> landIdsEntry;
   std::shared_ptr<FreeEntry> landSkyLightsEntry;

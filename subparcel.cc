@@ -394,3 +394,27 @@ void Subparcel::copyVegetation(const Subparcel &subparcel) {
   memcpy(vegetationGroups, subparcel.vegetationGroups, sizeof(vegetationGroups));
   vegetationPhysxObjects = subparcel.vegetationPhysxObjects;
 }
+void Subparcel::getArenaSpec(SubparcelArenaSpec *arenaSpec) const {
+  arenaSpec->landPositions = &landPositionsEntry->spec;
+  arenaSpec->landNormals = &landNormalsEntry->spec;
+  arenaSpec->landUvs = &landUvsEntry->spec;
+  arenaSpec->landAos = &landAosEntry->spec;
+  arenaSpec->landIds = &landIdsEntry->spec;
+  arenaSpec->landSkyLights = &landSkyLightsEntry->spec;
+  arenaSpec->landTorchLights = &landTorchLightsEntry->spec;
+
+  arenaSpec->vegetationPositions = &vegetationPositionsEntry->spec;
+  arenaSpec->vegetationUvs = &vegetationUvsEntry->spec;
+  arenaSpec->vegetationIds = &vegetationIdsEntry->spec;
+  arenaSpec->vegetationIndices = &vegetationIndicesEntry->spec;
+  arenaSpec->vegetationSkyLights = &vegetationSkyLightsEntry->spec;
+  arenaSpec->vegetationTorchLights = &vegetationTorchLightsEntry->spec;
+
+  arenaSpec->thingPositions = &thingPositionsEntry->spec;
+  arenaSpec->thingUvs = &thingUvsEntry->spec;
+  arenaSpec->thingAtlasUvs = &thingAtlasUvsEntry->spec;
+  arenaSpec->thingIds = &thingIdsEntry->spec;
+  arenaSpec->thingIndices = &thingIndicesEntry->spec;
+  arenaSpec->thingSkyLights = &thingSkyLightsEntry->spec;
+  arenaSpec->thingTorchLights = &thingTorchLightsEntry->spec;
+}

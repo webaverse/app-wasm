@@ -227,6 +227,12 @@ EMSCRIPTEN_KEEPALIVE void deleteEarcutResult(Tracker *tracker, EarcutResult *res
   doDeleteEarcutResult(tracker, result);
 }
 
+// subparcel
+
+EMSCRIPTEN_KEEPALIVE void getSubparcelArenaSpec(Subparcel *subparcel, SubparcelArenaSpec *arenaSpec) {
+  subparcel->getArenaSpec(arenaSpec);
+}
+
 // requests
 
 EMSCRIPTEN_KEEPALIVE ThreadPool *makeThreadPool(unsigned int numThreads) {
@@ -1162,7 +1168,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
       message2.copyMetadata(message);
       MessagePusher pusher(message2);
       pusher.push<unsigned int>(newSubparcels.size());
-      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      /* for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
 
         pusher.push(subparcel->landPositionsEntry.get());
@@ -1172,8 +1178,12 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
         pusher.push(subparcel->landIdsEntry.get());
         pusher.push(subparcel->landSkyLightsEntry.get());
         pusher.push(subparcel->landTorchLightsEntry.get());
-      }
+      } */
 
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        pusher.push(subparcel.get());
+      }
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
         pusher.push(new std::shared_ptr<Subparcel>(subparcel));
@@ -1245,7 +1255,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
       message2.copyMetadata(message);
       MessagePusher pusher(message2);
       pusher.push<unsigned int>(newSubparcels.size());
-      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      /* for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
 
         pusher.push(subparcel->landPositionsEntry.get());
@@ -1255,8 +1265,12 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
         pusher.push(subparcel->landIdsEntry.get());
         pusher.push(subparcel->landSkyLightsEntry.get());
         pusher.push(subparcel->landTorchLightsEntry.get());
-      }
+      } */
 
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        pusher.push(subparcel.get());
+      }
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
         pusher.push(new std::shared_ptr<Subparcel>(subparcel));
@@ -1316,7 +1330,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
       MessagePusher pusher(message2);
       pusher.push(objectId);
       pusher.push<unsigned int>(newSubparcels.size());
-      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      /* for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
 
         pusher.push(subparcel->vegetationPositionsEntry.get());
@@ -1325,8 +1339,12 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
         pusher.push(subparcel->vegetationIndicesEntry.get());
         pusher.push(subparcel->vegetationSkyLightsEntry.get());
         pusher.push(subparcel->vegetationTorchLightsEntry.get());
-      }
+      } */
 
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        pusher.push(subparcel.get());
+      }
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
         pusher.push(new std::shared_ptr<Subparcel>(subparcel));
@@ -1367,7 +1385,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
       message2.copyMetadata(message);
       MessagePusher pusher(message2);
       pusher.push<unsigned int>(newSubparcels.size());
-      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      /* for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
 
         pusher.push(subparcel->vegetationPositionsEntry.get());
@@ -1376,8 +1394,12 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
         pusher.push(subparcel->vegetationIndicesEntry.get());
         pusher.push(subparcel->vegetationSkyLightsEntry.get());
         pusher.push(subparcel->vegetationTorchLightsEntry.get());
-      }
+      } */
 
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        pusher.push(subparcel.get());
+      }
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
         pusher.push(new std::shared_ptr<Subparcel>(subparcel));
@@ -1469,8 +1491,15 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
       message2.copyMetadata(message);
       MessagePusher pusher(message2);
       pusher.push(objectId);
+
+      if (textureUpdated) {
+        pusher.push(tracker->atlasTexture.data());
+      } else {
+        pusher.push<unsigned char *>(nullptr);
+      }
+
       pusher.push<unsigned int>(newSubparcels.size());
-      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+      /* for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
 
         pusher.push(subparcel->thingPositionsEntry.get());
@@ -1480,14 +1509,12 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
         pusher.push(subparcel->thingIndicesEntry.get());
         pusher.push(subparcel->thingSkyLightsEntry.get());
         pusher.push(subparcel->thingTorchLightsEntry.get());
-      }
+      } */
 
-      if (textureUpdated) {
-        pusher.push(tracker->atlasTexture.data());
-      } else {
-        pusher.push<unsigned char *>(nullptr);
+      for (unsigned int i = 0; i < newSubparcels.size(); i++) {
+        std::shared_ptr<Subparcel> &subparcel = newSubparcels[i];
+        pusher.push(subparcel.get());
       }
-
       for (unsigned int i = 0; i < newSubparcels.size(); i++) {
         pusher.push(new std::shared_ptr<Subparcel>(newSubparcels[i]));
       }
