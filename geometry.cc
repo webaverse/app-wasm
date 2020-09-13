@@ -285,9 +285,25 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
     auto iter = geometrySet->geometryMap.find(name);
     if (iter != geometrySet->geometryMap.end()) {
       Geometry *geometry = iter->second;
+      Matrix matrix;
+      matrix.compose(
+        geometryRequest.position,
+        geometryRequest.quaternion,
+        Vec{1, 1, 1}
+      );
+
       if (positionIndex + geometry->positions.size() <= maxNumPositions) {
-        memcpy(positions + positionIndex, geometry->positions.data(), geometry->positions.size()*sizeof(positions[0]));
-        positionIndex += geometry->positions.size();
+        for (unsigned int j = 0, jOffset = 0; j < geometry->positions.size(); j += 3, jOffset++) {
+          Vec position{
+            geometry->positions[j],
+            geometry->positions[j+1],
+            geometry->positions[j+2],
+          };
+          position.applyMatrix(matrix);
+          positions[positionIndex + j] = position.x;
+          positions[positionIndex + j + 1] = position.y;
+          positions[positionIndex + j + 2] = position.z;
+        }
       } else {
         std::cout << "position copy overflow" << std::endl;
         abort();
