@@ -314,7 +314,7 @@ bool checkSubparcelIndicesLive(Tracker *tracker, const std::vector<int> indices)
 
 std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
   [](ThreadPool *threadPool, const Message &message) -> void { // null
-    std::cout << "called null message method" << std::endl;
+    std::cout << "null method method" << std::endl;
     abort();
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // makeArenaAllocator
