@@ -263,6 +263,8 @@ enum class METHODS : int {
   makeGeometrySet,
   loadBake,
   getGeometry,
+  getGeometries,
+  getGeometryKeys,
   getAnimalGeometry,
   marchObjects,
   getHeight,
