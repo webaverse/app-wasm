@@ -298,56 +298,48 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
 
   unsigned int &positionIndex = numPositions;
   unsigned int &uvIndex = numUvs;
-  unsigned int &indexIndex = numIndices;
+  unsigned int &indicesIndex = numIndices;
   positionIndex = 0;
   uvIndex = 0;
-  indexIndex = 0;
+  indicesIndex = 0;
 
   for (unsigned int i = 0; i < numGeometryRequests; i++) {
     const GeometryRequest &geometryRequest = geometryRequests[i];
     std::string name(geometryRequest.name);
     auto iter = geometrySet->geometryMap.find(name);
-    // if (iter != geometrySet->geometryMap.end()) {
-      Geometry *geometry = iter->second;
-      Matrix matrix;
-      matrix.compose(
-        geometryRequest.position,
-        geometryRequest.quaternion,
-        Vec{1, 1, 1}
-      );
 
-      // if (positionIndex + geometry->positions.size() <= maxNumPositions) {
-        for (unsigned int j = 0; j < geometry->positions.size(); j += 3) {
-          Vec position{
-            geometry->positions[j],
-            geometry->positions[j+1],
-            geometry->positions[j+2],
-          };
-          position.applyMatrix(matrix);
-          (*positions)[positionIndex + j] = position.x;
-          (*positions)[positionIndex + j + 1] = position.y;
-          (*positions)[positionIndex + j + 2] = position.z;
-        }
-        positionIndex += geometry->positions.size();
-      /* } else {
-        std::cout << "position copy overflow" << std::endl;
-        abort();
-      } */
-      // if (uvIndex + geometry->uvs.size() <= maxNumUvs) {
-        memcpy(*uvs + uvIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(uvs[0]));
-        uvIndex += geometry->uvs.size();
-      /* } else {
-        std::cout << "uv copy overflow" << std::endl;
-        abort();
-      } */
-      // if (indexIndex + geometry->uvs.size() <= maxNumUvs) {
-        memcpy(*indices + indexIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(indices[0]));
-        indexIndex += geometry->indices.size();
-      /* } else {
-        std::cout << "index copy overflow" << std::endl;
-        abort();
-      } */
-    // }
+    Geometry *geometry = iter->second;
+    Matrix matrix;
+    matrix.compose(
+      geometryRequest.position,
+      geometryRequest.quaternion,
+      Vec{1, 1, 1}
+    );
+
+    unsigned int indexOffset = positionIndex/3;
+    for (unsigned int j = 0; j < geometry->indices.size(); j++) {
+      (*indices)[indicesIndex + j] = geometry->indices[j] + indexOffset;
+    }
+    indicesIndex += geometry->indices.size();
+
+    for (unsigned int j = 0; j < geometry->positions.size(); j += 3) {
+      Vec position{
+        geometry->positions[j],
+        geometry->positions[j+1],
+        geometry->positions[j+2],
+      };
+      position.applyMatrix(matrix);
+      (*positions)[positionIndex + j] = position.x;
+      (*positions)[positionIndex + j + 1] = position.y;
+      (*positions)[positionIndex + j + 2] = position.z;
+    }
+    positionIndex += geometry->positions.size();
+
+    memcpy(*uvs + uvIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(uvs[0]));
+    uvIndex += geometry->uvs.size();
+
+    /* memcpy(*indices + indicesIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(indices[0]));
+    indicesIndex += geometry->indices.size(); */
   }
 }
 
