@@ -131,10 +131,13 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 		bool ok = metadata->GetEntryString("name", &name);
 		int transparent;
 		metadata->GetEntryInt("transparent", &transparent);
+    geometry->transparent = (bool)transparent;
 	  int vegetation;
 		metadata->GetEntryInt("vegetation", &vegetation);
+    geometry->vegetation = (bool)vegetation;
 		int animal;
 		metadata->GetEntryInt("animal", &animal);
+    geometry->animal = (bool)animal;
 
 	  int numPositions;
 	  {
