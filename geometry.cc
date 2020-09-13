@@ -312,7 +312,7 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
     matrix.compose(
       geometryRequest.position,
       geometryRequest.quaternion,
-      Vec{1, 1, 1}
+      geometryRequest.scale
     );
 
     unsigned int indexOffset = positionIndex/3;

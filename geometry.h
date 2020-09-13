@@ -35,6 +35,7 @@ public:
   char name[MAX_NAME_LENGTH];
   Vec position;
   Quat quaternion;
+  Vec scale;
 };
 
 GeometrySet *doMakeGeometrySet();
