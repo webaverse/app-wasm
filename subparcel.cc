@@ -133,13 +133,11 @@ void *ThreadPool::runFn(void *arg) {
   
   // std::cout << "thread pool running" << std::endl;
   for (;;) {
-    // std::cout << "thread pool wait 1 " << (void *)gThreadPool << (void *)&gThreadPool->inbox << " " << (void *)&gThreadPool->inbox.semaphore << std::endl;
     Message message = threadPool->inbox.wait();
-    // std::cout << "thread pool wait 2 " << (int)message->method << std::endl;
-    // std::cout << "got request message method " << (unsigned int)message->method << std::endl;
+    // std::cout << "got request message method a " << (int)message.method << std::endl;
     auto &fn = METHOD_FNS[message.method];
-    // std::cout << "got request message method b" << std::endl;
     fn(threadPool, message);
+    // std::cout << "got request message method b" << std::endl;
   }
   return nullptr;
 }
