@@ -254,22 +254,25 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
   }
 }
 
-void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
+void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned char **colors, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numColors, unsigned int &numIndices) {
   std::string name(nameData, nameSize);
   Geometry *geometry = geometrySet->geometryMap[name];
 
   *positions = geometry->positions.data();
   *uvs = geometry->uvs.data();
+  *colors = geometry->colors.data();
   *indices = geometry->indices.data();
 
   numPositions = geometry->positions.size();
   numUvs = geometry->uvs.size();
+  numColors = geometry->colors.size();
   numIndices = geometry->indices.size();
 }
 
-void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
+void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned char **colors, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numColors, unsigned int &numIndices) {
   unsigned int numTotalPositions = 0;
   unsigned int numTotalUvs = 0;
+  unsigned int numTotalColors = 0;
   unsigned int numTotalIndices = 0;
   {
     for (unsigned int i = 0; i < numGeometryRequests; i++) {
@@ -280,6 +283,7 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
         Geometry *geometry = iter->second;
         numTotalPositions += geometry->positions.size();
         numTotalUvs += geometry->uvs.size();
+        numTotalColors += geometry->colors.size();
         numTotalIndices += geometry->indices.size();
       } else {
         std::cout << "cannot find geometry name " << name << std::endl;
@@ -289,14 +293,17 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
   }
   // std::cout << "totals " << numGeometryRequests << " " << numTotalPositions << " " << numTotalUvs << " " << numIndices << std::endl;
   *positions = (float *)malloc(numTotalPositions*sizeof(float));
+  *colors = (unsigned char *)malloc(numTotalColors*sizeof(float));
   *uvs = (float *)malloc(numTotalUvs*sizeof(float));
   *indices = (unsigned int *)malloc(numTotalIndices*sizeof(unsigned int));
 
   unsigned int &positionIndex = numPositions;
   unsigned int &uvIndex = numUvs;
+  unsigned int &colorIndex = numColors;
   unsigned int &indicesIndex = numIndices;
   positionIndex = 0;
   uvIndex = 0;
+  colorIndex = 0;
   indicesIndex = 0;
 
   for (unsigned int i = 0; i < numGeometryRequests; i++) {
@@ -333,6 +340,9 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
 
     memcpy(*uvs + uvIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(uvs[0]));
     uvIndex += geometry->uvs.size();
+    
+    memcpy(*colors + colorIndex, geometry->colors.data(), geometry->colors.size()*sizeof(colors[0]));
+    colorIndex += geometry->colors.size();
 
     /* memcpy(*indices + indicesIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(indices[0]));
     indicesIndex += geometry->indices.size(); */

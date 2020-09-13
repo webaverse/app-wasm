@@ -51,12 +51,12 @@ EMSCRIPTEN_KEEPALIVE void loadBake(GeometrySet *geometrySet, unsigned char *data
   doLoadBake(geometrySet, data, size);
 }
 
-EMSCRIPTEN_KEEPALIVE void getGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned int **indices, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIndices) {
-  doGetGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, *numPositions, *numUvs, *numIndices);
+EMSCRIPTEN_KEEPALIVE void getGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned char **colors, unsigned int **indices, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numColors, unsigned int *numIndices) {
+  doGetGeometry(geometrySet, nameData, nameSize, positions, uvs, colors, indices, *numPositions, *numUvs, *numColors, *numIndices);
 }
 
-EMSCRIPTEN_KEEPALIVE void getGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned int **indices, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIndices) {
-  doGetGeometries(geometrySet, geometryRequests, numGeometryRequests, positions, uvs, indices, *numPositions, *numUvs, *numIndices);
+EMSCRIPTEN_KEEPALIVE void getGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned char **colors, unsigned int **indices, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numColors,unsigned int *numIndices) {
+  doGetGeometries(geometrySet, geometryRequests, numGeometryRequests, positions, uvs, colors, indices, *numPositions, *numUvs, *numColors, *numIndices);
 }
 
 EMSCRIPTEN_KEEPALIVE void getGeometryKeys(GeometrySet *geometrySet, char *names, unsigned int *numNames) {
@@ -376,21 +376,25 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
 
     float *positions;
     float *uvs;
+    unsigned char *colors;
     unsigned int *indices;
     unsigned int numPositions;
     unsigned int numUvs;
+    unsigned int numColors;
     unsigned int numIndices;
 
-    getGeometry(geometrySet, nameData, nameSize, &positions, &uvs, &indices, &numPositions, &numUvs, &numIndices);
+    getGeometry(geometrySet, nameData, nameSize, &positions, &uvs, &colors, &indices, &numPositions, &numUvs, &numColors, &numIndices);
 
     Message message2{};
     message2.copyMetadata(message);
     MessagePusher pusher(message2);
     pusher.push(positions);
     pusher.push(uvs);
+    pusher.push(colors);
     pusher.push(indices);
     pusher.push(numPositions);
     pusher.push(numUvs);
+    pusher.push(numColors);
     pusher.push(numIndices);
     threadPool->outbox.push(message2);
   },
@@ -402,20 +406,24 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
 
     float *positions;
     float *uvs;
+    unsigned char *colors;
     unsigned int *indices;
     unsigned int numPositions;
     unsigned int numUvs;
+    unsigned int numColors;
     unsigned int numIndices;
-    getGeometries(geometrySet, geometryRequests, numGeometryRequests, &positions, &uvs, &indices, &numPositions, &numUvs, &numIndices);
+    getGeometries(geometrySet, geometryRequests, numGeometryRequests, &positions, &uvs, &colors, &indices, &numPositions, &numUvs, &numColors, &numIndices);
 
     Message message2{};
     message2.copyMetadata(message);
     MessagePusher pusher(message2);
     pusher.push(positions);
     pusher.push(uvs);
+    pusher.push(colors);
     pusher.push(indices);
     pusher.push(numPositions);
     pusher.push(numUvs);
+    pusher.push(numColors);
     pusher.push(numIndices);
     threadPool->outbox.push(message2);
   },

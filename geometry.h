@@ -40,8 +40,8 @@ public:
 GeometrySet *doMakeGeometrySet();
 std::pair<float, float> doAllocTexture(Tracker *tracker);
 void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size);
-void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices);
-void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices);
+void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned char **colors, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numColors, unsigned int &numIndices);
+void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned char **colors, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numColors, unsigned int &numIndices);
 void doGetGeometryKeys(GeometrySet *geometrySet, char *names, unsigned int &numNames);
 void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, unsigned char **colors, unsigned int **indices, float **heads, float **legs, unsigned int &numPositions, unsigned int &numColors, unsigned int &numIndices, unsigned int &numHeads, unsigned int &numLegs, float *headPivot, float *aabb);
 
