@@ -267,10 +267,33 @@ void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSi
   numIndices = geometry->indices.size();
 }
 
-void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float *positions, float *uvs, unsigned int *indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
+void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
   const unsigned int maxNumPositions = numPositions;
   const unsigned int maxNumUvs = numUvs;
   const unsigned int maxNumIndices = numIndices;
+
+  unsigned int numTotalPositions = 0;
+  unsigned int numTotalUvs = 0;
+  unsigned int numTotalIndices = 0;
+  {
+    for (unsigned int i = 0; i < numGeometryRequests; i++) {
+      const GeometryRequest &geometryRequest = geometryRequests[i];
+      std::string name(geometryRequest.name);
+      auto iter = geometrySet->geometryMap.find(name);
+      if (iter != geometrySet->geometryMap.end()) {
+        Geometry *geometry = iter->second;
+        numTotalPositions += geometry->positions.size();
+        numTotalUvs += geometry->uvs.size();
+        numTotalIndices += geometry->indices.size();
+      } else {
+        std::cout << "cannot find geometry name " << name << std::endl;
+        abort();
+      }
+    }
+  }
+  *positions = (float *)malloc(numTotalPositions*sizeof(float));
+  *uvs = (float *)malloc(numTotalUvs*sizeof(float));
+  *indices = (unsigned int *)malloc(numTotalIndices*sizeof(unsigned int));
 
   unsigned int &positionIndex = numPositions;
   unsigned int &uvIndex = numUvs;
@@ -283,7 +306,7 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
     const GeometryRequest &geometryRequest = geometryRequests[i];
     std::string name(geometryRequest.name);
     auto iter = geometrySet->geometryMap.find(name);
-    if (iter != geometrySet->geometryMap.end()) {
+    // if (iter != geometrySet->geometryMap.end()) {
       Geometry *geometry = iter->second;
       Matrix matrix;
       matrix.compose(
@@ -300,29 +323,29 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
             geometry->positions[j+2],
           };
           position.applyMatrix(matrix);
-          positions[positionIndex + j] = position.x;
-          positions[positionIndex + j + 1] = position.y;
-          positions[positionIndex + j + 2] = position.z;
+          (*positions)[positionIndex + j] = position.x;
+          (*positions)[positionIndex + j + 1] = position.y;
+          (*positions)[positionIndex + j + 2] = position.z;
         }
       } else {
         std::cout << "position copy overflow" << std::endl;
         abort();
       }
       if (uvIndex + geometry->uvs.size() <= maxNumUvs) {
-        memcpy(uvs + uvIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(uvs[0]));
+        memcpy(*uvs + uvIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(uvs[0]));
         uvIndex += geometry->uvs.size();
       } else {
         std::cout << "uv copy overflow" << std::endl;
         abort();
       }
       if (indexIndex + geometry->uvs.size() <= maxNumUvs) {
-        memcpy(uvs + indexIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(indices[0]));
+        memcpy(*indices + indexIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(indices[0]));
         indexIndex += geometry->indices.size();
       } else {
         std::cout << "index copy overflow" << std::endl;
         abort();
       }
-    }
+    // }
   }
 }
 

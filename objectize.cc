@@ -55,7 +55,7 @@ EMSCRIPTEN_KEEPALIVE void getGeometry(GeometrySet *geometrySet, char *nameData, 
   doGetGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, *numPositions, *numUvs, *numIndices);
 }
 
-EMSCRIPTEN_KEEPALIVE void getGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float *positions, float *uvs, unsigned int *indices, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIndices) {
+EMSCRIPTEN_KEEPALIVE void getGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned int **indices, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIndices) {
   doGetGeometries(geometrySet, geometryRequests, numGeometryRequests, positions, uvs, indices, *numPositions, *numUvs, *numIndices);
 }
 
@@ -399,16 +399,25 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     GeometrySet *geometrySet = puller.pull<GeometrySet *>();
     GeometryRequest *geometryRequests = puller.pull<GeometryRequest *>();
     unsigned int numGeometryRequests = puller.pull<unsigned int>();
-    float *positions = puller.pull<float *>();
-    float *uvs = puller.pull<float *>();
-    unsigned int *indices = puller.pull<unsigned int *>();
-    unsigned int *numPositions = puller.pull<unsigned int *>();
-    unsigned int *numUvs = puller.pull<unsigned int *>();
-    unsigned int *numIndices = puller.pull<unsigned int *>();
 
-    getGeometries(geometrySet, geometryRequests, numGeometryRequests, positions, uvs, indices, numPositions, numUvs, numIndices);
+    float *positions;
+    float *uvs;
+    unsigned int *indices;
+    unsigned int numPositions;
+    unsigned int numUvs;
+    unsigned int numIndices;
+    getGeometries(geometrySet, geometryRequests, numGeometryRequests, &positions, &uvs, &indices, &numPositions, &numUvs, &numIndices);
 
-    threadPool->outbox.push(*const_cast<Message *>(&message));
+    Message message2{};
+    message2.copyMetadata(message);
+    MessagePusher pusher(message2);
+    pusher.push(positions);
+    pusher.push(uvs);
+    pusher.push(indices);
+    pusher.push(numPositions);
+    pusher.push(numUvs);
+    pusher.push(numIndices);
+    threadPool->outbox.push(message2);
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // getGeometryKeys
     MessagePuller puller(message);
