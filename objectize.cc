@@ -409,12 +409,20 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
   [](ThreadPool *threadPool, const Message &message) -> void { // getGeometryKeys    
     MessagePuller puller(message);
     GeometrySet *geometrySet = puller.pull<GeometrySet *>();
-    char *names = puller.pull<char *>();
-    unsigned int *numNames = puller.pull<unsigned int *>();
 
-    getGeometryKeys(geometrySet, names, numNames);
+    char *names = (char *)malloc(geometrySet->geometryMap.size() * MAX_NAME_LENGTH);
+    unsigned int numNames;
 
-    threadPool->outbox.push(*const_cast<Message *>(&message));
+    getGeometryKeys(geometrySet, names, &numNames);
+    
+    {
+      Message message2{};
+      message2.copyMetadata(message);
+      MessagePusher pusher(message2);
+      pusher.push(names);
+      pusher.push(numNames);
+      threadPool->outbox.push(message2);
+    }
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // getAnimalGeometry
     MessagePuller puller(message);
