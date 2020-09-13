@@ -346,10 +346,13 @@ void doGetGeometryKeys(GeometrySet *geometrySet, char *names, unsigned int &numN
   unsigned int &index = numNames;
   index = 0;
   for (const auto &iter : geometrySet->geometryMap) {
-    char *name = names + index*MAX_NAME_LENGTH;
-    const std::string &key = iter.first;
-    memcpy(name, key.c_str(), key.size()+1);
-    index++;
+    Geometry *geometry = iter.second;
+    if (!geometry->animal) {
+      char *name = names + index*MAX_NAME_LENGTH;
+      const std::string &key = iter.first;
+      memcpy(name, key.c_str(), key.size()+1);
+      index++;
+    }
   }
 }
 
