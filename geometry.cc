@@ -268,10 +268,6 @@ void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSi
 }
 
 void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
-  /* const unsigned int maxNumPositions = numPositions;
-  const unsigned int maxNumUvs = numUvs;
-  const unsigned int maxNumIndices = numIndices; */
-
   unsigned int numTotalPositions = 0;
   unsigned int numTotalUvs = 0;
   unsigned int numTotalIndices = 0;
