@@ -419,14 +419,12 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
 
     getGeometryKeys(geometrySet, names, &numNames);
     
-    {
-      Message message2{};
-      message2.copyMetadata(message);
-      MessagePusher pusher(message2);
-      pusher.push(names);
-      pusher.push(numNames);
-      threadPool->outbox.push(message2);
-    }
+    Message message2{};
+    message2.copyMetadata(message);
+    MessagePusher pusher(message2);
+    pusher.push(names);
+    pusher.push(numNames);
+    threadPool->outbox.push(message2);
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // getAnimalGeometry
     MessagePuller puller(message);
