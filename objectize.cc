@@ -318,6 +318,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     abort();
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // makeArenaAllocator
+    std::cout << "makeArenaAllocator abort" << std::endl;
     abort();
     /* unsigned int index = 0;
     unsigned int size = *((unsigned int *)(Message->args + index));
@@ -328,6 +329,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     *arenaAllocator = makeArenaAllocator(size); v*/
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // arenaAlloc
+    std::cout << "arenaAlloc abort" << std::endl;
     abort();
     /* unsigned int index = 0;
     ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(Message->args + index));
@@ -340,6 +342,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     *entry = arenaAlloc(arenaAllocator, size); */
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // arenaFree
+    std::cout << "arenaFree abort" << std::endl;
     abort();
     /* unsigned int index = 0;
     ArenaAllocator *arenaAllocator = *((ArenaAllocator **)(Message->args + index));
@@ -350,6 +353,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     arenaFree(arenaAllocator, entry); */
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // makeGeometrySet
+    std::cout << "makeGeometrySet abort" << std::endl;
     abort();
     /* GeometrySet **geometrySet = (GeometrySet **)Message->args;
     *geometrySet = new GeometrySet(); */
@@ -406,7 +410,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
 
     threadPool->outbox.push(*const_cast<Message *>(&message));
   },
-  [](ThreadPool *threadPool, const Message &message) -> void { // getGeometryKeys    
+  [](ThreadPool *threadPool, const Message &message) -> void { // getGeometryKeys
     MessagePuller puller(message);
     GeometrySet *geometrySet = puller.pull<GeometrySet *>();
 
@@ -468,6 +472,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     getGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, numPositions, numUvs, numIndices); */
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // marchObjects
+    std::cout << "marchObjects abort" << std::endl;
     abort();
     /* unsigned int index = 0;
     GeometrySet *geometrySet = *((GeometrySet **)(Message->args + index));
@@ -587,6 +592,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     threadPool->outbox.push(message2);
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // noise
+    std::cout << "noise abort" << std::endl;
     abort();
     /* unsigned int index = 0;
 
@@ -619,6 +625,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     noise3(seed, x, y, z, baseHeight, wormRate, wormRadiusBase, wormRadiusRate, objectsRate, potentialDefault, subparcelByteOffset); */
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // marchingCubes
+    std::cout << "marchingCubes abort" << std::endl;
     abort();
     /* unsigned int index = 0;
 
@@ -763,6 +770,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     memcpy(peeksAllocator->data + (*peeksEntry)->start, peeks.data(), numPeeks*sizeof(unsigned char)); */
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // bakeGeometry
+    std::cout << "bakeGeometry abort" << std::endl;
     abort();
     /* unsigned int index = 0;
 
@@ -786,6 +794,7 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     // std::cout << "bake 2" << std::endl; */
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // getSubparcel
+    std::cout << "getSubparcel abort" << std::endl;
     abort();
     /* MessagePuller puller(message);
     Tracker *tracker = puller.pull<Tracker *>();
