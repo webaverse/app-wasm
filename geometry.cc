@@ -268,9 +268,9 @@ void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSi
 }
 
 void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
-  const unsigned int maxNumPositions = numPositions;
+  /* const unsigned int maxNumPositions = numPositions;
   const unsigned int maxNumUvs = numUvs;
-  const unsigned int maxNumIndices = numIndices;
+  const unsigned int maxNumIndices = numIndices; */
 
   unsigned int numTotalPositions = 0;
   unsigned int numTotalUvs = 0;
@@ -291,6 +291,7 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
       }
     }
   }
+  // std::cout << "totals " << numGeometryRequests << " " << numTotalPositions << " " << numTotalUvs << " " << numIndices << std::endl;
   *positions = (float *)malloc(numTotalPositions*sizeof(float));
   *uvs = (float *)malloc(numTotalUvs*sizeof(float));
   *indices = (unsigned int *)malloc(numTotalIndices*sizeof(unsigned int));
@@ -315,8 +316,8 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
         Vec{1, 1, 1}
       );
 
-      if (positionIndex + geometry->positions.size() <= maxNumPositions) {
-        for (unsigned int j = 0, jOffset = 0; j < geometry->positions.size(); j += 3, jOffset++) {
+      // if (positionIndex + geometry->positions.size() <= maxNumPositions) {
+        for (unsigned int j = 0; j < geometry->positions.size(); j += 3) {
           Vec position{
             geometry->positions[j],
             geometry->positions[j+1],
@@ -327,24 +328,25 @@ void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests
           (*positions)[positionIndex + j + 1] = position.y;
           (*positions)[positionIndex + j + 2] = position.z;
         }
-      } else {
+        positionIndex += geometry->positions.size();
+      /* } else {
         std::cout << "position copy overflow" << std::endl;
         abort();
-      }
-      if (uvIndex + geometry->uvs.size() <= maxNumUvs) {
+      } */
+      // if (uvIndex + geometry->uvs.size() <= maxNumUvs) {
         memcpy(*uvs + uvIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(uvs[0]));
         uvIndex += geometry->uvs.size();
-      } else {
+      /* } else {
         std::cout << "uv copy overflow" << std::endl;
         abort();
-      }
-      if (indexIndex + geometry->uvs.size() <= maxNumUvs) {
+      } */
+      // if (indexIndex + geometry->uvs.size() <= maxNumUvs) {
         memcpy(*indices + indexIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(indices[0]));
         indexIndex += geometry->indices.size();
-      } else {
+      /* } else {
         std::cout << "index copy overflow" << std::endl;
         abort();
-      }
+      } */
     // }
   }
 }
