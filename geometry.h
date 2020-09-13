@@ -4,6 +4,8 @@
 // #include "draco/mesh/triangle_soup_mesh_builder.h"
 // #include "draco/javascript/emscripten/encoder_webidl_wrapper.h"
 
+
+
 class Geometry {
 public:
   std::string name;
@@ -30,11 +32,19 @@ public:
 	std::vector<Geometry *> thingGeometries;
 	std::map<std::string, Geometry *> geometryMap;
 };
+class GeometryRequest {
+public:
+  char name[MAX_NAME_LENGTH];
+  Vec position;
+  Quat quaternion;
+};
 
 GeometrySet *doMakeGeometrySet();
 std::pair<float, float> doAllocTexture(Tracker *tracker);
 void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size);
 void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices);
+void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float *positions, float *uvs, unsigned int *indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices);
+void doGetGeometryKeys(GeometrySet *geometrySet, char *names, unsigned int &numNames);
 void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, unsigned char **colors, unsigned int **indices, float **heads, float **legs, unsigned int &numPositions, unsigned int &numColors, unsigned int &numIndices, unsigned int &numHeads, unsigned int &numLegs, float *headPivot, float *aabb);
 
 /* class MarchObject {

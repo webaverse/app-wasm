@@ -55,6 +55,14 @@ EMSCRIPTEN_KEEPALIVE void getGeometry(GeometrySet *geometrySet, char *nameData, 
   doGetGeometry(geometrySet, nameData, nameSize, positions, uvs, indices, *numPositions, *numUvs, *numIndices);
 }
 
+EMSCRIPTEN_KEEPALIVE void getGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float *positions, float *uvs, unsigned int *indices, unsigned int *numPositions, unsigned int *numUvs, unsigned int *numIndices) {
+  doGetGeometries(geometrySet, geometryRequests, numGeometryRequests, positions, uvs, indices, *numPositions, *numUvs, *numIndices);
+}
+
+EMSCRIPTEN_KEEPALIVE void getGeometryKeys(GeometrySet *geometrySet, char *names, unsigned int *numNames) {
+  doGetGeometryKeys(geometrySet, names, *numNames);
+}
+
 EMSCRIPTEN_KEEPALIVE void getAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, unsigned char **colors, unsigned int **indices, float **heads, float **legs, unsigned int *numPositions, unsigned int *numColors, unsigned int *numIndices, unsigned int *numHeads, unsigned int *numLegs, float *headPivot, float *aabb) {
   doGetAnimalGeometry(geometrySet, hash, positions, colors, indices, heads, legs, *numPositions, *numColors, *numIndices, *numHeads, *numLegs, headPivot, aabb);
 }
@@ -381,6 +389,32 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
     pusher.push(numUvs);
     pusher.push(numIndices);
     threadPool->outbox.push(message2);
+  },
+  [](ThreadPool *threadPool, const Message &message) -> void { // getGeometries
+    MessagePuller puller(message);
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    GeometryRequest *geometryRequests = puller.pull<GeometryRequest *>();
+    unsigned int numGeometryRequests = puller.pull<unsigned int>();
+    float *positions = puller.pull<float *>();
+    float *uvs = puller.pull<float *>();
+    unsigned int *indices = puller.pull<unsigned int *>();
+    unsigned int *numPositions = puller.pull<unsigned int *>();
+    unsigned int *numUvs = puller.pull<unsigned int *>();
+    unsigned int *numIndices = puller.pull<unsigned int *>();
+
+    getGeometries(geometrySet, geometryRequests, numGeometryRequests, positions, uvs, indices, numPositions, numUvs, numIndices);
+
+    threadPool->outbox.push(*const_cast<Message *>(&message));
+  },
+  [](ThreadPool *threadPool, const Message &message) -> void { // getGeometryKeys    
+    MessagePuller puller(message);
+    GeometrySet *geometrySet = puller.pull<GeometrySet *>();
+    char *names = puller.pull<char *>();
+    unsigned int *numNames = puller.pull<unsigned int *>();
+
+    getGeometryKeys(geometrySet, names, numNames);
+
+    threadPool->outbox.push(*const_cast<Message *>(&message));
   },
   [](ThreadPool *threadPool, const Message &message) -> void { // getAnimalGeometry
     MessagePuller puller(message);

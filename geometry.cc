@@ -267,6 +267,60 @@ void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSi
   numIndices = geometry->indices.size();
 }
 
+void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float *positions, float *uvs, unsigned int *indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
+  const unsigned int maxNumPositions = numPositions;
+  const unsigned int maxNumUvs = numUvs;
+  const unsigned int maxNumIndices = numIndices;
+
+  unsigned int &positionIndex = numPositions;
+  unsigned int &uvIndex = numUvs;
+  unsigned int &indexIndex = numIndices;
+  positionIndex = 0;
+  uvIndex = 0;
+  indexIndex = 0;
+
+  for (unsigned int i = 0; i < numGeometryRequests; i++) {
+    const GeometryRequest &geometryRequest = geometryRequests[i];
+    std::string name(geometryRequest.name);
+    auto iter = geometrySet->geometryMap.find(name);
+    if (iter != geometrySet->geometryMap.end()) {
+      Geometry *geometry = iter->second;
+      if (positionIndex + geometry->positions.size() <= maxNumPositions) {
+        memcpy(positions + positionIndex, geometry->positions.data(), geometry->positions.size()*sizeof(positions[0]));
+        positionIndex += geometry->positions.size();
+      } else {
+        std::cout << "position copy overflow" << std::endl;
+        abort();
+      }
+      if (uvIndex + geometry->uvs.size() <= maxNumUvs) {
+        memcpy(uvs + uvIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(uvs[0]));
+        uvIndex += geometry->uvs.size();
+      } else {
+        std::cout << "uv copy overflow" << std::endl;
+        abort();
+      }
+      if (indexIndex + geometry->uvs.size() <= maxNumUvs) {
+        memcpy(uvs + indexIndex, geometry->uvs.data(), geometry->uvs.size()*sizeof(indices[0]));
+        indexIndex += geometry->indices.size();
+      } else {
+        std::cout << "index copy overflow" << std::endl;
+        abort();
+      }
+    }
+  }
+}
+
+void doGetGeometryKeys(GeometrySet *geometrySet, char *names, unsigned int &numNames) {
+  unsigned int &index = numNames;
+  index = 0;
+  for (const auto &iter : geometrySet->geometryMap) {
+    char *name = names + index*MAX_NAME_LENGTH;
+    const std::string &key = iter.first;
+    memcpy(name, key.c_str(), key.size()+1);
+    index++;
+  }
+}
+
 void doGetAnimalGeometry(GeometrySet *geometrySet, unsigned int hash, float **positions, unsigned char **colors, unsigned int **indices, float **heads, float **legs, unsigned int &numPositions, unsigned int &numColors, unsigned int &numIndices, unsigned int &numHeads, unsigned int &numLegs, float *headPivot, float *aabb) {
   unsigned int animalGeometryIndex = (unsigned int)std::floor((float)hash/(float)0xFFFFFF*(float)geometrySet->animalGeometries.size());
   Geometry *geometry = geometrySet->animalGeometries[animalGeometryIndex];
