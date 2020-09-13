@@ -4,8 +4,6 @@
 // #include "draco/mesh/triangle_soup_mesh_builder.h"
 // #include "draco/javascript/emscripten/encoder_webidl_wrapper.h"
 
-
-
 class Geometry {
 public:
   std::string name;
