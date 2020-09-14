@@ -186,7 +186,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 	    }
 	  }
 
-    geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size());
+    geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size()); // XXX can be precomputed
 
 	  geometrySet->geometries.push_back(geometry);
 	  if (animal) {
