@@ -258,7 +258,7 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
   }
 }
 
-void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
+void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSize, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices, float **aabb) {
   std::string name(nameData, nameSize);
   Geometry *geometry = geometrySet->geometryMap[name];
 
@@ -269,6 +269,8 @@ void doGetGeometry(GeometrySet *geometrySet, char *nameData, unsigned int nameSi
   numPositions = geometry->positions.size();
   numUvs = geometry->uvs.size();
   numIndices = geometry->indices.size();
+
+  *aabb = &geometry->aabb.min.x;
 }
 
 void doGetGeometries(GeometrySet *geometrySet, GeometryRequest *geometryRequests, unsigned int numGeometryRequests, float **positions, float **uvs, unsigned int **indices, unsigned int &numPositions, unsigned int &numUvs, unsigned int &numIndices) {
