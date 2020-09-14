@@ -186,9 +186,10 @@ void doLoadBake(GeometrySet *geometrySet, unsigned char *data, unsigned int size
 	    }
 	  }
 
+    geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size());
+
 	  geometrySet->geometries.push_back(geometry);
 	  if (animal) {
-	    geometry->aabb.setFromPositions(geometry->positions.data(), geometry->positions.size());
 	    Vec center = geometry->aabb.center();
 	    Vec size = geometry->aabb.size();
 	    geometry->headPivot = center + (size * Vec(0.0f, 1.0f/2.0f * 0.5f, -1.0f/2.0f * 0.5f));
