@@ -192,7 +192,55 @@ std::map<std::string, Shape> PHYSICS_SHAPES = {
       Quat(),
       {2, 2, 0.1},
     },
-  }
+  },
+  {
+    "stone_ramp",
+    {
+      {0, 1, 0},
+      Quat(Vec{1, 0, 0}, -PI/4.0f),
+      {2, 2*SQRT2, 0.1},
+    },
+  },
+  {
+    "stone_floor",
+    {
+      {0, 0, 0},
+      Quat(),
+      {2, 0.1, 2},
+    },
+  },
+  {
+    "stone_wall",
+    {
+      {0, 1, -1},
+      Quat(),
+      {2, 2, 0.1},
+    },
+  },
+  {
+    "metal_ramp",
+    {
+      {0, 1, 0},
+      Quat(Vec{1, 0, 0}, -PI/4.0f),
+      {2, 2*SQRT2, 0.1},
+    },
+  },
+  {
+    "metal_floor",
+    {
+      {0, 0, 0},
+      Quat(),
+      {2, 0.1, 2},
+    },
+  },
+  {
+    "metal_wall",
+    {
+      {0, 1, -1},
+      Quat(),
+      {2, 2, 0.1},
+    },
+  },
 };
 
 void doLandPhysics(Tracker *tracker, Subparcel *subparcel, float *landPositions, unsigned int numLandPositions) {
