@@ -361,7 +361,6 @@ emcc -s WASM=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=1 -s TOTAL_MEMORY=39996620
   -IPhysX/physx/source/geomutils/src/pcm \
   -IPhysX/physx/source/geomutils/src/distance \
   -IPhysX/physx/source/geomutils/src/sweep \
-  -Iearcut \
   -IRectBinPack/include \
   -Iconcaveman \
   objectize.cc vector.cc subparcel.cc geometry.cc collide.cc \

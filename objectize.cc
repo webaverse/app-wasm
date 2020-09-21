@@ -4,8 +4,8 @@
 #include "noise.h"
 #include "march.h"
 #include "collide.h"
-#include "convex.h"
-#include "earcut.h"
+// #include "convex.h"
+// #include "earcut.h"
 // #include <iostream>
 
 #include <deque>
@@ -217,23 +217,23 @@ EMSCRIPTEN_KEEPALIVE void doChunk(float meshId, int dims[3], float *potential, u
   marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, *positionIndex, *normalIndex, *uvIndex, /**barycentricIndex,*/ *aoIndex, *idIndex, *skyLightsIndex, *torchLightsIndex, numOpaquePositions, numTransparentPositions, peeks);
 }
 
-// convex hull
+/* // convex hull
 
 EMSCRIPTEN_KEEPALIVE ConvexHullResult *convexHull(float *positions, unsigned int numPositions, float *cameraPosition) {
   return doConvexHull(positions, numPositions, cameraPosition);
 }
 EMSCRIPTEN_KEEPALIVE void deleteConvexHullResult(ConvexHullResult *result) {
   doDeleteConvexHullResult(result);
-}
+} */
 
-// earcut
+/* // earcut
 
 EMSCRIPTEN_KEEPALIVE EarcutResult *earcut(Tracker *tracker, float *positions, unsigned int numPositions, float *holes, unsigned int *holeCounts, unsigned int numHoleCounts, float *points, unsigned int numPoints, float z, float *zs, unsigned int objectId, float *position, float *quaternion) {
   return doEarcut(tracker, positions, numPositions, holes, holeCounts, numHoleCounts, points, numPoints, z, zs, objectId, position, quaternion);
 }
 EMSCRIPTEN_KEEPALIVE void deleteEarcutResult(Tracker *tracker, EarcutResult *result) {
   doDeleteEarcutResult(tracker, result);
-}
+} */
 
 // subparcel
 
