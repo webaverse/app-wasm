@@ -29,7 +29,7 @@ PScene::PScene() {
 
   scene = physics->createScene(sceneDesc);
  
-  {
+  /* {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
       PxTransform transform(PxVec3(0, -10, 0));
       PxCapsuleGeometry geometry(1, 1);
@@ -39,15 +39,15 @@ PScene::PScene() {
       PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
       scene->addActor(*capsule);
       actors.push_back(capsule);
-  }
+  } */
   {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
-      PxTransform transform(PxVec3(0, -10, 0));
+      PxTransform transform(PxVec3(0, -1, 0));
       PxBoxGeometry geometry(30, 1, 30);
       PxRigidStatic *floor = PxCreateStatic(*physics, transform, geometry, *material);
       floor->userData = (void *)0x2;
       scene->addActor(*floor);
-      // actors.push_back(floor);
+      actors.push_back(floor);
   }
   {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
@@ -55,7 +55,6 @@ PScene::PScene() {
       PxBoxGeometry geometry(0.5, 0.5, 0.5);
       PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
       box->userData = (void *)0x3;
-      // box->setRigidDynamicFlag(PxRigidDynamicFlag::eKINEMATIC, true);
       PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
       scene->addActor(*box);
       actors.push_back(box);
@@ -74,9 +73,9 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
       return (unsigned int)actor->userData == id;
     });
     if (actorIter != actors.end()) {
-      PxRigidDynamic *actor = *actorIter;
+      PxRigidActor *actor = *actorIter;
       actor->setGlobalPose(transform, true);
-      actor->wakeUp();
+      // actor->wakeUp();
     } else {
       std::cerr << "unknown actor id " << id << std::endl;
     }
@@ -115,8 +114,6 @@ void PScene::addGeometry(int type, float *position, float *quaternion) {
 }
 
 void PScene::raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion) {
-  hit = 0;
-  return;
   PxVec3 originVec{origin[0], origin[1], origin[2]};
   PxVec3 directionVec{direction[0], direction[1], direction[2]};
   Ray ray(Vec{origin[0], origin[1], origin[2]}, Vec{direction[0], direction[1], direction[2]});
@@ -134,7 +131,7 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 
   {
     hit = 0;
-    for (unsigned int i = 1; i < actors.size(); i++) {
+    for (unsigned int i = 0; i < actors.size(); i++) {
       PxRigidActor *actor = actors[i];
       PxShape *shape;
       actor->getShapes(&shape, 1);
@@ -171,8 +168,6 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 }
 
 void PScene::collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded) {
-  hit = 0;
-  return;
   PxCapsuleGeometry geom(radius, halfHeight);
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
@@ -193,7 +188,7 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
     for (unsigned int i = 0; i < maxIter; i++) {
       bool hadHit = false;
       // for (const std::tuple<bool, std::shared_ptr<PhysicsObject>> &t : sortedGeometrySpecs) {
-      for (unsigned int i = 1; i < actors.size(); i++) {
+      for (unsigned int i = 0; i < actors.size(); i++) {
         PxRigidActor *actor = actors[i];
         PxShape *shape;
         actor->getShapes(&shape, 1);

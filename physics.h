@@ -49,7 +49,7 @@ public:
   PxPhysics *physics = nullptr;
   PxCooking *cooking = nullptr;
   PxScene *scene = nullptr;
-  std::vector<PxRigidDynamic *> actors;
+  std::vector<PxRigidActor *> actors;
 };
 
 #endif
