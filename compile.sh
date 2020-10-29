@@ -1,7 +1,7 @@
 mkdir -p bin
 if [ ! -f draco.o ]; then
   echo 'building draco...'
-  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
+  emcc -s WASM=1 -O3 \
 		draco/mesh/mesh_misc_functions.cc \
 		draco/mesh/mesh_attribute_corner_table.cc \
 		draco/mesh/corner_table.cc \
@@ -80,11 +80,12 @@ if [ ! -f draco.o ]; then
 		draco/compression/expert_encode.cc \
 		draco/metadata/metadata_encoder.cc \
 		-I. \
-		-o draco.o
+    -flto \
+    -o draco.o
 fi
 if [ ! -f physx.o ]; then
   echo 'building physx...'
-  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
+  emcc -s WASM=1 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -321,19 +322,26 @@ if [ ! -f physx.o ]; then
   PhysX/physx/source/lowleveldynamics/src/DyContactPrepPF.cpp \
   PhysX/physx/source/geomutils/src/gjk/GuEPA.cpp \
   PhysX/physx/source/physxextensions/src/ExtTriangleMeshExt.cpp \
+  PhysX/physx/source/physxextensions/src/ExtSimpleFactory.cpp \
+  PhysX/physx/source/physxextensions/src/ExtRigidBodyExt.cpp \
+  PhysX/physx/source/physxextensions/src/ExtDefaultCpuDispatcher.cpp \
+  PhysX/physx/source/physxextensions/src/ExtDefaultSimulationFilterShader.cpp \
+  PhysX/physx/source/physxextensions/src/ExtCpuWorkerThread.cpp \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
-	-o physx.o
+  -flto \
+  -o physx.o
 fi
 if [ ! -f concaveman.o ]; then
   echo 'building concaveman...'
-  emcc -s WASM=1 -s USE_PTHREADS=1 -O3 \
+  emcc -s WASM=1 -O3 \
   -Iconcaveman \
   concaveman/concaveman.cpp \
+  -flto \
   -o concaveman.o
 fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
-emcc -s WASM=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=1 -s TOTAL_MEMORY=399966208 -s MALLOC=emmalloc -O3 \
+emcc -s WASM=1 -s PTHREAD_POOL_SIZE=1 -s TOTAL_MEMORY=399966208 -s MALLOC=emmalloc -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -364,7 +372,7 @@ emcc -s WASM=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=1 -s TOTAL_MEMORY=39996620
   -IRectBinPack/include \
   -Iconcaveman \
   objectize.cc vector.cc subparcel.cc geometry.cc collide.cc \
-  FastNoise.cpp noise.cc march.cc biomes.cc \
+  FastNoise.cpp noise.cc march.cc biomes.cc physics.cc \
   draco.o physx.o concaveman.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \

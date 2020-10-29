@@ -4,6 +4,7 @@
 #include "noise.h"
 #include "march.h"
 #include "collide.h"
+#include "physics.h"
 // #include "convex.h"
 // #include "earcut.h"
 // #include <iostream>
@@ -1591,6 +1592,15 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
       };
       threadPool->dependencyInbox.push(guardFn, *const_cast<Message *>(&message));
     }
+  },
+  [](ThreadPool *threadPool, const Message &message) -> void { // makePhysics
+    MessagePuller puller(message);
+    Tracker *tracker = puller.pull<Tracker *>();
+    PScene **physicsPtr = puller.pull<PScene **>();
+
+    *physicsPtr = new PScene();
+
+    threadPool->outbox.push(*const_cast<Message *>(&message));
   },
 };
 
