@@ -74,7 +74,11 @@ PX_FORCE_INLINE void platformAlignedFree(void* ptr)
 // on all other platforms we get 16-byte alignment by default
 PX_FORCE_INLINE void* platformAlignedAlloc(size_t size)
 {
-	return ::malloc(size);
+  size_t remainder = size % 16;
+  if (remainder > 0) {
+    size += 16 - remainder;
+  }
+	return ::aligned_alloc(16, size);
 }
 
 PX_FORCE_INLINE void platformAlignedFree(void* ptr)
