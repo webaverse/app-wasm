@@ -127,7 +127,7 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 
   {
     hit = 0;
-    for (unsigned int i = 0; i < actors.size(); i++) {
+    for (unsigned int i = 1; i < actors.size(); i++) {
       PxRigidActor *actor = actors[i];
       PxShape *shape;
       actor->getShapes(&shape, 1);
@@ -184,7 +184,7 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
     for (unsigned int i = 0; i < maxIter; i++) {
       bool hadHit = false;
       // for (const std::tuple<bool, std::shared_ptr<PhysicsObject>> &t : sortedGeometrySpecs) {
-      for (unsigned int i = 0; i < actors.size(); i++) {
+      for (unsigned int i = 1; i < actors.size(); i++) {
         PxRigidActor *actor = actors[i];
         PxShape *shape;
         actor->getShapes(&shape, 1);
