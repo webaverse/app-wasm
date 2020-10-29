@@ -41,7 +41,7 @@ PScene::PScene() {
   {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
       PxTransform transform(PxVec3(0, -10, 0));
-      PxBoxGeometry geometry(10, 10, 10);
+      PxBoxGeometry geometry(30, 1, 30);
       PxRigidStatic *floor = PxCreateStatic(*physics, transform, geometry, *material);
       floor->userData = (void *)0x2;
       scene->addActor(*floor);
