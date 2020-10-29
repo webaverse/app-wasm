@@ -57,7 +57,10 @@ PScene::PScene() {
       actors.push_back(box);
   }
 }
-PScene::~PScene() {}
+PScene::~PScene() {
+  std::cout << "scene destructor" << std::endl;
+  abort();
+}
 
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, unsigned int numIds, float elapsedTime) {
   for (unsigned int i = 0; i < numIds; i++) {
