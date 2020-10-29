@@ -18,7 +18,7 @@ PScene::PScene() {
   sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
   if(!sceneDesc.cpuDispatcher)
   {
-      physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(4);
+      physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
       if(!mCpuDispatcher)
           std::cerr << "PxDefaultCpuDispatcherCreate failed!" << std::endl;
       sceneDesc.cpuDispatcher    = mCpuDispatcher;
