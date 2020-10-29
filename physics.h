@@ -38,7 +38,7 @@ public:
   ~PScene();
   
   void addGeometry(int type, float *position, float *quaternion);
-  void simulate(unsigned int *ids, float *positions, float *quaternion, float elapsedTime);
+  void simulate(unsigned int *ids, float *positions, float *quaternion, unsigned int numIds, float elapsedTime);
   
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

@@ -297,6 +297,14 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, Message *inMessages, unsi
   }
 }
 
+EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
+  return new PScene();
+}
+
+EMSCRIPTEN_KEEPALIVE void simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float elapsedTime) {
+  scene->simulate(ids, positions, quaternions, elapsedTime);
+}
+
 bool checkSubparcelIndicesLive(Tracker *tracker, const std::vector<int> indices) {
   std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
   for (int index : indices) {
@@ -1592,15 +1600,6 @@ std::function<void(ThreadPool *, const Message &)> METHOD_FNS[] = {
       };
       threadPool->dependencyInbox.push(guardFn, *const_cast<Message *>(&message));
     }
-  },
-  [](ThreadPool *threadPool, const Message &message) -> void { // makePhysics
-    MessagePuller puller(message);
-    Tracker *tracker = puller.pull<Tracker *>();
-    PScene **physicsPtr = puller.pull<PScene **>();
-
-    *physicsPtr = new PScene();
-
-    threadPool->outbox.push(*const_cast<Message *>(&message));
   },
 };
 

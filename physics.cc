@@ -57,7 +57,12 @@ PScene::PScene() {
 }
 PScene::~PScene() {}
 
-void PScene::simulate(unsigned int *ids, float *positions, float *quaternion, float elapsedTime) {
+void PScene::simulate(unsigned int *ids, float *positions, float *quaternion, unsigned int numIds, float elapsedTime) {
+  for (unsigned int i = 0; i < numIds, i++) {
+    PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(quaternion[i*4], quaternion[i*4+1], quaternion[i*4+2], quaternion[i*4+3]));
+    scene->setGlobalPose(transform, true);
+  }
+
   scene->simulate(elapsedTime);
   PxU32 error;
   scene->fetchResults(true, &error);
