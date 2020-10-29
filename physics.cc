@@ -28,8 +28,7 @@ PScene::PScene() {
 
 
   scene = physics->createScene(sceneDesc);
-  
-  // if(geometry.isValid())
+ 
   {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
       PxTransform transform(PxVec3(0, -10, 0));
@@ -37,6 +36,7 @@ PScene::PScene() {
       PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
       capsule->userData = (void *)0x1;
       scene->addActor(*capsule);
+      actors.push_back(capsule);
   }
   {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
@@ -45,6 +45,7 @@ PScene::PScene() {
       PxRigidStatic *floor = PxCreateStatic(*physics, transform, geometry, *material);
       floor->userData = (void *)0x2;
       scene->addActor(*floor);
+      actors.push_back(floor);
   }
   {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
@@ -53,30 +54,52 @@ PScene::PScene() {
       PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
       box->userData = (void *)0x3;
       scene->addActor(*box);
+      actors.push_back(box);
   }
 }
 PScene::~PScene() {}
 
-void PScene::simulate(unsigned int *ids, float *positions, float *quaternion, unsigned int numIds, float elapsedTime) {
-  for (unsigned int i = 0; i < numIds, i++) {
-    PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(quaternion[i*4], quaternion[i*4+1], quaternion[i*4+2], quaternion[i*4+3]));
-    scene->setGlobalPose(transform, true);
+unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, unsigned int numIds, float elapsedTime) {
+  for (unsigned int i = 0; i < numIds; i++) {
+    unsigned int id = ids[i];
+    PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(quaternions[i*4], quaternions[i*4+1], quaternions[i*4+2], quaternions[i*4+3]));
+    auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+      return (unsigned int)actor->userData == id;
+    });
+    if (actorIter != actors.end()) {
+      PxRigidActor *actor = *actorIter;
+      actor->setGlobalPose(transform, true);
+    } else {
+      std::cerr << "unknown actor id " << id << std::endl;
+    }
   }
 
   scene->simulate(elapsedTime);
   PxU32 error;
   scene->fetchResults(true, &error);
   if (error) {
-    std::cout << "simulate error " << error << std::endl;
+    std::cout << "scene simulate error " << error << std::endl;
   }
   
   PxU32 numActors;
-  PxRigidActor **transforms = (PxRigidActor **)scene->getActiveActors(numActors);
+  PxRigidActor **actors = (PxRigidActor **)scene->getActiveActors(numActors);
   for (unsigned int i = 0; i < numActors; i++) {
-    PxTransform actor2World = transforms[i]->getGlobalPose();
-    PxVec3 &p = actor2World.p;
-    PxQuat &q = actor2World.q;
+    const PxTransform &actor2World = actors[i]->getGlobalPose();
+    const PxVec3 &p = actor2World.p;
+    const PxQuat &q = actor2World.q;
+    
+    ids[i] = (unsigned int)actors[i]->userData;
+    
+    positions[i*3] = p.x;
+    positions[i*3+1] = p.y;
+    positions[i*3+2] = p.z;
+    
+    quaternions[i*4] = q.x;
+    quaternions[i*4+1] = q.y;
+    quaternions[i*4+2] = q.z;
+    quaternions[i*4+3] = q.w;
   }
+  return numActors;
 }
 
 void PScene::addGeometry(int type, float *position, float *quaternion) {

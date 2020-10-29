@@ -38,7 +38,7 @@ public:
   ~PScene();
   
   void addGeometry(int type, float *position, float *quaternion);
-  void simulate(unsigned int *ids, float *positions, float *quaternion, unsigned int numIds, float elapsedTime);
+  unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, unsigned int numIds, float elapsedTime);
   
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;
@@ -46,6 +46,7 @@ public:
   PxPhysics *physics = nullptr;
   PxCooking *cooking = nullptr;
   PxScene *scene = nullptr;
+  std::vector<PxRigidActor *> actors;
 };
 
 #endif

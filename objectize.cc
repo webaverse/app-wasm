@@ -301,8 +301,8 @@ EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
 
-EMSCRIPTEN_KEEPALIVE void simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float elapsedTime) {
-  scene->simulate(ids, positions, quaternions, elapsedTime);
+EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, unsigned int numIds, float elapsedTime) {
+  return scene->simulate(ids, positions, quaternions, numIds, elapsedTime);
 }
 
 bool checkSubparcelIndicesLive(Tracker *tracker, const std::vector<int> indices) {
