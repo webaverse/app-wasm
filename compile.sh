@@ -256,7 +256,6 @@ if [ ! -f physx.o ]; then
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialMesh.cpp \
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialHeightField.cpp \
   -D_DEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING -DPX_DEBUG=1 -DPX_CHECKED=1 \
-  -fsanitize=address \
   -o physx.o
 fi
 if [ ! -f concaveman.o ]; then
@@ -264,7 +263,6 @@ if [ ! -f concaveman.o ]; then
   emcc -s WASM=1 -s ASSERTIONS=2 -O3 -g4 \
   -Iconcaveman \
   concaveman/concaveman.cpp \
-  -fsanitize=address \
   -o concaveman.o
 fi
 echo 'building main...'
@@ -302,7 +300,6 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=199884800 -s ASSERTIONS=2 -s
   objectize.cc vector.cc physics.cc \
   physx.o concaveman.o \
   -D_DEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING -DPX_DEBUG=1 -DPX_CHECKED=1 \
-  -fsanitize=address \
   -I. \
   -o bin/geometry.js
 echo done
