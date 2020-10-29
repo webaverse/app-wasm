@@ -105,3 +105,121 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
 void PScene::addGeometry(int type, float *position, float *quaternion) {
   
 }
+
+void PScene::raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion) {
+  PxVec3 originVec{origin[0], origin[1], origin[2]};
+  PxVec3 directionVec{direction[0], direction[1], direction[2]};
+  Ray ray(Vec{origin[0], origin[1], origin[2]}, Vec{direction[0], direction[1], direction[2]});
+  PxTransform meshPose(
+    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
+    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
+  );
+  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+
+  PxRaycastHit hitInfo;
+  constexpr float maxDist = 1000.0;
+  const PxHitFlags hitFlags = PxHitFlag::eDEFAULT;
+  constexpr PxU32 maxHits = 1;
+
+  {
+    hit = 0;
+    for (unsigned int i = 0; i < actors.size(); i++) {
+      PxRigidActor *actor = actors[i];
+      PxShape *shape;
+      actor->getShapes(&shape, 1);
+
+      PxGeometryHolder holder = shape->getGeometry();
+      PxGeometry &geometry = holder.any();
+      PxTransform meshPose2 = actor->getGlobalPose();
+      PxTransform meshPose3 = meshPose * meshPose2;
+      // PxTransform meshPose4 = meshPose2 * meshPose;
+
+      PxU32 hitCount = PxGeometryQuery::raycast(originVec, directionVec,
+                                                geometry,
+                                                meshPose3,
+                                                maxDist,
+                                                hitFlags,
+                                                maxHits, &hitInfo);
+
+      if (hitCount > 0 && (!hit || hitInfo.distance < distance)) {
+        hit = 1;
+        position[0] = hitInfo.position.x;
+        position[1] = hitInfo.position.y;
+        position[2] = hitInfo.position.z;
+        normal[0] = hitInfo.normal.x;
+        normal[1] = hitInfo.normal.y;
+        normal[2] = hitInfo.normal.z;
+        distance = hitInfo.distance;
+        objectId = (unsigned int)actor->userData;
+        outPosition = Vec(meshPose2.p.x, meshPose2.p.y, meshPose2.p.z);
+        outQuaternion = Quat(meshPose2.q.x, meshPose2.q.y, meshPose2.q.z, meshPose2.q.w);
+        faceIndex = hitInfo.faceIndex;
+      }
+    }
+  }
+}
+
+void PScene::collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded) {
+  PxCapsuleGeometry geom(radius, halfHeight);
+  PxTransform geomPose(
+    PxVec3{position[0], position[1], position[2]},
+    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
+  );
+  PxTransform meshPose{
+    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
+    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
+  };
+
+  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+  
+  Vec offset(0, 0, 0);
+  bool anyHadHit = false;
+  bool anyHadGrounded = false;
+  {
+    for (unsigned int i = 0; i < maxIter; i++) {
+      bool hadHit = false;
+      // for (const std::tuple<bool, std::shared_ptr<PhysicsObject>> &t : sortedGeometrySpecs) {
+      for (unsigned int i = 0; i < actors.size(); i++) {
+        PxRigidActor *actor = actors[i];
+        PxShape *shape;
+        actor->getShapes(&shape, 1);
+
+        PxGeometryHolder holder = shape->getGeometry();
+        PxGeometry &geometry = holder.any();
+
+        PxTransform meshPose2 = actor->getGlobalPose();
+        PxTransform meshPose3 = meshPose * meshPose2;
+
+        PxVec3 directionVec;
+        PxReal depthFloat;
+        bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, geom, geomPose, geometry, meshPose3);
+        if (result) {
+          anyHadHit = true;
+          hadHit = true;
+          offset += Vec(directionVec.x, directionVec.y, directionVec.z)*depthFloat;
+          geomPose.p.x += directionVec.x*depthFloat;
+          geomPose.p.y += directionVec.y*depthFloat;
+          geomPose.p.z += directionVec.z*depthFloat;
+          anyHadGrounded = anyHadGrounded || directionVec.y > 0;
+          // break;
+        }
+      }
+      if (hadHit) {
+        continue;
+      } else {
+        break;
+      }
+    }
+  }
+  if (anyHadHit) {
+    hit = 1;
+    direction[0] = offset.x;
+    direction[1] = offset.y;
+    direction[2] = offset.z;
+    grounded = +anyHadGrounded;
+  } else {
+    hit = 0;
+  }
+}

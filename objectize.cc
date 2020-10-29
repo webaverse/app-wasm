@@ -300,9 +300,14 @@ EMSCRIPTEN_KEEPALIVE void tick(ThreadPool *threadPool, Message *inMessages, unsi
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
-
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, unsigned int numIds, float elapsedTime) {
   return scene->simulate(ids, positions, quaternions, numIds, elapsedTime);
+}
+EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
+  scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
+}
+EMSCRIPTEN_KEEPALIVE void collidePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded) {
+  scene->collide(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded);
 }
 
 bool checkSubparcelIndicesLive(Tracker *tracker, const std::vector<int> indices) {

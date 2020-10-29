@@ -39,7 +39,9 @@ public:
   
   void addGeometry(int type, float *position, float *quaternion);
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, unsigned int numIds, float elapsedTime);
-  
+  void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
+  void collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
+
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;
   PxFoundation *foundation = nullptr;
