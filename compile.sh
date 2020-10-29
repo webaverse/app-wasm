@@ -255,6 +255,7 @@ if [ ! -f physx.o ]; then
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialShape.cpp \
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialMesh.cpp \
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialHeightField.cpp \
+  PhysX/physx/source/scenequery/src/SqBounds.cpp \
   -D_DEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING -DPX_DEBUG=1 -DPX_CHECKED=1 \
   -o physx.o
 fi
