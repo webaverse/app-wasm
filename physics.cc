@@ -14,7 +14,7 @@ PScene::PScene() {
   PxTolerancesScale tolerancesScale;
   physics = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, tolerancesScale);
   
-  physx::PxSceneDesc sceneDesc = physx::PxSceneDesc((physx::PxTolerancesScale()));
+  PxSceneDesc sceneDesc = PxSceneDesc((physx::PxTolerancesScale()));
   sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
   if(!sceneDesc.cpuDispatcher)
   {
@@ -25,7 +25,7 @@ PScene::PScene() {
   }
   if(!sceneDesc.filterShader)
       sceneDesc.filterShader    = &physx::PxDefaultSimulationFilterShader;
-
+  sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 
   scene = physics->createScene(sceneDesc);
  
@@ -35,6 +35,8 @@ PScene::PScene() {
       PxCapsuleGeometry geometry(1, 1);
       PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
       capsule->userData = (void *)0x1;
+      // capsule->setRigidDynamicFlag(PxRigidDynamicFlag::eKINEMATIC, true);
+      PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
       scene->addActor(*capsule);
       actors.push_back(capsule);
   }
@@ -45,14 +47,16 @@ PScene::PScene() {
       PxRigidStatic *floor = PxCreateStatic(*physics, transform, geometry, *material);
       floor->userData = (void *)0x2;
       scene->addActor(*floor);
-      actors.push_back(floor);
+      // actors.push_back(floor);
   }
   {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
-      PxTransform transform(PxVec3(0, -10, 0));
+      PxTransform transform(PxVec3(0, 5, 0));
       PxBoxGeometry geometry(0.5, 0.5, 0.5);
       PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
       box->userData = (void *)0x3;
+      // box->setRigidDynamicFlag(PxRigidDynamicFlag::eKINEMATIC, true);
+      PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
       scene->addActor(*box);
       actors.push_back(box);
   }
@@ -70,8 +74,9 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
       return (unsigned int)actor->userData == id;
     });
     if (actorIter != actors.end()) {
-      PxRigidActor *actor = *actorIter;
+      PxRigidDynamic *actor = *actorIter;
       actor->setGlobalPose(transform, true);
+      actor->wakeUp();
     } else {
       std::cerr << "unknown actor id " << id << std::endl;
     }

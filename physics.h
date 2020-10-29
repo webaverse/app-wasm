@@ -20,6 +20,7 @@
 #include "cooking/PxCooking.h"
 #include "extensions/PxTriangleMeshExt.h"
 #include "extensions/PxSimpleFactory.h"
+#include "extensions/PxRigidBodyExt.h"
 // #include "PxPhysicsAPI.h"
 #include "PxQueryReport.h"
 #include "geometry/PxGeometryQuery.h"
@@ -48,7 +49,7 @@ public:
   PxPhysics *physics = nullptr;
   PxCooking *cooking = nullptr;
   PxScene *scene = nullptr;
-  std::vector<PxRigidActor *> actors;
+  std::vector<PxRigidDynamic *> actors;
 };
 
 #endif
