@@ -1,3 +1,4 @@
+# emsdk 2.0.3
 mkdir -p bin
 if [ ! -f draco.o ]; then
   echo 'building draco...'
