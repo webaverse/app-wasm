@@ -110,6 +110,8 @@ void PScene::addGeometry(int type, float *position, float *quaternion) {
 }
 
 void PScene::raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion) {
+  hit = 0;
+  return;
   PxVec3 originVec{origin[0], origin[1], origin[2]};
   PxVec3 directionVec{direction[0], direction[1], direction[2]};
   Ray ray(Vec{origin[0], origin[1], origin[2]}, Vec{direction[0], direction[1], direction[2]});
@@ -164,6 +166,8 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 }
 
 void PScene::collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded) {
+  hit = 0;
+  return;
   PxCapsuleGeometry geom(radius, halfHeight);
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
