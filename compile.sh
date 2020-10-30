@@ -259,13 +259,6 @@ if [ ! -f physx.o ]; then
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -o physx.o
 fi
-if [ ! -f concaveman.o ]; then
-  echo 'building concaveman...'
-  emcc -s WASM=1 -O3 \
-  -Iconcaveman \
-  concaveman/concaveman.cpp \
-  -o concaveman.o
-fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
 emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=199884800 -s ALLOW_MEMORY_GROWTH=0 -O3 \
@@ -299,7 +292,6 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=199884800 -s ALLOW_MEMORY_GR
   -IRectBinPack/include \
   -Iconcaveman \
   objectize.cc vector.cc physics.cc \
-  physx.o concaveman.o \
   physx.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
