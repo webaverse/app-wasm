@@ -19,8 +19,10 @@ PScene::PScene() {
   }
   {
     PxCookingParams cookingParams(tolerancesScale);
+    cookingParams.meshWeldTolerance = 0.15;
     // cookingParams.planeTolerance = 0;
     // cookingParams.meshPreprocessParams |= PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH;
+    cookingParams.meshPreprocessParams |= PxMeshPreprocessingFlag::eWELD_VERTICES;
     // cookingParams.meshSizePerformanceTradeOff = 0;
     cooking = PxCreateCooking(PX_PHYSICS_VERSION, *foundation, cookingParams);
   }
