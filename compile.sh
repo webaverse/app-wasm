@@ -261,7 +261,7 @@ if [ ! -f physx.o ]; then
 fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
-emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=199884800 -s ALLOW_MEMORY_GROWTH=0 -O3 \
+emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=419430400 -s ALLOW_MEMORY_GROWTH=0 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
