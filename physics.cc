@@ -12,22 +12,35 @@ PScene::PScene() {
   errorCallback = new PxDefaultErrorCallback();
   foundation = PxCreateFoundation(PX_PHYSICS_VERSION, *allocator, *errorCallback);
   PxTolerancesScale tolerancesScale;
-  physics = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, tolerancesScale);
-  
-  PxSceneDesc sceneDesc = PxSceneDesc((physx::PxTolerancesScale()));
-  sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
-  if(!sceneDesc.cpuDispatcher)
+  // tolerancesScale.length = 0.01;
   {
-      physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
-      if(!mCpuDispatcher)
-          std::cerr << "PxDefaultCpuDispatcherCreate failed!" << std::endl;
-      sceneDesc.cpuDispatcher    = mCpuDispatcher;
+    // PxTolerancesScale tolerancesScale;
+    physics = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, tolerancesScale);
   }
-  if(!sceneDesc.filterShader)
-      sceneDesc.filterShader    = &physx::PxDefaultSimulationFilterShader;
-  sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+  {
+    PxCookingParams cookingParams(tolerancesScale);
+    // cookingParams.planeTolerance = 0;
+    // cookingParams.meshPreprocessParams |= PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH;
+    // cookingParams.meshSizePerformanceTradeOff = 0;
+    cooking = PxCreateCooking(PX_PHYSICS_VERSION, *foundation, cookingParams);
+  }
+  {
+    // PxTolerancesScale tolerancesScale;
+    PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
+    sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
+    if(!sceneDesc.cpuDispatcher)
+    {
+        physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
+        if(!mCpuDispatcher)
+            std::cerr << "PxDefaultCpuDispatcherCreate failed!" << std::endl;
+        sceneDesc.cpuDispatcher    = mCpuDispatcher;
+    }
+    if(!sceneDesc.filterShader)
+        sceneDesc.filterShader    = &physx::PxDefaultSimulationFilterShader;
+    sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 
-  scene = physics->createScene(sceneDesc);
+    scene = physics->createScene(sceneDesc);
+  }
  
   /* {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
@@ -109,9 +122,59 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
   return numActors;
 }
 
-void PScene::addGeometry(int type, float *position, float *quaternion) {
-  
+void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  PxVec3 *verts = (PxVec3 *)positions;
+  PxU32 nbVerts = numPositions/3;
+  PxU32 *indices32 = (PxU32 *)indices;
+  PxU32 triCount = numIndices/3;
+
+  PxTriangleMeshDesc meshDesc{};
+  meshDesc.points.count           = nbVerts;
+  meshDesc.points.stride          = sizeof(PxVec3);
+  meshDesc.points.data            = verts;
+
+  meshDesc.triangles.count        = triCount;
+  meshDesc.triangles.stride       = 3*sizeof(PxU32);
+  meshDesc.triangles.data         = indices32;
+
+  /* bool ok = cooking->validateTriangleMesh(meshDesc);
+  if (!ok) {
+    std::cerr << "invalid triangle mesh" << std::endl;
+  } */
+
+  *writeStream = new PxDefaultMemoryOutputStream();
+  bool status = cooking->cookTriangleMesh(meshDesc, **writeStream);
+  if (!status) {
+    std::cerr << "geometry triangle mesh bake failed" << std::endl;
+  }
+
+  *data = (*writeStream)->getData();
+  *length = (*writeStream)->getSize();
 }
+void PScene::addGeometry(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *writeStream) {
+  PxDefaultMemoryInputData readBuffer(data, length);
+  PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
+
+  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxTransform transform(PxVec3(0, 0, 0));
+  PxTriangleMeshGeometry geometry(triangleMesh);
+  PxRigidStatic *mesh = PxCreateStatic(*physics, transform, geometry, *material);
+  mesh->userData = (void *)0x4;
+  scene->addActor(*mesh);
+  actors.push_back(mesh);
+
+  if (writeStream) {
+    delete writeStream;
+  }
+}
+
+/* std::shared_ptr<PhysicsObject> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
+  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+  std::shared_ptr<PhysicsGeometry> geometrySpec(new PhysicsGeometry(nullptr, nullptr, geometry));
+  std::shared_ptr<PhysicsObject> geometryObject(new PhysicsObject(objectId, p, q, std::move(geometrySpec), p, q, physicer));
+  return std::move(geometryObject);
+} */
 
 void PScene::raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion) {
   PxVec3 originVec{origin[0], origin[1], origin[2]};
