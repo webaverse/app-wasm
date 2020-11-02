@@ -43,6 +43,7 @@ public:
   void collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded);
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic);
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
+  void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void addGeometry(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *writeStream);
 
   PxDefaultAllocator *allocator = nullptr;

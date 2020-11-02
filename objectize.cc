@@ -42,6 +42,9 @@ EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, 
 EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   scene->cookGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
+EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  scene->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
+}
 EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *writeStream) {
   scene->addGeometry(data, length, writeStream);
 }

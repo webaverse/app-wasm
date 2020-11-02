@@ -173,6 +173,33 @@ void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int 
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
+void PScene::cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  PxVec3 *verts = (PxVec3 *)positions;
+  PxU32 nbVerts = numPositions/3;
+  PxU32 *indices32 = (PxU32 *)indices;
+  PxU32 triCount = numIndices/3;
+
+  PxConvexMeshDesc meshDesc{};
+  meshDesc.points.count           = nbVerts;
+  meshDesc.points.stride          = sizeof(PxVec3);
+  meshDesc.points.data            = verts;
+
+  meshDesc.indices.count        = triCount;
+  meshDesc.indices.stride       = 3*sizeof(PxU32);
+  meshDesc.indices.data         = indices32;
+
+  meshDesc.flags            = PxConvexFlag::eCOMPUTE_CONVEX;
+  // meshDesc.maxVerts         = 10;
+  
+  *writeStream = new PxDefaultMemoryOutputStream();
+  bool status = cooking->cookConvexMesh(meshDesc, **writeStream);
+  if (!status) {
+    std::cerr << "geometry convex mesh bake failed" << std::endl;
+  }
+
+  *data = (*writeStream)->getData();
+  *length = (*writeStream)->getSize();
+}
 void PScene::addGeometry(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
   PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
