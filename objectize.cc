@@ -36,5 +36,14 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *di
 EMSCRIPTEN_KEEPALIVE void collidePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded) {
   scene->collide(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded);
 }
+EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
+  scene->addBoxGeometry(position, quaternion, size, id, dynamic);
+}
+EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  scene->cookGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
+}
+EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *writeStream) {
+  scene->addGeometry(data, length, writeStream);
+}
 
 }

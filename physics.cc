@@ -55,7 +55,7 @@ PScene::PScene() {
       scene->addActor(*capsule);
       actors.push_back(capsule);
   } */
-  {
+  /* {
       PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
       PxTransform transform(PxVec3(0, -1, 0));
       PxBoxGeometry geometry(30, 1, 30);
@@ -73,7 +73,7 @@ PScene::PScene() {
       PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
       scene->addActor(*box);
       actors.push_back(box);
-  }
+  } */
 }
 PScene::~PScene() {
   std::cout << "scene destructor" << std::endl;
@@ -124,6 +124,26 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
   return numActors;
 }
 
+void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
+  if (dynamic) {
+    PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+    PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
+    PxBoxGeometry geometry(size[0], size[1], size[2]);
+    PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+    box->userData = (void *)id;
+    PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
+    scene->addActor(*box);
+    actors.push_back(box);
+  } else {
+    PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+    PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
+    PxBoxGeometry geometry(size[0], size[1], size[2]);
+    PxRigidStatic *floor = PxCreateStatic(*physics, transform, geometry, *material);
+    floor->userData = (void *)id;
+    scene->addActor(*floor);
+    actors.push_back(floor);
+  }
+}
 void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   PxVec3 *verts = (PxVec3 *)positions;
   PxU32 nbVerts = numPositions/3;
