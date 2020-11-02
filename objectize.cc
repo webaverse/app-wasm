@@ -48,5 +48,8 @@ EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positi
 EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *writeStream) {
   scene->addGeometry(data, length, writeStream);
 }
+EMSCRIPTEN_KEEPALIVE void removeGeometryPhysics(PScene *scene, unsigned int id) {
+  scene->removeGeometry(id);
+}
 
 }

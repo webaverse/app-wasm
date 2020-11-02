@@ -45,6 +45,7 @@ public:
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void addGeometry(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *writeStream);
+  void removeGeometry(unsigned int id);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

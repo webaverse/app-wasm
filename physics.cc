@@ -216,6 +216,18 @@ void PScene::addGeometry(uint8_t *data, unsigned int length, PxDefaultMemoryOutp
     delete writeStream;
   }
 }
+void PScene::removeGeometry(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    actor->release();
+    actors.erase(actorIter);
+  } else {
+    std::cerr << "unknown actor id " << id << std::endl;
+  }
+}
 
 /* std::shared_ptr<PhysicsObject> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
