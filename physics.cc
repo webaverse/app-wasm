@@ -218,12 +218,12 @@ void PScene::addGeometry(uint8_t *data, unsigned int length, unsigned int id, Px
 }
 void PScene::addConvexGeometry(uint8_t *data, unsigned int length, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
-  PxConvexMesh *convexMesh = physicer->physics->createConvexMesh(readBuffer);
+  PxConvexMesh *convexMesh = physics->createConvexMesh(readBuffer);
 
   PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxTransform transform(PxVec3(0, 0, 0));
   PxConvexMeshGeometry geometry(convexMesh);
-  PxRigidStatic *mesh = PxCreateDynamic(*physics, transform, geometry, *material);
+  PxRigidDynamic *mesh = PxCreateDynamic(*physics, transform, geometry, *material, 1);
   mesh->userData = (void *)id;
   scene->addActor(*mesh);
   actors.push_back(mesh);
