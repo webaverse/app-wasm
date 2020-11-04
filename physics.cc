@@ -200,7 +200,7 @@ void PScene::cookConvexGeometry(float *positions, unsigned int *indices, unsigne
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
-void PScene::addGeometry(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *writeStream) {
+void PScene::addGeometry(uint8_t *data, unsigned int length, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
   PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
 
@@ -208,7 +208,23 @@ void PScene::addGeometry(uint8_t *data, unsigned int length, PxDefaultMemoryOutp
   PxTransform transform(PxVec3(0, 0, 0));
   PxTriangleMeshGeometry geometry(triangleMesh);
   PxRigidStatic *mesh = PxCreateStatic(*physics, transform, geometry, *material);
-  mesh->userData = (void *)0x4;
+  mesh->userData = (void *)id;
+  scene->addActor(*mesh);
+  actors.push_back(mesh);
+
+  if (writeStream) {
+    delete writeStream;
+  }
+}
+void PScene::addConvexGeometry(uint8_t *data, unsigned int length, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
+  PxDefaultMemoryInputData readBuffer(data, length);
+  PxConvexMesh *convexMesh = physicer->physics->createConvexMesh(readBuffer);
+
+  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxTransform transform(PxVec3(0, 0, 0));
+  PxConvexMeshGeometry geometry(convexMesh);
+  PxRigidStatic *mesh = PxCreateDynamic(*physics, transform, geometry, *material);
+  mesh->userData = (void *)id;
   scene->addActor(*mesh);
   actors.push_back(mesh);
 
