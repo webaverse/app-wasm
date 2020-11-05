@@ -45,10 +45,10 @@ EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PScene *scene, float *positions, u
 EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   scene->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
-EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
+EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   scene->addGeometry(data, length, id, writeStream);
 }
-EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
+EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   scene->addConvexGeometry(data, length, id, writeStream);
 }
 EMSCRIPTEN_KEEPALIVE void removeGeometryPhysics(PScene *scene, unsigned int id) {
