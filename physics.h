@@ -47,6 +47,8 @@ public:
   void addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream);
   void addConvexGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream);
   void removeGeometry(unsigned int id);
+  void disableGeometry(unsigned int id);
+  void enableGeometry(unsigned int id);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

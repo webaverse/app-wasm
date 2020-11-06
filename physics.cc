@@ -144,6 +144,7 @@ void PScene::addBoxGeometry(float *position, float *quaternion, float *size, uns
     actors.push_back(floor);
   }
 }
+
 void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   PxVec3 *verts = (PxVec3 *)positions;
   PxU32 nbVerts = numPositions/3;
@@ -200,6 +201,7 @@ void PScene::cookConvexGeometry(float *positions, unsigned int *indices, unsigne
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
+
 void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
   PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
@@ -230,6 +232,69 @@ void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *positi
 
   if (writeStream) {
     delete writeStream;
+  }
+}
+
+void PScene::disableGeometry(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      body->setLinearVelocity(PxVec3(0, 0, 0), false);
+      body->setAngularVelocity(PxVec3(0, 0, 0), false);
+    }
+
+    PxShape *shapes[32];
+    for (int j = 0; ; j++) {
+      memset(shapes, 0, sizeof(shapes));
+      if (actor->getShapes(shapes, 32, j * 32) == 0) {
+        break;
+      }
+      for (int i = 0; i < 32; ++i) {
+        if (shapes[i] == nullptr) {
+          break;
+        }
+
+        PxShape *rigidShape = shapes[i];
+        rigidShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+      }
+    }
+  } else {
+    std::cerr << "unknown actor id " << id << std::endl;
+  }
+}
+void PScene::enableGeometry(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    
+    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
+
+    PxShape *shapes[32];
+    for (int j = 0; ; j++) {
+      memset(shapes, 0, sizeof(shapes));
+      if (actor->getShapes(shapes, 32, j * 32) == 0) {
+        break;
+      }
+      for (int i = 0; i < 32; ++i) {
+        if (shapes[i] == nullptr) {
+          break;
+        }
+
+        PxShape *rigidShape = shapes[i];
+        rigidShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+      }
+    }
+  } else {
+    std::cerr << "unknown actor id " << id << std::endl;
   }
 }
 void PScene::removeGeometry(unsigned int id) {
@@ -276,32 +341,34 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
       PxShape *shape;
       actor->getShapes(&shape, 1);
 
-      PxGeometryHolder holder = shape->getGeometry();
-      PxGeometry &geometry = holder.any();
-      PxTransform meshPose2 = actor->getGlobalPose();
-      PxTransform meshPose3 = meshPose * meshPose2;
-      // PxTransform meshPose4 = meshPose2 * meshPose;
+      if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+        PxGeometryHolder holder = shape->getGeometry();
+        PxGeometry &geometry = holder.any();
+        PxTransform meshPose2 = actor->getGlobalPose();
+        PxTransform meshPose3 = meshPose * meshPose2;
+        // PxTransform meshPose4 = meshPose2 * meshPose;
 
-      PxU32 hitCount = PxGeometryQuery::raycast(originVec, directionVec,
-                                                geometry,
-                                                meshPose3,
-                                                maxDist,
-                                                hitFlags,
-                                                maxHits, &hitInfo);
+        PxU32 hitCount = PxGeometryQuery::raycast(originVec, directionVec,
+                                                  geometry,
+                                                  meshPose3,
+                                                  maxDist,
+                                                  hitFlags,
+                                                  maxHits, &hitInfo);
 
-      if (hitCount > 0 && (!hit || hitInfo.distance < distance)) {
-        hit = 1;
-        position[0] = hitInfo.position.x;
-        position[1] = hitInfo.position.y;
-        position[2] = hitInfo.position.z;
-        normal[0] = hitInfo.normal.x;
-        normal[1] = hitInfo.normal.y;
-        normal[2] = hitInfo.normal.z;
-        distance = hitInfo.distance;
-        objectId = (unsigned int)actor->userData;
-        outPosition = Vec(meshPose2.p.x, meshPose2.p.y, meshPose2.p.z);
-        outQuaternion = Quat(meshPose2.q.x, meshPose2.q.y, meshPose2.q.z, meshPose2.q.w);
-        faceIndex = hitInfo.faceIndex;
+        if (hitCount > 0 && (!hit || hitInfo.distance < distance)) {
+          hit = 1;
+          position[0] = hitInfo.position.x;
+          position[1] = hitInfo.position.y;
+          position[2] = hitInfo.position.z;
+          normal[0] = hitInfo.normal.x;
+          normal[1] = hitInfo.normal.y;
+          normal[2] = hitInfo.normal.z;
+          distance = hitInfo.distance;
+          objectId = (unsigned int)actor->userData;
+          outPosition = Vec(meshPose2.p.x, meshPose2.p.y, meshPose2.p.z);
+          outQuaternion = Quat(meshPose2.q.x, meshPose2.q.y, meshPose2.q.z, meshPose2.q.w);
+          faceIndex = hitInfo.faceIndex;
+        }
       }
     }
   }
@@ -333,24 +400,26 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
         PxShape *shape;
         actor->getShapes(&shape, 1);
 
-        PxGeometryHolder holder = shape->getGeometry();
-        PxGeometry &geometry = holder.any();
+        if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+          PxGeometryHolder holder = shape->getGeometry();
+          PxGeometry &geometry = holder.any();
 
-        PxTransform meshPose2 = actor->getGlobalPose();
-        PxTransform meshPose3 = meshPose * meshPose2;
+          PxTransform meshPose2 = actor->getGlobalPose();
+          PxTransform meshPose3 = meshPose * meshPose2;
 
-        PxVec3 directionVec;
-        PxReal depthFloat;
-        bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, geom, geomPose, geometry, meshPose3);
-        if (result) {
-          anyHadHit = true;
-          hadHit = true;
-          offset += Vec(directionVec.x, directionVec.y, directionVec.z)*depthFloat;
-          geomPose.p.x += directionVec.x*depthFloat;
-          geomPose.p.y += directionVec.y*depthFloat;
-          geomPose.p.z += directionVec.z*depthFloat;
-          anyHadGrounded = anyHadGrounded || directionVec.y > 0;
-          // break;
+          PxVec3 directionVec;
+          PxReal depthFloat;
+          bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, geom, geomPose, geometry, meshPose3);
+          if (result) {
+            anyHadHit = true;
+            hadHit = true;
+            offset += Vec(directionVec.x, directionVec.y, directionVec.z)*depthFloat;
+            geomPose.p.x += directionVec.x*depthFloat;
+            geomPose.p.y += directionVec.y*depthFloat;
+            geomPose.p.z += directionVec.z*depthFloat;
+            anyHadGrounded = anyHadGrounded || directionVec.y > 0;
+            // break;
+          }
         }
       }
       if (hadHit) {
