@@ -63,6 +63,12 @@ EMSCRIPTEN_KEEPALIVE void disableGeometryPhysics(PScene *scene, unsigned int id)
 EMSCRIPTEN_KEEPALIVE void enableGeometryQueriesPhysics(PScene *scene, unsigned int id) {
   scene->enableGeometryQueries(id);
 }
+EMSCRIPTEN_KEEPALIVE void disableGeometryQueriesPhysics(PScene *scene, unsigned int id) {
+  scene->disableGeometryQueries(id);
+}
+EMSCRIPTEN_KEEPALIVE void enableGeometryPhysics(PScene *scene, unsigned int id) {
+  scene->enableGeometry(id);
+}
 EMSCRIPTEN_KEEPALIVE void removeGeometryPhysics(PScene *scene, unsigned int id) {
   scene->removeGeometry(id);
 }

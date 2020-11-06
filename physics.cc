@@ -297,6 +297,58 @@ void PScene::enableGeometry(unsigned int id) {
     std::cerr << "unknown actor id " << id << std::endl;
   }
 }
+void PScene::disableGeometryQueries(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxShape *shapes[32];
+    for (int j = 0; ; j++) {
+      memset(shapes, 0, sizeof(shapes));
+      if (actor->getShapes(shapes, 32, j * 32) == 0) {
+        break;
+      }
+      for (int i = 0; i < 32; ++i) {
+        if (shapes[i] == nullptr) {
+          break;
+        }
+
+        PxShape *rigidShape = shapes[i];
+        rigidShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+      }
+    }
+  } else {
+    std::cerr << "unknown actor id " << id << std::endl;
+  }
+}
+void PScene::enableGeometryQueries(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxShape *shapes[32];
+    for (int j = 0; ; j++) {
+      memset(shapes, 0, sizeof(shapes));
+      if (actor->getShapes(shapes, 32, j * 32) == 0) {
+        break;
+      }
+      for (int i = 0; i < 32; ++i) {
+        if (shapes[i] == nullptr) {
+          break;
+        }
+
+        PxShape *rigidShape = shapes[i];
+        rigidShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+      }
+    }
+  } else {
+    std::cerr << "unknown actor id " << id << std::endl;
+  }
+}
 void PScene::removeGeometry(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;

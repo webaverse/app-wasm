@@ -49,6 +49,8 @@ public:
   void removeGeometry(unsigned int id);
   void disableGeometry(unsigned int id);
   void enableGeometry(unsigned int id);
+  void disableGeometryQueries(unsigned int id);
+  void enableGeometryQueries(unsigned int id);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;
