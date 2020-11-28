@@ -1,6 +1,6 @@
 # emsdk 2.0.3
 mkdir -p bin
-if [ ! -f physx.o ]; then
+if [ ! -f physx-timestamp ]; then
   echo 'building physx...'
   emcc -s WASM=1 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
@@ -257,7 +257,8 @@ if [ ! -f physx.o ]; then
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialHeightField.cpp \
   PhysX/physx/source/scenequery/src/SqBounds.cpp \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
-  -o physx.o
+  -c \
+  && touch physx-timestamp
 fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
@@ -293,7 +294,7 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=104857600 -s ALLOW_MEMORY_GR
   -IRectBinPack/include \
   -Iconcaveman \
   objectize.cc vector.cc physics.cc \
-  physx.o \
+  *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
   -o bin/geometry.js
