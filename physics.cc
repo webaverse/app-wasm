@@ -365,7 +365,10 @@ void PScene::removeGeometry(unsigned int id) {
 const float boxPositions[] = {0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5};
 const unsigned int boxIndices[] = {0,2,1,2,3,1,4,6,5,6,7,5,8,10,9,10,11,9,12,14,13,14,15,13,16,18,17,18,19,17,20,22,21,22,23,21};
 
-bool PScene::getGeometry(unsigned int id, float *positions, unsigned int *indices) {
+bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices) {
+  numPositions = 0;
+  numIndices = 0;
+
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
   });
@@ -382,12 +385,16 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int *indice
         case PxGeometryType::Enum::eBOX: {
           const PxBoxGeometry &geometry = geometryHolder.box();
           const PxVec3 &halfExtents = geometry.halfExtents;
+
           for (unsigned int i = 0; i < sizeof(boxPositions)/sizeof(boxPositions[0]); i += 3) {
-            positions[i] = boxPositions[i] * 2 * halfExtents.x;
-            positions[i+1] = boxPositions[i+1] * 2 * halfExtents.y;
-            positions[i+2] = boxPositions[i+2] * 2 * halfExtents.z;
+            positions[numPositions++] = boxPositions[i] * 2 * halfExtents.x;
+            positions[numPositions++] = boxPositions[i+1] * 2 * halfExtents.y;
+            positions[numPositions++] = boxPositions[i+2] * 2 * halfExtents.z;
           }
+
           memcpy(indices, boxIndices, sizeof(boxIndices));
+          numIndices = sizeof(boxIndices)/sizeof(boxIndices[0]);
+
           return true;
         }
         case PxGeometryType::Enum::eCONVEXMESH: {
@@ -410,23 +417,22 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int *indice
           PxVec3 *vertices = (PxVec3 *)positions;
           PxU32 *triangles = indices;
 
-          PxU32 offset = 0;
           for (unsigned int i = 0; i < nbPolygons; i++) {
             PxHullPolygon face;
             convexMesh->getPolygonData(i, face);
 
             const PxU8 *faceIndices = indexBuffer + face.mIndexBase;
             for (PxU32 j = 0; j < face.mNbVerts; j++) {
-              vertices[offset+j] = convexVerts[faceIndices[j]];
+              vertices[numPositions+j] = convexVerts[faceIndices[j]];
             }
 
             for (PxU32 j = 2; j < face.mNbVerts; j++) {
-              *triangles++ = PxU32(offset);
-              *triangles++ = PxU32(offset+j);
-              *triangles++ = PxU32(offset+j-1);
+              triangles[numIndices++] = PxU32(numPositions);
+              triangles[numIndices++] = PxU32(numPositions+j);
+              triangles[numIndices++] = PxU32(numPositions+j-1);
             }
 
-            offset += face.mNbVerts;
+            numPositions += face.mNbVerts;
           }
           return true;
         }
@@ -441,17 +447,18 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int *indice
           bool has16BitIndices = (bool)(flags & PxTriangleMeshFlag::e16_BIT_INDICES);
 
           memcpy(positions, vertices, numVertices * sizeof(vertices[0]));
+          numPositions = numVertices;
 
           if (has16BitIndices) {
             unsigned short *triangles16 = (unsigned short *)triangles;
             for (unsigned int i = 0; i < numTriangles; i++) {
-              indices[i] = triangles16[i];
+              indices[numIndices++] = triangles16[i];
             }
             memcpy(indices, triangles, 3 * numTriangles * sizeof(unsigned short));
           } else {
             unsigned int *triangles32 = (unsigned int *)triangles;
             for (unsigned int i = 0; i < numTriangles; i++) {
-              indices[i] = triangles32[i];
+              indices[numIndices++] = triangles32[i];
             }
           }
           return true;
