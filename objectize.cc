@@ -57,6 +57,10 @@ EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, uint8_t *data,
   scene->addConvexGeometry(data, length, position, quaternion, id, writeStream);
 }
 
+EMSCRIPTEN_KEEPALIVE bool getGeometryPhysics(PScene *scene, unsigned int id, float *positions, unsigned int *indices) {
+  return scene->getGeometry(id, positions, indices);
+}
+
 EMSCRIPTEN_KEEPALIVE void disableGeometryPhysics(PScene *scene, unsigned int id) {
   scene->disableGeometry(id);
 }

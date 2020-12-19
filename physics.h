@@ -47,6 +47,7 @@ public:
   void addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream);
   void addConvexGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream);
   void removeGeometry(unsigned int id);
+  bool getGeometry(unsigned int id, float *positions, unsigned int *indices);
   void disableGeometry(unsigned int id);
   void enableGeometry(unsigned int id);
   void disableGeometryQueries(unsigned int id);

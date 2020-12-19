@@ -362,6 +362,115 @@ void PScene::removeGeometry(unsigned int id) {
   }
 }
 
+const float boxPositions[] = {0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5};
+const unsigned int boxIndices[] = {0,2,1,2,3,1,4,6,5,6,7,5,8,10,9,10,11,9,12,14,13,14,15,13,16,18,17,18,19,17,20,22,21,22,23,21};
+
+bool PScene::getGeometry(unsigned int id, float *positions, unsigned int *indices) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    unsigned int numShapes = actor->getNbShapes();
+    if (numShapes == 1) {
+      PxShape *shapes[1];
+      actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+      PxShape *shape = shapes[0];
+      PxGeometryHolder geometryHolder = shape->getGeometry();
+      PxGeometryType::Enum geometryType = geometryHolder.getType();
+      switch (geometryType) {
+        case PxGeometryType::Enum::eBOX: {
+          const PxBoxGeometry &geometry = geometryHolder.box();
+          const PxVec3 &halfExtents = geometry.halfExtents;
+          for (unsigned int i = 0; i < sizeof(boxPositions)/sizeof(boxPositions[0]); i += 3) {
+            positions[i] = boxPositions[i] * 2 * halfExtents.x;
+            positions[i+1] = boxPositions[i+1] * 2 * halfExtents.y;
+            positions[i+2] = boxPositions[i+2] * 2 * halfExtents.z;
+          }
+          memcpy(indices, boxIndices, sizeof(boxIndices));
+          return true;
+        }
+        case PxGeometryType::Enum::eCONVEXMESH: {
+          PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
+          PxConvexMesh *convexMesh = geometry.convexMesh;
+          const PxVec3 *convexVerts = convexMesh->getVertices();
+          // unsigned int numVertices = convexMesh->getNbVertices();
+          unsigned int nbPolygons = convexMesh->getNbPolygons();
+          const unsigned char *indexBuffer = convexMesh->getIndexBuffer();
+
+          PxU32 totalNbTris = 0;
+          PxU32 totalNbVerts = 0;
+          for(PxU32 i = 0; i < nbPolygons; i++) {
+            PxHullPolygon data;
+            convexMesh->getPolygonData(i, data);
+            totalNbVerts += data.mNbVerts;
+            totalNbTris += data.mNbVerts - 2;
+          }
+
+          PxVec3 *vertices = (PxVec3 *)positions;
+          PxU32 *triangles = indices;
+
+          PxU32 offset = 0;
+          for (unsigned int i = 0; i < nbPolygons; i++) {
+            PxHullPolygon face;
+            convexMesh->getPolygonData(i, face);
+
+            const PxU8 *faceIndices = indexBuffer + face.mIndexBase;
+            for (PxU32 j = 0; j < face.mNbVerts; j++) {
+              vertices[offset+j] = convexVerts[faceIndices[j]];
+            }
+
+            for (PxU32 j = 2; j < face.mNbVerts; j++) {
+              *triangles++ = PxU32(offset);
+              *triangles++ = PxU32(offset+j);
+              *triangles++ = PxU32(offset+j-1);
+            }
+
+            offset += face.mNbVerts;
+          }
+          return true;
+        }
+        case PxGeometryType::Enum::eTRIANGLEMESH: {
+          PxTriangleMeshGeometry &geometry = geometryHolder.triangleMesh();
+          PxTriangleMesh *triangleMesh = geometry.triangleMesh;
+          unsigned int numVertices = triangleMesh->getNbVertices();
+          const PxVec3 *vertices = triangleMesh->getVertices();
+          unsigned int numTriangles = triangleMesh->getNbTriangles();
+          const void *triangles = triangleMesh->getTriangles();
+          const PxTriangleMeshFlags &flags = triangleMesh->getTriangleMeshFlags();
+          bool has16BitIndices = (bool)(flags & PxTriangleMeshFlag::e16_BIT_INDICES);
+
+          memcpy(positions, vertices, numVertices * sizeof(vertices[0]));
+
+          if (has16BitIndices) {
+            unsigned short *triangles16 = (unsigned short *)triangles;
+            for (unsigned int i = 0; i < numTriangles; i++) {
+              indices[i] = triangles16[i];
+            }
+            memcpy(indices, triangles, 3 * numTriangles * sizeof(unsigned short));
+          } else {
+            unsigned int *triangles32 = (unsigned int *)triangles;
+            for (unsigned int i = 0; i < numTriangles; i++) {
+              indices[i] = triangles32[i];
+            }
+          }
+          return true;
+        }
+        default: {
+          std::cerr << "unknown geometry type for actor id " << id << " : " << (unsigned int)geometryType << std::endl;
+          return false;
+        }
+      }
+    } else {
+      std::cerr << "no shapes for actor id " << id << std::endl;
+      return false;
+    }
+  } else {
+    std::cerr << "unknown actor id " << id << std::endl;
+    return false;
+  }
+}
+
 /* std::shared_ptr<PhysicsObject> doMakeGeometry(Physicer *physicer, PxGeometry *geometry, unsigned int objectId, float *meshPosition, float *meshQuaternion) {
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
