@@ -383,6 +383,8 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
       PxGeometryType::Enum geometryType = geometryHolder.getType();
       switch (geometryType) {
         case PxGeometryType::Enum::eBOX: {
+          // std::cout << "physics type 1" << std::endl;
+
           const PxBoxGeometry &geometry = geometryHolder.box();
           const PxVec3 &halfExtents = geometry.halfExtents;
 
@@ -398,6 +400,8 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
           return true;
         }
         case PxGeometryType::Enum::eCONVEXMESH: {
+          // std::cout << "physics type 2" << std::endl;
+
           PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
           PxConvexMesh *convexMesh = geometry.convexMesh;
           const PxVec3 *convexVerts = convexMesh->getVertices();
@@ -417,48 +421,57 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
           PxVec3 *vertices = (PxVec3 *)positions;
           PxU32 *triangles = indices;
 
+          PxU32 offset = 0;
           for (unsigned int i = 0; i < nbPolygons; i++) {
             PxHullPolygon face;
             convexMesh->getPolygonData(i, face);
 
             const PxU8 *faceIndices = indexBuffer + face.mIndexBase;
             for (PxU32 j = 0; j < face.mNbVerts; j++) {
-              vertices[numPositions+j] = convexVerts[faceIndices[j]];
+              vertices[offset+j] = convexVerts[faceIndices[j]];
             }
 
             for (PxU32 j = 2; j < face.mNbVerts; j++) {
-              triangles[numIndices++] = PxU32(numPositions);
-              triangles[numIndices++] = PxU32(numPositions+j);
-              triangles[numIndices++] = PxU32(numPositions+j-1);
+              triangles[numIndices++] = PxU32(offset);
+              triangles[numIndices++] = PxU32(offset+j);
+              triangles[numIndices++] = PxU32(offset+j-1);
             }
 
-            numPositions += face.mNbVerts;
+            offset += face.mNbVerts;
           }
+          numPositions = offset;
           return true;
         }
         case PxGeometryType::Enum::eTRIANGLEMESH: {
+          // std::cout << "physics type 3" << std::endl;
+
           PxTriangleMeshGeometry &geometry = geometryHolder.triangleMesh();
           PxTriangleMesh *triangleMesh = geometry.triangleMesh;
-          unsigned int numVertices = triangleMesh->getNbVertices();
+          const unsigned int numVertices = triangleMesh->getNbVertices();
           const PxVec3 *vertices = triangleMesh->getVertices();
-          unsigned int numTriangles = triangleMesh->getNbTriangles();
+          const unsigned int nbTris = triangleMesh->getNbTriangles();
           const void *triangles = triangleMesh->getTriangles();
           const PxTriangleMeshFlags &flags = triangleMesh->getTriangleMeshFlags();
-          bool has16BitIndices = (bool)(flags & PxTriangleMeshFlag::e16_BIT_INDICES);
+          const bool has16BitIndices = flags & PxTriangleMeshFlag::e16_BIT_INDICES ? true : false;
 
           memcpy(positions, vertices, numVertices * sizeof(vertices[0]));
-          numPositions = numVertices;
+          numPositions = numVertices * 3;
 
           if (has16BitIndices) {
+            // std::cout << "physics type 3.1" << std::endl;
             unsigned short *triangles16 = (unsigned short *)triangles;
-            for (unsigned int i = 0; i < numTriangles; i++) {
-              indices[numIndices++] = triangles16[i];
+            for (unsigned int i = 0; i < nbTris; i++) {
+              indices[numIndices++] = triangles16[i*3+0];
+              indices[numIndices++] = triangles16[i*3+2];
+              indices[numIndices++] = triangles16[i*3+1];
             }
-            memcpy(indices, triangles, 3 * numTriangles * sizeof(unsigned short));
           } else {
+            // std::cout << "physics type 3.2" << std::endl;
             unsigned int *triangles32 = (unsigned int *)triangles;
-            for (unsigned int i = 0; i < numTriangles; i++) {
-              indices[numIndices++] = triangles32[i];
+            for (unsigned int i = 0; i < nbTris; i++) {
+              indices[numIndices++] = triangles32[i*3+0];
+              indices[numIndices++] = triangles32[i*3+2];
+              indices[numIndices++] = triangles32[i*3+1];
             }
           }
           return true;
