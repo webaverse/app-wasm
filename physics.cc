@@ -462,16 +462,16 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
             unsigned short *triangles16 = (unsigned short *)triangles;
             for (unsigned int i = 0; i < nbTris; i++) {
               indices[numIndices++] = triangles16[i*3+0];
-              indices[numIndices++] = triangles16[i*3+2];
               indices[numIndices++] = triangles16[i*3+1];
+              indices[numIndices++] = triangles16[i*3+2];
             }
           } else {
             // std::cout << "physics type 3.2" << std::endl;
             unsigned int *triangles32 = (unsigned int *)triangles;
             for (unsigned int i = 0; i < nbTris; i++) {
               indices[numIndices++] = triangles32[i*3+0];
-              indices[numIndices++] = triangles32[i*3+2];
               indices[numIndices++] = triangles32[i*3+1];
+              indices[numIndices++] = triangles32[i*3+2];
             }
           }
           return true;
