@@ -598,7 +598,7 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
             geomPose.p.x += directionVec.x*depthFloat;
             geomPose.p.y += directionVec.y*depthFloat;
             geomPose.p.z += directionVec.z*depthFloat;
-            anyHadGrounded = anyHadGrounded || directionVec.y >= 0;
+            anyHadGrounded = anyHadGrounded || directionVec.y > 0;
             // break;
           }
         }
