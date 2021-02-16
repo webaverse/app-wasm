@@ -555,7 +555,7 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
   }
 }
 
-void PScene::collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded) {
+void PScene::collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
   PxCapsuleGeometry geom(radius, halfHeight);
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
@@ -572,6 +572,7 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
   Vec offset(0, 0, 0);
   bool anyHadHit = false;
   bool anyHadGrounded = false;
+  unsigned int localId = 0;
   {
     for (unsigned int i = 0; i < maxIter; i++) {
       bool hadHit = false;
@@ -599,8 +600,10 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
             geomPose.p.y += directionVec.y*depthFloat;
             geomPose.p.z += directionVec.z*depthFloat;
             anyHadGrounded = anyHadGrounded || directionVec.y > 0;
+            localId = (unsigned int)actor->userData;
             // break;
           }
+
         }
       }
       if (hadHit) {
@@ -616,6 +619,7 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
     direction[1] = offset.y;
     direction[2] = offset.z;
     grounded = +anyHadGrounded;
+    id = localId;
   } else {
     hit = 0;
   }
