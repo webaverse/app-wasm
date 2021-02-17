@@ -80,7 +80,7 @@ PScene::~PScene() {
   abort();
 }
 
-unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, unsigned int numIds, float elapsedTime) {
+unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
     PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(quaternions[i*4], quaternions[i*4+1], quaternions[i*4+2], quaternions[i*4+3]));
