@@ -106,11 +106,13 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
   PxU32 numActors;
   PxRigidActor **actors = (PxRigidActor **)scene->getActiveActors(numActors);
   for (unsigned int i = 0; i < numActors; i++) {
-    const PxTransform &actor2World = actors[i]->getGlobalPose();
+    PxRigidActor *actor = actors[i];
+    const PxTransform &actor2World = actor->getGlobalPose();
     const PxVec3 &p = actor2World.p;
     const PxQuat &q = actor2World.q;
     
-    ids[i] = (unsigned int)actors[i]->userData;
+    const unsigned int id = (unsigned int)actors[i]->userData;
+    ids[i] = id;
     
     positions[i*3] = p.x;
     positions[i*3+1] = p.y;
@@ -120,6 +122,47 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
     quaternions[i*4+1] = q.y;
     quaternions[i*4+2] = q.z;
     quaternions[i*4+3] = q.w;
+    
+    {
+      PxVec3 s(1, 1, 1);
+      unsigned int numShapes = actor->getNbShapes();
+      if (numShapes == 1) {
+        PxShape *shapes[1];
+        actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+        PxShape *shape = shapes[0];
+        PxGeometryHolder geometryHolder = shape->getGeometry();
+        PxGeometryType::Enum geometryType = geometryHolder.getType();
+        switch (geometryType) {
+          case PxGeometryType::Enum::eBOX: {
+            const PxBoxGeometry &geometry = geometryHolder.box();
+            const PxVec3 &halfExtents = geometry.halfExtents;
+            s = halfExtents * 2;
+
+            break;
+          }
+          case PxGeometryType::Enum::eCONVEXMESH: {
+            PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
+            s = geometry.scale.scale;
+            break;
+          }
+          case PxGeometryType::Enum::eTRIANGLEMESH: {
+            PxTriangleMeshGeometry &geometry = geometryHolder.triangleMesh();
+            s = geometry.scale.scale;
+            break;
+          }
+          default: {
+            std::cerr << "unknown geometry type for actor id " << id << " : " << (unsigned int)geometryType << std::endl;
+            break;
+          }
+        }
+      } else {
+        std::cerr << "no shapes for actor id " << id << std::endl;
+      }
+      
+      scales[i*3] = s.x;
+      scales[i*3+1] = s.y;
+      scales[i*3+2] = s.z;
+    }
   }
   return numActors;
 }
@@ -387,13 +430,13 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
         case PxGeometryType::Enum::eBOX: {
           // std::cout << "physics type 1" << std::endl;
 
-          const PxBoxGeometry &geometry = geometryHolder.box();
-          const PxVec3 &halfExtents = geometry.halfExtents;
+          // const PxBoxGeometry &geometry = geometryHolder.box();
+          // const PxVec3 &halfExtents = geometry.halfExtents;
 
           for (unsigned int i = 0; i < sizeof(boxPositions)/sizeof(boxPositions[0]); i += 3) {
-            positions[numPositions++] = boxPositions[i] * 2 * halfExtents.x;
-            positions[numPositions++] = boxPositions[i+1] * 2 * halfExtents.y;
-            positions[numPositions++] = boxPositions[i+2] * 2 * halfExtents.z;
+            positions[numPositions++] = boxPositions[i] * 2;
+            positions[numPositions++] = boxPositions[i+1] * 2;
+            positions[numPositions++] = boxPositions[i+2] * 2;
           }
 
           memcpy(indices, boxIndices, sizeof(boxIndices));
