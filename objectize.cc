@@ -50,11 +50,11 @@ EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positi
   scene->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
 
-EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
-  scene->addGeometry(data, length, position, quaternion, id, writeStream);
+EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
+  scene->addGeometry(data, length, position, quaternion, scale, id, writeStream);
 }
-EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
-  scene->addConvexGeometry(data, length, position, quaternion, id, writeStream);
+EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
+  scene->addConvexGeometry(data, length, position, quaternion, scale, id, writeStream);
 }
 
 EMSCRIPTEN_KEEPALIVE bool getGeometryPhysics(PScene *scene, unsigned int id, float *positions, unsigned int *numPositions, unsigned int *indices, unsigned int *numIndices) {

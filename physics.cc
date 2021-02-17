@@ -202,13 +202,14 @@ void PScene::cookConvexGeometry(float *positions, unsigned int *indices, unsigne
   *length = (*writeStream)->getSize();
 }
 
-void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
+void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
   PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
 
   PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
-  PxTriangleMeshGeometry geometry(triangleMesh);
+  PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
+  PxTriangleMeshGeometry geometry(triangleMesh, scaleObject);
   PxRigidStatic *mesh = PxCreateStatic(*physics, transform, geometry, *material);
   mesh->userData = (void *)id;
   scene->addActor(*mesh);
@@ -218,13 +219,14 @@ void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, fl
     delete writeStream;
   }
 }
-void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
+void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
   PxConvexMesh *convexMesh = physics->createConvexMesh(readBuffer);
 
   PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
-  PxConvexMeshGeometry geometry(convexMesh);
+  PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
+  PxConvexMeshGeometry geometry(convexMesh, scaleObject);
   PxRigidDynamic *mesh = PxCreateDynamic(*physics, transform, geometry, *material, 1);
   mesh->userData = (void *)id;
   scene->addActor(*mesh);
