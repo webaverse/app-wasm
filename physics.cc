@@ -92,8 +92,10 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
       actor->setGlobalPose(transform, true);
       PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
       if (body) {
-        body->setLinearVelocity(PxVec3(0, 0, 0), false);
-        body->setAngularVelocity(PxVec3(0, 0, 0), false);
+        // std::cout << "reset" << std::endl;
+        body->setLinearVelocity(PxVec3(0, 0, 0), true);
+        body->setAngularVelocity(PxVec3(0, 0, 0), true);
+        // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
       }
       // actor->wakeUp();
     } else {
