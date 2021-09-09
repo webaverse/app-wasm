@@ -90,6 +90,11 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
     if (actorIter != actors.end()) {
       PxRigidActor *actor = *actorIter;
       actor->setGlobalPose(transform, true);
+      PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+      if (body) {
+        body->setLinearVelocity(PxVec3(0, 0, 0), false);
+        body->setAngularVelocity(PxVec3(0, 0, 0), false);
+      }
       // actor->wakeUp();
     } else {
       std::cerr << "unknown actor id " << id << std::endl;
