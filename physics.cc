@@ -628,7 +628,9 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
   {
     for (unsigned int i = 0; i < maxIter; i++) {
       bool hadHit = false;
-      // for (const std::tuple<bool, std::shared_ptr<PhysicsObject>> &t : sortedGeometrySpecs) {
+        
+      PxVec3 largestDirectionVec;
+      unsigned int largestId = 0;
       for (unsigned int i = 0; i < actors.size(); i++) {
         PxRigidActor *actor = actors[i];
         PxShape *shape;
@@ -647,18 +649,21 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
           if (result) {
             anyHadHit = true;
             hadHit = true;
-            offset += Vec(directionVec.x, directionVec.y, directionVec.z)*depthFloat;
-            geomPose.p.x += directionVec.x*depthFloat;
-            geomPose.p.y += directionVec.y*depthFloat;
-            geomPose.p.z += directionVec.z*depthFloat;
             anyHadGrounded = anyHadGrounded || directionVec.y > 0;
-            localId = (unsigned int)actor->userData;
-            // break;
-          }
 
+            directionVec *= depthFloat;
+            if (largestId == 0 || directionVec.magnitudeSquared() > largestDirectionVec.magnitudeSquared()) {
+              largestDirectionVec = directionVec;
+              largestId = (unsigned int)actor->userData;
+            }
+          }
         }
       }
       if (hadHit) {
+        offset += Vec(largestDirectionVec.x, largestDirectionVec.y, largestDirectionVec.z);
+        geomPose.p += largestDirectionVec;
+        localId = largestId;
+        
         continue;
       } else {
         break;
