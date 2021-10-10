@@ -318,7 +318,7 @@ void PScene::disableGeometry(unsigned int id) {
       }
     }
   } else {
-    std::cerr << "unknown actor id " << id << std::endl;
+    std::cerr << "disable unknown actor id " << id << std::endl;
   }
 }
 void PScene::enableGeometry(unsigned int id) {
@@ -346,7 +346,7 @@ void PScene::enableGeometry(unsigned int id) {
       }
     }
   } else {
-    std::cerr << "unknown actor id " << id << std::endl;
+    std::cerr << "enable unknown actor id " << id << std::endl;
   }
 }
 void PScene::disableGeometryQueries(unsigned int id) {
@@ -356,23 +356,26 @@ void PScene::disableGeometryQueries(unsigned int id) {
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
 
-    PxShape *shapes[32];
+    constexpr int numShapes = 32;
+    PxShape *shapes[numShapes];
     for (int j = 0; ; j++) {
       memset(shapes, 0, sizeof(shapes));
-      if (actor->getShapes(shapes, 32, j * 32) == 0) {
+      if (actor->getShapes(shapes, numShapes, j * numShapes) == 0) {
         break;
       }
-      for (int i = 0; i < 32; ++i) {
+      for (int i = 0; i < numShapes; ++i) {
         if (shapes[i] == nullptr) {
           break;
         }
 
         PxShape *rigidShape = shapes[i];
         rigidShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+      
+        // std::cout << "disable queries for shape " << (unsigned int)actor->userData << " " << (uint32_t)rigidShape << " " << rigidShape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE) << std::endl; // XXX
       }
     }
   } else {
-    std::cerr << "unknown actor id " << id << std::endl;
+    std::cerr << "disable queries unknown actor id " << id << std::endl;
   }
 }
 void PScene::enableGeometryQueries(unsigned int id) {
@@ -382,23 +385,25 @@ void PScene::enableGeometryQueries(unsigned int id) {
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
 
-    PxShape *shapes[32];
+    constexpr int numShapes = 32;
+    PxShape *shapes[numShapes];
     for (int j = 0; ; j++) {
       memset(shapes, 0, sizeof(shapes));
-      if (actor->getShapes(shapes, 32, j * 32) == 0) {
+      if (actor->getShapes(shapes, numShapes, j * numShapes) == 0) {
         break;
       }
-      for (int i = 0; i < 32; ++i) {
+      for (int i = 0; i < numShapes; ++i) {
         if (shapes[i] == nullptr) {
           break;
         }
 
         PxShape *rigidShape = shapes[i];
         rigidShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+        // std::cout << "enable queries for shape " << (unsigned int)actor->userData << " " << (uint32_t)rigidShape << " " << rigidShape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE) << std::endl; // XXX
       }
     }
   } else {
-    std::cerr << "unknown actor id " << id << std::endl;
+    std::cerr << "enable queries unknown actor id " << id << std::endl;
   }
 }
 void PScene::removeGeometry(unsigned int id) {
@@ -410,7 +415,7 @@ void PScene::removeGeometry(unsigned int id) {
     actor->release();
     actors.erase(actorIter);
   } else {
-    std::cerr << "unknown actor id " << id << std::endl;
+    std::cerr << "remove unknown actor id " << id << std::endl;
   }
 }
 
@@ -647,6 +652,8 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
           PxReal depthFloat;
           bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, geom, geomPose, geometry, meshPose3);
           if (result) {
+            // std::cout << "collide shape " << (unsigned int)actor->userData << " " << (uint32_t)shape << " " << shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE) << std::endl; // XXX
+            
             anyHadHit = true;
             hadHit = true;
             anyHadGrounded = anyHadGrounded || directionVec.y > 0;
