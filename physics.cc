@@ -99,7 +99,7 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
       }
       // actor->wakeUp();
     } else {
-      std::cerr << "unknown actor id " << id << std::endl;
+      std::cerr << "simulate unknown actor id " << id << std::endl;
     }
   }
 
@@ -543,7 +543,7 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
       return false;
     }
   } else {
-    std::cerr << "unknown actor id " << id << std::endl;
+    std::cerr << "get geometry unknown actor id " << id << std::endl;
     return false;
   }
 }
