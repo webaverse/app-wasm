@@ -7,6 +7,30 @@
 
 using namespace physx;
 
+PxFilterFlags ccdFilterShader(
+  PxFilterObjectAttributes attributes0,
+  PxFilterData filterData0,
+  PxFilterObjectAttributes attributes1,
+  PxFilterData filterData1,
+  PxPairFlags& pairFlags,
+  const void* constantBlock,
+  PxU32 constantBlockSize
+) {
+  PxFilterFlags result = physx::PxDefaultSimulationFilterShader(
+    attributes0,
+    filterData0,
+    attributes1,
+    filterData1,
+    pairFlags,
+    constantBlock,
+    constantBlockSize
+  );
+  pairFlags |= PxPairFlag::eSOLVE_CONTACT;
+  pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+  pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  return result;
+}
+
 PScene::PScene() {
   allocator = new PxDefaultAllocator();
   errorCallback = new PxDefaultErrorCallback();
@@ -30,17 +54,16 @@ PScene::PScene() {
     // PxTolerancesScale tolerancesScale;
     PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
     sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
-    if(!sceneDesc.cpuDispatcher)
-    {
-        physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
-        if(!mCpuDispatcher)
-            std::cerr << "PxDefaultCpuDispatcherCreate failed!" << std::endl;
-        sceneDesc.cpuDispatcher    = mCpuDispatcher;
-    }
-    if(!sceneDesc.filterShader)
-        sceneDesc.filterShader    = &physx::PxDefaultSimulationFilterShader;
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-
+    sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
+    if (!sceneDesc.cpuDispatcher) {
+      physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
+      if(!mCpuDispatcher) {
+        std::cerr << "PxDefaultCpuDispatcherCreate failed!" << std::endl;
+      }
+      sceneDesc.cpuDispatcher = mCpuDispatcher;
+    }
+    sceneDesc.filterShader = ccdFilterShader;
     scene = physics->createScene(sceneDesc);
   }
  
@@ -172,6 +195,20 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
     }
   }
   return numActors;
+}
+
+void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled) {
+  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
+  PxCapsuleGeometry geometry(radius, halfHeight);
+  PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  body->userData = (void *)id;
+  if (ccdEnabled) {
+    body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+  }
+  PxRigidBodyExt::updateMassAndInertia(*body, 1.0f);
+  scene->addActor(*body);
+  actors.push_back(body);
 }
 
 void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
