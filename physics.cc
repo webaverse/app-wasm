@@ -7,6 +7,30 @@
 
 using namespace physx;
 
+PxFilterFlags ccdFilterShader(
+  PxFilterObjectAttributes attributes0,
+  PxFilterData filterData0,
+  PxFilterObjectAttributes attributes1,
+  PxFilterData filterData1,
+  PxPairFlags& pairFlags,
+  const void* constantBlock,
+  PxU32 constantBlockSize
+) {
+  PxFilterFlags result = physx::PxDefaultSimulationFilterShader(
+    attributes0,
+    filterData0,
+    attributes1,
+    filterData1,
+    pairFlags,
+    constantBlock,
+    constantBlockSize
+  );
+  pairFlags |= PxPairFlag::eSOLVE_CONTACT;
+  pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+  pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  return result;
+}
+
 PScene::PScene() {
   allocator = new PxDefaultAllocator();
   errorCallback = new PxDefaultErrorCallback();
@@ -30,17 +54,16 @@ PScene::PScene() {
     // PxTolerancesScale tolerancesScale;
     PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
     sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
-    if(!sceneDesc.cpuDispatcher)
-    {
-        physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
-        if(!mCpuDispatcher)
-            std::cerr << "PxDefaultCpuDispatcherCreate failed!" << std::endl;
-        sceneDesc.cpuDispatcher    = mCpuDispatcher;
-    }
-    if(!sceneDesc.filterShader)
-        sceneDesc.filterShader    = &physx::PxDefaultSimulationFilterShader;
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-
+    sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
+    if (!sceneDesc.cpuDispatcher) {
+      physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
+      if(!mCpuDispatcher) {
+        std::cerr << "PxDefaultCpuDispatcherCreate failed!" << std::endl;
+      }
+      sceneDesc.cpuDispatcher = mCpuDispatcher;
+    }
+    sceneDesc.filterShader = ccdFilterShader;
     scene = physics->createScene(sceneDesc);
   }
  
