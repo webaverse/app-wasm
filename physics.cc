@@ -197,6 +197,17 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
   return numActors;
 }
 
+void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled) {
+  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
+  PxCapsuleGeometry geometry(radius, halfHeight);
+  PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  box->userData = (void *)id;
+  PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
+  scene->addActor(*box);
+  actors.push_back(box);
+}
+
 void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
   if (dynamic) {
     PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
