@@ -103,7 +103,7 @@ PScene::~PScene() {
   abort();
 }
 
-unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime) {
+unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
     PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(quaternions[i*4], quaternions[i*4+1], quaternions[i*4+2], quaternions[i*4+3]));
@@ -116,7 +116,7 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
       PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
       if (body) {
         // std::cout << "reset" << std::endl;
-        body->setLinearVelocity(PxVec3(0, 0, 0), true);
+        body->setLinearVelocity(PxVec3(velocities[i*3], velocities[i*3+1], velocities[i*3+2]), true);
         body->setAngularVelocity(PxVec3(0, 0, 0), true);
         // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
       }
@@ -178,6 +178,11 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
           case PxGeometryType::Enum::eTRIANGLEMESH: {
             PxTriangleMeshGeometry &geometry = geometryHolder.triangleMesh();
             s = geometry.scale.scale;
+            break;
+          }
+          case PxGeometryType::Enum::eCAPSULE: {
+            PxCapsuleGeometry &geometry = geometryHolder.capsule();
+            s = PxVec3(geometry.radius * 2.0);
             break;
           }
           default: {

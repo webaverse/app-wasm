@@ -38,7 +38,7 @@ public:
   PScene();
   ~PScene();
 
-  unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime);
+  unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime, float *velocities);
   void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
   void collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
   void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled);

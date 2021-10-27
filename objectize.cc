@@ -27,8 +27,8 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
-EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime) {
-  return scene->simulate(ids, positions, quaternions, scales, numIds, elapsedTime);
+EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime, float *velocities) {
+  return scene->simulate(ids, positions, quaternions, scales, numIds, elapsedTime, velocities);
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
