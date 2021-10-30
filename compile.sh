@@ -1,4 +1,4 @@
-# emsdk 2.0.3
+# emsdk 2.0.6
 mkdir -p bin
 if [ ! -f physx-timestamp ]; then
   echo 'building physx...'
