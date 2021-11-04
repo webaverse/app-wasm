@@ -106,7 +106,7 @@ PScene::~PScene() {
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
-    //PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(quaternions[i*4], quaternions[i*4+1], quaternions[i*4+2], quaternions[i*4+3]));
+    PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(0,0,0,1));
     auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
       return (unsigned int)actor->userData == id;
     });
@@ -117,7 +117,7 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
       if (body) {
         // std::cout << "reset" << std::endl;
         body->setLinearVelocity(PxVec3(velocities[i*3], velocities[i*3+1], velocities[i*3+2]), true);
-        //body->setAngularVelocity(PxVec3(0, 0, 0), true);
+        body->setAngularVelocity(PxVec3(0, 0, 0), true);
         actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
       }
       // actor->wakeUp();
@@ -203,15 +203,10 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
 }
 
 void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled) {
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f); // 0.5 0.5 0.1 
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
-  PxTransform relativePose(PxQuat(PxHalfPi, PxVec3(0,0,1)));
   PxCapsuleGeometry geometry(radius, halfHeight);
   PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
-
-  PxShape* aCapsuleShape = PxRigidActorExt::createExclusiveShape(*body,
-    PxCapsuleGeometry(radius, halfHeight), *material);
-  aCapsuleShape->setLocalPose(relativePose);
 
   body->userData = (void *)id;
   if (ccdEnabled) {
@@ -304,7 +299,7 @@ void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, fl
   PxDefaultMemoryInputData readBuffer(data, length);
   PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
 
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
   PxTriangleMeshGeometry geometry(triangleMesh, scaleObject);
@@ -321,7 +316,7 @@ void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *positi
   PxDefaultMemoryInputData readBuffer(data, length);
   PxConvexMesh *convexMesh = physics->createConvexMesh(readBuffer);
 
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
   PxConvexMeshGeometry geometry(convexMesh, scaleObject);

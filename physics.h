@@ -21,7 +21,7 @@
 #include "extensions/PxTriangleMeshExt.h"
 #include "extensions/PxSimpleFactory.h"
 #include "extensions/PxRigidBodyExt.h"
-#include "extensions/PxRigidActorExt.h"
+// #include "extensions/PxRigidActorExt.h"
 // #include "PxPhysicsAPI.h"
 #include "PxQueryReport.h"
 #include "geometry/PxGeometryQuery.h"
