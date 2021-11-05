@@ -27,8 +27,8 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
-EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime, float *velocities) {
-  return scene->simulate(ids, positions, quaternions, scales, numIds, elapsedTime, velocities);
+EMSCRIPTEN_KEEPALIVE void simulatePhysics(PScene *scene, float elapsedTime) {
+  scene->simulate(elapsedTime);
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
@@ -39,8 +39,8 @@ EMSCRIPTEN_KEEPALIVE void collidePhysics(PScene *scene, float radius, float half
   scene->collide(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
 }
 
-EMSCRIPTEN_KEEPALIVE void addCapsuleGeometry(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled) {
-  scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, id, ccdEnabled);
+EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled, float *mat) {
+  scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, id, ccdEnabled, mat);
 }
 
 EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
@@ -79,6 +79,15 @@ EMSCRIPTEN_KEEPALIVE void enableGeometryPhysics(PScene *scene, unsigned int id) 
 }
 EMSCRIPTEN_KEEPALIVE void removeGeometryPhysics(PScene *scene, unsigned int id) {
   scene->removeGeometry(id);
+}
+EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, float *velocities) {
+  scene->setVelocity(id, velocities);
+}
+EMSCRIPTEN_KEEPALIVE void setTransformPhysics(PScene *scene, unsigned int id, float *position, float *quaternion, float *scale) {
+  scene->setTransform(id, position, quaternion, scale);
+}
+EMSCRIPTEN_KEEPALIVE unsigned int getTransformPhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales) {
+  return scene->getTransforms(ids, positions, quaternions, scales);
 }
 
 }

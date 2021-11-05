@@ -103,36 +103,50 @@ PScene::~PScene() {
   abort();
 }
 
-unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime, float *velocities) {
-  for (unsigned int i = 0; i < numIds; i++) {
-    unsigned int id = ids[i];
-    PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(0,0,0,1));
-    auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
-      return (unsigned int)actor->userData == id;
-    });
-    if (actorIter != actors.end()) {
-      PxRigidActor *actor = *actorIter;
-      //actor->setGlobalPose(transform, true);
-      PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
-      if (body) {
-        // std::cout << "reset" << std::endl;
-        body->setLinearVelocity(PxVec3(velocities[i*3], velocities[i*3+1], velocities[i*3+2]), true);
-        body->setAngularVelocity(PxVec3(0, 0, 0), true);
-        actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
-      }
-      // actor->wakeUp();
-    } else {
-      std::cerr << "simulate unknown actor id " << id << std::endl;
-    }
-  }
-
+void PScene::simulate(float elapsedTime) {
+  
   scene->simulate(elapsedTime);
   PxU32 error;
   scene->fetchResults(true, &error);
   if (error) {
     std::cout << "scene simulate error " << error << std::endl;
   }
-  
+}
+
+void PScene::setVelocity(unsigned int id, float *velocities) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      body->setLinearVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), true);
+      //body->setAngularVelocity(PxVec3(0, 0, 0), false);
+    }
+
+  } else {
+    std::cerr << "setVelocity for unknown actor id " << id << std::endl;
+  }
+}
+
+void PScene::setTransform(unsigned int id, float *position, float *quaternion, float *scale) {
+  PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    actor->setGlobalPose(transform, true);
+
+  } else {
+    std::cerr << "setTransform for unknown actor id " << id << std::endl;
+  }
+}
+
+unsigned int PScene::getTransforms(unsigned int *ids, float *positions, float *quaternions, float *scales) {
   PxU32 numActors;
   PxRigidActor **actors = (PxRigidActor **)scene->getActiveActors(numActors);
   for (unsigned int i = 0; i < numActors; i++) {
@@ -202,11 +216,13 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
   return numActors;
 }
 
-void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled) {
-  PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f); // 0.5 0.5 0.1 
+void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled, float *mat) {
+
+  PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]); // staticFriction, dynamicFriction, restitution
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxCapsuleGeometry geometry(radius, halfHeight);
   PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  body->setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z); // Locking all angular so it doesn't fall over like an egg
 
   body->userData = (void *)id;
   if (ccdEnabled) {
