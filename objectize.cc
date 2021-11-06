@@ -39,8 +39,8 @@ EMSCRIPTEN_KEEPALIVE void collidePhysics(PScene *scene, float radius, float half
   scene->collide(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
 }
 
-EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled, float *mat) {
-  scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, id, ccdEnabled, mat);
+EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, unsigned int id, float *mat, unsigned int ccdEnabled) {
+  scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, id, mat, ccdEnabled);
 }
 
 EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {

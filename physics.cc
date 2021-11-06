@@ -123,8 +123,9 @@ void PScene::setVelocity(unsigned int id, float *velocities) {
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
       body->setLinearVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), true);
-      //body->setAngularVelocity(PxVec3(0, 0, 0), false);
+      body->setAngularVelocity(PxVec3(0, 0, 0), true); // must be set or egg go boom
     }
+    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 
   } else {
     std::cerr << "setVelocity for unknown actor id " << id << std::endl;
@@ -216,13 +217,13 @@ unsigned int PScene::getTransforms(unsigned int *ids, float *positions, float *q
   return numActors;
 }
 
-void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled, float *mat) {
+void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, float *mat, unsigned int ccdEnabled) {
 
-  PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]); // staticFriction, dynamicFriction, restitution
-  PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
+  PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f); // staticFriction, dynamicFriction, restitution
+  PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(0,0,0,1));
   PxCapsuleGeometry geometry(radius, halfHeight);
   PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
-  body->setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z); // Locking all angular so it doesn't fall over like an egg
+  //body->setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z); // Locking all angular so it doesn't fall over like an egg
 
   body->userData = (void *)id;
   if (ccdEnabled) {
