@@ -42,6 +42,7 @@ public:
   void simulate(float elapsedTime);
   void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
   void collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void addSphereGeometry(float *position, float *quaternion, float radius, unsigned int id, float *mat, unsigned int ccdEnabled);
   void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, float *mat, unsigned int ccdEnabled);
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic);
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);

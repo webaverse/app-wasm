@@ -200,6 +200,11 @@ unsigned int PScene::getTransforms(unsigned int *ids, float *positions, float *q
             s = PxVec3(geometry.radius * 2.0);
             break;
           }
+          case PxGeometryType::Enum::eSPHERE: {
+            PxSphereGeometry &geometry = geometryHolder.sphere();
+            s = PxVec3(geometry.radius);
+            break;
+          }
           default: {
             std::cerr << "unknown geometry type for actor id " << id << " : " << (unsigned int)geometryType << std::endl;
             break;
@@ -215,6 +220,22 @@ unsigned int PScene::getTransforms(unsigned int *ids, float *positions, float *q
     }
   }
   return numActors;
+}
+
+void PScene::addSphereGeometry(float *position, float *quaternion, float radius, unsigned int id, float *mat, unsigned int ccdEnabled) {
+
+  PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]); 
+  PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(0,0,0,1));
+  PxSphereGeometry geometry(radius);
+  PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+
+  body->userData = (void *)id;
+  if (ccdEnabled) {
+    body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+  }
+  PxRigidBodyExt::updateMassAndInertia(*body, 1.0f);
+  scene->addActor(*body);
+  actors.push_back(body);
 }
 
 void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, float *mat, unsigned int ccdEnabled) {
