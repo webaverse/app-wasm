@@ -240,11 +240,20 @@ void PScene::addSphereGeometry(float *position, float *quaternion, float radius,
 
 void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, float *mat, unsigned int ccdEnabled) {
 
+  PxRigidDynamic *body = physics->createRigidDynamic(PxTransform(PxVec3(position[0], position[1], position[2])));
   PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f); // staticFriction, dynamicFriction, restitution
+  PxTransform relativePose(PxQuat(PxHalfPi, PxVec3(0,0,1)));
+  PxShape* aCapsuleShape = PxRigidActorExt::createExclusiveShape(*body,
+      PxCapsuleGeometry(radius, halfHeight), *material);
+  aCapsuleShape->setLocalPose(relativePose);
+  //PxRigidBodyExt::updateMassAndInertia(*aCapsuleActor, capsuleDensity);
+  //aScene->addActor(aCapsuleActor);
+
+  /*PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f); // staticFriction, dynamicFriction, restitution
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(0,0,0,1));
   PxCapsuleGeometry geometry(radius, halfHeight);
-  PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
-  //body->setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z); // Locking all angular so it doesn't fall over like an egg
+  PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);*/
+  body->setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z); // Locking all angular so it doesn't fall over like an egg
 
   body->userData = (void *)id;
   if (ccdEnabled) {
