@@ -53,7 +53,6 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *sce
     faceIndex += 1;
     outPosition += 1;
     outQuaternion += 1;
-
   }
 }
 
