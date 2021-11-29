@@ -47,7 +47,7 @@ public:
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic);
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
-  void addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream);
+  void addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, float *mat, PxDefaultMemoryOutputStream *writeStream);
   void addConvexGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream);
   void removeGeometry(unsigned int id);
   bool getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices);
@@ -55,7 +55,7 @@ public:
   void enableGeometry(unsigned int id);
   void disableGeometryQueries(unsigned int id);
   void enableGeometryQueries(unsigned int id);
-  void setVelocity(unsigned int id, float *velocities);
+  void setVelocity(unsigned int id, float *velocities, unsigned int gravityEnabled);
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale);
   unsigned int getTransforms(unsigned int *ids, float *positions, float *quaternions, float *scales);
 

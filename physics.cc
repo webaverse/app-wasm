@@ -53,7 +53,7 @@ PScene::PScene() {
   {
     // PxTolerancesScale tolerancesScale;
     PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
-    sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
+    sceneDesc.gravity = physx::PxVec3(0.0f, -29.4f, 0.0f);
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
     sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
     if (!sceneDesc.cpuDispatcher) {
@@ -113,7 +113,7 @@ void PScene::simulate(float elapsedTime) {
   }
 }
 
-void PScene::setVelocity(unsigned int id, float *velocities) {
+void PScene::setVelocity(unsigned int id, float *velocities, unsigned int gravityEnabled) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
   });
@@ -122,10 +122,17 @@ void PScene::setVelocity(unsigned int id, float *velocities) {
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
-      body->setLinearVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), true);
+      if(gravityEnabled) {
+        PxVec3 currentVel = body->getLinearVelocity();
+        body->setLinearVelocity(PxVec3(velocities[0], velocities[1] + currentVel.y, velocities[2]), true);
+      } 
+      else {
+        body->setLinearVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), true);
+      }
       body->setAngularVelocity(PxVec3(0, 0, 0), true); // must be set or egg go boom
+      //body->setLinearDamping(damping);
     }
-    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+    //actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 
   } else {
     std::cerr << "setVelocity for unknown actor id " << id << std::endl;
@@ -241,7 +248,7 @@ void PScene::addSphereGeometry(float *position, float *quaternion, float radius,
 void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, float *mat, unsigned int ccdEnabled) {
 
   PxRigidDynamic *body = physics->createRigidDynamic(PxTransform(PxVec3(position[0], position[1], position[2])));
-  PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f); // staticFriction, dynamicFriction, restitution
+  PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]); // staticFriction, dynamicFriction, restitution
   PxTransform relativePose(PxQuat(PxHalfPi, PxVec3(0,0,1)));
   PxShape* aCapsuleShape = PxRigidActorExt::createExclusiveShape(*body,
       PxCapsuleGeometry(radius, halfHeight), *material);
@@ -253,7 +260,7 @@ void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(0,0,0,1));
   PxCapsuleGeometry geometry(radius, halfHeight);
   PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);*/
-  body->setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z); // Locking all angular so it doesn't fall over like an egg
+  body->setRigidDynamicLockFlags(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X /*| PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y*/ | PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z); // Locking all angular so it doesn't fall over like an egg
 
   body->userData = (void *)id;
   if (ccdEnabled) {
@@ -342,11 +349,11 @@ void PScene::cookConvexGeometry(float *positions, unsigned int *indices, unsigne
   *length = (*writeStream)->getSize();
 }
 
-void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
+void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, float *mat, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
   PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
 
-  PxMaterial *material = physics->createMaterial(0.0f, 0.0f, 0.0f);
+  PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
   PxTriangleMeshGeometry geometry(triangleMesh, scaleObject);
@@ -384,7 +391,7 @@ void PScene::disableGeometry(unsigned int id) {
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
 
-    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+    //actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
@@ -418,7 +425,7 @@ void PScene::enableGeometry(unsigned int id) {
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
     
-    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
+    //actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
 
     PxShape *shapes[32];
     for (int j = 0; ; j++) {

@@ -58,8 +58,8 @@ EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positi
   scene->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
 
-EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
-  scene->addGeometry(data, length, position, quaternion, scale, id, writeStream);
+EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, float *mat, PxDefaultMemoryOutputStream *writeStream) {
+  scene->addGeometry(data, length, position, quaternion, scale, id, mat, writeStream);
 }
 EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   scene->addConvexGeometry(data, length, position, quaternion, scale, id, writeStream);
@@ -84,8 +84,8 @@ EMSCRIPTEN_KEEPALIVE void enableGeometryPhysics(PScene *scene, unsigned int id) 
 EMSCRIPTEN_KEEPALIVE void removeGeometryPhysics(PScene *scene, unsigned int id) {
   scene->removeGeometry(id);
 }
-EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, float *velocities) {
-  scene->setVelocity(id, velocities);
+EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, float *velocities, unsigned int gravityEnabled) {
+  scene->setVelocity(id, velocities, gravityEnabled);
 }
 EMSCRIPTEN_KEEPALIVE void setTransformPhysics(PScene *scene, unsigned int id, float *position, float *quaternion, float *scale) {
   scene->setTransform(id, position, quaternion, scale);
