@@ -1,8 +1,8 @@
-# PhysX WASM Workflow @WEBAVERSE
+# PhysX WASM for Webaverse client
 
 ## Introduction ##
-PhysX is a C++ open-source realtime physics engine middleware SDK developed by Nvidia.
-Webaverse has adopted it in WebAssembly, which is compiled using Emscripten.
+Webaverse uses a WebAssembly Build of PhysX, a C++ open-source realtime physics engine middleware SDK developed by Nvidia.
+It is compiled with EMSDK.
 
 ## Setup Requirements
 
