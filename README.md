@@ -31,27 +31,6 @@ It is compiled with EMSDK.
 
 - Copy the `geometry.js` and `geometry.wasm` files from `app-wasm/bin`
 - Paste them into `app/public/bin` in the Webaverse app
-- Open `geometry.js` in a code editor and *find* **"geometry.wasm"** then replace it with **"bin/geometry.wasm"**
-![geometry.js suffix](https://i.ibb.co/3yYjYm1/geom.png)
-
-- Add this snippet at the end of `geometry.js`:
-
-```javascript=2
-let accept, reject;
-const p = new Promise((a, r) => {
-  accept = a;
-  reject = r;
-});
-Module.postRun = () => {
-  accept();
-};
-Module.waitForLoad = () => p;
-run();
-export default Module;
-```
-![geometry.js suffix](https://i.ibb.co/W3Kv29g/geometry.png)
-
-
 - Done! Now reload the Webaverse app and try out your own PhysX configuration!
 
 ---
