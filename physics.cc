@@ -7,6 +7,16 @@
 
 using namespace physx;
 
+SimulationEventCallback2::SimulationEventCallback2() : PxSimulationEventCallback() {}
+void SimulationEventCallback2::onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {}
+void SimulationEventCallback2::onWake(PxActor **actors, PxU32 count) {}
+void SimulationEventCallback2::onSleep(PxActor **actors, PxU32 count) {}
+void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
+  std::cerr << "on contact" << std::endl;
+}
+void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
+void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
+
 PxFilterFlags ccdFilterShader(
   PxFilterObjectAttributes attributes0,
   PxFilterData filterData0,
@@ -28,6 +38,13 @@ PxFilterFlags ccdFilterShader(
   pairFlags |= PxPairFlag::eSOLVE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  if (filterData0.word1 == TYPE::IS_CAPSULE || filterData1.word1 == TYPE::IS_CAPSULE) {
+    std::cerr << "is capsule" << std::endl;
+    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
+  } else {
+    std::cerr << "not is capsule " << (void *)filterData0.word0 << " " << (void *)filterData0.word1 << std::endl;
+  }
   return result;
 }
 
@@ -51,11 +68,15 @@ PScene::PScene() {
     cooking = PxCreateCooking(PX_PHYSICS_VERSION, *foundation, cookingParams);
   }
   {
+    simulationEventCallback = new SimulationEventCallback2();
+  }
+  {
     // PxTolerancesScale tolerancesScale;
     PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
     sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
     sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
+    sceneDesc.simulationEventCallback = simulationEventCallback;
     if (!sceneDesc.cpuDispatcher) {
       physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
       if(!mCpuDispatcher) {
@@ -214,6 +235,24 @@ void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius
   aCapsuleShape->setLocalPose(relativePose);
 
   body->userData = (void *)id;
+
+  { 
+    // LOL 1
+    PxFilterData filterData{};
+    filterData.word0 = id;
+    filterData.word1 = TYPE::IS_CAPSULE; // IS_CAPSULE
+    // filterData.word1 = filterMask;  // word1 = ID mask to filter pairs that trigger a
+                                    // contact callback;
+    const PxU32 numShapes = body->getNbShapes();
+    PxShape *shapes[32];
+    body->getShapes(shapes, numShapes);
+    for (PxU32 i = 0; i < numShapes; i++){
+      PxShape *shape = shapes[i];
+      shape->setSimulationFilterData(filterData);
+    }
+    // LOL 2
+  }
+
   if (ccdEnabled) {
     body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
   }

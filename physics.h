@@ -24,6 +24,7 @@
 #include "extensions/PxRigidActorExt.h"
 // #include "PxPhysicsAPI.h"
 #include "PxQueryReport.h"
+#include "PxSimulationEventCallback.h"
 #include "geometry/PxGeometryQuery.h"
 #include <list>
 #include <map>
@@ -33,6 +34,25 @@
 #include <iostream>
 
 using namespace physx;
+
+enum TYPE {
+  NONE = 0,
+  IS_CAPSULE = 1,
+};
+
+class SimulationEventCallback2 : public PxSimulationEventCallback {
+public:
+  std::map<unsigned int, unsigned int> bitfields;
+
+  SimulationEventCallback2();
+  ~SimulationEventCallback2();
+  void onConstraintBreak(PxConstraintInfo *constraints, PxU32 count);
+  void onWake(PxActor **actors, PxU32 count);
+  void onSleep(PxActor **actors, PxU32 count);
+  void onContact(const PxContactPairHeader &pairHeader, const PxContactPair *pairs, PxU32 nbPairs);
+  void onTrigger(PxTriggerPair *pairs, PxU32 count);
+  void onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count);
+};
 
 class PScene {
 public:
@@ -64,6 +84,7 @@ public:
   PxCooking *cooking = nullptr;
   PxScene *scene = nullptr;
   std::vector<PxRigidActor *> actors;
+  SimulationEventCallback2 *simulationEventCallback = nullptr;
 };
 
 #endif
