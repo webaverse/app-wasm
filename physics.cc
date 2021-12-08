@@ -455,6 +455,38 @@ void PScene::enableGeometryQueries(unsigned int id) {
     std::cerr << "enable queries unknown actor id " << id << std::endl;
   }
 }
+void PScene::setTransform(unsigned int id, float *positions, float *quaternions, float *scales) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxTransform transform(
+      PxVec3(positions[0], positions[1], positions[2]),
+      PxQuat(quaternions[0], quaternions[1], quaternions[2], quaternions[3])
+    );
+    actor->setGlobalPose(transform, true);
+  } else {
+    std::cerr << "set transform unknown actor id " << id << std::endl;
+  }
+}
+void PScene::setVelocity(unsigned int id, float *velocities, unsigned int enableGravity) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      body->setLinearVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), true);
+      body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, !enableGravity);
+    }
+  } else {
+    std::cerr << "set velocity unknown actor id " << id << std::endl;
+  }
+}
 void PScene::removeGeometry(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;

@@ -54,6 +54,8 @@ public:
   void enableGeometry(unsigned int id);
   void disableGeometryQueries(unsigned int id);
   void enableGeometryQueries(unsigned int id);
+  void setTransform(unsigned int id, float *position, float *quaternion, float *scale);
+  void setVelocity(unsigned int id, float *velocity, unsigned int enableGravity);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;
