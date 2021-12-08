@@ -124,7 +124,7 @@ PScene::~PScene() {
   abort();
 }
 
-unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime, float *velocities) {
+unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
     //PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(quaternions[i*4], quaternions[i*4+1], quaternions[i*4+2], quaternions[i*4+3]));
@@ -218,6 +218,8 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
       scales[i*3] = s.x;
       scales[i*3+1] = s.y;
       scales[i*3+2] = s.z;
+
+      bitfields[i] = simulationEventCallback->bitfields[id];
     }
   }
   return numActors;
