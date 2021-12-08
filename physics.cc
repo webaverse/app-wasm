@@ -79,7 +79,7 @@ PScene::PScene() {
     sceneDesc.simulationEventCallback = simulationEventCallback;
     if (!sceneDesc.cpuDispatcher) {
       physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
-      if(!mCpuDispatcher) {
+      if (!mCpuDispatcher) {
         std::cerr << "PxDefaultCpuDispatcherCreate failed!" << std::endl;
       }
       sceneDesc.cpuDispatcher = mCpuDispatcher;
