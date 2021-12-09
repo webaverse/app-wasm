@@ -22,6 +22,23 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
   stateBitfields[actor1Id] |= STATE_BITFIELD::STATE_BITFIELD_COLLIDED;
   stateBitfields[actor2Id] |= STATE_BITFIELD::STATE_BITFIELD_COLLIDED;
 
+  for (uint32_t i = 0; i < nbPairs; i++) {
+    const PxContactPair &pair = pairs[i];
+
+    PxContactPairPoint contactPairPoints[32];
+    uint32_t numPoints = pair.extractContacts(contactPairPoints, sizeof(contactPairPoints) / sizeof(contactPairPoints[0]));
+    
+    for (uint32_t j = 0; j < numPoints; j++) {
+      PxContactPairPoint &contactPairPoint = contactPairPoints[j];
+      if (contactPairPoint.normal.y >= 0) { // from B to A is up
+        stateBitfields[actor1Id] |= STATE_BITFIELD::STATE_BITFIELD_GROUNDED;
+      }
+      if (contactPairPoint.normal.y <= 0) { // from B to A is down
+        stateBitfields[actor2Id] |= STATE_BITFIELD::STATE_BITFIELD_GROUNDED;
+      }
+    }
+  }
+
   /* PxContactPairPoint contactPoints[32];
   auto numPoints = pairs->extractContacts(contactPoints, sizeof(contactPoints)/sizeof(contactPoints[0]));
   for (auto i = 0; i < numPoints; i++) {
@@ -598,6 +615,7 @@ void PScene::removeGeometry(unsigned int id) {
     PxRigidActor *actor = *actorIter;
     actor->release();
     actors.erase(actorIter);
+    simulationEventCallback->stateBitfields.erase(id);
   } else {
     std::cerr << "remove unknown actor id " << id << std::endl;
   }
