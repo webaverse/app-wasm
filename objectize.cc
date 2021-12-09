@@ -108,4 +108,8 @@ EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, flo
   scene->setVelocity(id, velocity, enableGravity);
 }
 
+EMSCRIPTEN_KEEPALIVE void setAngularLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
+  scene->setAngularLockFlags(id, x, y, z);
+}
+
 }

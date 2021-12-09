@@ -81,6 +81,7 @@ public:
   void enableGeometryQueries(unsigned int id);
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale);
   void setVelocity(unsigned int id, float *velocity, unsigned int enableGravity);
+  void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

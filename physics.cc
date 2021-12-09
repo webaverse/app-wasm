@@ -546,6 +546,29 @@ void PScene::setVelocity(unsigned int id, float *velocities, unsigned int enable
     std::cerr << "set velocity unknown actor id " << id << std::endl;
   }
 }
+void PScene::setAngularLockFlags(unsigned int id, bool x, bool y, bool z) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidDynamicLockFlags flags{};
+    if (!x) {
+      flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_X;
+    }
+    if (!y) {
+      flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y;
+    }
+    if (!z) {
+      flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z;
+    }
+
+    PxRigidActor *actor = *actorIter;
+    PxRigidDynamic *actorDynamic = dynamic_cast<PxRigidDynamic *>(actor);
+    actorDynamic->setRigidDynamicLockFlags(flags);
+  } else {
+    std::cerr << "set angular lock flags unknown actor id " << id << std::endl;
+  }
+}
 void PScene::removeGeometry(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
