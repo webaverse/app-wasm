@@ -7,7 +7,8 @@
 
 using namespace physx;
 
-SimulationEventCallback2::SimulationEventCallback2() : PxSimulationEventCallback() {}
+SimulationEventCallback2::SimulationEventCallback2() {}
+SimulationEventCallback2::~SimulationEventCallback2() {}
 void SimulationEventCallback2::onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {}
 void SimulationEventCallback2::onWake(PxActor **actors, PxU32 count) {}
 void SimulationEventCallback2::onSleep(PxActor **actors, PxU32 count) {}
