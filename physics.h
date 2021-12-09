@@ -80,6 +80,7 @@ public:
   void disableGeometryQueries(unsigned int id);
   void enableGeometryQueries(unsigned int id);
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale);
+  void getVelocity(unsigned int id, float *velocity);
   void setVelocity(unsigned int id, float *velocity, unsigned int enableGravity);
   void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
 
