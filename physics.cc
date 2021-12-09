@@ -13,7 +13,22 @@ void SimulationEventCallback2::onConstraintBreak(PxConstraintInfo *constraints, 
 void SimulationEventCallback2::onWake(PxActor **actors, PxU32 count) {}
 void SimulationEventCallback2::onSleep(PxActor **actors, PxU32 count) {}
 void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
-  std::cerr << "on contact" << std::endl;
+  PxRigidActor *actor1 = pairHeader.actors[0];
+  PxRigidActor *actor2 = pairHeader.actors[1];
+
+  unsigned int actor1Id = (unsigned int)actor1->userData;
+  unsigned int actor2Id = (unsigned int)actor2->userData;
+
+  stateBitfields[actor1Id] |= STATE_BITFIELD::STATE_BITFIELD_COLLIDED;
+  stateBitfields[actor2Id] |= STATE_BITFIELD::STATE_BITFIELD_COLLIDED;
+
+  /* PxContactPairPoint contactPoints[32];
+  auto numPoints = pairs->extractContacts(contactPoints, sizeof(contactPoints)/sizeof(contactPoints[0]));
+  for (auto i = 0; i < numPoints; i++) {
+    const PxContactPairPoint &contactPint = contactPoints[i];
+  } */
+
+  // std::cerr << "on contact" << std::endl;
 }
 void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
