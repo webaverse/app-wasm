@@ -36,22 +36,27 @@
 using namespace physx;
 
 enum TYPE {
-  NONE = 0,
-  IS_CAPSULE = 1,
+  TYPE_NONE = 0,
+  TYPE_CAPSULE = 1,
+};
+enum STATE_BITFIELD {
+  STATE_BITFIELD_NONE = 0x0,
+  STATE_BITFIELD_COLLIDED = 0x1,
+  STATE_BITFIELD_GROUNDED = 0x2,
 };
 
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
-  std::map<unsigned int, unsigned int> bitfields;
+  std::map<unsigned int, unsigned int> stateBitfields;
 
   SimulationEventCallback2();
-  ~SimulationEventCallback2();
-  void onConstraintBreak(PxConstraintInfo *constraints, PxU32 count);
-  void onWake(PxActor **actors, PxU32 count);
-  void onSleep(PxActor **actors, PxU32 count);
-  void onContact(const PxContactPairHeader &pairHeader, const PxContactPair *pairs, PxU32 nbPairs);
-  void onTrigger(PxTriggerPair *pairs, PxU32 count);
-  void onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count);
+  virtual ~SimulationEventCallback2();
+  virtual void onConstraintBreak(PxConstraintInfo *constraints, PxU32 count);
+  virtual void onWake(PxActor **actors, PxU32 count);
+  virtual void onSleep(PxActor **actors, PxU32 count);
+  virtual void onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs);
+  virtual void onTrigger(PxTriggerPair *pairs, PxU32 count);
+  virtual void onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count);
 };
 
 class PScene {
@@ -62,7 +67,7 @@ public:
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
   void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
   void collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
-  void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled);
+  void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int ccdEnabled);
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic);
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);

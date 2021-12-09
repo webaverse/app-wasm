@@ -138,7 +138,7 @@ PScene::~PScene() {
   abort();
 }
 
-unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
+unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
     //PxTransform transform(PxVec3(positions[i*3], positions[i*3+1], positions[i*3+2]), PxQuat(quaternions[i*4], quaternions[i*4+1], quaternions[i*4+2], quaternions[i*4+3]));
@@ -160,6 +160,8 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
       std::cerr << "simulate unknown actor id " << id << std::endl;
     }
   }
+
+  simulationEventCallback->stateBitfields.clear();
 
   scene->simulate(elapsedTime);
   PxU32 error;
@@ -202,7 +204,6 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
             const PxBoxGeometry &geometry = geometryHolder.box();
             const PxVec3 &halfExtents = geometry.halfExtents;
             s = halfExtents * 2;
-
             break;
           }
           case PxGeometryType::Enum::eCONVEXMESH: {
@@ -226,29 +227,32 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
           }
         }
       } else {
-        std::cerr << "no shapes for actor id " << id << std::endl;
+        std::cerr << "no shapes for actor id " << id << " : " << numShapes << std::endl;
       }
       
       scales[i*3] = s.x;
       scales[i*3+1] = s.y;
       scales[i*3+2] = s.z;
 
-      bitfields[i] = simulationEventCallback->bitfields[id];
+      // std::cout << "check bitfields 1" << std::endl;
+      stateBitfields[i] = simulationEventCallback->stateBitfields[id];
+      // std::cout << "check bitfields 2" << std::endl;
     }
   }
   return numActors;
 }
 
-void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled) {
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int ccdEnabled) {
+  // PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxTransform relativePose(PxQuat(PxHalfPi, PxVec3(0,0,1)));
   PxCapsuleGeometry geometry(radius, halfHeight);
   PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
 
-  PxShape* aCapsuleShape = PxRigidActorExt::createExclusiveShape(*body,
+  /* PxShape* aCapsuleShape = PxRigidActorExt::createExclusiveShape(*body,
     PxCapsuleGeometry(radius, halfHeight), *material);
-  aCapsuleShape->setLocalPose(relativePose);
+  aCapsuleShape->setLocalPose(relativePose); */
 
   body->userData = (void *)id;
 
@@ -256,7 +260,7 @@ void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius
     // LOL 1
     PxFilterData filterData{};
     filterData.word0 = id;
-    filterData.word1 = TYPE::IS_CAPSULE; // IS_CAPSULE
+    filterData.word1 = TYPE::TYPE_CAPSULE;
     // filterData.word1 = filterMask;  // word1 = ID mask to filter pairs that trigger a
                                     // contact callback;
     const PxU32 numShapes = body->getNbShapes();
