@@ -54,12 +54,10 @@ PxFilterFlags ccdFilterShader(
   pairFlags |= PxPairFlag::eSOLVE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-  if (filterData0.word1 == TYPE::IS_CAPSULE || filterData1.word1 == TYPE::IS_CAPSULE) {
-    std::cerr << "is capsule" << std::endl;
+  if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
-  } else {
-    std::cerr << "not is capsule " << (void *)filterData0.word0 << " " << (void *)filterData0.word1 << std::endl;
+    pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
   }
   return result;
 }
