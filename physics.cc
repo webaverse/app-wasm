@@ -622,38 +622,52 @@ void PScene::removeGeometry(unsigned int id) {
     std::cerr << "remove unknown actor id " << id << std::endl;
   }
 }
-void *PScene::createCharacterController(float radius, float height) {
-  PxCapsuleControllerDesc desc;
+PxController *PScene::createCharacterController(float radius, float height, float *mat) {
+  PxCapsuleControllerDesc desc{};
   desc.radius = radius;
   desc.height = height;
-  /* ...
-  <fill the descriptor here>
-  ... */
+  desc.upDirection = PxVec3{0, 1, 0};
+  desc.material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxController *characterController = controllerManager->createController(desc);
-  
-  PxVec3 displacement{};
-  PxF32 minDist = 0;
-  PxF32 elapsedTime = 0;
+  return characterController;
+}
+unsigned int PScene::moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut) {
+  PxVec3 disp{
+    displacement[0],
+    displacement[1],
+    displacement[2]
+  };
+  // PxF32 minDist = 0;
+  // PxF32 elapsedTime = 0;
   PxControllerFilters controllerFilters{};
   PxObstacleContext *obstacles = nullptr;
   PxControllerCollisionFlags collisionFlags = characterController->move(
-    displacement,
+    disp,
     minDist,
     elapsedTime,
     controllerFilters,
     obstacles
   );
-  if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_UP) {
-    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
-  }
+
+  const PxExtendedVec3 &pos = characterController->getPosition();
+  positionOut[0] = pos.x;
+  positionOut[1] = pos.y;
+  positionOut[2] = pos.z;
+
+  unsigned int flags = 0;
   if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
+    flags |= (1 << 0);
     // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
   }
   if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES) {
+    flags |= (1 << 1);
     // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
   }
-
-  return characterController;
+  if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_UP) {
+    flags |= (1 << 2);
+    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
+  }
+  return flags;
 }
 
 const float boxPositions[] = {0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5};
