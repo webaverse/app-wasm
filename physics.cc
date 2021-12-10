@@ -117,6 +117,8 @@ PScene::PScene() {
     }
     sceneDesc.filterShader = ccdFilterShader;
     scene = physics->createScene(sceneDesc);
+    controllerManager = PxCreateControllerManager(*scene);
+    controllerManager->setOverlapRecoveryModule(true);
   }
  
   /* {
