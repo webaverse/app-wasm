@@ -30,10 +30,10 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
     
     for (uint32_t j = 0; j < numPoints; j++) {
       PxContactPairPoint &contactPairPoint = contactPairPoints[j];
-      if (contactPairPoint.normal.y >= 0.1) { // from B to A is up
+      if (contactPairPoint.normal.y >= 0.0001) { // from B to A is up
         stateBitfields[actor1Id] |= STATE_BITFIELD::STATE_BITFIELD_GROUNDED;
       }
-      if (contactPairPoint.normal.y <= -0.1) { // from B to A is down
+      if (contactPairPoint.normal.y <= -0.0001) { // from B to A is down
         stateBitfields[actor2Id] |= STATE_BITFIELD::STATE_BITFIELD_GROUNDED;
       }
     }
