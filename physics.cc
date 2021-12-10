@@ -622,6 +622,39 @@ void PScene::removeGeometry(unsigned int id) {
     std::cerr << "remove unknown actor id " << id << std::endl;
   }
 }
+void *PScene::createCharacterController(float radius, float height) {
+  PxCapsuleControllerDesc desc;
+  desc.radius = radius;
+  desc.height = height;
+  /* ...
+  <fill the descriptor here>
+  ... */
+  PxController *characterController = controllerManager->createController(desc);
+  
+  PxVec3 displacement{};
+  PxF32 minDist = 0;
+  PxF32 elapsedTime = 0;
+  PxControllerFilters controllerFilters{};
+  PxObstacleContext *obstacles = nullptr;
+  PxControllerCollisionFlags collisionFlags = characterController->move(
+    displacement,
+    minDist,
+    elapsedTime,
+    controllerFilters,
+    obstacles
+  );
+  if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_UP) {
+    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
+  }
+  if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
+    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
+  }
+  if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES) {
+    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
+  }
+
+  return characterController;
+}
 
 const float boxPositions[] = {0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5};
 const unsigned int boxIndices[] = {0,2,1,2,3,1,4,6,5,6,7,5,8,10,9,10,11,9,12,14,13,14,15,13,16,18,17,18,19,17,20,22,21,22,23,21};

@@ -25,6 +25,8 @@
 // #include "PxPhysicsAPI.h"
 #include "PxQueryReport.h"
 #include "PxSimulationEventCallback.h"
+#include "characterkinematic/PxControllerManager.h"
+#include "characterkinematic/PxCapsuleController.h"
 #include "geometry/PxGeometryQuery.h"
 #include <list>
 #include <map>
@@ -83,6 +85,7 @@ public:
   void getVelocity(unsigned int id, float *velocity);
   void setVelocity(unsigned int id, float *velocity, unsigned int enableGravity);
   void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
+  void *createCharacterController(float radius, float height);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;
@@ -90,6 +93,7 @@ public:
   PxPhysics *physics = nullptr;
   PxCooking *cooking = nullptr;
   PxScene *scene = nullptr;
+  PxControllerManager *controllerManager = nullptr;
   std::vector<PxRigidActor *> actors;
   SimulationEventCallback2 *simulationEventCallback = nullptr;
 };
