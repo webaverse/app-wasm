@@ -256,15 +256,15 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialMesh.cpp \
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialHeightField.cpp \
   PhysX/physx/source/scenequery/src/SqBounds.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctBoxController.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctCapsuleController.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctCharacterController.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctCharacterControllerCallbacks.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctCharacterControllerManager.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctController.cpp \
-  PhysX/physx/source/physxcharacterkinematic/src/CctCharacterController.cpp \
-  PhysX/physx/source/physxcharacterkinematic/src/CctCapsuleController.cpp \
-  PhysX/physx/source/physxcharacterkinematic/src/CctBoxController.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctObstacleContext.cpp \
-  PhysX/physx/source/physxcharacterkinematic/src/CctCharacterControllerCallbacks.cpp \
-  PhysX/physx/source/physxcharacterkinematic/src/CctSweptCapsule.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctSweptBox.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctSweptCapsule.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctSweptVolume.cpp \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c \
