@@ -124,6 +124,7 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/simulationcontroller/src/ScConstraintInteraction.cpp \
   PhysX/physx/source/simulationcontroller/src/ScShapeInteraction.cpp \
   PhysX/physx/source/simulationcontroller/src/ScElementSim.cpp \
+  PhysX/physx/source/simulationcontroller/src/ScElementInteractionMarker.cpp \
   PhysX/physx/source/common/src/CmVisualization.cpp \
   PhysX/physx/source/physxcooking/src/convex/VolumeIntegration.cpp \
   PhysX/physx/source/physxcooking/src/Adjacencies.cpp \
