@@ -87,6 +87,7 @@ public:
   void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
   PxController *createCharacterController(float radius, float height, float contactOffset, float *position, float *mat);
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
+  void setCharacterControllerPosition(PxController *characterController, float *position);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

@@ -116,6 +116,9 @@ EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scen
 EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut) {
   return scene->moveCharacterController(characterController, displacement, minDist, elapsedTime, positionOut);
 }
+EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, PxController *characterController, float *position) {
+  return scene->setCharacterControllerPosition(characterController, position);
+}
 
 EMSCRIPTEN_KEEPALIVE void setAngularLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
   scene->setAngularLockFlags(id, x, y, z);
