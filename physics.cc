@@ -622,7 +622,7 @@ void PScene::removeGeometry(unsigned int id) {
     std::cerr << "remove unknown actor id " << id << std::endl;
   }
 }
-PxController *PScene::createCharacterController(float radius, float height, float contactOffset, float *mat) {
+PxController *PScene::createCharacterController(float radius, float height, float contactOffset, float *position, float *mat) {
   PxCapsuleControllerDesc desc{};
   desc.radius = radius;
   desc.height = height;
@@ -632,6 +632,7 @@ PxController *PScene::createCharacterController(float radius, float height, floa
   // desc.climbingMode = PxCapsuleClimbingMode::eCONSTRAINED;
   desc.material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxController *characterController = controllerManager->createController(desc);
+  characterController->setPosition(PxExtendedVec3{position[0], position[1], position[2]});
   return characterController;
 }
 unsigned int PScene::moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut) {
