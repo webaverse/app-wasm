@@ -124,6 +124,7 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/simulationcontroller/src/ScConstraintInteraction.cpp \
   PhysX/physx/source/simulationcontroller/src/ScShapeInteraction.cpp \
   PhysX/physx/source/simulationcontroller/src/ScElementSim.cpp \
+  PhysX/physx/source/simulationcontroller/src/ScElementInteractionMarker.cpp \
   PhysX/physx/source/common/src/CmVisualization.cpp \
   PhysX/physx/source/physxcooking/src/convex/VolumeIntegration.cpp \
   PhysX/physx/source/physxcooking/src/Adjacencies.cpp \
@@ -256,6 +257,16 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialMesh.cpp \
   PhysX/physx/source/lowlevel/common/src/pipeline/PxcMaterialHeightField.cpp \
   PhysX/physx/source/scenequery/src/SqBounds.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctBoxController.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctCapsuleController.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctCharacterController.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctCharacterControllerCallbacks.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctCharacterControllerManager.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctController.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctObstacleContext.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctSweptBox.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctSweptCapsule.cpp \
+  PhysX/physx/source/physxcharacterkinematic/src/CctSweptVolume.cpp \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c \
   && touch physx-timestamp
@@ -263,7 +274,7 @@ fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
 # emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=419430400 -s ALLOW_MEMORY_GROWTH=1 -O3
-emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=104857600 -s ALLOW_MEMORY_GROWTH=0 -O3 \
+emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -s ALLOW_MEMORY_GROWTH=0 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \

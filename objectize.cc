@@ -27,8 +27,8 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
-EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int numIds, float elapsedTime) {
-  return scene->simulate(ids, positions, quaternions, scales, numIds, elapsedTime);
+EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
+  return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
@@ -60,8 +60,8 @@ EMSCRIPTEN_KEEPALIVE void collidePhysics(PScene *scene, float radius, float half
   scene->collide(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
 }
 
-EMSCRIPTEN_KEEPALIVE void addCapsuleGeometry(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, unsigned int id, unsigned int ccdEnabled) {
-  scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, id, ccdEnabled);
+EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int ccdEnabled) {
+  scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, mat, id, ccdEnabled);
 }
 
 EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
@@ -75,8 +75,8 @@ EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positi
   scene->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
 
-EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
-  scene->addGeometry(data, length, position, quaternion, scale, id, writeStream);
+EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, float *mat, PxDefaultMemoryOutputStream *writeStream) {
+  scene->addGeometry(data, length, position, quaternion, scale, id, mat, writeStream);
 }
 EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   scene->addConvexGeometry(data, length, position, quaternion, scale, id, writeStream);
@@ -100,6 +100,28 @@ EMSCRIPTEN_KEEPALIVE void enableGeometryPhysics(PScene *scene, unsigned int id) 
 }
 EMSCRIPTEN_KEEPALIVE void removeGeometryPhysics(PScene *scene, unsigned int id) {
   scene->removeGeometry(id);
+}
+EMSCRIPTEN_KEEPALIVE void setTransformPhysics(PScene *scene, unsigned int id, float *position, float *quaternion, float *scale) {
+  scene->setTransform(id, position, quaternion, scale);
+}
+EMSCRIPTEN_KEEPALIVE void getVelocityPhysics(PScene *scene, unsigned int id, float *velocity) {
+  scene->getVelocity(id, velocity);
+}
+EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, float *velocity, unsigned int enableGravity) {
+  scene->setVelocity(id, velocity, enableGravity);
+}
+EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float *position, float *mat) {
+  return scene->createCharacterController(radius, height, contactOffset, position, mat);
+}
+EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut) {
+  return scene->moveCharacterController(characterController, displacement, minDist, elapsedTime, positionOut);
+}
+EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, PxController *characterController, float *position) {
+  return scene->setCharacterControllerPosition(characterController, position);
+}
+
+EMSCRIPTEN_KEEPALIVE void setAngularLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
+  scene->setAngularLockFlags(id, x, y, z);
 }
 
 }
