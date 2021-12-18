@@ -635,6 +635,9 @@ PxController *PScene::createCharacterController(float radius, float height, floa
   characterController->setPosition(PxExtendedVec3{position[0], position[1], position[2]});
   return characterController;
 }
+void PScene::destroyCharacterController(PxController *characterController) {
+  characterController->release();
+}
 unsigned int PScene::moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut) {
   PxVec3 disp{
     displacement[0],

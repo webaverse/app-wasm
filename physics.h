@@ -86,6 +86,7 @@ public:
   void setVelocity(unsigned int id, float *velocity, unsigned int enableGravity);
   void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
   PxController *createCharacterController(float radius, float height, float contactOffset, float *position, float *mat);
+  void destroyCharacterController(PxController *characterController);
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
 

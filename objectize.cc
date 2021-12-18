@@ -113,6 +113,9 @@ EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, flo
 EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float *position, float *mat) {
   return scene->createCharacterController(radius, height, contactOffset, position, mat);
 }
+EMSCRIPTEN_KEEPALIVE void destroyCharacterControllerPhysics(PScene *scene, PxController *characterController) {
+  scene->destroyCharacterController(characterController);
+}
 EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut) {
   return scene->moveCharacterController(characterController, displacement, minDist, elapsedTime, positionOut);
 }
