@@ -110,6 +110,9 @@ EMSCRIPTEN_KEEPALIVE void getVelocityPhysics(PScene *scene, unsigned int id, flo
 EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, float *velocity, unsigned int enableGravity) {
   scene->setVelocity(id, velocity, enableGravity);
 }
+EMSCRIPTEN_KEEPALIVE void setAngularVelocityPhysics(PScene *scene, unsigned int id, float *velocity, unsigned int enableGravity) {
+  scene->setAngularVel(id, velocity, enableGravity);
+}
 EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float *position, float *mat) {
   return scene->createCharacterController(radius, height, contactOffset, position, mat);
 }
