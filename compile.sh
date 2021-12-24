@@ -232,6 +232,8 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/geomutils/src/common/GuSeparatingAxes.cpp \
   PhysX/physx/source/lowlevel/software/src/PxsDefaultMemoryManager.cpp \
   PhysX/physx/source/lowleveldynamics/src/DyDynamics.cpp \
+  PhysX/physx/source/lowleveldynamics/src/DyContactPrep4.cpp \
+  PhysX/physx/source/lowleveldynamics/src/DyContactPrep4PF.cpp \
   PhysX/physx/source/lowleveldynamics/src/DyConstraintPartition.cpp \
   PhysX/physx/source/geomutils/src/convex/GuConvexHelper.cpp \
   PhysX/physx/source/geomutils/src/ccd/GuCCDSweepPrimitives.cpp \
