@@ -113,6 +113,12 @@ EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, flo
 EMSCRIPTEN_KEEPALIVE void setAngularVelocityPhysics(PScene *scene, unsigned int id, float *velocity, unsigned int enableGravity) {
   scene->setAngularVel(id, velocity, enableGravity);
 }
+EMSCRIPTEN_KEEPALIVE void setLinearLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
+  scene->setLinearLockFlags(id, x, y, z);
+}
+EMSCRIPTEN_KEEPALIVE void setAngularLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
+  scene->setAngularLockFlags(id, x, y, z);
+}
 EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float *position, float *mat) {
   return scene->createCharacterController(radius, height, contactOffset, position, mat);
 }
@@ -124,10 +130,6 @@ EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, 
 }
 EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, PxController *characterController, float *position) {
   return scene->setCharacterControllerPosition(characterController, position);
-}
-
-EMSCRIPTEN_KEEPALIVE void setAngularLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
-  scene->setAngularLockFlags(id, x, y, z);
 }
 
 }
