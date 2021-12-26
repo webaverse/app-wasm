@@ -119,8 +119,8 @@ EMSCRIPTEN_KEEPALIVE void setLinearLockFlagsPhysics(PScene *scene, unsigned int 
 EMSCRIPTEN_KEEPALIVE void setAngularLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
   scene->setAngularLockFlags(id, x, y, z);
 }
-EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float *position, float *mat) {
-  return scene->createCharacterController(radius, height, contactOffset, position, mat);
+EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float stepOffset, float *position, float *mat) {
+  return scene->createCharacterController(radius, height, contactOffset, stepOffset, position, mat);
 }
 EMSCRIPTEN_KEEPALIVE void destroyCharacterControllerPhysics(PScene *scene, PxController *characterController) {
   scene->destroyCharacterController(characterController);
