@@ -620,7 +620,11 @@ void PScene::setLinearLockFlags(unsigned int id, bool x, bool y, bool z) {
 
     PxRigidActor *actor = *actorIter;
     PxRigidDynamic *actorDynamic = dynamic_cast<PxRigidDynamic *>(actor);
-    actorDynamic->setRigidDynamicLockFlags(flags);
+    if (actorDynamic != nullptr) {
+      actorDynamic->setRigidDynamicLockFlags(flags);
+    } else {
+      std::cerr << "set linear lock flags non-dynamic actor id " << id << std::endl;
+    }
   } else {
     std::cerr << "set linear lock flags unknown actor id " << id << std::endl;
   }
@@ -643,7 +647,11 @@ void PScene::setAngularLockFlags(unsigned int id, bool x, bool y, bool z) {
 
     PxRigidActor *actor = *actorIter;
     PxRigidDynamic *actorDynamic = dynamic_cast<PxRigidDynamic *>(actor);
-    actorDynamic->setRigidDynamicLockFlags(flags);
+    if (actorDynamic != nullptr) {
+      actorDynamic->setRigidDynamicLockFlags(flags);
+    } else {
+      std::cerr << "set angular lock flags non-dynamic actor id " << id << std::endl;
+    }
   } else {
     std::cerr << "set angular lock flags unknown actor id " << id << std::endl;
   }
