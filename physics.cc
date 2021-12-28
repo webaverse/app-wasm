@@ -526,7 +526,6 @@ void PScene::enableGeometryQueries(unsigned int id) {
 
         PxShape *rigidShape = shapes[i];
         rigidShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
-        // std::cout << "enable queries for shape " << (unsigned int)actor->userData << " " << (uint32_t)rigidShape << " " << rigidShape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE) << std::endl; // XXX
       }
     }
   } else {
