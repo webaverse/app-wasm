@@ -606,20 +606,24 @@ void PScene::setLinearLockFlags(unsigned int id, bool x, bool y, bool z) {
     return (unsigned int)actor->userData == id;
   });
   if (actorIter != actors.end()) {
-    PxRigidDynamicLockFlags flags{};
-    if (!x) {
-      flags |= PxRigidDynamicLockFlag::eLOCK_LINEAR_X;
-    }
-    if (!y) {
-      flags |= PxRigidDynamicLockFlag::eLOCK_LINEAR_Y;
-    }
-    if (!z) {
-      flags |= PxRigidDynamicLockFlag::eLOCK_LINEAR_Z;
-    }
-
     PxRigidActor *actor = *actorIter;
     PxRigidDynamic *actorDynamic = dynamic_cast<PxRigidDynamic *>(actor);
     if (actorDynamic != nullptr) {
+      PxRigidDynamicLockFlags flags = actorDynamic->getRigidDynamicLockFlags();
+      flags &= ~PxRigidDynamicLockFlag::eLOCK_LINEAR_X;
+      flags &= ~PxRigidDynamicLockFlag::eLOCK_LINEAR_Y;
+      flags &= ~PxRigidDynamicLockFlag::eLOCK_LINEAR_Z;
+      
+      if (!x) {
+        flags |= PxRigidDynamicLockFlag::eLOCK_LINEAR_X;
+      }
+      if (!y) {
+        flags |= PxRigidDynamicLockFlag::eLOCK_LINEAR_Y;
+      }
+      if (!z) {
+        flags |= PxRigidDynamicLockFlag::eLOCK_LINEAR_Z;
+      }
+
       actorDynamic->setRigidDynamicLockFlags(flags);
     } else {
       std::cerr << "set linear lock flags non-dynamic actor id " << id << std::endl;
@@ -633,20 +637,24 @@ void PScene::setAngularLockFlags(unsigned int id, bool x, bool y, bool z) {
     return (unsigned int)actor->userData == id;
   });
   if (actorIter != actors.end()) {
-    PxRigidDynamicLockFlags flags{};
-    if (!x) {
-      flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_X;
-    }
-    if (!y) {
-      flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y;
-    }
-    if (!z) {
-      flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z;
-    }
-
     PxRigidActor *actor = *actorIter;
     PxRigidDynamic *actorDynamic = dynamic_cast<PxRigidDynamic *>(actor);
     if (actorDynamic != nullptr) {
+      PxRigidDynamicLockFlags flags = actorDynamic->getRigidDynamicLockFlags();
+      flags &= ~PxRigidDynamicLockFlag::eLOCK_ANGULAR_X;
+      flags &= ~PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y;
+      flags &= ~PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z;
+
+      if (!x) {
+        flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_X;
+      }
+      if (!y) {
+        flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y;
+      }
+      if (!z) {
+        flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z;
+      }
+
       actorDynamic->setRigidDynamicLockFlags(flags);
     } else {
       std::cerr << "set angular lock flags non-dynamic actor id " << id << std::endl;
