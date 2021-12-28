@@ -113,11 +113,11 @@ EMSCRIPTEN_KEEPALIVE void setTransformPhysics(PScene *scene, unsigned int id, fl
 EMSCRIPTEN_KEEPALIVE void getVelocityPhysics(PScene *scene, unsigned int id, float *velocity) {
   scene->getVelocity(id, velocity);
 }
-EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, float *velocity, unsigned int enableGravity) {
-  scene->setVelocity(id, velocity, enableGravity);
+EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, float *velocity, bool autoWake) {
+  scene->setVelocity(id, velocity, autoWake);
 }
-EMSCRIPTEN_KEEPALIVE void setAngularVelocityPhysics(PScene *scene, unsigned int id, float *velocity, unsigned int enableGravity) {
-  scene->setAngularVel(id, velocity, enableGravity);
+EMSCRIPTEN_KEEPALIVE void setAngularVelocityPhysics(PScene *scene, unsigned int id, float *velocity, bool autoWake) {
+  scene->setAngularVel(id, velocity, autoWake);
 }
 EMSCRIPTEN_KEEPALIVE void setLinearLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
   scene->setLinearLockFlags(id, x, y, z);

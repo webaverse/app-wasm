@@ -569,7 +569,7 @@ void PScene::getVelocity(unsigned int id, float *velocities) {
     velocities[2] = 0;
   }
 }
-void PScene::setVelocity(unsigned int id, float *velocities, unsigned int enableGravity) {
+void PScene::setVelocity(unsigned int id, float *velocities, bool autoWake) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
   });
@@ -578,14 +578,13 @@ void PScene::setVelocity(unsigned int id, float *velocities, unsigned int enable
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
-      body->setLinearVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), true);
-      body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, !enableGravity);
+      body->setLinearVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), autoWake);
     }
   } else {
-    std::cerr << "set velocity unknown actor id " << id << std::endl;
+    std::cerr << "set linear velocity unknown actor id " << id << std::endl;
   }
 }
-void PScene::setAngularVel(unsigned int id, float *velocities, unsigned int enableGravity) {
+void PScene::setAngularVel(unsigned int id, float *velocities, bool autoWake) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
   });
@@ -594,11 +593,10 @@ void PScene::setAngularVel(unsigned int id, float *velocities, unsigned int enab
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
-      body->setAngularVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), true);
-      body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, !enableGravity);
+      body->setAngularVelocity(PxVec3(velocities[0], velocities[1], velocities[2]), autoWake);
     }
   } else {
-    std::cerr << "set velocity unknown actor id " << id << std::endl;
+    std::cerr << "set angular velocity unknown actor id " << id << std::endl;
   }
 }
 void PScene::setLinearLockFlags(unsigned int id, bool x, bool y, bool z) {

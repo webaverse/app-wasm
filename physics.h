@@ -85,8 +85,8 @@ public:
   void enableGeometryQueries(unsigned int id);
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale, bool autoWake);
   void getVelocity(unsigned int id, float *velocity);
-  void setVelocity(unsigned int id, float *velocity, unsigned int enableGravity);
-  void setAngularVel(unsigned int id, float *velocity, unsigned int enableGravity);
+  void setVelocity(unsigned int id, float *velocity, bool autoWake);
+  void setAngularVel(unsigned int id, float *velocity, bool autoWake);
   void setLinearLockFlags(unsigned int id, bool x, bool y, bool z);
   void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
   PxController *createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat);
