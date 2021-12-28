@@ -532,7 +532,7 @@ void PScene::enableGeometryQueries(unsigned int id) {
     std::cerr << "enable queries unknown actor id " << id << std::endl;
   }
 }
-void PScene::setTransform(unsigned int id, float *positions, float *quaternions, float *scales) {
+void PScene::setTransform(unsigned int id, float *positions, float *quaternions, float *scales, bool autoWake) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
   });
@@ -543,7 +543,7 @@ void PScene::setTransform(unsigned int id, float *positions, float *quaternions,
       PxVec3(positions[0], positions[1], positions[2]),
       PxQuat(quaternions[0], quaternions[1], quaternions[2], quaternions[3])
     );
-    actor->setGlobalPose(transform, true);
+    actor->setGlobalPose(transform, autoWake);
   } else {
     std::cerr << "set transform unknown actor id " << id << std::endl;
   }
