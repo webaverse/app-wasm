@@ -663,6 +663,34 @@ void PScene::setAngularLockFlags(unsigned int id, bool x, bool y, bool z) {
     std::cerr << "set angular lock flags unknown actor id " << id << std::endl;
   }
 }
+void PScene::setMassAndInertia(unsigned int id, float mass, float *inertia) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body != nullptr) {
+      body->setMass(mass);
+      body->setMassSpaceInertiaTensor(PxVec3{inertia[0], inertia[1], inertia[2]});
+    } else {
+      std::cerr << "set mass and inertia non-rigid body actor id " << id << std::endl;
+    }
+  } else {
+    std::cerr << "set mass and inertia unknown actor id " << id << std::endl;
+  }
+}
+void PScene::setGravityEnabled(unsigned int id, bool enabled) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, !enabled);
+  } else {
+    std::cerr << "set gravity enabled unknown actor id " << id << std::endl;
+  }
+}
 void PScene::removeGeometry(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
