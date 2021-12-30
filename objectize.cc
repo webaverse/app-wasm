@@ -8,6 +8,7 @@
 // #include "convex.h"
 // #include "earcut.h"
 // #include <iostream>
+#include "cut.h"
 
 #include <deque>
 #include <map>
@@ -130,6 +131,34 @@ EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, 
 }
 EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, PxController *characterController, float *position) {
   return scene->setCharacterControllerPosition(characterController, position);
+}
+
+EMSCRIPTEN_KEEPALIVE void doCut(
+  float *positions,
+  unsigned int numPositions,
+  unsigned int *faces,
+  unsigned int numFaces,
+  float *position,
+  float *quaternion,
+  float *scale,
+  float *outPositions,
+  unsigned int *numOutPositions,
+  unsigned int *outFaces,
+  unsigned int *numOutFaces
+) {
+  cut(
+    positions,
+    numPositions,
+    faces,
+    numFaces,
+    position,
+    quaternion,
+    scale,
+    outPositions,
+    numOutPositions,
+    outFaces,
+    numOutFaces
+  );
 }
 
 }

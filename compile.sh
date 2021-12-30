@@ -276,7 +276,7 @@ fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
 # emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=419430400 -s ALLOW_MEMORY_GROWTH=1 -O3
-emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -s ALLOW_MEMORY_GROWTH=0 -O3 \
+emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -305,8 +305,17 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -s ALLOW_MEMORY_GR
   -IPhysX/physx/source/geomutils/src/distance \
   -IPhysX/physx/source/geomutils/src/sweep \
   -IRectBinPack/include \
+  -Ilibslic3r \
   -Iconcaveman \
-  objectize.cc vector.cc physics.cc \
+  objectize.cc vector.cc physics.cc cut.cc \
+  libslic3r/TriangleMesh.cpp libslic3r/Polygon.cpp libslic3r/ExPolygon.cpp \
+  libslic3r/Point.cpp libslic3r/Multipoint.cpp \
+  libslic3r/TransformationMatrix.cpp \
+  libslic3r/ClipperUtils.cpp libslic3r/clipper.cpp libslic3r/Log.cpp \
+  libslic3r/admesh/connect.c libslic3r/admesh/normals.c libslic3r/admesh/shared.c \
+  libslic3r/admesh/stlinit.c libslic3r/admesh/stl_io.c libslic3r/admesh/util.c \
+  libslic3r/poly2tri/common/shapes.cc \
+  libslic3r/poly2tri/sweep/sweep.cc libslic3r/poly2tri/sweep/sweep_context.cc libslic3r/poly2tri/sweep/cdt.cc libslic3r/poly2tri/sweep/advancing_front.cc \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
