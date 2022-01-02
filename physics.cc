@@ -812,6 +812,11 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
         case PxGeometryType::Enum::eCAPSULE: {
           // std::cout << "physics type 1.2" << std::endl;
 
+          // XXX get the capsule geometry, and fill in the positions and indices
+          /* const PxCapsuleGeometry &geometry = geometryHolder.capsule();
+          const PxReal radius = geometry.radius;
+          const PxReal halfHeight = geometry.halfHeight; */
+
           {
             PxCapsuleGeometry &geometry = geometryHolder.capsule();
             PxTransform actorPose = actor->getGlobalPose();
