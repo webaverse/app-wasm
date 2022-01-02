@@ -781,7 +781,7 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
       PxGeometryType::Enum geometryType = geometryHolder.getType();
       switch (geometryType) {
         case PxGeometryType::Enum::eBOX: {
-          // std::cout << "physics type 1" << std::endl;
+          // std::cout << "physics type 1.1" << std::endl;
 
           // const PxBoxGeometry &geometry = geometryHolder.box();
           // const PxVec3 &halfExtents = geometry.halfExtents;
@@ -792,18 +792,37 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
             positions[numPositions++] = boxPositions[i+2] * 2;
           }
 
-          PxBoxGeometry &geometry = geometryHolder.box();
-          PxTransform actorPose = actor->getGlobalPose();
-          PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
-          bounds[0] = actorBounds.minimum.x;
-          bounds[1] = actorBounds.minimum.y;
-          bounds[2] = actorBounds.minimum.z;
-          bounds[3] = actorBounds.maximum.x;
-          bounds[4] = actorBounds.maximum.y;
-          bounds[5] = actorBounds.maximum.z;
-
           memcpy(indices, boxIndices, sizeof(boxIndices));
           numIndices = sizeof(boxIndices)/sizeof(boxIndices[0]);
+
+          {
+            PxBoxGeometry &geometry = geometryHolder.box();
+            PxTransform actorPose = actor->getGlobalPose();
+            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+            bounds[0] = actorBounds.minimum.x;
+            bounds[1] = actorBounds.minimum.y;
+            bounds[2] = actorBounds.minimum.z;
+            bounds[3] = actorBounds.maximum.x;
+            bounds[4] = actorBounds.maximum.y;
+            bounds[5] = actorBounds.maximum.z;
+          }
+
+          return true;
+        }
+        case PxGeometryType::Enum::eCAPSULE: {
+          // std::cout << "physics type 1.2" << std::endl;
+
+          {
+            PxCapsuleGeometry &geometry = geometryHolder.capsule();
+            PxTransform actorPose = actor->getGlobalPose();
+            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+            bounds[0] = actorBounds.minimum.x;
+            bounds[1] = actorBounds.minimum.y;
+            bounds[2] = actorBounds.minimum.z;
+            bounds[3] = actorBounds.maximum.x;
+            bounds[4] = actorBounds.maximum.y;
+            bounds[5] = actorBounds.maximum.z;
+          }
 
           return true;
         }
@@ -848,6 +867,19 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
             offset += face.mNbVerts;
           }
           numPositions = offset;
+
+          {
+            PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
+            PxTransform actorPose = actor->getGlobalPose();
+            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+            bounds[0] = actorBounds.minimum.x;
+            bounds[1] = actorBounds.minimum.y;
+            bounds[2] = actorBounds.minimum.z;
+            bounds[3] = actorBounds.maximum.x;
+            bounds[4] = actorBounds.maximum.y;
+            bounds[5] = actorBounds.maximum.z;
+          }
+
           return true;
         }
         case PxGeometryType::Enum::eTRIANGLEMESH: {
@@ -882,6 +914,19 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
               indices[numIndices++] = triangles32[i*3+2];
             }
           }
+
+          {
+            PxTriangleMeshGeometry &geometry = geometryHolder.triangleMesh();
+            PxTransform actorPose = actor->getGlobalPose();
+            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+            bounds[0] = actorBounds.minimum.x;
+            bounds[1] = actorBounds.minimum.y;
+            bounds[2] = actorBounds.minimum.z;
+            bounds[3] = actorBounds.maximum.x;
+            bounds[4] = actorBounds.maximum.y;
+            bounds[5] = actorBounds.maximum.z;
+          }
+
           return true;
         }
         default: {
