@@ -763,7 +763,7 @@ void PScene::setCharacterControllerPosition(PxController *characterController, f
 const float boxPositions[] = {0.5,0.5,0.5,0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5,0.5,0.5,-0.5,-0.5,0.5,-0.5,0.5,-0.5,-0.5,-0.5,-0.5,-0.5};
 const unsigned int boxIndices[] = {0,2,1,2,3,1,4,6,5,6,7,5,8,10,9,10,11,9,12,14,13,14,15,13,16,18,17,18,19,17,20,22,21,22,23,21};
 
-bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices) {
+bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices, float *bounds) {
   numPositions = 0;
   numIndices = 0;
 
@@ -791,6 +791,16 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
             positions[numPositions++] = boxPositions[i+1] * 2;
             positions[numPositions++] = boxPositions[i+2] * 2;
           }
+
+          PxBoxGeometry &geometry = geometryHolder.box();
+          PxTransform actorPose = actor->getGlobalPose();
+          PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+          bounds[0] = actorBounds.minimum.x;
+          bounds[1] = actorBounds.minimum.y;
+          bounds[2] = actorBounds.minimum.z;
+          bounds[3] = actorBounds.maximum.x;
+          bounds[4] = actorBounds.maximum.y;
+          bounds[5] = actorBounds.maximum.z;
 
           memcpy(indices, boxIndices, sizeof(boxIndices));
           numIndices = sizeof(boxIndices)/sizeof(boxIndices[0]);

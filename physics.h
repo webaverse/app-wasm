@@ -78,7 +78,7 @@ public:
   void setMassAndInertia(unsigned int id, float mass, float *inertia);
   void setGravityEnabled(unsigned int id, bool enabled);
   void removeGeometry(unsigned int id);
-  bool getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices);
+  bool getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices, float *bounds);
   void disableGeometry(unsigned int id);
   void enableGeometry(unsigned int id);
   void disableGeometryQueries(unsigned int id);
