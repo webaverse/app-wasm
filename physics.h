@@ -79,6 +79,7 @@ public:
   void setGravityEnabled(unsigned int id, bool enabled);
   void removeGeometry(unsigned int id);
   bool getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices, float *bounds);
+  bool getBounds(unsigned int id, float *bounds);
   void disableGeometry(unsigned int id);
   void enableGeometry(unsigned int id);
   void disableGeometryQueries(unsigned int id);
