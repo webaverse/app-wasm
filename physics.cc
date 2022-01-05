@@ -1163,3 +1163,47 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
     hit = 0;
   }
 }
+
+void PScene::getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
+  PxCapsuleGeometry geom(radius, halfHeight);
+  PxTransform geomPose(
+    PxVec3{position[0], position[1], position[2]},
+    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
+  );
+  PxTransform meshPose{
+    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
+    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
+  };
+
+  PxVec3 smallestSizeVec;
+  unsigned int largestId = 0;
+  for (unsigned int i = 0; i < actors.size(); i++) {
+    PxRigidActor *actor = actors[i];
+    PxShape *shape;
+    actor->getShapes(&shape, 1);
+
+    if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+      PxGeometryHolder holder = shape->getGeometry();
+      PxGeometry &geometry = holder.any();
+
+      PxTransform meshPose2 = actor->getGlobalPose();
+      PxTransform meshPose3 = meshPose * meshPose2;
+
+      bool result = PxGeometryQuery::overlap(geom, geomPose, geometry, meshPose3);
+      if (result) {
+        hit = 1;
+
+        const PxBounds3 &bounds = getActorBounds(actor);
+        PxVec3 sizeVec{
+          bounds.maximum.x - bounds.minimum.x,
+          bounds.maximum.y - bounds.minimum.y,
+          bounds.maximum.z - bounds.minimum.z
+        };
+        if (largestId == 0 || sizeVec.magnitudeSquared() < smallestSizeVec.magnitudeSquared()) {
+          smallestSizeVec = sizeVec;
+          id = (unsigned int)actor->userData;
+        }
+      }
+    }
+  }
+}
