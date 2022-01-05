@@ -949,6 +949,52 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
   }
 }
 
+PxBounds3 getActorBounds(PxRigidActor *actor) {
+  PxShape *shapes[1];
+  actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+  PxShape *shape = shapes[0];
+  PxGeometryHolder geometryHolder = shape->getGeometry();
+  PxGeometryType::Enum geometryType = geometryHolder.getType();
+  switch (geometryType) {
+    case PxGeometryType::Enum::eBOX: {
+      PxBoxGeometry &geometry = geometryHolder.box();
+      PxTransform actorPose = actor->getGlobalPose();
+      PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+      return actorBounds;
+    }
+    case PxGeometryType::Enum::eCAPSULE: {
+      // std::cout << "physics type 1.2" << std::endl;
+
+      // XXX get the capsule geometry, and fill in the positions and indices
+      /* const PxCapsuleGeometry &geometry = geometryHolder.capsule();
+      const PxReal radius = geometry.radius;
+      const PxReal halfHeight = geometry.halfHeight; */
+
+      PxCapsuleGeometry &geometry = geometryHolder.capsule();
+      PxTransform actorPose = actor->getGlobalPose();
+      PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+      return actorBounds;
+    }
+    case PxGeometryType::Enum::eCONVEXMESH: {
+      // std::cout << "physics type 2" << std::endl;
+
+      PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
+      PxTransform actorPose = actor->getGlobalPose();
+      PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+      return actorBounds;
+    }
+    case PxGeometryType::Enum::eTRIANGLEMESH: {
+      // std::cout << "physics type 3" << std::endl;
+
+      PxTriangleMeshGeometry &geometry = geometryHolder.triangleMesh();
+      PxTransform actorPose = actor->getGlobalPose();
+      PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+      return actorBounds;
+    }
+  }
+  return PxBounds3();
+}
+
 bool PScene::getBounds(unsigned int id, float *bounds) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
@@ -957,88 +1003,16 @@ bool PScene::getBounds(unsigned int id, float *bounds) {
     PxRigidActor *actor = *actorIter;
     unsigned int numShapes = actor->getNbShapes();
     if (numShapes == 1) {
-      PxShape *shapes[1];
-      actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
-      PxShape *shape = shapes[0];
-      PxGeometryHolder geometryHolder = shape->getGeometry();
-      PxGeometryType::Enum geometryType = geometryHolder.getType();
-      switch (geometryType) {
-        case PxGeometryType::Enum::eBOX: {
-          {
-            PxBoxGeometry &geometry = geometryHolder.box();
-            PxTransform actorPose = actor->getGlobalPose();
-            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
-            bounds[0] = actorBounds.minimum.x;
-            bounds[1] = actorBounds.minimum.y;
-            bounds[2] = actorBounds.minimum.z;
-            bounds[3] = actorBounds.maximum.x;
-            bounds[4] = actorBounds.maximum.y;
-            bounds[5] = actorBounds.maximum.z;
-          }
+      PxBounds3 actorBounds = getActorBounds(actor);
 
-          return true;
-        }
-        case PxGeometryType::Enum::eCAPSULE: {
-          // std::cout << "physics type 1.2" << std::endl;
+      bounds[0] = actorBounds.minimum.x;
+      bounds[1] = actorBounds.minimum.y;
+      bounds[2] = actorBounds.minimum.z;
+      bounds[3] = actorBounds.maximum.x;
+      bounds[4] = actorBounds.maximum.y;
+      bounds[5] = actorBounds.maximum.z;
 
-          // XXX get the capsule geometry, and fill in the positions and indices
-          /* const PxCapsuleGeometry &geometry = geometryHolder.capsule();
-          const PxReal radius = geometry.radius;
-          const PxReal halfHeight = geometry.halfHeight; */
-
-          {
-            PxCapsuleGeometry &geometry = geometryHolder.capsule();
-            PxTransform actorPose = actor->getGlobalPose();
-            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
-            bounds[0] = actorBounds.minimum.x;
-            bounds[1] = actorBounds.minimum.y;
-            bounds[2] = actorBounds.minimum.z;
-            bounds[3] = actorBounds.maximum.x;
-            bounds[4] = actorBounds.maximum.y;
-            bounds[5] = actorBounds.maximum.z;
-          }
-
-          return true;
-        }
-        case PxGeometryType::Enum::eCONVEXMESH: {
-          // std::cout << "physics type 2" << std::endl;
-
-          {
-            PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
-            PxTransform actorPose = actor->getGlobalPose();
-            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
-            bounds[0] = actorBounds.minimum.x;
-            bounds[1] = actorBounds.minimum.y;
-            bounds[2] = actorBounds.minimum.z;
-            bounds[3] = actorBounds.maximum.x;
-            bounds[4] = actorBounds.maximum.y;
-            bounds[5] = actorBounds.maximum.z;
-          }
-
-          return true;
-        }
-        case PxGeometryType::Enum::eTRIANGLEMESH: {
-          // std::cout << "physics type 3" << std::endl;
-
-          {
-            PxTriangleMeshGeometry &geometry = geometryHolder.triangleMesh();
-            PxTransform actorPose = actor->getGlobalPose();
-            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
-            bounds[0] = actorBounds.minimum.x;
-            bounds[1] = actorBounds.minimum.y;
-            bounds[2] = actorBounds.minimum.z;
-            bounds[3] = actorBounds.maximum.x;
-            bounds[4] = actorBounds.maximum.y;
-            bounds[5] = actorBounds.maximum.z;
-          }
-
-          return true;
-        }
-        default: {
-          std::cerr << "get bounds unknown geometry type for actor id " << id << " : " << (unsigned int)geometryType << std::endl;
-          return false;
-        }
-      }
+      return true;
     } else {
       std::cerr << "get bounds no shapes for actor id " << id << std::endl;
       return false;
