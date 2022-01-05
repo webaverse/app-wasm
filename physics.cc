@@ -991,6 +991,14 @@ PxBounds3 getActorBounds(PxRigidActor *actor) {
       PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
       return actorBounds;
     }
+    case PxGeometryType::Enum::eINVALID:
+    case PxGeometryType::Enum::eSPHERE:
+    case PxGeometryType::Enum::ePLANE:
+    case PxGeometryType::Enum::eHEIGHTFIELD:
+    case PxGeometryType::Enum::eGEOMETRY_COUNT:
+    {
+      break;
+    }
   }
   return PxBounds3();
 }
