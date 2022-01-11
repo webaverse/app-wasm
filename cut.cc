@@ -15,49 +15,46 @@ void cut(
   unsigned int *outFaces,
   unsigned int *numOutFaces
 ) {
-  TriangleMesh mesh(positions, faces, numFaces);
-  TransformationMatrix matrix = TransformationMatrix::multiply(
-    TransformationMatrix::mat_translation(position[0], position[1], position[2]),
-    TransformationMatrix::multiply(
-      TransformationMatrix::mat_rotation(quaternion[0], quaternion[1], quaternion[2], quaternion[3]),
-      TransformationMatrix::mat_scale(scale[0], scale[1], scale[2])
-    ));
-  TransformationMatrix matrixInverse = matrix.inverse();
-  mesh.transform(matrixInverse);
-
-  TriangleMesh upper;
-  TriangleMesh lower;
-  mesh.cut(Axis::Y, 0, &upper, &lower);
-  upper.repair();
-  lower.repair();
 
   {
-    const std::vector<Pointf3> &upperPositions = upper.vertices();
-    numOutPositions[0] = 0;
-    for (size_t i = 0; i < upperPositions.size(); i++) {
-      const Pointf3 &p = matrix.transform(upperPositions[i]);
-      outPositions[numOutPositions[0]++] = p.x;
-      outPositions[numOutPositions[0]++] = p.y;
-      outPositions[numOutPositions[0]++] = p.z;
-    }
+    // numOutPositions[0] = numPositions;
+    // for (int i = 0; i < numPositions; i++) {
+    //   outPositions[i] = positions[i];
+    // }
 
-    const std::vector<Point3> &upperIndices = upper.facets();
-    memcpy(outFaces, upperIndices.data(), upperIndices.size()*3*sizeof(upperIndices[0]));
-    numOutFaces[0] = upperIndices.size()*3;
+    // // memcpy(outFaces, faces, numFaces*sizeof(faces[0]));
+    // numOutFaces[0] = numFaces;
+    // for (int i = 0; i < numFaces; i++) {
+    //   outFaces[i] = faces[i];
+    // }
+
+    // position
+
+    numOutPositions[0] = 9;
+
+    outPositions[0] = -1;
+    outPositions[1] = 0;
+    outPositions[2] = 0;
+
+    outPositions[3] = 0;
+    outPositions[4] = 3;
+    outPositions[5] = 0;
+
+    outPositions[6] = 2;
+    outPositions[7] = 0;
+    outPositions[8] = 0;
+
+    // face
+
+    numOutFaces[0] = 3;
+    
+    outFaces[0] = 0;
+    outFaces[1] = 1;
+    outFaces[2] = 2;
   }
   {
-    const std::vector<Pointf3> &upperPositions = lower.vertices();
     numOutPositions[1] = 0;
-    for (size_t i = 0; i < upperPositions.size(); i++) {
-      const Pointf3 &p = matrix.transform(upperPositions[i]);
-      outPositions[numOutPositions[0] + numOutPositions[1]++] = p.x;
-      outPositions[numOutPositions[0] + numOutPositions[1]++] = p.y;
-      outPositions[numOutPositions[0] + numOutPositions[1]++] = p.z;
-    }
-
-    const std::vector<Point3> &upperIndices = lower.facets();
-    memcpy(outFaces + numOutFaces[0], upperIndices.data(), upperIndices.size()*3*sizeof(upperIndices[1]));
-    numOutFaces[1] = upperIndices.size()*3;
+    numOutFaces[1] = 0;
   }
 
   /* csgjs_plane plane;
