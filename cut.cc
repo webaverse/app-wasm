@@ -7,6 +7,8 @@ void cut(
   unsigned int numPositions,
   float *normals,
   unsigned int numNormals,
+  float *uvs,
+  unsigned int numUvs,
   unsigned int *faces,
   unsigned int numFaces,
 
@@ -18,18 +20,28 @@ void cut(
   unsigned int *numOutPositions,
   float *outNormals,
   unsigned int *numOutNormals,
+  float *outUvs,
+  unsigned int *numOutUvs,
   unsigned int *outFaces,
   unsigned int *numOutFaces
 ) {
+
+  // float *coords = positions;
 
   {
     numOutPositions[0] = numPositions;
     for(int i=0;i<numPositions;i++){
       outPositions[i] = positions[i];
     }
+
     numOutNormals[0] = numNormals;
     for(int i=0;i<numNormals;i++){
       outNormals[i] = normals[i];
+    }
+
+    numOutUvs[0] = numUvs;
+    for(int i=0;i<numUvs;i++){
+      outUvs[i] = uvs[i];
     }
 
     numOutFaces[0] = numFaces;
@@ -42,9 +54,15 @@ void cut(
     for(int i=0;i<numPositions;i++){
       outPositions[numPositions + i] = positions[i]+2;
     }
+
     numOutNormals[1] = numNormals;
     for(int i=0;i<numNormals;i++){
       outNormals[numNormals + i] = normals[i];
+    }
+
+    numOutUvs[1] = numUvs;
+    for(int i=0;i<numUvs;i++){
+      outUvs[numUvs + i] = uvs[i];
     }
 
     numOutFaces[1] = numFaces;
