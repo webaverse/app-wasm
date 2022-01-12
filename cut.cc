@@ -38,9 +38,19 @@ void cut(
     }
   }
   {
-    numOutPositions[1] = 0;
-    numOutNormals[1] = 0;
-    numOutFaces[1] = 0;
+    numOutPositions[1] = numPositions;
+    for(int i=0;i<numPositions;i++){
+      outPositions[numPositions + i] = positions[i]+2;
+    }
+    numOutNormals[1] = numNormals;
+    for(int i=0;i<numNormals;i++){
+      outNormals[numNormals + i] = normals[i];
+    }
+
+    numOutFaces[1] = numFaces;
+    for(int i=0;i<numFaces;i++){
+      outFaces[numFaces + i] = faces[i];
+    }
   }
 
   /* csgjs_plane plane;
