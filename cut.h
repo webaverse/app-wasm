@@ -6,6 +6,8 @@
 void cut(
   float *positions,
   unsigned int numPositions,
+  float *normals,
+  unsigned int numNormals,
   unsigned int *faces,
   unsigned int numFaces,
   float *position,
@@ -13,6 +15,8 @@ void cut(
   float *scale,
   float *outPositions,
   unsigned int *numOutPositions,
+  float *outNormals,
+  unsigned int *numOutNormals,
   unsigned int *outFaces,
   unsigned int *numOutFaces
 );

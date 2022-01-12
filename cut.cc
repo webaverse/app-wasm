@@ -5,6 +5,8 @@
 void cut(
   float *positions,
   unsigned int numPositions,
+  float *normals,
+  unsigned int numNormals,
   unsigned int *faces,
   unsigned int numFaces,
   float *position,
@@ -12,37 +14,30 @@ void cut(
   float *scale,
   float *outPositions,
   unsigned int *numOutPositions,
+  float *outNormals,
+  unsigned int *numOutNormals,
   unsigned int *outFaces,
   unsigned int *numOutFaces
 ) {
 
   {
-    // position
+    numOutPositions[0] = numPositions;
+    for(int i=0;i<numPositions;i++){
+      outPositions[i] = positions[i];
+    }
+    numOutNormals[0] = numNormals;
+    for(int i=0;i<numNormals;i++){
+      outNormals[i] = normals[i];
+    }
 
-    numOutPositions[0] = 9;
-
-    outPositions[0] = positions[0];
-    outPositions[1] = positions[1];
-    outPositions[2] = positions[2];
-
-    outPositions[3] = positions[3];
-    outPositions[4] = positions[4];
-    outPositions[5] = positions[5];
-
-    outPositions[6] = positions[6];
-    outPositions[7] = positions[7];
-    outPositions[8] = positions[8];
-
-    // face
-
-    numOutFaces[0] = 3;
-    
-    outFaces[0] = faces[0];
-    outFaces[1] = faces[1];
-    outFaces[2] = faces[2];
+    numOutFaces[0] = numFaces;
+    for(int i=0;i<numFaces;i++){
+      outFaces[i] = faces[i];
+    }
   }
   {
     numOutPositions[1] = 0;
+    numOutNormals[1] = 0;
     numOutFaces[1] = 0;
   }
 
