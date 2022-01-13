@@ -1,4 +1,5 @@
 #include "cut.h"
+#include <vector>
 
 //using namespace Slic3r;
 
@@ -26,50 +27,81 @@ void cut(
   unsigned int *numOutFaces
 ) {
 
-  // float *coords = positions;
+  float *coords = positions;
+  float numPoints = numPositions / 3;
+  float indices = numFaces / 3;
 
-  {
-    numOutPositions[0] = numPositions;
-    for(int i=0;i<numPositions;i++){
-      outPositions[i] = positions[i];
-    }
+  std::vector<float> points1;
+  std::vector<float> points2;
 
-    numOutNormals[0] = numNormals;
-    for(int i=0;i<numNormals;i++){
-      outNormals[i] = normals[i];
-    }
+  std::vector<float> normals1;
+  std::vector<float> normals2;
 
-    numOutUvs[0] = numUvs;
-    for(int i=0;i<numUvs;i++){
-      outUvs[i] = uvs[i];
-    }
+  std::vector<float> uvs1;
+  std::vector<float> uvs2;
 
-    numOutFaces[0] = numFaces;
-    for(int i=0;i<numFaces;i++){
-      outFaces[i] = faces[i];
-    }
+  for(int i=0;i<numPositions;i++){
+    points1.push_back(positions[i]);
   }
-  {
-    numOutPositions[1] = numPositions;
-    for(int i=0;i<numPositions;i++){
-      outPositions[numPositions + i] = positions[i]+2;
-    }
 
-    numOutNormals[1] = numNormals;
-    for(int i=0;i<numNormals;i++){
-      outNormals[numNormals + i] = normals[i];
-    }
+  // outPositions = &points1[0]; // wrong
+  memcpy(outPositions, &points1[0], numPositions*4);
+  memcpy(outNormals, normals, numNormals*4);
+  memcpy(outUvs, uvs, numUvs*4);
+  memcpy(outFaces, faces, numFaces*4);
 
-    numOutUvs[1] = numUvs;
-    for(int i=0;i<numUvs;i++){
-      outUvs[numUvs + i] = uvs[i];
-    }
+  numOutPositions[0] = numPositions;
+  numOutNormals[0] = numNormals;
+  numOutUvs[0] = numUvs;
+  numOutFaces[0] = numFaces;
 
-    numOutFaces[1] = numFaces;
-    for(int i=0;i<numFaces;i++){
-      outFaces[numFaces + i] = faces[i];
-    }
-  }
+  numOutPositions[1] = 0;
+  numOutNormals[1] = 0;
+  numOutUvs[1] = 0;
+  numOutFaces[1] = 0;
+
+  // {
+  //   numOutPositions[0] = numPositions;
+  //   for(int i=0;i<numPositions;i++){
+  //     outPositions[i] = positions[i];
+  //   }
+
+  //   numOutNormals[0] = numNormals;
+  //   for(int i=0;i<numNormals;i++){
+  //     outNormals[i] = normals[i];
+  //   }
+
+  //   numOutUvs[0] = numUvs;
+  //   for(int i=0;i<numUvs;i++){
+  //     outUvs[i] = uvs[i];
+  //   }
+
+  //   numOutFaces[0] = numFaces;
+  //   for(int i=0;i<numFaces;i++){
+  //     outFaces[i] = faces[i];
+  //   }
+  // }
+  // {
+  //   numOutPositions[1] = numPositions;
+  //   for(int i=0;i<numPositions;i++){
+  //     outPositions[numPositions + i] = positions[i]+2;
+  //   }
+
+  //   numOutNormals[1] = numNormals;
+  //   for(int i=0;i<numNormals;i++){
+  //     outNormals[numNormals + i] = normals[i];
+  //   }
+
+  //   numOutUvs[1] = numUvs;
+  //   for(int i=0;i<numUvs;i++){
+  //     outUvs[numUvs + i] = uvs[i];
+  //   }
+
+  //   numOutFaces[1] = numFaces;
+  //   for(int i=0;i<numFaces;i++){
+  //     outFaces[numFaces + i] = faces[i];
+  //   }
+  // }
 
   /* csgjs_plane plane;
   plane.normal = csgjs_vector(0, 1, 0);
