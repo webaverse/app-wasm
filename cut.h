@@ -1,7 +1,8 @@
 // #define CSGJS_HEADER_ONLY
 // #include "csgjs.cpp"
 // #include "earcut.hpp"
-#include "TriangleMesh.hpp"
+// #include "TriangleMesh.hpp"
+#include "./threepp/math/Vector3.hpp"
 
 void cut(
   float *positions,

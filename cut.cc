@@ -3,6 +3,13 @@
 
 //using namespace Slic3r;
 
+unsigned int getVertexIndex(int faceIdx, int vert, unsigned int *indices) {
+  // vert = 0, 1 or 2.
+  int idx = faceIdx * 3 + vert;
+  // return indices ? indices[idx] : idx;
+  return indices[idx];
+}
+
 void cut(
   float *positions,
   unsigned int numPositions,
@@ -27,9 +34,12 @@ void cut(
   unsigned int *numOutFaces
 ) {
 
+  unsigned int *indices = faces;
+
   float *coords = positions;
-  float numPoints = numPositions / 3;
-  float indices = numFaces / 3;
+  unsigned int pointsCount = numPositions / 3;
+  unsigned int facesCount = numFaces / 3;
+  // float indices = numFaces / 3;
 
   std::vector<float> points1;
   std::vector<float> points2;
@@ -40,21 +50,42 @@ void cut(
   std::vector<float> uvs1;
   std::vector<float> uvs2;
 
-  // for(int i=0;i<numPositions;i++){
+  // threepp::Vector3 _vector1{};
+
+  // for(int i=0;i<numPositions/2;i++){
   //   points1.push_back(positions[i]);
   // }
 
-  for(int i=0;i<numFaces;i++){
+  for(int i=0;i<facesCount;i++){
+  // for(int i=0;i<1;i++){
+    unsigned int va = getVertexIndex(i, 0, indices);
+    unsigned int vb = getVertexIndex(i, 1, indices);
+    unsigned int vc = getVertexIndex(i, 2, indices);
+
+    // threepp::Vector3 v0(coords[3 * va], coords[3 * va + 1], coords[3 * va + 2]);
+    // threepp::Vector3 v1(coords[3 * vb], coords[3 * vb + 1], coords[3 * vb + 2]);
+    // threepp::Vector3 v2(coords[3 * vc], coords[3 * vc + 1], coords[3 * vc + 2]);
     
+    points1.push_back(coords[3 * va]);
+    points1.push_back(coords[3 * va + 1]);
+    points1.push_back(coords[3 * va + 2]);
+    
+    points1.push_back(coords[3 * vb]);
+    points1.push_back(coords[3 * vb + 1]);
+    points1.push_back(coords[3 * vb + 2]);
+    
+    points1.push_back(coords[3 * vc]);
+    points1.push_back(coords[3 * vc + 1]);
+    points1.push_back(coords[3 * vc + 2]);
   }
 
   // outPositions = &points1[0]; // wrong
-  memcpy(outPositions, &points1[0], numPositions*4);
+  memcpy(outPositions, &points1[0], points1.size()*4);
   memcpy(outNormals, normals, numNormals*4);
   memcpy(outUvs, uvs, numUvs*4);
   memcpy(outFaces, faces, numFaces*4);
 
-  numOutPositions[0] = numPositions;
+  numOutPositions[0] = points1.size();
   numOutNormals[0] = numNormals;
   numOutUvs[0] = numUvs;
   numOutFaces[0] = numFaces;
