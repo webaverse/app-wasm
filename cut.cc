@@ -77,17 +77,38 @@ void cut(
     points1.push_back(coords[3 * vc]);
     points1.push_back(coords[3 * vc + 1]);
     points1.push_back(coords[3 * vc + 2]);
+    
+    normals1.push_back(normals[3 * va]);
+    normals1.push_back(normals[3 * va + 1]);
+    normals1.push_back(normals[3 * va + 2]);
+    
+    normals1.push_back(normals[3 * vb]);
+    normals1.push_back(normals[3 * vb + 1]);
+    normals1.push_back(normals[3 * vb + 2]);
+    
+    normals1.push_back(normals[3 * vc]);
+    normals1.push_back(normals[3 * vc + 1]);
+    normals1.push_back(normals[3 * vc + 2]);
+    
+    uvs1.push_back(uvs[2 * va]);
+    uvs1.push_back(uvs[2 * va + 1]);
+    
+    uvs1.push_back(uvs[2 * vb]);
+    uvs1.push_back(uvs[2 * vb + 1]);
+    
+    uvs1.push_back(uvs[2 * vc]);
+    uvs1.push_back(uvs[2 * vc + 1]);
   }
 
   // outPositions = &points1[0]; // wrong
   memcpy(outPositions, &points1[0], points1.size()*4);
-  memcpy(outNormals, normals, numNormals*4);
-  memcpy(outUvs, uvs, numUvs*4);
+  memcpy(outNormals, &normals1[0], normals1.size()*4);
+  memcpy(outUvs, &uvs1[0], uvs1.size()*4);
   memcpy(outFaces, faces, numFaces*4);
 
   numOutPositions[0] = points1.size();
-  numOutNormals[0] = numNormals;
-  numOutUvs[0] = numUvs;
+  numOutNormals[0] = normals1.size();
+  numOutUvs[0] = uvs1.size();
   numOutFaces[0] = numFaces;
 
   numOutPositions[1] = 0;
