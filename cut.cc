@@ -40,8 +40,12 @@ void cut(
   std::vector<float> uvs1;
   std::vector<float> uvs2;
 
-  for(int i=0;i<numPositions;i++){
-    points1.push_back(positions[i]);
+  // for(int i=0;i<numPositions;i++){
+  //   points1.push_back(positions[i]);
+  // }
+
+  for(int i=0;i<numFaces;i++){
+    
   }
 
   // outPositions = &points1[0]; // wrong
