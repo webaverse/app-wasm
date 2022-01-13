@@ -1,8 +1,6 @@
 #include "cut.h"
 #include <vector>
 
-//using namespace Slic3r;
-
 unsigned int getVertexIndex(int faceIdx, int vert, unsigned int *indices) {
   // vert = 0, 1 or 2.
   int idx = faceIdx * 3 + vert;
@@ -39,7 +37,6 @@ void cut(
   float *coords = positions;
   unsigned int pointsCount = numPositions / 3;
   unsigned int facesCount = numFaces / 3;
-  // float indices = numFaces / 3;
 
   std::vector<float> points1;
   std::vector<float> points2;
@@ -50,22 +47,11 @@ void cut(
   std::vector<float> uvs1;
   std::vector<float> uvs2;
 
-  // threepp::Vector3 _vector1{};
-
-  // for(int i=0;i<numPositions/2;i++){
-  //   points1.push_back(positions[i]);
-  // }
-
   for(int i=0;i<facesCount;i++){
-  // for(int i=0;i<1;i++){
     unsigned int va = getVertexIndex(i, 0, indices);
     unsigned int vb = getVertexIndex(i, 1, indices);
     unsigned int vc = getVertexIndex(i, 2, indices);
 
-    // threepp::Vector3 v0(coords[3 * va], coords[3 * va + 1], coords[3 * va + 2]);
-    // threepp::Vector3 v1(coords[3 * vb], coords[3 * vb + 1], coords[3 * vb + 2]);
-    // threepp::Vector3 v2(coords[3 * vc], coords[3 * vc + 1], coords[3 * vc + 2]);
-    
     points1.push_back(coords[3 * va]);
     points1.push_back(coords[3 * va + 1]);
     points1.push_back(coords[3 * va + 2]);
@@ -100,64 +86,66 @@ void cut(
     uvs1.push_back(uvs[2 * vc + 1]);
   }
 
-  // outPositions = &points1[0]; // wrong
   memcpy(outPositions, &points1[0], points1.size()*4);
   memcpy(outNormals, &normals1[0], normals1.size()*4);
   memcpy(outUvs, &uvs1[0], uvs1.size()*4);
-  memcpy(outFaces, faces, numFaces*4);
 
   numOutPositions[0] = points1.size();
   numOutNormals[0] = normals1.size();
   numOutUvs[0] = uvs1.size();
-  numOutFaces[0] = numFaces;
 
-  numOutPositions[1] = 0;
-  numOutNormals[1] = 0;
-  numOutUvs[1] = 0;
-  numOutFaces[1] = 0;
 
-  // {
-  //   numOutPositions[0] = numPositions;
-  //   for(int i=0;i<numPositions;i++){
-  //     outPositions[i] = positions[i];
-  //   }
 
-  //   numOutNormals[0] = numNormals;
-  //   for(int i=0;i<numNormals;i++){
-  //     outNormals[i] = normals[i];
-  //   }
+  for(int i=0;i<facesCount/2;i++){
+    unsigned int va = getVertexIndex(i, 0, indices);
+    unsigned int vb = getVertexIndex(i, 1, indices);
+    unsigned int vc = getVertexIndex(i, 2, indices);
 
-  //   numOutUvs[0] = numUvs;
-  //   for(int i=0;i<numUvs;i++){
-  //     outUvs[i] = uvs[i];
-  //   }
+    points2.push_back(coords[3 * va]);
+    points2.push_back(coords[3 * va + 1]);
+    points2.push_back(coords[3 * va + 2]);
+    
+    points2.push_back(coords[3 * vb]);
+    points2.push_back(coords[3 * vb + 1]);
+    points2.push_back(coords[3 * vb + 2]);
+    
+    points2.push_back(coords[3 * vc]);
+    points2.push_back(coords[3 * vc + 1]);
+    points2.push_back(coords[3 * vc + 2]);
+    
+    normals2.push_back(normals[3 * va]);
+    normals2.push_back(normals[3 * va + 1]);
+    normals2.push_back(normals[3 * va + 2]);
+    
+    normals2.push_back(normals[3 * vb]);
+    normals2.push_back(normals[3 * vb + 1]);
+    normals2.push_back(normals[3 * vb + 2]);
+    
+    normals2.push_back(normals[3 * vc]);
+    normals2.push_back(normals[3 * vc + 1]);
+    normals2.push_back(normals[3 * vc + 2]);
+    
+    uvs2.push_back(uvs[2 * va]);
+    uvs2.push_back(uvs[2 * va + 1]);
+    
+    uvs2.push_back(uvs[2 * vb]);
+    uvs2.push_back(uvs[2 * vb + 1]);
+    
+    uvs2.push_back(uvs[2 * vc]);
+    uvs2.push_back(uvs[2 * vc + 1]);
+  }
 
-  //   numOutFaces[0] = numFaces;
-  //   for(int i=0;i<numFaces;i++){
-  //     outFaces[i] = faces[i];
-  //   }
-  // }
-  // {
-  //   numOutPositions[1] = numPositions;
-  //   for(int i=0;i<numPositions;i++){
-  //     outPositions[numPositions + i] = positions[i]+2;
-  //   }
+  for(int i=0;i<points2.size();i++){
+    points2[i] += 1;
+  }
 
-  //   numOutNormals[1] = numNormals;
-  //   for(int i=0;i<numNormals;i++){
-  //     outNormals[numNormals + i] = normals[i];
-  //   }
+  memcpy(outPositions + points1.size(), &points2[0], points2.size()*4);
+  memcpy(outNormals + normals1.size(), &normals2[0], normals2.size()*4);
+  memcpy(outUvs + uvs1.size(), &uvs2[0], uvs2.size()*4);
 
-  //   numOutUvs[1] = numUvs;
-  //   for(int i=0;i<numUvs;i++){
-  //     outUvs[numUvs + i] = uvs[i];
-  //   }
-
-  //   numOutFaces[1] = numFaces;
-  //   for(int i=0;i<numFaces;i++){
-  //     outFaces[numFaces + i] = faces[i];
-  //   }
-  // }
+  numOutPositions[1] = points2.size();
+  numOutNormals[1] = normals2.size();
+  numOutUvs[1] = uvs2.size();
 
   /* csgjs_plane plane;
   plane.normal = csgjs_vector(0, 1, 0);
