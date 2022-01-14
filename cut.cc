@@ -599,7 +599,154 @@ void cut(
           uvs2.push_back(u2Y);
         }
       }
-    }
+    } else if (sign1 == sign2) {
+        if (sign1 == -1) {
+          if (sign0 == 1) {
+            // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v1, v0, n1, n0, u1, u0)
+            // let { vI: vI1, nI: nI1, uI: uI1 } = this.getIntersectNode(v2, v0, n2, n0, u2, u0)
+            // points1.push(v1, vI1, vI0)
+            // normals1.push(n1, nI1, nI0)
+            // uvs1.push(u1, uI1, uI0)
+            // points1.push(v1, v2, vI1)
+            // normals1.push(n1, n2, nI1)
+            // uvs1.push(u1, u2, uI1)
+            // points2.push(v0, vI0, vI1)
+            // normals2.push(n0, nI0, nI1)
+            // uvs2.push(u0, uI0, uI1)
+          } else if (sign0 == 0) {
+            // points1.push(v0, v1, v2)
+            // normals1.push(n0, n1, n2)
+            // uvs1.push(u0, u1, u2)
+          }
+        } else if (sign1 == 1) {
+          if (sign0 == -1) {
+            // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v1, v0, n1, n0, u1, u0)
+            // let { vI: vI1, nI: nI1, uI: uI1 } = this.getIntersectNode(v2, v0, n2, n0, u2, u0)
+            // points2.push(v1, vI1, vI0)
+            // normals2.push(n1, nI1, nI0)
+            // uvs2.push(u1, uI1, uI0)
+            // points2.push(v1, v2, vI1)
+            // normals2.push(n1, n2, nI1)
+            // uvs2.push(u1, u2, uI1)
+            // points1.push(v0, vI0, vI1)
+            // normals1.push(n0, nI0, nI1)
+            // uvs1.push(u0, uI0, uI1)
+          } else if (sign0 == 0) {
+            // points2.push(v0, v1, v2)
+            // normals2.push(n0, n1, n2)
+            // uvs2.push(u0, u1, u2)
+          }
+        } else if (sign1 == 0) {
+          if (sign0 == -1) {
+            // points1.push(v0, v1, v2)
+            // normals1.push(n0, n1, n2)
+            // uvs1.push(u0, u1, u2)
+          } else if (sign0 == 1) {
+            // points2.push(v0, v1, v2)
+            // normals2.push(n0, n1, n2)
+            // uvs2.push(u0, u1, u2)
+          }
+        }
+      } else if (sign2 == sign0) {
+        if (sign2 == -1) {
+          if (sign1 == 1) {
+            // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v2, v1, n2, n1, u2, u1)
+            // let { vI: vI1, nI: nI1, uI: uI1 } = this.getIntersectNode(v0, v1, n0, n1, u0, u1)
+            // points1.push(v2, vI1, vI0)
+            // normals1.push(n2, nI1, nI0)
+            // uvs1.push(u2, uI1, uI0)
+            // points1.push(v2, v0, vI1)
+            // normals1.push(n2, n0, nI1)
+            // uvs1.push(u2, u0, uI1)
+            // points2.push(v1, vI0, vI1)
+            // normals2.push(n1, nI0, nI1)
+            // uvs2.push(u1, uI0, uI1)
+          } else if (sign1 == 0) {
+            // points1.push(v0, v1, v2)
+            // normals1.push(n0, n1, n2)
+            // uvs1.push(u0, u1, u2)
+          }
+        } else if (sign2 == 1) {
+          if (sign1 == -1) {
+            // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v2, v1, n2, n1, u2, u1)
+            // let { vI: vI1, nI: nI1, uI: uI1 } = this.getIntersectNode(v0, v1, n0, n1, u0, u1)
+            // points2.push(v2, vI1, vI0)
+            // normals2.push(n2, nI1, nI0)
+            // uvs2.push(u2, uI1, uI0)
+            // points2.push(v2, v0, vI1)
+            // normals2.push(n2, n0, nI1)
+            // uvs2.push(u2, u0, uI1)
+            // points1.push(v1, vI0, vI1)
+            // normals1.push(n1, nI0, nI1)
+            // uvs1.push(u1, uI0, uI1)
+          } else if (sign1 == 0) {
+            // points2.push(v0, v1, v2)
+            // normals2.push(n0, n1, n2)
+            // uvs2.push(u0, u1, u2)
+          }
+        } else if (sign2 == 0) {
+          if (sign1 == -1) {
+            // points1.push(v0, v1, v2)
+            // normals1.push(n0, n1, n2)
+            // uvs1.push(u0, u1, u2)
+          } else if (sign1 == 1) {
+            // points2.push(v0, v1, v2)
+            // normals2.push(n0, n1, n2)
+            // uvs2.push(u0, u1, u2)
+          }
+        }
+      } else if (sign0 == 0) {
+        // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v1, v2, n1, n2, u1, u2)
+        if (sign1 == 1) {
+          // points1.push(v0, vI0, v2)
+          // normals1.push(n0, nI0, n2)
+          // uvs1.push(u0, uI0, u2)
+          // points2.push(v0, v1, vI0)
+          // normals2.push(n0, n1, nI0)
+          // uvs2.push(u0, u1, uI0)
+        } else if (sign1 == -1) {
+          // points2.push(v0, vI0, v2)
+          // normals2.push(n0, nI0, n2)
+          // uvs2.push(u0, uI0, u2)
+          // points1.push(v0, v1, vI0)
+          // normals1.push(n0, n1, nI0)
+          // uvs1.push(u0, u1, uI0)
+        }
+      } else if (sign1 == 0) {
+        // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v0, v2, n0, n2, u0, u2)
+        if (sign2 == 1) {
+          // points1.push(v1, vI0, v0)
+          // normals1.push(n1, nI0, n0)
+          // uvs1.push(u1, uI0, u0)
+          // points2.push(v1, v2, vI0)
+          // normals2.push(n1, n2, nI0)
+          // uvs2.push(u1, u2, uI0)
+        } else if (sign2 == -1) {
+          // points2.push(v1, vI0, v0)
+          // normals2.push(n1, nI0, n0)
+          // uvs2.push(u1, uI0, u0)
+          // points1.push(v1, v2, vI0)
+          // normals1.push(n1, n2, nI0)
+          // uvs1.push(u1, u2, uI0)
+        }
+      } else if (sign2 == 0) {
+        // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v1, v0, n1, n0, u1, u0)
+        if (sign0 == 1) {
+          // points1.push(v2, vI0, v1)
+          // normals1.push(n2, nI0, n1)
+          // uvs1.push(u2, uI0, u1)
+          // points2.push(v2, v0, vI0)
+          // normals2.push(n2, n0, nI0)
+          // uvs2.push(u2, u0, uI0)
+        } else if (sign0 == -1) {
+          // points2.push(v2, vI0, v1)
+          // normals2.push(n2, nI0, n1)
+          // uvs2.push(u2, uI0, u1)
+          // points1.push(v2, v0, vI0)
+          // normals1.push(n2, n0, nI0)
+          // uvs1.push(u2, u0, uI0)
+        }
+      }
   }
 
   memcpy(outPositions, &points1[0], points1.size()*4);
