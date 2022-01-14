@@ -8,6 +8,24 @@ unsigned int getVertexIndex(int faceIdx, int vert, unsigned int *indices) {
   return indices[idx];
 }
 
+// https://stackoverflow.com/a/4609795/3596736
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
+float dot( float ax, float ay, float az, float bx, float by, float bz ) {
+
+  return ax * bx + ay * by + az * bz;
+
+}
+
+float distanceToPoint( float x, float y, float z ) {
+
+  // return this.normal.dot( point ) + this.constant;
+  return dot( 1, 0, 0, x, y, z ) + 0;
+
+}
+
 void cut(
   float *positions,
   unsigned int numPositions,
@@ -52,38 +70,122 @@ void cut(
     unsigned int vb = getVertexIndex(i, 1, indices);
     unsigned int vc = getVertexIndex(i, 2, indices);
 
-    points1.push_back(coords[3 * va]);
-    points1.push_back(coords[3 * va + 1]);
-    points1.push_back(coords[3 * va + 2]);
+    float *v0 = &coords[3 * va];
+    float *v1 = &coords[3 * vb];
+    float *v2 = &coords[3 * vc];
+
+    float *n0 = &coords[3 * va];
+    float *n1 = &coords[3 * vb];
+    float *n2 = &coords[3 * vc];
+
+    float *u0 = &coords[2 * va];
+    float *u1 = &coords[2 * vb];
+    float *u2 = &coords[2 * vc];
+
+    float d0 = distanceToPoint(*(v0), *(v0+1), *(v0+2));
+    float d1 = distanceToPoint(*(v1), *(v1+1), *(v1+2));
+    float d2 = distanceToPoint(*(v2), *(v2+1), *(v2+2));
+
+    int sign0 = sgn(d0);
+    int sign1 = sgn(d1);
+    int sign2 = sgn(d2);
+
+    if (sign0 == sign1 && sign1 == sign2 && sign2 == sign0) {
+      if (sign0 == -1) {
+        // points1.push(v0, v1, v2)
+        points1.push_back(*(v0));
+        points1.push_back(*(v0+1));
+        points1.push_back(*(v0+2));
+        points1.push_back(*(v1));
+        points1.push_back(*(v1+1));
+        points1.push_back(*(v1+2));
+        points1.push_back(*(v2));
+        points1.push_back(*(v2+1));
+        points1.push_back(*(v2+2));
+        
+        // normals1.push_back(n0, n1, n2)
+        normals1.push_back(*(n0));
+        normals1.push_back(*(n0+1));
+        normals1.push_back(*(n0+2));
+        normals1.push_back(*(n1));
+        normals1.push_back(*(n1+1));
+        normals1.push_back(*(n1+2));
+        normals1.push_back(*(n2));
+        normals1.push_back(*(n2+1));
+        normals1.push_back(*(n2+2));
+
+        // uvs1.push_back(u0, u1, u2)
+        uvs1.push_back(*(u0));
+        uvs1.push_back(*(u0+1));
+        uvs1.push_back(*(u1));
+        uvs1.push_back(*(u1+1));
+        uvs1.push_back(*(u2));
+        uvs1.push_back(*(u2+1));
+      } else if (sign0 == 1) {
+        // points2.push(v0, v1, v2)
+        points2.push_back(*(v0));
+        points2.push_back(*(v0+1));
+        points2.push_back(*(v0+2));
+        points2.push_back(*(v1));
+        points2.push_back(*(v1+1));
+        points2.push_back(*(v1+2));
+        points2.push_back(*(v2));
+        points2.push_back(*(v2+1));
+        points2.push_back(*(v2+2));
+        
+        // normals2.push_back(n0, n1, n2)
+        normals2.push_back(*(n0));
+        normals2.push_back(*(n0+1));
+        normals2.push_back(*(n0+2));
+        normals2.push_back(*(n1));
+        normals2.push_back(*(n1+1));
+        normals2.push_back(*(n1+2));
+        normals2.push_back(*(n2));
+        normals2.push_back(*(n2+1));
+        normals2.push_back(*(n2+2));
+
+        // uvs2.push_back(u0, u1, u2)
+        uvs2.push_back(*(u0));
+        uvs2.push_back(*(u0+1));
+        uvs2.push_back(*(u1));
+        uvs2.push_back(*(u1+1));
+        uvs2.push_back(*(u2));
+        uvs2.push_back(*(u2+1));
+      }
+    }
+
+    // points1.push_back(coords[3 * va]);
+    // points1.push_back(coords[3 * va + 1]);
+    // points1.push_back(coords[3 * va + 2]);
     
-    points1.push_back(coords[3 * vb]);
-    points1.push_back(coords[3 * vb + 1]);
-    points1.push_back(coords[3 * vb + 2]);
+    // points1.push_back(coords[3 * vb]);
+    // points1.push_back(coords[3 * vb + 1]);
+    // points1.push_back(coords[3 * vb + 2]);
     
-    points1.push_back(coords[3 * vc]);
-    points1.push_back(coords[3 * vc + 1]);
-    points1.push_back(coords[3 * vc + 2]);
+    // points1.push_back(coords[3 * vc]);
+    // points1.push_back(coords[3 * vc + 1]);
+    // points1.push_back(coords[3 * vc + 2]);
     
-    normals1.push_back(normals[3 * va]);
-    normals1.push_back(normals[3 * va + 1]);
-    normals1.push_back(normals[3 * va + 2]);
+    // normals1.push_back(normals[3 * va]);
+    // normals1.push_back(normals[3 * va + 1]);
+    // normals1.push_back(normals[3 * va + 2]);
     
-    normals1.push_back(normals[3 * vb]);
-    normals1.push_back(normals[3 * vb + 1]);
-    normals1.push_back(normals[3 * vb + 2]);
+    // normals1.push_back(normals[3 * vb]);
+    // normals1.push_back(normals[3 * vb + 1]);
+    // normals1.push_back(normals[3 * vb + 2]);
     
-    normals1.push_back(normals[3 * vc]);
-    normals1.push_back(normals[3 * vc + 1]);
-    normals1.push_back(normals[3 * vc + 2]);
+    // normals1.push_back(normals[3 * vc]);
+    // normals1.push_back(normals[3 * vc + 1]);
+    // normals1.push_back(normals[3 * vc + 2]);
     
-    uvs1.push_back(uvs[2 * va]);
-    uvs1.push_back(uvs[2 * va + 1]);
+    // uvs1.push_back(uvs[2 * va]);
+    // uvs1.push_back(uvs[2 * va + 1]);
     
-    uvs1.push_back(uvs[2 * vb]);
-    uvs1.push_back(uvs[2 * vb + 1]);
+    // uvs1.push_back(uvs[2 * vb]);
+    // uvs1.push_back(uvs[2 * vb + 1]);
     
-    uvs1.push_back(uvs[2 * vc]);
-    uvs1.push_back(uvs[2 * vc + 1]);
+    // uvs1.push_back(uvs[2 * vc]);
+    // uvs1.push_back(uvs[2 * vc + 1]);
   }
 
   memcpy(outPositions, &points1[0], points1.size()*4);
@@ -96,44 +198,44 @@ void cut(
 
 
 
-  for(int i=0;i<facesCount/2;i++){
-    unsigned int va = getVertexIndex(i, 0, indices);
-    unsigned int vb = getVertexIndex(i, 1, indices);
-    unsigned int vc = getVertexIndex(i, 2, indices);
+  // for(int i=0;i<facesCount/2;i++){
+  //   unsigned int va = getVertexIndex(i, 0, indices);
+  //   unsigned int vb = getVertexIndex(i, 1, indices);
+  //   unsigned int vc = getVertexIndex(i, 2, indices);
 
-    points2.push_back(coords[3 * va]);
-    points2.push_back(coords[3 * va + 1]);
-    points2.push_back(coords[3 * va + 2]);
+  //   points2.push_back(coords[3 * va]);
+  //   points2.push_back(coords[3 * va + 1]);
+  //   points2.push_back(coords[3 * va + 2]);
     
-    points2.push_back(coords[3 * vb]);
-    points2.push_back(coords[3 * vb + 1]);
-    points2.push_back(coords[3 * vb + 2]);
+  //   points2.push_back(coords[3 * vb]);
+  //   points2.push_back(coords[3 * vb + 1]);
+  //   points2.push_back(coords[3 * vb + 2]);
     
-    points2.push_back(coords[3 * vc]);
-    points2.push_back(coords[3 * vc + 1]);
-    points2.push_back(coords[3 * vc + 2]);
+  //   points2.push_back(coords[3 * vc]);
+  //   points2.push_back(coords[3 * vc + 1]);
+  //   points2.push_back(coords[3 * vc + 2]);
     
-    normals2.push_back(normals[3 * va]);
-    normals2.push_back(normals[3 * va + 1]);
-    normals2.push_back(normals[3 * va + 2]);
+  //   normals2.push_back(normals[3 * va]);
+  //   normals2.push_back(normals[3 * va + 1]);
+  //   normals2.push_back(normals[3 * va + 2]);
     
-    normals2.push_back(normals[3 * vb]);
-    normals2.push_back(normals[3 * vb + 1]);
-    normals2.push_back(normals[3 * vb + 2]);
+  //   normals2.push_back(normals[3 * vb]);
+  //   normals2.push_back(normals[3 * vb + 1]);
+  //   normals2.push_back(normals[3 * vb + 2]);
     
-    normals2.push_back(normals[3 * vc]);
-    normals2.push_back(normals[3 * vc + 1]);
-    normals2.push_back(normals[3 * vc + 2]);
+  //   normals2.push_back(normals[3 * vc]);
+  //   normals2.push_back(normals[3 * vc + 1]);
+  //   normals2.push_back(normals[3 * vc + 2]);
     
-    uvs2.push_back(uvs[2 * va]);
-    uvs2.push_back(uvs[2 * va + 1]);
+  //   uvs2.push_back(uvs[2 * va]);
+  //   uvs2.push_back(uvs[2 * va + 1]);
     
-    uvs2.push_back(uvs[2 * vb]);
-    uvs2.push_back(uvs[2 * vb + 1]);
+  //   uvs2.push_back(uvs[2 * vb]);
+  //   uvs2.push_back(uvs[2 * vb + 1]);
     
-    uvs2.push_back(uvs[2 * vc]);
-    uvs2.push_back(uvs[2 * vc + 1]);
-  }
+  //   uvs2.push_back(uvs[2 * vc]);
+  //   uvs2.push_back(uvs[2 * vc + 1]);
+  // }
 
   for(int i=0;i<points2.size();i++){
     points2[i] += 1;
