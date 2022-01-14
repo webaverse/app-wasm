@@ -310,12 +310,12 @@ void cut(
           normals1.push_back(n0X);
           normals1.push_back(n0Y);
           normals1.push_back(n0Z);
-          normals1.push_back(vI1X);
-          normals1.push_back(vI1Y);
-          normals1.push_back(vI1Z);
-          normals1.push_back(vI0X);
-          normals1.push_back(vI0Y);
-          normals1.push_back(vI0Z);
+          normals1.push_back(nI1X);
+          normals1.push_back(nI1Y);
+          normals1.push_back(nI1Z);
+          normals1.push_back(nI0X);
+          normals1.push_back(nI0Y);
+          normals1.push_back(nI0Z);
           // uvs1.push(u0, uI1, uI0)
           uvs1.push_back(u0X);
           uvs1.push_back(u0Y);
@@ -444,12 +444,12 @@ void cut(
           normals2.push_back(n0X);
           normals2.push_back(n0Y);
           normals2.push_back(n0Z);
-          normals2.push_back(vI1X);
-          normals2.push_back(vI1Y);
-          normals2.push_back(vI1Z);
-          normals2.push_back(vI0X);
-          normals2.push_back(vI0Y);
-          normals2.push_back(vI0Z);
+          normals2.push_back(nI1X);
+          normals2.push_back(nI1Y);
+          normals2.push_back(nI1Z);
+          normals2.push_back(nI0X);
+          normals2.push_back(nI0Y);
+          normals2.push_back(nI0Z);
           // uvs2.push(u0, uI1, uI0)
           uvs2.push_back(u0X);
           uvs2.push_back(u0Y);
@@ -603,148 +603,1026 @@ void cut(
         if (sign1 == -1) {
           if (sign0 == 1) {
             // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v1, v0, n1, n0, u1, u0)
+            float vI0X, vI0Y, vI0Z, nI0X, nI0Y, nI0Z, uI0X, uI0Y;
+            getIntersectNode(
+              &vI0X, &vI0Y, &vI0Z, &nI0X, &nI0Y, &nI0Z, &uI0X, &uI0Y,
+              v1X, v1Y, v1Z,
+              v0X, v0Y, v0Z,
+              n1X, n1Y, n1Z,
+              n0X, n0Y, n0Z,
+              u1X, u1Y,
+              u0X, u0Y
+            );
             // let { vI: vI1, nI: nI1, uI: uI1 } = this.getIntersectNode(v2, v0, n2, n0, u2, u0)
+            float vI1X, vI1Y, vI1Z, nI1X, nI1Y, nI1Z, uI1X, uI1Y;
+            getIntersectNode(
+              &vI1X, &vI1Y, &vI1Z, &nI1X, &nI1Y, &nI1Z, &uI1X, &uI1Y,
+              v2X, v2Y, v2Z,
+              v0X, v0Y, v0Z,
+              n2X, n2Y, n2Z,
+              n0X, n0Y, n0Z,
+              u2X, u2Y,
+              u0X, u0Y
+            );
             // points1.push(v1, vI1, vI0)
+            points1.push_back(v1X);
+            points1.push_back(v1Y);
+            points1.push_back(v1Z);
+            points1.push_back(vI1X);
+            points1.push_back(vI1Y);
+            points1.push_back(vI1Z);
+            points1.push_back(vI0X);
+            points1.push_back(vI0Y);
+            points1.push_back(vI0Z);
             // normals1.push(n1, nI1, nI0)
+            normals1.push_back(n1X);
+            normals1.push_back(n1Y);
+            normals1.push_back(n1Z);
+            normals1.push_back(nI1X);
+            normals1.push_back(nI1Y);
+            normals1.push_back(nI1Z);
+            normals1.push_back(nI0X);
+            normals1.push_back(nI0Y);
+            normals1.push_back(nI0Z);
             // uvs1.push(u1, uI1, uI0)
+            uvs1.push_back(u1X);
+            uvs1.push_back(u1Y);
+            uvs1.push_back(uI1X);
+            uvs1.push_back(uI1Y);
+            uvs1.push_back(uI0X);
+            uvs1.push_back(uI0Y);
             // points1.push(v1, v2, vI1)
+            points1.push_back(v1X);
+            points1.push_back(v1Y);
+            points1.push_back(v1Z);
+            points1.push_back(v2X);
+            points1.push_back(v2Y);
+            points1.push_back(v2Z);
+            points1.push_back(vI1X);
+            points1.push_back(vI1Y);
+            points1.push_back(vI1Z);
             // normals1.push(n1, n2, nI1)
+            normals1.push_back(n1X);
+            normals1.push_back(n1Y);
+            normals1.push_back(n1Z);
+            normals1.push_back(n2X);
+            normals1.push_back(n2Y);
+            normals1.push_back(n2Z);
+            normals1.push_back(nI1X);
+            normals1.push_back(nI1Y);
+            normals1.push_back(nI1Z);
             // uvs1.push(u1, u2, uI1)
+            uvs1.push_back(u1X);
+            uvs1.push_back(u1Y);
+            uvs1.push_back(u2X);
+            uvs1.push_back(u2Y);
+            uvs1.push_back(uI1X);
+            uvs1.push_back(uI1Y);
             // points2.push(v0, vI0, vI1)
+            points2.push_back(v0X);
+            points2.push_back(v0Y);
+            points2.push_back(v0Z);
+            points2.push_back(vI0X);
+            points2.push_back(vI0Y);
+            points2.push_back(vI0Z);
+            points2.push_back(vI1X);
+            points2.push_back(vI1Y);
+            points2.push_back(vI1Z);
             // normals2.push(n0, nI0, nI1)
+            normals2.push_back(n0X);
+            normals2.push_back(n0Y);
+            normals2.push_back(n0Z);
+            normals2.push_back(nI0X);
+            normals2.push_back(nI0Y);
+            normals2.push_back(nI0Z);
+            normals2.push_back(nI1X);
+            normals2.push_back(nI1Y);
+            normals2.push_back(nI1Z);
             // uvs2.push(u0, uI0, uI1)
+            uvs2.push_back(u0X);
+            uvs2.push_back(u0Y);
+            uvs2.push_back(uI0X);
+            uvs2.push_back(uI0Y);
+            uvs2.push_back(uI1X);
+            uvs2.push_back(uI1Y);
           } else if (sign0 == 0) {
             // points1.push(v0, v1, v2)
+            points1.push_back(v0X);
+            points1.push_back(v0Y);
+            points1.push_back(v0Z);
+            points1.push_back(v1X);
+            points1.push_back(v1Y);
+            points1.push_back(v1Z);
+            points1.push_back(v2X);
+            points1.push_back(v2Y);
+            points1.push_back(v2Z);
             // normals1.push(n0, n1, n2)
+            normals1.push_back(n0X);
+            normals1.push_back(n0Y);
+            normals1.push_back(n0Z);
+            normals1.push_back(n1X);
+            normals1.push_back(n1Y);
+            normals1.push_back(n1Z);
+            normals1.push_back(n2X);
+            normals1.push_back(n2Y);
+            normals1.push_back(n2Z);
             // uvs1.push(u0, u1, u2)
+            uvs1.push_back(u0X);
+            uvs1.push_back(u0Y);
+            uvs1.push_back(u1X);
+            uvs1.push_back(u1Y);
+            uvs1.push_back(u2X);
+            uvs1.push_back(u2Y);
           }
         } else if (sign1 == 1) {
           if (sign0 == -1) {
             // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v1, v0, n1, n0, u1, u0)
+            float vI0X, vI0Y, vI0Z, nI0X, nI0Y, nI0Z, uI0X, uI0Y;
+            getIntersectNode(
+              &vI0X, &vI0Y, &vI0Z, &nI0X, &nI0Y, &nI0Z, &uI0X, &uI0Y,
+              v1X, v1Y, v1Z,
+              v0X, v0Y, v0Z,
+              n1X, n1Y, n1Z,
+              n0X, n0Y, n0Z,
+              u1X, u1Y,
+              u0X, u0Y
+            );
             // let { vI: vI1, nI: nI1, uI: uI1 } = this.getIntersectNode(v2, v0, n2, n0, u2, u0)
+            float vI1X, vI1Y, vI1Z, nI1X, nI1Y, nI1Z, uI1X, uI1Y;
+            getIntersectNode(
+              &vI1X, &vI1Y, &vI1Z, &nI1X, &nI1Y, &nI1Z, &uI1X, &uI1Y,
+              v2X, v2Y, v2Z,
+              v0X, v0Y, v0Z,
+              n2X, n2Y, n2Z,
+              n0X, n0Y, n0Z,
+              u2X, u2Y,
+              u0X, u0Y
+            );
             // points2.push(v1, vI1, vI0)
+            points2.push_back(v1X);
+            points2.push_back(v1Y);
+            points2.push_back(v1Z);
+            points2.push_back(vI1X);
+            points2.push_back(vI1Y);
+            points2.push_back(vI1Z);
+            points2.push_back(vI0X);
+            points2.push_back(vI0Y);
+            points2.push_back(vI0Z);
             // normals2.push(n1, nI1, nI0)
+            normals2.push_back(n1X);
+            normals2.push_back(n1Y);
+            normals2.push_back(n1Z);
+            normals2.push_back(nI1X);
+            normals2.push_back(nI1Y);
+            normals2.push_back(nI1Z);
+            normals2.push_back(nI0X);
+            normals2.push_back(nI0Y);
+            normals2.push_back(nI0Z);
             // uvs2.push(u1, uI1, uI0)
+            uvs2.push_back(u1X);
+            uvs2.push_back(u1Y);
+            uvs2.push_back(uI1X);
+            uvs2.push_back(uI1Y);
+            uvs2.push_back(uI0X);
+            uvs2.push_back(uI0Y);
             // points2.push(v1, v2, vI1)
+            points2.push_back(v1X);
+            points2.push_back(v1Y);
+            points2.push_back(v1Z);
+            points2.push_back(v2X);
+            points2.push_back(v2Y);
+            points2.push_back(v2Z);
+            points2.push_back(vI1X);
+            points2.push_back(vI1Y);
+            points2.push_back(vI1Z);
             // normals2.push(n1, n2, nI1)
+            normals2.push_back(n1X);
+            normals2.push_back(n1Y);
+            normals2.push_back(n1Z);
+            normals2.push_back(n2X);
+            normals2.push_back(n2Y);
+            normals2.push_back(n2Z);
+            normals2.push_back(nI1X);
+            normals2.push_back(nI1Y);
+            normals2.push_back(nI1Z);
             // uvs2.push(u1, u2, uI1)
+            uvs2.push_back(u1X);
+            uvs2.push_back(u1Y);
+            uvs2.push_back(u2X);
+            uvs2.push_back(u2Y);
+            uvs2.push_back(uI1X);
+            uvs2.push_back(uI1Y);
             // points1.push(v0, vI0, vI1)
+            points1.push_back(v0X);
+            points1.push_back(v0Y);
+            points1.push_back(v0Z);
+            points1.push_back(vI0X);
+            points1.push_back(vI0Y);
+            points1.push_back(vI0Z);
+            points1.push_back(vI1X);
+            points1.push_back(vI1Y);
+            points1.push_back(vI1Z);
             // normals1.push(n0, nI0, nI1)
+            normals1.push_back(n0X);
+            normals1.push_back(n0Y);
+            normals1.push_back(n0Z);
+            normals1.push_back(nI0X);
+            normals1.push_back(nI0Y);
+            normals1.push_back(nI0Z);
+            normals1.push_back(nI1X);
+            normals1.push_back(nI1Y);
+            normals1.push_back(nI1Z);
             // uvs1.push(u0, uI0, uI1)
+            uvs1.push_back(u0X);
+            uvs1.push_back(u0Y);
+            uvs1.push_back(uI0X);
+            uvs1.push_back(uI0Y);
+            uvs1.push_back(uI1X);
+            uvs1.push_back(uI1Y);
           } else if (sign0 == 0) {
             // points2.push(v0, v1, v2)
+            points2.push_back(v0X);
+            points2.push_back(v0Y);
+            points2.push_back(v0Z);
+            points2.push_back(v1X);
+            points2.push_back(v1Y);
+            points2.push_back(v1Z);
+            points2.push_back(v2X);
+            points2.push_back(v2Y);
+            points2.push_back(v2Z);
             // normals2.push(n0, n1, n2)
+            normals2.push_back(n0X);
+            normals2.push_back(n0Y);
+            normals2.push_back(n0Z);
+            normals2.push_back(n1X);
+            normals2.push_back(n1Y);
+            normals2.push_back(n1Z);
+            normals2.push_back(n2X);
+            normals2.push_back(n2Y);
+            normals2.push_back(n2Z);
             // uvs2.push(u0, u1, u2)
+            uvs2.push_back(u0X);
+            uvs2.push_back(u0Y);
+            uvs2.push_back(u1X);
+            uvs2.push_back(u1Y);
+            uvs2.push_back(u2X);
+            uvs2.push_back(u2Y);
           }
         } else if (sign1 == 0) {
           if (sign0 == -1) {
             // points1.push(v0, v1, v2)
+            points1.push_back(v0X);
+            points1.push_back(v0Y);
+            points1.push_back(v0Z);
+            points1.push_back(v1X);
+            points1.push_back(v1Y);
+            points1.push_back(v1Z);
+            points1.push_back(v2X);
+            points1.push_back(v2Y);
+            points1.push_back(v2Z);
             // normals1.push(n0, n1, n2)
+            normals1.push_back(n0X);
+            normals1.push_back(n0Y);
+            normals1.push_back(n0Z);
+            normals1.push_back(n1X);
+            normals1.push_back(n1Y);
+            normals1.push_back(n1Z);
+            normals1.push_back(n2X);
+            normals1.push_back(n2Y);
+            normals1.push_back(n2Z);
             // uvs1.push(u0, u1, u2)
+            uvs1.push_back(u0X);
+            uvs1.push_back(u0Y);
+            uvs1.push_back(u1X);
+            uvs1.push_back(u1Y);
+            uvs1.push_back(u2X);
+            uvs1.push_back(u2Y);
           } else if (sign0 == 1) {
             // points2.push(v0, v1, v2)
+            points2.push_back(v0X);
+            points2.push_back(v0Y);
+            points2.push_back(v0Z);
+            points2.push_back(v1X);
+            points2.push_back(v1Y);
+            points2.push_back(v1Z);
+            points2.push_back(v2X);
+            points2.push_back(v2Y);
+            points2.push_back(v2Z);
             // normals2.push(n0, n1, n2)
+            normals2.push_back(n0X);
+            normals2.push_back(n0Y);
+            normals2.push_back(n0Z);
+            normals2.push_back(n1X);
+            normals2.push_back(n1Y);
+            normals2.push_back(n1Z);
+            normals2.push_back(n2X);
+            normals2.push_back(n2Y);
+            normals2.push_back(n2Z);
             // uvs2.push(u0, u1, u2)
+            uvs2.push_back(u0X);
+            uvs2.push_back(u0Y);
+            uvs2.push_back(u1X);
+            uvs2.push_back(u1Y);
+            uvs2.push_back(u2X);
+            uvs2.push_back(u2Y);
           }
         }
       } else if (sign2 == sign0) {
         if (sign2 == -1) {
           if (sign1 == 1) {
             // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v2, v1, n2, n1, u2, u1)
+            float vI0X, vI0Y, vI0Z, nI0X, nI0Y, nI0Z, uI0X, uI0Y;
+            getIntersectNode(
+              &vI0X, &vI0Y, &vI0Z, &nI0X, &nI0Y, &nI0Z, &uI0X, &uI0Y,
+              v2X, v2Y, v2Z,
+              v1X, v1Y, v1Z,
+              n2X, n2Y, n2Z,
+              n1X, n1Y, n1Z,
+              u2X, u2Y,
+              u1X, u1Y
+            );
             // let { vI: vI1, nI: nI1, uI: uI1 } = this.getIntersectNode(v0, v1, n0, n1, u0, u1)
+            float vI1X, vI1Y, vI1Z, nI1X, nI1Y, nI1Z, uI1X, uI1Y;
+            getIntersectNode(
+              &vI1X, &vI1Y, &vI1Z, &nI1X, &nI1Y, &nI1Z, &uI1X, &uI1Y,
+              v0X, v0Y, v0Z,
+              v1X, v1Y, v1Z,
+              n1X, n1Y, n1Z,
+              n0X, n0Y, n0Z,
+              u0X, u0Y,
+              u1X, u1Y
+            );
             // points1.push(v2, vI1, vI0)
+            points1.push_back(v2X);
+            points1.push_back(v2Y);
+            points1.push_back(v2Z);
+            points1.push_back(vI1X);
+            points1.push_back(vI1Y);
+            points1.push_back(vI1Z);
+            points1.push_back(vI0X);
+            points1.push_back(vI0Y);
+            points1.push_back(vI0Z);
             // normals1.push(n2, nI1, nI0)
+            normals1.push_back(n2X);
+            normals1.push_back(n2Y);
+            normals1.push_back(n2Z);
+            normals1.push_back(nI1X);
+            normals1.push_back(nI1Y);
+            normals1.push_back(nI1Z);
+            normals1.push_back(nI0X);
+            normals1.push_back(nI0Y);
+            normals1.push_back(nI0Z);
             // uvs1.push(u2, uI1, uI0)
+            uvs1.push_back(u2X);
+            uvs1.push_back(u2Y);
+            uvs1.push_back(uI1X);
+            uvs1.push_back(uI1Y);
+            uvs1.push_back(uI0X);
+            uvs1.push_back(uI0Y);
             // points1.push(v2, v0, vI1)
+            points1.push_back(v2X);
+            points1.push_back(v2Y);
+            points1.push_back(v2Z);
+            points1.push_back(v0X);
+            points1.push_back(v0Y);
+            points1.push_back(v0Z);
+            points1.push_back(vI1X);
+            points1.push_back(vI1Y);
+            points1.push_back(vI1Z);
             // normals1.push(n2, n0, nI1)
+            normals1.push_back(n2X);
+            normals1.push_back(n2Y);
+            normals1.push_back(n2Z);
+            normals1.push_back(n0X);
+            normals1.push_back(n0Y);
+            normals1.push_back(n0Z);
+            normals1.push_back(nI1X);
+            normals1.push_back(nI1Y);
+            normals1.push_back(nI1Z);
             // uvs1.push(u2, u0, uI1)
+            uvs1.push_back(u2X);
+            uvs1.push_back(u2Y);
+            uvs1.push_back(u0X);
+            uvs1.push_back(u0Y);
+            uvs1.push_back(uI1X);
+            uvs1.push_back(uI1Y);
             // points2.push(v1, vI0, vI1)
+            points2.push_back(v1X);
+            points2.push_back(v1Y);
+            points2.push_back(v1Z);
+            points2.push_back(vI0X);
+            points2.push_back(vI0Y);
+            points2.push_back(vI0Z);
+            points2.push_back(vI1X);
+            points2.push_back(vI1Y);
+            points2.push_back(vI1Z);
             // normals2.push(n1, nI0, nI1)
+            normals2.push_back(n1X);
+            normals2.push_back(n1Y);
+            normals2.push_back(n1Z);
+            normals2.push_back(nI0X);
+            normals2.push_back(nI0Y);
+            normals2.push_back(nI0Z);
+            normals2.push_back(nI1X);
+            normals2.push_back(nI1Y);
+            normals2.push_back(nI1Z);
             // uvs2.push(u1, uI0, uI1)
+            uvs2.push_back(u1X);
+            uvs2.push_back(u1Y);
+            uvs2.push_back(uI0X);
+            uvs2.push_back(uI0Y);
+            uvs2.push_back(uI1X);
+            uvs2.push_back(uI1Y);
           } else if (sign1 == 0) {
             // points1.push(v0, v1, v2)
+            points1.push_back(v0X);
+            points1.push_back(v0Y);
+            points1.push_back(v0Z);
+            points1.push_back(v1X);
+            points1.push_back(v1Y);
+            points1.push_back(v1Z);
+            points1.push_back(v2X);
+            points1.push_back(v2Y);
+            points1.push_back(v2Z);
             // normals1.push(n0, n1, n2)
+            normals1.push_back(n0X);
+            normals1.push_back(n0Y);
+            normals1.push_back(n0Z);
+            normals1.push_back(n1X);
+            normals1.push_back(n1Y);
+            normals1.push_back(n1Z);
+            normals1.push_back(n2X);
+            normals1.push_back(n2Y);
+            normals1.push_back(n2Z);
             // uvs1.push(u0, u1, u2)
+            uvs1.push_back(u0X);
+            uvs1.push_back(u0Y);
+            uvs1.push_back(u1X);
+            uvs1.push_back(u1Y);
+            uvs1.push_back(u2X);
+            uvs1.push_back(u2Y);
           }
         } else if (sign2 == 1) {
           if (sign1 == -1) {
             // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v2, v1, n2, n1, u2, u1)
+            float vI0X, vI0Y, vI0Z, nI0X, nI0Y, nI0Z, uI0X, uI0Y;
+            getIntersectNode(
+              &vI0X, &vI0Y, &vI0Z, &nI0X, &nI0Y, &nI0Z, &uI0X, &uI0Y,
+              v2X, v2Y, v2Z,
+              v1X, v1Y, v1Z,
+              n2X, n2Y, n2Z,
+              n1X, n1Y, n1Z,
+              u2X, u2Y,
+              u1X, u1Y
+            );
             // let { vI: vI1, nI: nI1, uI: uI1 } = this.getIntersectNode(v0, v1, n0, n1, u0, u1)
+            float vI1X, vI1Y, vI1Z, nI1X, nI1Y, nI1Z, uI1X, uI1Y;
+            getIntersectNode(
+              &vI1X, &vI1Y, &vI1Z, &nI1X, &nI1Y, &nI1Z, &uI1X, &uI1Y,
+              v0X, v0Y, v0Z,
+              v1X, v1Y, v1Z,
+              n1X, n1Y, n1Z,
+              n0X, n0Y, n0Z,
+              u0X, u0Y,
+              u1X, u1Y
+            );
             // points2.push(v2, vI1, vI0)
+            points2.push_back(v2X);
+            points2.push_back(v2Y);
+            points2.push_back(v2Z);
+            points2.push_back(vI1X);
+            points2.push_back(vI1Y);
+            points2.push_back(vI1Z);
+            points2.push_back(vI0X);
+            points2.push_back(vI0Y);
+            points2.push_back(vI0Z);
             // normals2.push(n2, nI1, nI0)
+            normals2.push_back(n2X);
+            normals2.push_back(n2Y);
+            normals2.push_back(n2Z);
+            normals2.push_back(nI1X);
+            normals2.push_back(nI1Y);
+            normals2.push_back(nI1Z);
+            normals2.push_back(nI0X);
+            normals2.push_back(nI0Y);
+            normals2.push_back(nI0Z);
             // uvs2.push(u2, uI1, uI0)
+            uvs2.push_back(u2X);
+            uvs2.push_back(u2Y);
+            uvs2.push_back(uI1X);
+            uvs2.push_back(uI1Y);
+            uvs2.push_back(uI0X);
+            uvs2.push_back(uI0Y);
             // points2.push(v2, v0, vI1)
+            points2.push_back(v2X);
+            points2.push_back(v2Y);
+            points2.push_back(v2Z);
+            points2.push_back(v0X);
+            points2.push_back(v0Y);
+            points2.push_back(v0Z);
+            points2.push_back(vI1X);
+            points2.push_back(vI1Y);
+            points2.push_back(vI1Z);
             // normals2.push(n2, n0, nI1)
+            normals2.push_back(n2X);
+            normals2.push_back(n2Y);
+            normals2.push_back(n2Z);
+            normals2.push_back(n0X);
+            normals2.push_back(n0Y);
+            normals2.push_back(n0Z);
+            normals2.push_back(nI1X);
+            normals2.push_back(nI1Y);
+            normals2.push_back(nI1Z);
             // uvs2.push(u2, u0, uI1)
+            uvs2.push_back(u2X);
+            uvs2.push_back(u2Y);
+            uvs2.push_back(u0X);
+            uvs2.push_back(u0Y);
+            uvs2.push_back(uI1X);
+            uvs2.push_back(uI1Y);
             // points1.push(v1, vI0, vI1)
+            points1.push_back(v1X);
+            points1.push_back(v1Y);
+            points1.push_back(v1Z);
+            points1.push_back(vI0X);
+            points1.push_back(vI0Y);
+            points1.push_back(vI0Z);
+            points1.push_back(vI1X);
+            points1.push_back(vI1Y);
+            points1.push_back(vI1Z);
             // normals1.push(n1, nI0, nI1)
+            normals1.push_back(n1X);
+            normals1.push_back(n1Y);
+            normals1.push_back(n1Z);
+            normals1.push_back(nI0X);
+            normals1.push_back(nI0Y);
+            normals1.push_back(nI0Z);
+            normals1.push_back(nI1X);
+            normals1.push_back(nI1Y);
+            normals1.push_back(nI1Z);
             // uvs1.push(u1, uI0, uI1)
+            uvs1.push_back(u1X);
+            uvs1.push_back(u1Y);
+            uvs1.push_back(uI0X);
+            uvs1.push_back(uI0Y);
+            uvs1.push_back(uI1X);
+            uvs1.push_back(uI1Y);
           } else if (sign1 == 0) {
             // points2.push(v0, v1, v2)
+            points2.push_back(v0X);
+            points2.push_back(v0Y);
+            points2.push_back(v0Z);
+            points2.push_back(v1X);
+            points2.push_back(v1Y);
+            points2.push_back(v1Z);
+            points2.push_back(v2X);
+            points2.push_back(v2Y);
+            points2.push_back(v2Z);
             // normals2.push(n0, n1, n2)
+            normals2.push_back(n0X);
+            normals2.push_back(n0Y);
+            normals2.push_back(n0Z);
+            normals2.push_back(n1X);
+            normals2.push_back(n1Y);
+            normals2.push_back(n1Z);
+            normals2.push_back(n2X);
+            normals2.push_back(n2Y);
+            normals2.push_back(n2Z);
             // uvs2.push(u0, u1, u2)
+            uvs2.push_back(u0X);
+            uvs2.push_back(u0Y);
+            uvs2.push_back(u1X);
+            uvs2.push_back(u1Y);
+            uvs2.push_back(u2X);
+            uvs2.push_back(u2Y);
           }
         } else if (sign2 == 0) {
           if (sign1 == -1) {
             // points1.push(v0, v1, v2)
+            points1.push_back(v0X);
+            points1.push_back(v0Y);
+            points1.push_back(v0Z);
+            points1.push_back(v1X);
+            points1.push_back(v1Y);
+            points1.push_back(v1Z);
+            points1.push_back(v2X);
+            points1.push_back(v2Y);
+            points1.push_back(v2Z);
             // normals1.push(n0, n1, n2)
+            normals1.push_back(n0X);
+            normals1.push_back(n0Y);
+            normals1.push_back(n0Z);
+            normals1.push_back(n1X);
+            normals1.push_back(n1Y);
+            normals1.push_back(n1Z);
+            normals1.push_back(n2X);
+            normals1.push_back(n2Y);
+            normals1.push_back(n2Z);
             // uvs1.push(u0, u1, u2)
+            uvs1.push_back(u0X);
+            uvs1.push_back(u0Y);
+            uvs1.push_back(u1X);
+            uvs1.push_back(u1Y);
+            uvs1.push_back(u2X);
+            uvs1.push_back(u2Y);
           } else if (sign1 == 1) {
             // points2.push(v0, v1, v2)
+            points2.push_back(v0X);
+            points2.push_back(v0Y);
+            points2.push_back(v0Z);
+            points2.push_back(v1X);
+            points2.push_back(v1Y);
+            points2.push_back(v1Z);
+            points2.push_back(v2X);
+            points2.push_back(v2Y);
+            points2.push_back(v2Z);
             // normals2.push(n0, n1, n2)
+            normals2.push_back(n0X);
+            normals2.push_back(n0Y);
+            normals2.push_back(n0Z);
+            normals2.push_back(n1X);
+            normals2.push_back(n1Y);
+            normals2.push_back(n1Z);
+            normals2.push_back(n2X);
+            normals2.push_back(n2Y);
+            normals2.push_back(n2Z);
             // uvs2.push(u0, u1, u2)
+            uvs2.push_back(u0X);
+            uvs2.push_back(u0Y);
+            uvs2.push_back(u1X);
+            uvs2.push_back(u1Y);
+            uvs2.push_back(u2X);
+            uvs2.push_back(u2Y);
           }
         }
       } else if (sign0 == 0) {
         // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v1, v2, n1, n2, u1, u2)
+        float vI0X, vI0Y, vI0Z, nI0X, nI0Y, nI0Z, uI0X, uI0Y;
+        getIntersectNode(
+          &vI0X, &vI0Y, &vI0Z, &nI0X, &nI0Y, &nI0Z, &uI0X, &uI0Y,
+          v1X, v1Y, v1Z,
+          v2X, v2Y, v2Z,
+          n1X, n1Y, n1Z,
+          n2X, n2Y, n2Z,
+          u1X, u1Y,
+          u2X, u2Y
+        );
         if (sign1 == 1) {
           // points1.push(v0, vI0, v2)
+          points1.push_back(v0X);
+          points1.push_back(v0Y);
+          points1.push_back(v0Z);
+          points1.push_back(vI0X);
+          points1.push_back(vI0Y);
+          points1.push_back(vI0Z);
+          points1.push_back(v2X);
+          points1.push_back(v2Y);
+          points1.push_back(v2Z);
           // normals1.push(n0, nI0, n2)
+          normals1.push_back(n0X);
+          normals1.push_back(n0Y);
+          normals1.push_back(n0Z);
+          normals1.push_back(nI0X);
+          normals1.push_back(nI0Y);
+          normals1.push_back(nI0Z);
+          normals1.push_back(n2X);
+          normals1.push_back(n2Y);
+          normals1.push_back(n2Z);
           // uvs1.push(u0, uI0, u2)
+          uvs1.push_back(u0X);
+          uvs1.push_back(u0Y);
+          uvs1.push_back(uI0X);
+          uvs1.push_back(uI0Y);
+          uvs1.push_back(u2X);
+          uvs1.push_back(u2Y);
           // points2.push(v0, v1, vI0)
+          points2.push_back(v0X);
+          points2.push_back(v0Y);
+          points2.push_back(v0Z);
+          points2.push_back(v1X);
+          points2.push_back(v1Y);
+          points2.push_back(v1Z);
+          points2.push_back(vI0X);
+          points2.push_back(vI0Y);
+          points2.push_back(vI0Z);
           // normals2.push(n0, n1, nI0)
+          normals2.push_back(n0X);
+          normals2.push_back(n0Y);
+          normals2.push_back(n0Z);
+          normals2.push_back(n1X);
+          normals2.push_back(n1Y);
+          normals2.push_back(n1Z);
+          normals2.push_back(nI0X);
+          normals2.push_back(nI0Y);
+          normals2.push_back(nI0Z);
           // uvs2.push(u0, u1, uI0)
+          uvs2.push_back(u0X);
+          uvs2.push_back(u0Y);
+          uvs2.push_back(u1X);
+          uvs2.push_back(u1Y);
+          uvs2.push_back(uI0X);
+          uvs2.push_back(uI0Y);
         } else if (sign1 == -1) {
           // points2.push(v0, vI0, v2)
+          points2.push_back(v0X);
+          points2.push_back(v0Y);
+          points2.push_back(v0Z);
+          points2.push_back(vI0X);
+          points2.push_back(vI0Y);
+          points2.push_back(vI0Z);
+          points2.push_back(v2X);
+          points2.push_back(v2Y);
+          points2.push_back(v2Z);
           // normals2.push(n0, nI0, n2)
+          normals2.push_back(n0X);
+          normals2.push_back(n0Y);
+          normals2.push_back(n0Z);
+          normals2.push_back(nI0X);
+          normals2.push_back(nI0Y);
+          normals2.push_back(nI0Z);
+          normals2.push_back(n2X);
+          normals2.push_back(n2Y);
+          normals2.push_back(n2Z);
           // uvs2.push(u0, uI0, u2)
+          uvs2.push_back(u0X);
+          uvs2.push_back(u0Y);
+          uvs2.push_back(uI0X);
+          uvs2.push_back(uI0Y);
+          uvs2.push_back(u2X);
+          uvs2.push_back(u2Y);
           // points1.push(v0, v1, vI0)
+          points1.push_back(v0X);
+          points1.push_back(v0Y);
+          points1.push_back(v0Z);
+          points1.push_back(v1X);
+          points1.push_back(v1Y);
+          points1.push_back(v1Z);
+          points1.push_back(vI0X);
+          points1.push_back(vI0Y);
+          points1.push_back(vI0Z);
           // normals1.push(n0, n1, nI0)
+          normals1.push_back(n0X);
+          normals1.push_back(n0Y);
+          normals1.push_back(n0Z);
+          normals1.push_back(n1X);
+          normals1.push_back(n1Y);
+          normals1.push_back(n1Z);
+          normals1.push_back(nI0X);
+          normals1.push_back(nI0Y);
+          normals1.push_back(nI0Z);
           // uvs1.push(u0, u1, uI0)
+          uvs1.push_back(u0X);
+          uvs1.push_back(u0Y);
+          uvs1.push_back(u1X);
+          uvs1.push_back(u1Y);
+          uvs1.push_back(uI0X);
+          uvs1.push_back(uI0Y);
         }
       } else if (sign1 == 0) {
         // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v0, v2, n0, n2, u0, u2)
+        float vI0X, vI0Y, vI0Z, nI0X, nI0Y, nI0Z, uI0X, uI0Y;
+        getIntersectNode(
+          &vI0X, &vI0Y, &vI0Z, &nI0X, &nI0Y, &nI0Z, &uI0X, &uI0Y,
+          v0X, v0Y, v0Z,
+          v2X, v2Y, v2Z,
+          n0X, n0Y, n0Z,
+          n2X, n2Y, n2Z,
+          u0X, u0Y,
+          u2X, u2Y
+        );
         if (sign2 == 1) {
           // points1.push(v1, vI0, v0)
+          points1.push_back(v1X);
+          points1.push_back(v1Y);
+          points1.push_back(v1Z);
+          points1.push_back(vI0X);
+          points1.push_back(vI0Y);
+          points1.push_back(vI0Z);
+          points1.push_back(v0X);
+          points1.push_back(v0Y);
+          points1.push_back(v0Z);
           // normals1.push(n1, nI0, n0)
+          normals1.push_back(n1X);
+          normals1.push_back(n1Y);
+          normals1.push_back(n1Z);
+          normals1.push_back(nI0X);
+          normals1.push_back(nI0Y);
+          normals1.push_back(nI0Z);
+          normals1.push_back(n0X);
+          normals1.push_back(n0Y);
+          normals1.push_back(n0Z);
           // uvs1.push(u1, uI0, u0)
+          uvs1.push_back(u1X);
+          uvs1.push_back(u1Y);
+          uvs1.push_back(uI0X);
+          uvs1.push_back(uI0Y);
+          uvs1.push_back(u0X);
+          uvs1.push_back(u0Y);
           // points2.push(v1, v2, vI0)
+          points2.push_back(v1X);
+          points2.push_back(v1Y);
+          points2.push_back(v1Z);
+          points2.push_back(v2X);
+          points2.push_back(v2Y);
+          points2.push_back(v2Z);
+          points2.push_back(vI0X);
+          points2.push_back(vI0Y);
+          points2.push_back(vI0Z);
           // normals2.push(n1, n2, nI0)
+          normals2.push_back(n1X);
+          normals2.push_back(n1Y);
+          normals2.push_back(n1Z);
+          normals2.push_back(n2X);
+          normals2.push_back(n2Y);
+          normals2.push_back(n2Z);
+          normals2.push_back(nI0X);
+          normals2.push_back(nI0Y);
+          normals2.push_back(nI0Z);
           // uvs2.push(u1, u2, uI0)
+          uvs2.push_back(u1X);
+          uvs2.push_back(u1Y);
+          uvs2.push_back(u2X);
+          uvs2.push_back(u2Y);
+          uvs2.push_back(uI0X);
+          uvs2.push_back(uI0Y);
         } else if (sign2 == -1) {
           // points2.push(v1, vI0, v0)
+          points2.push_back(v1X);
+          points2.push_back(v1Y);
+          points2.push_back(v1Z);
+          points2.push_back(vI0X);
+          points2.push_back(vI0Y);
+          points2.push_back(vI0Z);
+          points2.push_back(v0X);
+          points2.push_back(v0Y);
+          points2.push_back(v0Z);
           // normals2.push(n1, nI0, n0)
+          normals2.push_back(n1X);
+          normals2.push_back(n1Y);
+          normals2.push_back(n1Z);
+          normals2.push_back(nI0X);
+          normals2.push_back(nI0Y);
+          normals2.push_back(nI0Z);
+          normals2.push_back(n0X);
+          normals2.push_back(n0Y);
+          normals2.push_back(n0Z);
           // uvs2.push(u1, uI0, u0)
+          uvs2.push_back(u1X);
+          uvs2.push_back(u1Y);
+          uvs2.push_back(uI0X);
+          uvs2.push_back(uI0Y);
+          uvs2.push_back(u0X);
+          uvs2.push_back(u0Y);
           // points1.push(v1, v2, vI0)
+          points1.push_back(v1X);
+          points1.push_back(v1Y);
+          points1.push_back(v1Z);
+          points1.push_back(v2X);
+          points1.push_back(v2Y);
+          points1.push_back(v2Z);
+          points1.push_back(vI0X);
+          points1.push_back(vI0Y);
+          points1.push_back(vI0Z);
           // normals1.push(n1, n2, nI0)
+          normals1.push_back(n1X);
+          normals1.push_back(n1Y);
+          normals1.push_back(n1Z);
+          normals1.push_back(n2X);
+          normals1.push_back(n2Y);
+          normals1.push_back(n2Z);
+          normals1.push_back(nI0X);
+          normals1.push_back(nI0Y);
+          normals1.push_back(nI0Z);
           // uvs1.push(u1, u2, uI0)
+          uvs1.push_back(u1X);
+          uvs1.push_back(u1Y);
+          uvs1.push_back(u2X);
+          uvs1.push_back(u2Y);
+          uvs1.push_back(uI0X);
+          uvs1.push_back(uI0Y);
         }
       } else if (sign2 == 0) {
         // let { vI: vI0, nI: nI0, uI: uI0 } = this.getIntersectNode(v1, v0, n1, n0, u1, u0)
+        float vI0X, vI0Y, vI0Z, nI0X, nI0Y, nI0Z, uI0X, uI0Y;
+        getIntersectNode(
+          &vI0X, &vI0Y, &vI0Z, &nI0X, &nI0Y, &nI0Z, &uI0X, &uI0Y,
+          v1X, v1Y, v1Z,
+          v0X, v0Y, v0Z,
+          n1X, n1Y, n1Z,
+          n0X, n0Y, n0Z,
+          u1X, u1Y,
+          u0X, u0Y
+        );
         if (sign0 == 1) {
           // points1.push(v2, vI0, v1)
+          points1.push_back(v2X);
+          points1.push_back(v2Y);
+          points1.push_back(v2Z);
+          points1.push_back(vI0X);
+          points1.push_back(vI0Y);
+          points1.push_back(vI0Z);
+          points1.push_back(v1X);
+          points1.push_back(v1Y);
+          points1.push_back(v1Z);
           // normals1.push(n2, nI0, n1)
+          normals1.push_back(n2X);
+          normals1.push_back(n2Y);
+          normals1.push_back(n2Z);
+          normals1.push_back(nI0X);
+          normals1.push_back(nI0Y);
+          normals1.push_back(nI0Z);
+          normals1.push_back(n1X);
+          normals1.push_back(n1Y);
+          normals1.push_back(n1Z);
           // uvs1.push(u2, uI0, u1)
+          uvs1.push_back(u2X);
+          uvs1.push_back(u2Y);
+          uvs1.push_back(uI0X);
+          uvs1.push_back(uI0Y);
+          uvs1.push_back(u1X);
+          uvs1.push_back(u1Y);
           // points2.push(v2, v0, vI0)
+          points2.push_back(v2X);
+          points2.push_back(v2Y);
+          points2.push_back(v2Z);
+          points2.push_back(v0X);
+          points2.push_back(v0Y);
+          points2.push_back(v0Z);
+          points2.push_back(vI0X);
+          points2.push_back(vI0Y);
+          points2.push_back(vI0Z);
           // normals2.push(n2, n0, nI0)
+          normals2.push_back(n2X);
+          normals2.push_back(n2Y);
+          normals2.push_back(n2Z);
+          normals2.push_back(n0X);
+          normals2.push_back(n0Y);
+          normals2.push_back(n0Z);
+          normals2.push_back(nI0X);
+          normals2.push_back(nI0Y);
+          normals2.push_back(nI0Z);
           // uvs2.push(u2, u0, uI0)
+          uvs2.push_back(u2X);
+          uvs2.push_back(u2Y);
+          uvs2.push_back(u0X);
+          uvs2.push_back(u0Y);
+          uvs2.push_back(uI0X);
+          uvs2.push_back(uI0Y);
         } else if (sign0 == -1) {
           // points2.push(v2, vI0, v1)
+          points2.push_back(v2X);
+          points2.push_back(v2Y);
+          points2.push_back(v2Z);
+          points2.push_back(vI0X);
+          points2.push_back(vI0Y);
+          points2.push_back(vI0Z);
+          points2.push_back(v1X);
+          points2.push_back(v1Y);
+          points2.push_back(v1Z);
           // normals2.push(n2, nI0, n1)
+          normals2.push_back(n2X);
+          normals2.push_back(n2Y);
+          normals2.push_back(n2Z);
+          normals2.push_back(nI0X);
+          normals2.push_back(nI0Y);
+          normals2.push_back(nI0Z);
+          normals2.push_back(n1X);
+          normals2.push_back(n1Y);
+          normals2.push_back(n1Z);
           // uvs2.push(u2, uI0, u1)
+          uvs2.push_back(u2X);
+          uvs2.push_back(u2Y);
+          uvs2.push_back(uI0X);
+          uvs2.push_back(uI0Y);
+          uvs2.push_back(u1X);
+          uvs2.push_back(u1Y);
           // points1.push(v2, v0, vI0)
+          points1.push_back(v2X);
+          points1.push_back(v2Y);
+          points1.push_back(v2Z);
+          points1.push_back(v0X);
+          points1.push_back(v0Y);
+          points1.push_back(v0Z);
+          points1.push_back(vI0X);
+          points1.push_back(vI0Y);
+          points1.push_back(vI0Z);
           // normals1.push(n2, n0, nI0)
+          normals1.push_back(n2X);
+          normals1.push_back(n2Y);
+          normals1.push_back(n2Z);
+          normals1.push_back(n0X);
+          normals1.push_back(n0Y);
+          normals1.push_back(n0Z);
+          normals1.push_back(nI0X);
+          normals1.push_back(nI0Y);
+          normals1.push_back(nI0Z);
           // uvs1.push(u2, u0, uI0)
+          uvs1.push_back(u2X);
+          uvs1.push_back(u2Y);
+          uvs1.push_back(u0X);
+          uvs1.push_back(u0Y);
+          uvs1.push_back(uI0X);
+          uvs1.push_back(uI0Y);
         }
       }
   }
