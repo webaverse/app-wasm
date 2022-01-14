@@ -1637,9 +1637,9 @@ void cut(
 
   // part 2
 
-  for(int i=0;i<points2.size();i++){
-    points2[i] += 1;
-  }
+  // for(int i=0;i<points2.size();i++){
+  //   points2[i] += 1;
+  // }
 
   memcpy(outPositions + points1.size(), &points2[0], points2.size()*4);
   memcpy(outNormals + normals1.size(), &normals2[0], normals2.size()*4);
