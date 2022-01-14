@@ -1,6 +1,11 @@
 #include "cut.h"
 #include <vector>
 
+float planeNormalX = 1;
+float planeNormalY = 0;
+float planeNormalZ = 0;
+float planeConstant = 0;
+
 unsigned int getVertexIndex(int faceIdx, int vert, unsigned int *indices) {
   // vert = 0, 1 or 2.
   int idx = faceIdx * 3 + vert;
@@ -19,10 +24,57 @@ float dot( float ax, float ay, float az, float bx, float by, float bz ) {
 
 }
 
+// plane
 float distanceToPoint( float x, float y, float z ) {
 
   // return this.normal.dot( point ) + this.constant;
-  return dot( 1, 0, 0, x, y, z ) + 0;
+  return dot( planeNormalX, planeNormalY, planeNormalZ, x, y, z ) + planeConstant;
+
+}
+
+// plane
+void intersectLine( 
+  float *targetX, float *targetY, float *targetZ, 
+  float lineStartX, float lineStartY, float lineStartZ, 
+  float lineEndX, float lineEndY, float lineEndZ
+) {
+
+  float directionX = lineEndX - lineStartX;
+  float directionY = lineEndY - lineStartY;
+  float directionZ = lineEndZ - lineStartZ;
+
+  float denominator = dot( planeNormalX, planeNormalY, planeNormalZ, directionX, directionY, directionZ );
+
+  if ( denominator == 0 ) {
+
+    // line is coplanar, return origin
+    // if ( this.distanceToPoint( line.start ) === 0 ) {
+    if ( distanceToPoint( lineStartX, lineStartY, lineStartZ ) == 0) {
+
+      // return target.copy( line.start );
+      *targetX = lineStartX;
+      *targetY = lineStartY;
+      *targetZ = lineStartZ;
+      return;
+
+    }
+
+  }
+
+  // const t = - ( line.start.dot( this.normal ) + this.constant ) / denominator;
+  float t = - ( dot(lineStartX, lineStartY, lineStartZ, planeNormalX, planeNormalY, planeNormalZ) + planeConstant ) / denominator;
+
+  if ( t < 0 || t > 1 ) {
+
+    return;
+
+  }
+
+  // return target.copy( direction ).multiplyScalar( t ).add( line.start );
+  *targetX = directionX * t + lineStartX;
+  *targetY = directionY * t + lineStartY;
+  *targetZ = directionZ * t + lineStartZ;
+  return;
 
 }
 
