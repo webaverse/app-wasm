@@ -74,13 +74,13 @@ void cut(
     float *v1 = &coords[3 * vb];
     float *v2 = &coords[3 * vc];
 
-    float *n0 = &coords[3 * va];
-    float *n1 = &coords[3 * vb];
-    float *n2 = &coords[3 * vc];
+    float *n0 = &normals[3 * va];
+    float *n1 = &normals[3 * vb];
+    float *n2 = &normals[3 * vc];
 
-    float *u0 = &coords[2 * va];
-    float *u1 = &coords[2 * vb];
-    float *u2 = &coords[2 * vc];
+    float *u0 = &uvs[2 * va];
+    float *u1 = &uvs[2 * vb];
+    float *u2 = &uvs[2 * vc];
 
     float d0 = distanceToPoint(*(v0), *(v0+1), *(v0+2));
     float d1 = distanceToPoint(*(v1), *(v1+1), *(v1+2));
@@ -153,39 +153,6 @@ void cut(
         uvs2.push_back(*(u2+1));
       }
     }
-
-    // points1.push_back(coords[3 * va]);
-    // points1.push_back(coords[3 * va + 1]);
-    // points1.push_back(coords[3 * va + 2]);
-    
-    // points1.push_back(coords[3 * vb]);
-    // points1.push_back(coords[3 * vb + 1]);
-    // points1.push_back(coords[3 * vb + 2]);
-    
-    // points1.push_back(coords[3 * vc]);
-    // points1.push_back(coords[3 * vc + 1]);
-    // points1.push_back(coords[3 * vc + 2]);
-    
-    // normals1.push_back(normals[3 * va]);
-    // normals1.push_back(normals[3 * va + 1]);
-    // normals1.push_back(normals[3 * va + 2]);
-    
-    // normals1.push_back(normals[3 * vb]);
-    // normals1.push_back(normals[3 * vb + 1]);
-    // normals1.push_back(normals[3 * vb + 2]);
-    
-    // normals1.push_back(normals[3 * vc]);
-    // normals1.push_back(normals[3 * vc + 1]);
-    // normals1.push_back(normals[3 * vc + 2]);
-    
-    // uvs1.push_back(uvs[2 * va]);
-    // uvs1.push_back(uvs[2 * va + 1]);
-    
-    // uvs1.push_back(uvs[2 * vb]);
-    // uvs1.push_back(uvs[2 * vb + 1]);
-    
-    // uvs1.push_back(uvs[2 * vc]);
-    // uvs1.push_back(uvs[2 * vc + 1]);
   }
 
   memcpy(outPositions, &points1[0], points1.size()*4);
@@ -196,46 +163,7 @@ void cut(
   numOutNormals[0] = normals1.size();
   numOutUvs[0] = uvs1.size();
 
-
-
-  // for(int i=0;i<facesCount/2;i++){
-  //   unsigned int va = getVertexIndex(i, 0, indices);
-  //   unsigned int vb = getVertexIndex(i, 1, indices);
-  //   unsigned int vc = getVertexIndex(i, 2, indices);
-
-  //   points2.push_back(coords[3 * va]);
-  //   points2.push_back(coords[3 * va + 1]);
-  //   points2.push_back(coords[3 * va + 2]);
-    
-  //   points2.push_back(coords[3 * vb]);
-  //   points2.push_back(coords[3 * vb + 1]);
-  //   points2.push_back(coords[3 * vb + 2]);
-    
-  //   points2.push_back(coords[3 * vc]);
-  //   points2.push_back(coords[3 * vc + 1]);
-  //   points2.push_back(coords[3 * vc + 2]);
-    
-  //   normals2.push_back(normals[3 * va]);
-  //   normals2.push_back(normals[3 * va + 1]);
-  //   normals2.push_back(normals[3 * va + 2]);
-    
-  //   normals2.push_back(normals[3 * vb]);
-  //   normals2.push_back(normals[3 * vb + 1]);
-  //   normals2.push_back(normals[3 * vb + 2]);
-    
-  //   normals2.push_back(normals[3 * vc]);
-  //   normals2.push_back(normals[3 * vc + 1]);
-  //   normals2.push_back(normals[3 * vc + 2]);
-    
-  //   uvs2.push_back(uvs[2 * va]);
-  //   uvs2.push_back(uvs[2 * va + 1]);
-    
-  //   uvs2.push_back(uvs[2 * vb]);
-  //   uvs2.push_back(uvs[2 * vb + 1]);
-    
-  //   uvs2.push_back(uvs[2 * vc]);
-  //   uvs2.push_back(uvs[2 * vc + 1]);
-  // }
+  // part 2
 
   for(int i=0;i<points2.size();i++){
     points2[i] += 1;
