@@ -133,7 +133,7 @@ EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, P
   return scene->setCharacterControllerPosition(characterController, position);
 }
 
-EMSCRIPTEN_KEEPALIVE void doCut(
+EMSCRIPTEN_KEEPALIVE float *doCut(
   float *positions,
   unsigned int numPositions,
   float *normals,
@@ -147,16 +147,11 @@ EMSCRIPTEN_KEEPALIVE void doCut(
   float *quaternion,
   float *scale,
 
-  float *outPositions,
   unsigned int *numOutPositions,
-  float *outNormals,
   unsigned int *numOutNormals,
-  float *outUvs,
-  unsigned int *numOutUvs,
-  unsigned int *outFaces,
-  unsigned int *numOutFaces
+  unsigned int *numOutUvs
 ) {
-  cut(
+  return cut(
     positions,
     numPositions,
     normals,
@@ -170,14 +165,9 @@ EMSCRIPTEN_KEEPALIVE void doCut(
     quaternion,
     scale,
 
-    outPositions,
     numOutPositions,
-    outNormals,
     numOutNormals,
-    outUvs,
-    numOutUvs,
-    outFaces,
-    numOutFaces
+    numOutUvs
   );
 }
 

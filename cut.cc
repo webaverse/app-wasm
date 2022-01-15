@@ -134,7 +134,7 @@ void getIntersectNode(
   // return { vI, nI, uI }
 }
 
-void cut(
+float *cut(
   float *positions,
   unsigned int numPositions,
   float *normals,
@@ -148,14 +148,10 @@ void cut(
   float *quaternion,
   float *scale,
 
-  float *outPositions,
+  // todo: put in outputBuffer too.
   unsigned int *numOutPositions,
-  float *outNormals,
   unsigned int *numOutNormals,
-  float *outUvs,
-  unsigned int *numOutUvs,
-  unsigned int *outFaces,
-  unsigned int *numOutFaces
+  unsigned int *numOutUvs
 ) {
 
   unsigned int *indices = faces;
@@ -1627,9 +1623,14 @@ void cut(
       }
   }
 
-  memcpy(outPositions, &points1[0], points1.size()*4);
-  memcpy(outNormals, &normals1[0], normals1.size()*4);
-  memcpy(outUvs, &uvs1[0], uvs1.size()*4);
+  // float *outputBuffer = (float *)malloc(3 * sizeof(float));
+  // outputBuffer[0] = 17;
+  // outputBuffer[1] = .7;
+  // outputBuffer[2] = .111777;
+
+  // memcpy(outPositions, &points1[0], points1.size()*4);
+  // memcpy(outNormals, &normals1[0], normals1.size()*4);
+  // memcpy(outUvs, &uvs1[0], uvs1.size()*4);
 
   numOutPositions[0] = points1.size();
   numOutNormals[0] = normals1.size();
@@ -1641,13 +1642,43 @@ void cut(
   //   points2[i] += 1;
   // }
 
-  memcpy(outPositions + points1.size(), &points2[0], points2.size()*4);
-  memcpy(outNormals + normals1.size(), &normals2[0], normals2.size()*4);
-  memcpy(outUvs + uvs1.size(), &uvs2[0], uvs2.size()*4);
+  // memcpy(outPositions + points1.size(), &points2[0], points2.size()*4);
+  // memcpy(outNormals + normals1.size(), &normals2[0], normals2.size()*4);
+  // memcpy(outUvs + uvs1.size(), &uvs2[0], uvs2.size()*4);
 
   numOutPositions[1] = points2.size();
   numOutNormals[1] = normals2.size();
   numOutUvs[1] = uvs2.size();
+
+  //
+
+  float *outputBuffer = (float *)malloc((
+    points1.size() + points2.size() +
+    normals1.size() + normals2.size() +
+    uvs1.size() + uvs2.size()
+  // ) * sizeof(float));
+  ) * 4);
+
+  int head = 0;
+  int body = points1.size();
+  memcpy(outputBuffer + head, &points1[0], body*4);
+  head += body;
+  body = points2.size();
+  memcpy(outputBuffer + head, &points2[0], body*4);
+  head += body;
+  body = normals1.size();
+  memcpy(outputBuffer + head, &normals1[0], body*4);
+  head += body;
+  body = normals2.size();
+  memcpy(outputBuffer + head, &normals2[0], body*4);
+  head += body;
+  body = uvs1.size();
+  memcpy(outputBuffer + head, &uvs1[0], body*4);
+  head += body;
+  body = uvs2.size();
+  memcpy(outputBuffer + head, &uvs2[0], body*4);
+
+  return outputBuffer;
 
   /* csgjs_plane plane;
   plane.normal = csgjs_vector(0, 1, 0);

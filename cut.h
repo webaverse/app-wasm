@@ -4,7 +4,7 @@
 // #include "TriangleMesh.hpp"
 // #include "./threepp/math/Vector3.hpp"
 
-void cut(
+float *cut(
   float *positions,
   unsigned int numPositions,
   float *normals,
@@ -18,12 +18,7 @@ void cut(
   float *quaternion,
   float *scale,
 
-  float *outPositions,
   unsigned int *numOutPositions,
-  float *outNormals,
   unsigned int *numOutNormals,
-  float *outUvs,
-  unsigned int *numOutUvs,
-  unsigned int *outFaces,
-  unsigned int *numOutFaces
+  unsigned int *numOutUvs
 );
