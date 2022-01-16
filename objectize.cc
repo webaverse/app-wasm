@@ -145,11 +145,7 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 
   float *position,
   float *quaternion,
-  float *scale,
-
-  unsigned int *numOutPositions,
-  unsigned int *numOutNormals,
-  unsigned int *numOutUvs
+  float *scale
 ) {
   return cut(
     positions,
@@ -163,11 +159,7 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 
     position,
     quaternion,
-    scale,
-
-    numOutPositions,
-    numOutNormals,
-    numOutUvs
+    scale
   );
 }
 

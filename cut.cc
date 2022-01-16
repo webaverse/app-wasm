@@ -146,12 +146,7 @@ float *cut(
 
   float *position,
   float *quaternion,
-  float *scale,
-
-  // todo: put in outputBuffer too.
-  unsigned int *numOutPositions,
-  unsigned int *numOutNormals,
-  unsigned int *numOutUvs
+  float *scale
 ) {
 
   unsigned int *indices = faces;
@@ -1623,43 +1618,25 @@ float *cut(
       }
   }
 
-  // float *outputBuffer = (float *)malloc(3 * sizeof(float));
-  // outputBuffer[0] = 17;
-  // outputBuffer[1] = .7;
-  // outputBuffer[2] = .111777;
-
-  // memcpy(outPositions, &points1[0], points1.size()*4);
-  // memcpy(outNormals, &normals1[0], normals1.size()*4);
-  // memcpy(outUvs, &uvs1[0], uvs1.size()*4);
-
-  numOutPositions[0] = points1.size();
-  numOutNormals[0] = normals1.size();
-  numOutUvs[0] = uvs1.size();
-
-  // part 2
-
-  // for(int i=0;i<points2.size();i++){
-  //   points2[i] += 1;
-  // }
-
-  // memcpy(outPositions + points1.size(), &points2[0], points2.size()*4);
-  // memcpy(outNormals + normals1.size(), &normals2[0], normals2.size()*4);
-  // memcpy(outUvs + uvs1.size(), &uvs2[0], uvs2.size()*4);
-
-  numOutPositions[1] = points2.size();
-  numOutNormals[1] = normals2.size();
-  numOutUvs[1] = uvs2.size();
-
   //
 
   float *outputBuffer = (float *)malloc((
+    2 + // numOutPositions
+    2 + // numOutNormals
+    2 + // numOutUvs
     points1.size() + points2.size() +
     normals1.size() + normals2.size() +
     uvs1.size() + uvs2.size()
   // ) * sizeof(float));
   ) * 4);
 
-  int head = 0;
+  outputBuffer[0] = points1.size();
+  outputBuffer[1] = points2.size();
+  outputBuffer[2] = normals1.size();
+  outputBuffer[3] = normals2.size();
+  outputBuffer[4] = uvs1.size();
+  outputBuffer[5] = uvs2.size();
+  int head = 6;
   int body = points1.size();
   memcpy(outputBuffer + head, &points1[0], body*4);
   head += body;

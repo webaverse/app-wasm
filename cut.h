@@ -16,9 +16,5 @@ float *cut(
 
   float *position,
   float *quaternion,
-  float *scale,
-
-  unsigned int *numOutPositions,
-  unsigned int *numOutNormals,
-  unsigned int *numOutUvs
+  float *scale
 );
