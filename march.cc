@@ -570,8 +570,9 @@ float* marchingCubes(int dims[3], float *potential, float shift[3], float scale[
   }
 
   float *outputBuffer = (float*)malloc((2 + positions.size() + faces.size()) * 4);
-  outputBuffer[0] = positionIndex;
-  outputBuffer[1] = faceIndex;
+
+  memcpy(outputBuffer, &positionIndex, 4);
+  memcpy(outputBuffer + 1, &faceIndex, 4);
   memcpy(outputBuffer + 2, &positions.front(), positions.size() * 4);
   memcpy(outputBuffer + 2 + positions.size(), &faces.front(), faces.size() * 4);
 
