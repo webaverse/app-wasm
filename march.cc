@@ -1,12 +1,5 @@
+#include <vector>
 #include "march.h"
-#include "subparcel.h"
-#include "collide.h"
-#include "vector.h"
-#include "biomes.h"
-#include <cstdlib>
-#include <array>
-#include <map>
-#include <iostream>
 
 int edgeTable[256]={
 0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -323,169 +316,211 @@ int edgeIndex[12][2] = {
   {3,7}
 };
 
-inline int getPotentialIndex(int x, int y, int z, int dimsP3[3]) {
-  return (x + 1) +
-    (z + 1) * dimsP3[0] +
-    (y + 1) * dimsP3[0] * dimsP3[1];
+const int width = 10;
+const int height = 10;
+const int depth = 10;
+const float potentialClearValue = -0.2;
+const float potentialSetValue = 0.7;
+inline int _getPotentialIndex(int x, int y, int z) {
+  return x + y*(width+1)*(depth+1) + z*(width+1);
 }
-inline char maxChar(char a, char b) {
-  return a >= b ? a : b;
+inline std::array<float,3> add(const std::array<float,3> &a, const std::array<float,3> &b) {
+  return std::array<float,3>{a[0]+b[0], a[1]+b[1], a[2]+b[2]};
 }
-template<bool transparent>
-inline float adjustPotential(float *potential, int x, int y, int z, int dimsP3[3], float shift[3]) {
-	if (transparent) {
-	  float ay = shift[1] + (float)y;
-	  if (ay < waterLevel) {
-	    int index = getPotentialIndex(x, y, z, dimsP3);
-	    return -potential[index];
-	  } else {
-	    return -0.5f;
-	  }
-	} else {
-		int index = getPotentialIndex(x, y, z, dimsP3);
-    return potential[index];
-	}
+inline std::array<float,3> sub(const std::array<float,3> &a, const std::array<float,3> &b) {
+  return std::array<float,3>{a[0]-b[0], a[1]-b[1], a[2]-b[2]};
 }
-template<bool transparent>
-inline void _floodFill(int x, int y, int z, int startFace, float *potential, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, unsigned char *peeks, unsigned char *seenPeeks, int dimsP1[3], int dimsP3[3], float shift[3]) {
-  const int peekIndex = x +
-    z * dimsP1[0] +
-    y * dimsP1[0] * dimsP1[1];
-  if (!seenPeeks[peekIndex]) {
-    seenPeeks[peekIndex] = 1;
+inline std::array<int,3> add(const std::array<int,3> &a, const std::array<int,3> &b) {
+  return std::array<int,3>{a[0]+b[0], a[1]+b[1], a[2]+b[2]};
+}
+inline std::array<int,3> sub(const std::array<int,3> &a, const std::array<int,3> &b) {
+  return std::array<int,3>{a[0]-b[0], a[1]-b[1], a[2]-b[2]};
+}
+inline std::array<float,3> multiplyScalar(const std::array<float,3> &a, const float &c) {
+  return std::array<float,3>{a[0]*c, a[1]*c, a[2]*c};
+}
+inline std::array<float,3> divideScalar(const std::array<float,3> &a, const float &c) {
+  return std::array<float,3>{a[0]/c, a[1]/c, a[2]/c};
+}
+std::pair<std::array<int,3>, std::vector<float> *> _getChunkAt(float x, float y, float z, int *chunkCoords, unsigned int numChunkCoords, std::vector<std::vector<float>> &workingPotentialsArray) {
+  for (unsigned int i = 0; i < numChunkCoords; i++) {
+    std::array<float,3> chunkPositionFloat = {
+      (float)chunkCoords[i*3],
+      (float)chunkCoords[i*3+1],
+      (float)chunkCoords[i*3+2]
+    };
 
-    std::vector<int> queue(dimsP1[0] * dimsP1[1] * dimsP1[2] * 3);
-    unsigned int queueEnd = 0;
-    queue[queueEnd * 3 + 0] = x;
-    queue[queueEnd * 3 + 1] = y;
-    queue[queueEnd * 3 + 2] = z;
-    queueEnd++;
+    const float dx = x - chunkPositionFloat[0];
+    const float dy = y - chunkPositionFloat[1];
+    const float dz = z - chunkPositionFloat[2];
+    if (dx >= 0 && dx < 1 && dy >= 0 && dy < 1 && dz >= 0 && dz < 1) {
+      std::array<int,3> chunkPosition = {
+        chunkCoords[i*3],
+        chunkCoords[i*3+1],
+        chunkCoords[i*3+2]
+      };
+      return std::pair<std::array<int,3>, std::vector<float> *>(std::move(chunkPosition), &workingPotentialsArray[i]);
+    }
+  }
+  return std::pair<std::array<int,3>, std::vector<float> *>(std::array<int,3>{0, 0, 0}, nullptr);
+}
+int _getChunkIndexAt(int x, int y, int z, int *chunkCoords, unsigned int numChunkCoords) {
+  for (unsigned int i = 0; i < numChunkCoords; i++) {
+    if (chunkCoords[i*3] == x && chunkCoords[i*3+1] == y && chunkCoords[i*3+2] == z) {
+      return i;
+    }
+  }
+  return -1;
+}
 
-    int seenFaces[6+1];
-    memset(seenFaces, 0, sizeof(seenFaces));
-    seenFaces[startFace] = 1;
+void smoothedPotentials(int *chunkCoords, unsigned int numChunkCoords, float *colorTargetCoordBuf, int colorTargetSize, float voxelSize, float *potentialsBuffer) {
+  std::vector<std::vector<float>> workingPotentialsArray;
+  workingPotentialsArray.reserve(numChunkCoords);
+  std::vector<int> dirtyWorkingPotentials;
+  dirtyWorkingPotentials.reserve(numChunkCoords);
+  const unsigned int potentialsBlockSize = (width+1)*(height+1)*(depth+1);
 
-    for (unsigned int queueStart = 0; queueStart < queueEnd; queueStart++) {
-      const int x = queue[queueStart * 3 + 0];
-      const int y = queue[queueStart * 3 + 1];
-      const int z = queue[queueStart * 3 + 2];
-      const float s = adjustPotential<transparent>(potential, x, y, z, dimsP3, shift);
+  for (unsigned int i = 0; i < numChunkCoords; i++) {
+    std::array<int,3> chunkPosition = {
+      chunkCoords[i*3],
+      chunkCoords[i*3+1],
+      chunkCoords[i*3+2]
+    };
 
-      if (s <= 0) { // if empty space
-        if (z == minZ) {
-          seenFaces[(int)PEEK_FACES::BACK] = 1;
-          // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::BACK]] = 1;
-        }
-        if (z == maxZ-1) {
-          seenFaces[(int)PEEK_FACES::FRONT] = 1;
-          // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::FRONT]] = 1;
-        }
-        if (x == minX) {
-          seenFaces[(int)PEEK_FACES::LEFT] = 1;
-          // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::LEFT]] = 1;
-        }
-        if (x == maxX-1) {
-          seenFaces[(int)PEEK_FACES::RIGHT] = 1;
-          // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::RIGHT]] = 1;
-        }
-        if (y == maxY-1) {
-          seenFaces[(int)PEEK_FACES::TOP] = 1;
-          // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::TOP]] = 1;
-        }
-        if (y == minY) {
-          seenFaces[(int)PEEK_FACES::BOTTOM] = 1;
-          // peeks[PEEK_FACE_INDICES[startFace << 4 | (int)PEEK_FACES::BOTTOM]] = 1;
-        }
+    workingPotentialsArray.push_back(std::vector<float>(potentialsBlockSize));
+    std::vector<float> &workingPotentials = workingPotentialsArray.back();
+    dirtyWorkingPotentials.push_back(false);
+    int &dirty = dirtyWorkingPotentials.back();
+    dirty = 0;
 
-        for (int dx = -1; dx <= 1; dx++) {
-          const int ax = x + dx;
-          if (ax >= minX && ax < maxX) {
-            for (int dz = -1; dz <= 1; dz++) {
-              const int az = z + dz;
-              if (az >= minZ && az < maxZ) {
-                for (int dy = -1; dy <= 1; dy++) {
-                  const int ay = y + dy;
-                  if (ay >= minY && ay < maxY) {
-                    const int peekIndex = ax +
-                      az * dimsP1[0] +
-                      ay * dimsP1[0] * dimsP1[1];
-                    if (!seenPeeks[peekIndex]) {
-                      queue[queueEnd * 3 + 0] = ax;
-                      queue[queueEnd * 3 + 1] = ay;
-                      queue[queueEnd * 3 + 2] = az;
-                      queueEnd++;
-                      seenPeeks[peekIndex] = 1;
+    std::fill(workingPotentials.begin(), workingPotentials.end(), potentialClearValue);
+
+    int index = 0;
+    for (int x = 0; x < colorTargetSize; x++) {
+      for (int y = 0; y < colorTargetSize; y++) {
+        std::array<float,3> localVector = {
+          colorTargetCoordBuf[index],
+          colorTargetCoordBuf[index+1],
+          colorTargetCoordBuf[index+2]
+        };
+
+        std::array<float,3> chunkPositionFloat = {
+          (float)chunkPosition[0],
+          (float)chunkPosition[1],
+          (float)chunkPosition[2]
+        };
+        localVector = sub(localVector, chunkPositionFloat);
+        localVector = divideScalar(localVector, voxelSize);
+        localVector = add(localVector, std::array<float,3>{0.5, 0.5, 0.5});
+
+        if (
+          localVector[0] >= 0 && localVector[0] < (width+1) &&
+          localVector[1] >= 0 && localVector[1] < (height+1) &&
+          localVector[2] >= 0 && localVector[2] < (depth+1)
+        ) {
+          workingPotentials[_getPotentialIndex(
+            (int)std::floor(localVector[0]),
+            (int)std::floor(localVector[1]),
+            (int)std::floor(localVector[2])
+          )] = potentialSetValue;
+          dirty = 1;
+        }
+        index += 3;
+      }
+    }
+  }
+
+  for (unsigned int i = 0; i < numChunkCoords; i++) {
+    float *potentials = &potentialsBuffer[i*potentialsBlockSize];
+
+    if (dirtyWorkingPotentials[i]) {
+      std::array<int,3> chunkPosition = {
+        chunkCoords[i*3],
+        chunkCoords[i*3+1],
+        chunkCoords[i*3+2]
+      };
+      std::vector<float> &workingPotentials = workingPotentialsArray[i];
+
+      int index = 0;
+      for (int y = 0; y < height+1; y++) {
+        for (int z = 0; z < depth+1; z++) {
+          for (int x = 0; x < width+1; x++) {
+            float sum = 0;
+            for (int dy = -1; dy <= 1; dy++) {
+              const int ay = y + dy;
+              for (int dz = -1; dz <= 1; dz++) {
+                const int az = z + dz;
+                for (int dx = -1; dx <= 1; dx++) {
+                  const int ax = x + dx;
+                  if (ax >= 0 && ax < width && ay >= 0 && ay < height && az >= 0 && az < depth) {
+                    sum += workingPotentials[_getPotentialIndex(ax, ay, az)];
+                  } else {
+                    std::pair<std::array<int,3>, std::vector<float> *> chunk = _getChunkAt(
+                      (float)(chunkPosition[0]) + ((float)ax)*voxelSize,
+                      (float)(chunkPosition[1]) + ((float)ay)*voxelSize,
+                      (float)(chunkPosition[2]) + ((float)az)*voxelSize,
+                      chunkCoords,
+                      numChunkCoords,
+                      workingPotentialsArray
+                    );
+                    if (chunk.second) {
+                      std::array<int,3> &otherChunkPosition = chunk.first;
+                      std::vector<float> &workingPotentials = *(chunk.second);
+
+                      std::array<int,3> chunkOffset = {
+                        chunkPosition[0],
+                        chunkPosition[1],
+                        chunkPosition[2]
+                      };
+                      chunkOffset = sub(chunkOffset, otherChunkPosition);
+                      const int lax = ax + chunkOffset[0]*width;
+                      const int lay = ay + chunkOffset[1]*height;
+                      const int laz = az + chunkOffset[2]*depth;
+                      sum += workingPotentials[_getPotentialIndex(lax, lay, laz)];
+                    } else {
+                      sum += potentialClearValue;
                     }
                   }
                 }
               }
             }
+            potentials[index++] = sum/(3*3*3);
           }
         }
       }
+    } else {
+      for (unsigned int i = 0; i < potentialsBlockSize; i++) {
+        potentials[i] = potentialClearValue;
+      }
     }
+  }
+}
+float* marchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
+// void marchingCubes(int dims[3], float *potential, uint8_t *brush, float shift[3], float scale[3], float *positions, float *colors, unsigned int *faces, unsigned int &positionIndex, unsigned int &colorIndex, unsigned int &faceIndex) {
+  uint32_t positionIndex = 0;
+  // colorIndex = 0;
+  uint32_t faceIndex = 0;
 
-    for (int i = 1; i <= 6; i++) {
-      if (seenFaces[i]) {
-        for (int j = 1; j <= 6; j++) {
-          if (i != j && seenFaces[j]) {
-            peeks[PEEK_FACE_INDICES[i << 4 | j]] = 1;
-          }
-        }
-      }
-    }
-  }
-}
-inline void setLights(const std::array<float, 3> &v, std::function<unsigned char(int)> getField, unsigned char *lights, unsigned int lightIndex, int dims[3]) {
-  int x = (int)std::floor(v[0]);
-  int y = (int)std::floor(v[1]);
-  int z = (int)std::floor(v[2]);
-  int index = x +
-    (z * dims[0]) +
-    (y * dims[0] * dims[1]);
-  lights[lightIndex] = getField(index);
-}
-inline void setUvs(const std::tuple<float, float> &color, float *uvs, unsigned int uvIndex) {
-  uvs[uvIndex] = std::get<0>(color);
-  uvs[uvIndex+1] = std::get<1>(color);
-}
-template<bool transparent>
-inline unsigned char getAo(int x, int y, int z, float *potential, int dimsP3[3], float shift[3]) {
-  unsigned char numOpens = 0;
-  for(int dy = -1; dy <= 1; dy++) {
-    int ay = y + dy;
-    for(int dz = -1; dz <= 1; dz++) {
-      int az = z + dz;
-      for(int dx = -1; dx <= 1; dx++) {
-        int ax = x + dx;
-        float s = adjustPotential<transparent>(potential, ax, ay, az, dimsP3, shift);
-        if (s < 0) {
-          numOpens++;
-        }
-      }
-    }
-  }
-  return numOpens;
-}
-template<bool transparent>
-inline void marchingCubesRaw(float meshId, int dimsP1[3], int dimsP3[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float yLimit, float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int &positionIndex, unsigned int &normalIndex, unsigned int &uvIndex, /*unsigned int &barycentricIndex,*/ unsigned int &aoIndex, unsigned int &idIndex, unsigned int &skyLightsIndex, unsigned int &torchLightsIndex, unsigned char *peeks) {
+  std::vector<float> positions;
+  std::vector<uint32_t> faces;
+
   int n = 0;
   float grid[8] = {0};
-  std::array<std::array<float, 3>, 12> edges;
+  int edges[12] = {0};
   int x[3] = {0};
 
   //March over the volume
-  for(x[2]=0; x[2]<dimsP1[2]-1; ++x[2], n+=dimsP1[0])
-  for(x[1]=0; x[1]<dimsP1[1]-1; ++x[1], ++n)
-  for(x[0]=0; x[0]<dimsP1[0]-1; ++x[0], ++n) {
+  for(x[2]=0; x[2]<dims[2]-1; ++x[2], n+=dims[0])
+  for(x[1]=0; x[1]<dims[1]-1; ++x[1], ++n)
+  for(x[0]=0; x[0]<dims[0]-1; ++x[0], ++n) {
     //For each cell, compute cube mask
     int cube_index = 0;
     for(int i=0; i<8; ++i) {
       int *v = cubeVerts[i];
-      int ax = x[0]+v[0];
-      int ay = x[1]+v[1];
-      int az = x[2]+v[2];
-      float s = adjustPotential<transparent>(potential, ax, ay, az, dimsP3, shift);
+      int potentialIndex = (x[0]+v[0]) +
+        (((x[2]+v[2])) * dims[0]) +
+        ((x[1]+v[1]) * dims[0] * dims[1]);
+      float s = potential[potentialIndex];
       grid[i] = s;
       cube_index |= (s > 0) ? 1 << i : 0;
     }
@@ -498,6 +533,7 @@ inline void marchingCubesRaw(float meshId, int dimsP1[3], int dimsP3[3], float *
       if((edge_mask & (1<<i)) == 0) {
         continue;
       }
+      edges[i] = positionIndex / 3;
       int *e = edgeIndex[i];
       int *p0 = cubeVerts[e[0]];
       int *p1 = cubeVerts[e[1]];
@@ -505,724 +541,351 @@ inline void marchingCubesRaw(float meshId, int dimsP1[3], int dimsP3[3], float *
       float b = grid[e[1]];
       float d = a - b;
       float t = a / d;
-      std::array<float, 3> &v = edges[i];
       for(int j=0; j<3; ++j) {
-        v[j] = (x[j] + p0[j]) + t * (p1[j] - p0[j]);
+        // positions[positionIndex + j] = (((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j]) * scale[j];
+        positions.push_back((((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j]) * scale[j]);
       }
+
+      // int brushIndex = (x[0]) +
+      //   (((x[2])) * dims[0]) +
+      //   ((x[1]) * dims[0] * dims[1]);
+      // colors[colorIndex] = (float)brush[brushIndex*3] / 255.0f;
+      // colors[colorIndex+1] = (float)brush[brushIndex*3+1] / 255.0f;
+      // colors[colorIndex+2] = (float)brush[brushIndex*3+2] / 255.0f;
+
+      positionIndex += 3;
+      // colorIndex += 3;
     }
     //Add faces
     int *f = triTable[cube_index];
     for(int i=0;f[i]!=-1;i+=3) {
-      std::array<float, 3> &a = edges[f[i]];
-      std::array<float, 3> &b = edges[f[i+2]];
-      std::array<float, 3> &c = edges[f[i+1]];
-
-      if (!transparent) {
-        setLights(a, [&](int index) -> unsigned char { return (unsigned char)maxChar(heightfield[index], 0); }, skyLights, skyLightsIndex++, dimsP1);
-        setLights(a, [&](int index) -> unsigned char { return lightfield[index]; }, torchLights, torchLightsIndex++, dimsP1);
-
-        setLights(b, [&](int index) -> unsigned char { return (unsigned char)maxChar(heightfield[index], 0); }, skyLights, skyLightsIndex++, dimsP1);
-        setLights(b, [&](int index) -> unsigned char { return lightfield[index]; }, torchLights, torchLightsIndex++, dimsP1);
-
-        setLights(c, [&](int index) -> unsigned char { return (unsigned char)maxChar(heightfield[index], 0); }, skyLights, skyLightsIndex++, dimsP1);
-        setLights(c, [&](int index) -> unsigned char { return lightfield[index]; }, torchLights, torchLightsIndex++, dimsP1);
-      } else {
-        constexpr unsigned char skyLight = 8;
-        constexpr unsigned char torchLight = 0.0f;
-
-        skyLights[skyLightsIndex++] = skyLight;
-        torchLights[torchLightsIndex++] = torchLight;
-
-        skyLights[skyLightsIndex++] = skyLight;
-        torchLights[torchLightsIndex++] = torchLight;
-
-        skyLights[skyLightsIndex++] = skyLight;
-        torchLights[torchLightsIndex++] = torchLight;
-      }
-      {
-        Tri tri(
-          Vec(a[0], a[1], a[2]),
-          Vec(b[0], b[1], b[2]),
-          Vec(c[0], c[1], c[2])
-        );
-        Vec center = tri.midpoint();
-        // Vec normal = tri.normal();
-        // Vec point = center;// - normal;
-        int x = (int)center.x;
-        int y = (int)center.y;
-        int z = (int)center.z;
-        // Vec center(std::min({a[0], b[0], c[0]}), std::min({a[1], b[1], c[1]}), std::min({a[2], b[2], c[2]}));
-        int biomeIndex = x +
-          (z * dimsP1[0]);
-        int biome = (int)biomes[biomeIndex];
-        if (transparent) {
-			    switch (biome) {
-			      case (int)BIOME::biOcean:
-			      case (int)BIOME::biRiver:
-			        biome = (int)BIOME::waterOcean;
-			        break;
-			      case (int)BIOME::biFrozenOcean:
-			      case (int)BIOME::biFrozenRiver:
-			        biome = (int)BIOME::waterOceanFrozen;
-			        break;
-			      default:
-			        biome = (int)BIOME::waterOcean;
-			        break;
-			    }
-        }
-        const std::tuple<float, float> &color = groundColors[biome];
-
-        setUvs(color, uvs, uvIndex);
-        // setUvs(a, biomes, groundNormals, uvs, uvIndex, dimsP1);
-        uvIndex += 2;
-        setUvs(color, uvs, uvIndex);
-        // setUvs(b, biomes, groundNormals, uvs, uvIndex, dimsP1);
-        uvIndex += 2;
-        setUvs(color, uvs, uvIndex);
-        // setUvs(c, biomes, groundNormals, uvs, uvIndex, dimsP1);
-        uvIndex += 2;
-      }
-      {
-        aos[aoIndex++] = getAo<transparent>(
-          (int)std::round(a[0]),
-          (int)std::round(a[1]),
-          (int)std::round(a[2]),
-          potential,
-          dimsP3,
-          shift
-        );
-        aos[aoIndex++] = getAo<transparent>(
-          (int)std::round(b[0]),
-          (int)std::round(b[1]),
-          (int)std::round(b[2]),
-          potential,
-          dimsP3,
-          shift
-        );
-        aos[aoIndex++] = getAo<transparent>(
-          (int)std::round(c[0]),
-          (int)std::round(c[1]),
-          (int)std::round(c[2]),
-          potential,
-          dimsP3,
-          shift
-        );
-      }
-    }
-    for (int i = 0; i < 12; i++) {
-      std::array<float, 3> &v = edges[i];
-      for(int j=0; j<3; ++j) {
-        v[j] = (v[j] + shift[j]) * scale[j];
-      }
-    }
-    for(int i=0;f[i]!=-1;i+=3) {
-      std::array<float, 3> &a = edges[f[i]];
-      std::array<float, 3> &b = edges[f[i+2]];
-      std::array<float, 3> &c = edges[f[i+1]];
-
-      if (transparent) {
-        a[1] = std::min(a[1], yLimit);
-        b[1] = std::min(b[1], yLimit);
-        c[1] = std::min(c[1], yLimit);
-      }
-
-      positions[positionIndex++] = a[0];
-      positions[positionIndex++] = a[1];
-      positions[positionIndex++] = a[2];
-      positions[positionIndex++] = b[0];
-      positions[positionIndex++] = b[1];
-      positions[positionIndex++] = b[2];
-      positions[positionIndex++] = c[0];
-      positions[positionIndex++] = c[1];
-      positions[positionIndex++] = c[2];
-
-      Tri tri{
-        Vec{a[0], a[1], a[2]},
-        Vec{b[0], b[1], b[2]},
-        Vec{c[0], c[1], c[2]},
-      };
-      Vec normal = tri.normal();
-      normals[normalIndex++] = normal.x;
-      normals[normalIndex++] = normal.y;
-      normals[normalIndex++] = normal.z;
-      normals[normalIndex++] = normal.x;
-      normals[normalIndex++] = normal.y;
-      normals[normalIndex++] = normal.z;
-      normals[normalIndex++] = normal.x;
-      normals[normalIndex++] = normal.y;
-      normals[normalIndex++] = normal.z;
-
-      /* barycentrics[barycentricIndex++] = 1;
-      barycentrics[barycentricIndex++] = 0;
-      barycentrics[barycentricIndex++] = 0;
-      barycentrics[barycentricIndex++] = 0;
-      barycentrics[barycentricIndex++] = 1;
-      barycentrics[barycentricIndex++] = 0;
-      barycentrics[barycentricIndex++] = 0;
-      barycentrics[barycentricIndex++] = 0;
-      barycentrics[barycentricIndex++] = 1; */
-
-      ids[idIndex++] = meshId;
-      ids[idIndex++] = meshId;
-      ids[idIndex++] = meshId;
+      // faces[faceIndex++] = edges[f[i]];
+      // faces[faceIndex++] = edges[f[i+1]];
+      // faces[faceIndex++] = edges[f[i+2]];
+	  	faces.push_back(edges[f[i]]);
+      faces.push_back(edges[f[i+1]]);
+      faces.push_back(edges[f[i+2]]);
+      faceIndex += 3;
     }
   }
 
-  if (!transparent) {
-    memset(peeks, 0, 15);
-    unsigned char seenPeeks[dimsP1[0] * dimsP1[1] * dimsP1[2]];
-    memset(seenPeeks, 0, sizeof(seenPeeks));
-    for (int x = 0; x < dimsP1[0]; x++) {
-      for (int y = 0; y < dimsP1[0]; y++) {
-        _floodFill<transparent>(x, y, dimsP1[2]-1, (int)PEEK_FACES::FRONT, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
-      }
-    }
-    for (int x = 0; x < dimsP1[0]; x++) {
-      for (int y = 0; y < dimsP1[0]; y++) {
-        _floodFill<transparent>(x, y, 0, (int)PEEK_FACES::BACK, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
-      }
-    }
-    for (int z = 0; z < dimsP1[0]; z++) {
-      for (int y = 0; y < dimsP1[0]; y++) {
-        _floodFill<transparent>(0, y, z, (int)PEEK_FACES::LEFT, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
-      }
-    }
-    for (int z = 0; z < dimsP1[0]; z++) {
-      for (int y = 0; y < dimsP1[0]; y++) {
-        _floodFill<transparent>(dimsP1[0]-1, y, z, (int)PEEK_FACES::RIGHT, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
-      }
-    }
-    for (int x = 0; x < dimsP1[0]; x++) {
-      for (int z = 0; z < dimsP1[0]; z++) {
-        _floodFill<transparent>(x, dimsP1[1]-1, z, (int)PEEK_FACES::TOP, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
-      }
-    }
-    for (int x = 0; x < dimsP1[0]; x++) {
-      for (int z = 0; z < dimsP1[0]; z++) {
-        _floodFill<transparent>(x, 0, z, (int)PEEK_FACES::BOTTOM, potential, 0, 0, 0, dimsP1[0], dimsP1[1], dimsP1[2], peeks, seenPeeks, dimsP1, dimsP3, shift);
-      }
-    }
-  }
+  float *outputBuffer = (float*)malloc((2 + positions.size() + faces.size()) * 4);
+  outputBuffer[0] = positionIndex;
+  outputBuffer[1] = faceIndex;
+  memcpy(outputBuffer + 2, &positions.front(), positions.size() * 4);
+  memcpy(outputBuffer + 2 + positions.size(), &faces.front(), faces.size() * 4);
+
+  return outputBuffer;
 }
 
-void marchingCubes2(float meshId, int dims[3], float *potential, unsigned char *biomes, char *heightfield, unsigned char *lightfield, float shift[3], float scale[3], float *positions, float *normals, float *uvs, /*float *barycentrics,*/ unsigned char *aos, float *ids, unsigned char *skyLights, unsigned char *torchLights, unsigned int &positionIndex, unsigned int &normalIndex, unsigned int &uvIndex, /*unsigned int &barycentricIndex,*/ unsigned int &aoIndex, unsigned int &idIndex, unsigned int &skyLightsIndex, unsigned int &torchLightsIndex, unsigned int &numOpaquePositions, unsigned int &numTransparentPositions, unsigned char *peeks) {
-  positionIndex = 0;
-  normalIndex = 0;
-  uvIndex = 0;
-  // barycentricIndex = 0;
-  aoIndex = 0;
-  idIndex = 0;
-  skyLightsIndex = 0;
-  torchLightsIndex = 0;
-  numOpaquePositions = 0;
-  numTransparentPositions = 0;
-  unsigned int lightIndex = 0;
+void computeGeometry(int *chunkCoords, unsigned int numChunkCoords, float *colorTargetCoordBuf, int colorTargetSize, float voxelSize, float marchCubesTexSize, float marchCubesTexSquares, float marchCubesTexTriangleSize, float *potentialsBuffer, float *positionsBuffer, float *barycentricsBuffer, float *uvsBuffer, float *uvs2Buffer, unsigned int *positionIndexBuffer, unsigned int *barycentricIndexBuffer, unsigned int *uvIndexBuffer, unsigned int *uvIndex2Buffer) {
+  // working potentials
+  std::vector<std::vector<float>> workingPotentialsArray;
+  workingPotentialsArray.reserve(numChunkCoords);
+  std::vector<int> dirtyWorkingPotentials(numChunkCoords);
+  const unsigned int potentialsBlockSize = (width+1)*(height+1)*(depth+1);
 
-  int dimsP1[3] = {
-    dims[0]+1,
-    dims[1]+1,
-    dims[2]+1,
-  };
-  int dimsP3[3] = {
-    dims[0]+3,
-    dims[1]+3,
-    dims[2]+3,
-  };
-
-  marchingCubesRaw<false>(meshId, dimsP1, dimsP3, potential, biomes, heightfield, lightfield, shift, scale, 0.0f, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, positionIndex, normalIndex, uvIndex, /*barycentricIndex,*/ aoIndex, idIndex, skyLightsIndex, torchLightsIndex, peeks);
-  numOpaquePositions = positionIndex;
-
-  marchingCubesRaw<true>(meshId, dimsP1, dimsP3, potential, biomes, heightfield, lightfield, shift, scale, 4.0f, positions, normals, uvs, /*barycentrics,*/ aos, ids, skyLights, torchLights, positionIndex, normalIndex, uvIndex, /*barycentricIndex,*/ aoIndex, idIndex, skyLightsIndex, torchLightsIndex, peeks);
-  numTransparentPositions = positionIndex - numOpaquePositions;
-}
-
-std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doMine(Tracker *tracker, float *position, float delta) {
-  int x = (int)std::floor(position[0]);
-  int y = (int)std::floor(position[1]);
-  int z = (int)std::floor(position[2]);
-  
-  // collect subparcels
-  std::vector<std::shared_ptr<Subparcel>> newSubparcels;
-  constexpr int radius = 1;
-  {
-    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
-    newSubparcels.reserve(tracker->subparcels.size());
-
-    for (int dy = -radius - 1; dy <= radius + 1; dy++) {
-      const int ay = y + dy;
-      for (int dz = -radius - 1; dz <= radius + 1; dz++) {
-        const int az = z + dz;
-        for (int dx = -radius - 1; dx <= radius + 1; dx++) {
-          const int ax = x + dx;
-          const int sx = (int)std::floor((float)ax/(float)SUBPARCEL_SIZE);
-          const int sy = (int)std::floor((float)ay/(float)SUBPARCEL_SIZE);
-          const int sz = (int)std::floor((float)az/(float)SUBPARCEL_SIZE);
-          const int index = getSubparcelIndex(sx, sy, sz);
-          auto existingSubparcelIter = std::find_if(newSubparcels.begin(), newSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
-            return subparcel->coord.index == index;
-          });
-          if (existingSubparcelIter == newSubparcels.end()) {
-            auto oldSubparcelIter = tracker->subparcels.find(index);
-            if (oldSubparcelIter != tracker->subparcels.end()) {
-              std::shared_ptr<Subparcel> &oldSubparcel = oldSubparcelIter->second;
-              if (oldSubparcel->live) {
-                newSubparcels.push_back(oldSubparcel);
-              } else {
-              	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
-                // std::cout << "cannot edit dead index " << ax << " " << ay << " " << az << std::endl;
-                // abort();
-              }
-            } else {
-	          	return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(false, std::vector<std::shared_ptr<Subparcel>>());
-	          }
-          }
-        }
-      }
-    }
-
-    for (unsigned int i = 0; i < newSubparcels.size(); i++) {
-			std::shared_ptr<Subparcel> &oldSubparcel = newSubparcels[i];
-			std::shared_ptr<Subparcel> newSubparcel(oldSubparcel->clone());
-			newSubparcel->copyVegetation(*oldSubparcel);
-			oldSubparcel->live = false;
-			newSubparcels[i] = std::move(newSubparcel);
-		}
-  }
-  // apply edit
-  {
-    int dimsP3[3] = {
-      SUBPARCEL_SIZE_P3,
-      SUBPARCEL_SIZE_P3,
-      SUBPARCEL_SIZE_P3,
+  for (unsigned int i = 0; i < numChunkCoords; i++) {
+    std::array<int,3> chunkPosition = {
+      chunkCoords[i*3],
+      chunkCoords[i*3+1],
+      chunkCoords[i*3+2]
     };
-    std::vector<int> minedIndices;
-    minedIndices.reserve(32);
-    std::function<void(int, int, int, float)> _applyRound = [&](int ax, int ay, int az, float value) -> void {
-      minedIndices.clear();
-      for (int ddy = -1; ddy <= 1; ddy++) {
-        const int ady = ay + ddy;
-        for (int ddz = -1; ddz <= 1; ddz++) {
-          const int adz = az + ddz;
-          for (int ddx = -1; ddx <= 1; ddx++) {
-            const int adx = ax + ddx;
 
-            const int sdx = (int)std::floor((float)adx/(float)SUBPARCEL_SIZE);
-            const int sdy = (int)std::floor((float)ady/(float)SUBPARCEL_SIZE);
-            const int sdz = (int)std::floor((float)adz/(float)SUBPARCEL_SIZE);
-            const int index = getSubparcelIndex(sdx, sdy, sdz);
-            auto minedIndexIter = std::find(minedIndices.begin(), minedIndices.end(), index);
-            if (minedIndexIter == minedIndices.end()) {
-              minedIndices.push_back(index);
-              
-              const int lx = ax - sdx*SUBPARCEL_SIZE;
-              const int ly = ay - sdy*SUBPARCEL_SIZE;
-              const int lz = az - sdz*SUBPARCEL_SIZE;
-              if (
-                lx >= 0 && lx < SUBPARCEL_SIZE_P3 &&
-                ly >= 0 && ly < SUBPARCEL_SIZE_P3 &&
-                lz >= 0 && lz < SUBPARCEL_SIZE_P3
-              ) {
-                auto subparcelIter = std::find_if(newSubparcels.begin(), newSubparcels.end(), [&](std::shared_ptr<Subparcel> &subparcel) -> bool {
-                  return subparcel->coord.index == index;
-                });
-                if (subparcelIter != newSubparcels.end()) {
-                  std::shared_ptr<Subparcel> &subparcel = *subparcelIter;
+    workingPotentialsArray.push_back(std::vector<float>(potentialsBlockSize));
+    std::vector<float> &workingPotentials = workingPotentialsArray.back();
+    // int &dirty = dirtyWorkingPotentials[i];
 
-                  const int potentialIndex = getPotentialIndex(lx, ly, lz, dimsP3);
-                  // std::cout << "mine potential " << index << " " << lx << " " << ly << " " << lz << " " << potentialIndex << " " << subparcel->potentials[potentialIndex] << " " << value << std::endl;
-                  subparcel->potentials[potentialIndex] += value;
-                } else {
-                  std::cout << "warning: did not have subparcel: " << sdx << " " << sdy << " " << sdz << std::endl;
+    std::fill(workingPotentials.begin(), workingPotentials.end(), potentialClearValue);
+
+    int index = 0;
+    for (int x = 0; x < colorTargetSize; x++) {
+      for (int y = 0; y < colorTargetSize; y++) {
+        std::array<float,3> localVector = {
+          colorTargetCoordBuf[index],
+          colorTargetCoordBuf[index+1],
+          colorTargetCoordBuf[index+2]
+        };
+
+        std::array<float,3> chunkPositionFloat = {
+          (float)chunkPosition[0],
+          (float)chunkPosition[1],
+          (float)chunkPosition[2]
+        };
+        localVector = sub(localVector, chunkPositionFloat);
+        localVector = divideScalar(localVector, voxelSize);
+        localVector = add(localVector, std::array<float,3>{0.5, 0.5, 0.5});
+
+        if (
+          localVector[0] >= 0 && localVector[0] < (width+1) &&
+          localVector[1] >= 0 && localVector[1] < (height+1) &&
+          localVector[2] >= 0 && localVector[2] < (depth+1)
+        ) {
+          std::array<int,3> point = {
+            (int)std::floor(localVector[0]),
+            (int)std::floor(localVector[1]),
+            (int)std::floor(localVector[2])
+          };
+          workingPotentials[_getPotentialIndex(point[0], point[1], point[2])] = potentialSetValue;
+          // dirty = 1;
+
+          int minDx = point[0] <= 1 ? -1 : 0;
+          int maxDx = point[0] >= (width-1) ? 1 : 0;
+          int minDy = point[1] <= 1 ? -1 : 0;
+          int maxDy = point[1] >= (height-1) ? 1 : 0;
+          int minDz = point[2] <= 1 ? -1 : 0;
+          int maxDz = point[2] >= (depth-1) ? 1 : 0;
+          for (int dz = minDz; dz <= maxDz; dz++) {
+            for (int dy = minDy; dy <= maxDy; dy++) {
+              for (int dx = minDx; dx <= maxDx; dx++) {
+                int otherChunkIndex = _getChunkIndexAt(chunkPosition[0]+dx, chunkPosition[1]+dy, chunkPosition[2]+dz, chunkCoords, numChunkCoords);
+                if (otherChunkIndex != -1) {
+                  dirtyWorkingPotentials[otherChunkIndex] = 1;
                 }
               }
             }
           }
         }
-      }
-    };
-    for (int dy = -radius; dy <= radius; dy++) {
-      const int ay = y + dy;
-      for (int dz = -radius; dz <= radius; dz++) {
-        const int az = z + dz;
-        for (int dx = -radius; dx <= radius; dx++) {
-          const int ax = x + dx;
-
-          const float dist = std::sqrt((float)dx*(float)dx + (float)dy*(float)dy + (float)dz*(float)dz);
-          const float maxDistScale = radius;
-          const float maxDist = std::sqrt(maxDistScale*maxDistScale + maxDistScale*maxDistScale + maxDistScale*maxDistScale);
-          const float distanceDiff = maxDist - dist;
-          if (distanceDiff > 0) {
-            const float value = (1.0f-dist/maxDist)*delta;
-            _applyRound(ax, ay, az, value);
-          }
-        }
+        index += 3;
       }
     }
   }
-  // re-polygonalize new subparcels
-  for (std::shared_ptr<Subparcel> subparcel : newSubparcels) {
-    float *landPositions;
-    unsigned int numLandPositions;
-    FreeEntry *landPositionsEntry;
-    FreeEntry *landNormalsEntry;
-    FreeEntry *landUvsEntry;
-    // FreeEntry *landBarycentricsEntry;
-    FreeEntry *landAosEntry;
-    FreeEntry *landIdsEntry;
-    FreeEntry *landSkyLightsEntry;
-    FreeEntry *landTorchLightsEntry;
-    {
-      float meshId = tracker->meshId;
-      int dims[3] = {
-        SUBPARCEL_SIZE,
-        SUBPARCEL_SIZE,
-        SUBPARCEL_SIZE,
+
+  // potentials
+  for (unsigned int i = 0; i < numChunkCoords; i++) {
+    float *potentials = &potentialsBuffer[i*potentialsBlockSize];
+
+    if (dirtyWorkingPotentials[i]) {
+      std::array<int,3> chunkPosition = {
+        chunkCoords[i*3],
+        chunkCoords[i*3+1],
+        chunkCoords[i*3+2]
       };
-      float *potential = subparcel->potentials;
-      unsigned char *biomes = subparcel->biomes;
-      char *heightfield = subparcel->heightfield;
-      unsigned char *lightfield = subparcel->lightfield;
-      float shift[3] = {
-        (float)subparcel->coord.x*(float)SUBPARCEL_SIZE,
-        (float)subparcel->coord.y*(float)SUBPARCEL_SIZE,
-        (float)subparcel->coord.z*(float)SUBPARCEL_SIZE,
-      };
-      float scale[3] = {1, 1, 1};
+      std::vector<float> &workingPotentials = workingPotentialsArray[i];
 
-      ArenaAllocator *positionsAllocator = tracker->landPositionsAllocator;
-      ArenaAllocator *normalsAllocator = tracker->landNormalsAllocator;
-      ArenaAllocator *uvsAllocator = tracker->landUvsAllocator;
-      // ArenaAllocator *barycentricsAllocator = tracker->landBarycentricsAllocator;
-      ArenaAllocator *aosAllocator = tracker->landAosAllocator;
-      ArenaAllocator *idsAllocator = tracker->landIdsAllocator;
-      ArenaAllocator *skyLightsAllocator = tracker->landSkyLightsAllocator;
-      ArenaAllocator *torchLightsAllocator = tracker->landTorchLightsAllocator;
+      int index = 0;
+      for (int y = 0; y < height+1; y++) {
+        for (int z = 0; z < depth+1; z++) {
+          for (int x = 0; x < width+1; x++) {
+            float sum = 0;
+            for (int dy = -1; dy <= 1; dy++) {
+              const int ay = y + dy;
+              for (int dz = -1; dz <= 1; dz++) {
+                const int az = z + dz;
+                for (int dx = -1; dx <= 1; dx++) {
+                  const int ax = x + dx;
+                  if (ax >= 0 && ax < width && ay >= 0 && ay < height && az >= 0 && az < depth) {
+                    sum += workingPotentials[_getPotentialIndex(ax, ay, az)];
+                  } else {
+                    std::pair<std::array<int,3>, std::vector<float> *> chunk = _getChunkAt(
+                      (float)(chunkPosition[0]) + ((float)ax)*voxelSize,
+                      (float)(chunkPosition[1]) + ((float)ay)*voxelSize,
+                      (float)(chunkPosition[2]) + ((float)az)*voxelSize,
+                      chunkCoords,
+                      numChunkCoords,
+                      workingPotentialsArray
+                    );
+                    if (chunk.second) {
+                      std::array<int,3> &otherChunkPosition = chunk.first;
+                      std::vector<float> &workingPotentials = *(chunk.second);
 
-      unsigned int numOpaquePositions;
-      unsigned int numTransparentPositions;
-
-      constexpr int bufferSize = 1024*1024;
-      std::vector<float> positions(bufferSize);
-      std::vector<float> normals(bufferSize);
-      std::vector<float> uvs(bufferSize);
-      // std::vector<float> barycentrics(bufferSize);
-      std::vector<unsigned char> aos(bufferSize);
-      std::vector<float> ids(bufferSize);
-      std::vector<unsigned char> skyLights(bufferSize);
-      std::vector<unsigned char> torchLights(bufferSize);
-      constexpr unsigned int numPeeks = 15;
-      std::vector<unsigned char> peeks(numPeeks);
-      unsigned int numPositions;
-      unsigned int numNormals;
-      unsigned int numUvs;
-      // unsigned int numBarycentrics;
-      unsigned int numAos;
-      unsigned int numIds;
-      unsigned int numSkyLights;
-      unsigned int numTorchLights;
-      marchingCubes2(meshId, dims, potential, biomes, heightfield, lightfield, shift, scale, positions.data(), normals.data(), uvs.data(), /*barycentrics.data(),*/ aos.data(), ids.data(), skyLights.data(), torchLights.data(), numPositions, numNormals, numUvs, /*numBarycentrics,*/ numAos, numIds, numSkyLights, numTorchLights, numOpaquePositions, numTransparentPositions, peeks.data());
-
-      subparcel->landPositionsEntry = positionsAllocator->alloc(numPositions*sizeof(float));
-      if (!subparcel->landPositionsEntry) {
-        std::cout << "could not allocate chunk marchingCubes positions" << std::endl;
-        abort();
-      }
-      subparcel->landNormalsEntry = normalsAllocator->alloc(numNormals*sizeof(float));
-      if (!subparcel->landNormalsEntry) {
-        std::cout << "could not allocate chunk marchingCubes normals" << std::endl;
-        abort();
-      }
-      subparcel->landUvsEntry = uvsAllocator->alloc(numUvs*sizeof(float));
-      if (!subparcel->landUvsEntry) {
-        std::cout << "could not allocate chunk marchingCubes uvs" << std::endl;
-        abort();
-      }
-      /* subparcel->landBarycentricsEntry = barycentricsAllocator->alloc(numBarycentrics*sizeof(float)); // XXX maybe not needed
-      if (!subparcel->landBarycentricsEntry) {
-        std::cout << "could not allocate chunk marchingCubes barycentrics" << std::endl;
-        abort();
-      } */
-      subparcel->landAosEntry = aosAllocator->alloc(numAos*sizeof(unsigned char));
-      if (!subparcel->landAosEntry) {
-        std::cout << "could not allocate chunk marchingCubes aos" << std::endl;
-        abort();
-      }
-      subparcel->landIdsEntry = idsAllocator->alloc(numIds*sizeof(float));
-      if (!subparcel->landIdsEntry) {
-        std::cout << "could not allocate chunk marchingCubes ids" << std::endl;
-        abort();
-      }
-      subparcel->landSkyLightsEntry = skyLightsAllocator->alloc(numSkyLights*sizeof(unsigned char));
-      if (!subparcel->landSkyLightsEntry) {
-        std::cout << "could not allocate chunk marchingCubes skyLights" << std::endl;
-        abort();
-      }
-      subparcel->landTorchLightsEntry = torchLightsAllocator->alloc(numTorchLights*sizeof(unsigned char));
-      if (!subparcel->landTorchLightsEntry) {
-        std::cout << "could not allocate chunk marchingCubes torchLights" << std::endl;
-        abort();
-      }
-
-      memcpy(positionsAllocator->data + subparcel->landPositionsEntry->spec.start, positions.data(), numPositions*sizeof(float));
-      memcpy(normalsAllocator->data + subparcel->landNormalsEntry->spec.start, normals.data(), numNormals*sizeof(float));
-      memcpy(uvsAllocator->data + subparcel->landUvsEntry->spec.start, uvs.data(), numUvs*sizeof(float));
-      // memcpy(barycentricsAllocator->data + subparcel->landBarycentricsEntry->spec.start, barycentrics.data(), numBarycentrics*sizeof(float));
-      memcpy(aosAllocator->data + subparcel->landAosEntry->spec.start, aos.data(), numAos*sizeof(unsigned char));
-      memcpy(idsAllocator->data + subparcel->landIdsEntry->spec.start, ids.data(), numIds*sizeof(float));
-      memcpy(skyLightsAllocator->data + subparcel->landSkyLightsEntry->spec.start, skyLights.data(), numSkyLights*sizeof(unsigned char));
-      memcpy(torchLightsAllocator->data + subparcel->landTorchLightsEntry->spec.start, torchLights.data(), numTorchLights*sizeof(unsigned char));
-      memcpy(subparcel->peeks, peeks.data(), numPeeks*sizeof(unsigned char));
-
-      // groups
-      subparcel->landGroups[0].start = subparcel->landPositionsEntry->spec.start/sizeof(float)/3;
-      subparcel->landGroups[0].count = numOpaquePositions/3;
-      subparcel->landGroups[0].materialIndex = 0;
-      subparcel->landGroups[1].start = subparcel->landGroups[0].start + subparcel->landGroups[0].count;
-      subparcel->landGroups[1].count = numTransparentPositions/3;
-      subparcel->landGroups[1].materialIndex = 1;
-
-      // latch
-      landPositions = (float *)(positionsAllocator->data + subparcel->landPositionsEntry->spec.start);
-      numLandPositions = numOpaquePositions;
-    }
-    doLandPhysics(tracker, subparcel.get(), landPositions, numLandPositions);
-  }
-
-  return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(newSubparcels));
-  
-  /* const _mine = async (mineSpecs, explodePosition) => {
-  const slabs = mineSpecs.map(spec => currentChunkMesh.getSlab(spec.x, spec.y, spec.z));
-  const specs = await chunkWorker.requestMine(currentChunkMesh.meshId, mineSpecs);
-  for (let i = 0; i < slabs.length; i++) {
-    const slab = slabs[i];
-    const spec = specs[i];
-    currentChunkMesh.updateGeometry(slab, spec);
-  }
-  for (let i = 0; i < slabs.length; i++) {
-    if (slab.physxGroupSet) {
-      geometryWorker.unregisterGroupSet(culler, slab.physxGroupSet);
-      slab.physxGroupSet = 0;
-    }
-    const peeks = new Uint8Array(currentChunkMesh.geometry.peeks.buffer, currentChunkMesh.geometry.peeks.byteOffset + slab.spec.peeksStart, slab.spec.peeksCount);
-    slab.physxGroupSet = geometryWorker.registerGroupSet(culler, slab.x, slab.y, slab.z, slabRadius, peeks, slab.groupSet.groups);
-  }
-  const neededSpecs = specs.filter(spec => spec.numOpaquePositions > 0);
-  if (neededSpecs.length > 0) {
-    const bakeSpecs = neededSpecs.map(spec => {
-      const {positions, numOpaquePositions, x, y, z} = spec;
-      return numOpaquePositions > 0 ? {
-        positions,
-        numOpaquePositions,
-        x,
-        y,
-        z,
-      } : null;
-    });
-    const result = await geometryWorker.requestBakeGeometries(bakeSpecs.map(spec => ({
-      positions: spec.positions,
-      count: spec.numOpaquePositions,
-    })));
-    for (let i = 0; i < result.physicsGeometryBuffers.length; i++) {
-      const physxGeometry = result.physicsGeometryBuffers[i];
-      const {x, y, z} = bakeSpecs[i];
-      // const stat = bakeStats[i];
-      const slab = currentChunkMesh.getSlab(x, y, z);
-      if (slab.physxGeometry) {
-        geometryWorker.unregisterGeometry(slab.physxGeometry);
-        slab.physxGeometry = 0;
-      }
-      slab.physxGeometry = geometryWorker.registerBakedGeometry(currentChunkMesh.meshId, physxGeometry, x, y, z);
-    }
-  }
-  if (specs.length > 0 && explodePosition) {
-    for (let i = 0; i < 3; i++) {
-      const pxMesh = new THREE.Mesh(tetrehedronGeometry, currentChunkMesh.material[0]);
-      currentChunkMesh.getWorldQuaternion(localQuaternion2).inverse();
-      pxMesh.position.copy(explodePosition)
-        .add(localVector2.set((-1+Math.random()*2)*0.2, 0.2, (-1+Math.random()*2)*0.2).applyQuaternion(localQuaternion2));
-      pxMesh.velocity = new THREE.Vector3((-1+Math.random()*2)*0.5, Math.random()*3, (-1+Math.random()*2)*0.5)
-        .applyQuaternion(localQuaternion2);
-      pxMesh.angularVelocity = new THREE.Vector3((-1+Math.random()*2)*Math.PI*2*0.01, (-1+Math.random()*2)*Math.PI*2*0.01, (-1+Math.random()*2)*Math.PI*2*0.01);
-      pxMesh.isBuildMesh = true;
-      const startTime = Date.now();
-      const endTime = startTime + 3000;
-      pxMesh.update = () => Date.now() < endTime;
-      currentChunkMesh.add(pxMesh);
-      pxMeshes.push(pxMesh);
-    }
-  }
-};
-const _applyMineSpec = (p, radius, key, dim, getIndex, delta) => {
-  const mineSpecs = [];
-  const _applyRound = (ax, ay, az, value) => {
-    const mineSpecsRound = [];
-    for (let ddy = -1; ddy <= 1; ddy++) {
-      const ady = ay + ddy;
-      for (let ddz = -1; ddz <= 1; ddz++) {
-        const adz = az + ddz;
-        for (let ddx = -1; ddx <= 1; ddx++) {
-          const adx = ax + ddx;
-
-          const sdx = Math.floor(adx/currentChunkMesh.subparcelSize);
-          const sdy = Math.floor(ady/currentChunkMesh.subparcelSize);
-          const sdz = Math.floor(adz/currentChunkMesh.subparcelSize);
-          const lx = ax - sdx*currentChunkMesh.subparcelSize;
-          const ly = ay - sdy*currentChunkMesh.subparcelSize;
-          const lz = az - sdz*currentChunkMesh.subparcelSize;
-
-          if (
-            lx >= 0 && lx < dim &&
-            ly >= 0 && ly < dim &&
-            lz >= 0 && lz < dim
-          ) {
-            const index = planet.getSubparcelIndex(sdx, sdy, sdz);
-            if (!mineSpecsRound.some(mineSpec => mineSpec.index === index)) {
-              planet.editSubparcel(sdx, sdy, sdz, subparcel => {
-                const potentialIndex = getIndex(lx, ly, lz);
-                subparcel[key][potentialIndex] += value;
-
-                const slab = currentChunkMesh.getSlab(sdx, sdy, sdz);
-
-                const mineSpec = {
-                  x: sdx,
-                  y: sdy,
-                  z: sdz,
-                  index,
-                  potentials: subparcel.potentials,
-                  biomes: subparcel.biomes,
-                  heightfield: subparcel.heightfield,
-                  lightfield: subparcel.lightfield,
-                  position: slab.position,
-                  normal: slab.normal,
-                  uv: slab.uv,
-                  barycentric: slab.barycentric,
-                  ao: slab.ao,
-                  id: slab.id,
-                  skyLight: slab.skyLight,
-                  torchLight: slab.torchLight,
-                  peeks: slab.peeks,
-                };
-                mineSpecsRound.push(mineSpec);
-                if (!mineSpecs.some(mineSpec => mineSpec.index === index)) {
-                  mineSpecs.push(mineSpec);
+                      std::array<int,3> chunkOffset = {
+                        chunkPosition[0],
+                        chunkPosition[1],
+                        chunkPosition[2]
+                      };
+                      chunkOffset = sub(chunkOffset, otherChunkPosition);
+                      const int lax = ax + chunkOffset[0]*width;
+                      const int lay = ay + chunkOffset[1]*height;
+                      const int laz = az + chunkOffset[2]*depth;
+                      sum += workingPotentials[_getPotentialIndex(lax, lay, laz)];
+                    } else {
+                      sum += potentialClearValue;
+                    }
+                  }
                 }
-              });
+              }
             }
+            potentials[index++] = sum/(3*3*3);
           }
         }
       }
-    }
-  };
-
-  const {x, y, z} = p;
-  for (let dy = -radius; dy <= radius; dy++) {
-    const ay = y + dy;
-    for (let dz = -radius; dz <= radius; dz++) {
-      const az = z + dz;
-      for (let dx = -radius; dx <= radius; dx++) {
-        const ax = x + dx;
-
-        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-        const maxDistScale = radius;
-        const maxDist = Math.sqrt(maxDistScale*maxDistScale + maxDistScale*maxDistScale + maxDistScale*maxDistScale);
-        const distanceDiff = maxDist - dist;
-        if (distanceDiff > 0) {
-          const value = (1-dist/maxDist)*delta;
-          _applyRound(ax, ay, az, value);
-        }
+    } else {
+      for (unsigned int i = 0; i < potentialsBlockSize; i++) {
+        potentials[i] = potentialClearValue;
       }
     }
   }
-  return mineSpecs;
-};
-const _applyPotentialDelta = async (position, delta) => {
-  localVector2.copy(position)
-    .applyMatrix4(localMatrix.getInverse(currentChunkMesh.matrixWorld));
-  const applyPosition = localVector2.clone();
-  localVector2.x = Math.floor(localVector2.x);
-  localVector2.y = Math.floor(localVector2.y);
-  localVector2.z = Math.floor(localVector2.z);
 
-  const mineSpecs = _applyMineSpec(localVector2, 1, 'potentials', SUBPARCEL_SIZE_P3, planet.getPotentialIndex, delta);
-  await _mine(mineSpecs, delta < 0 ? applyPosition : null);
-}; */
+  // marching cubes
+  unsigned int positionIndex = 0;
+  unsigned int barycentricIndex = 0;
+  unsigned int uvIndex = 0;
+  unsigned int uvIndex2 = 0;
+  for (unsigned int i = 0; i < numChunkCoords; i++) {
+    if (dirtyWorkingPotentials[i]) {
+      float *potentials = &potentialsBuffer[i*potentialsBlockSize];
+      float *positions = &positionsBuffer[positionIndex];
+      float *barycentrics = &barycentricsBuffer[barycentricIndex];
+      float *uvs = &uvsBuffer[uvIndex];
+      float *uvs2 = &uvs2Buffer[uvIndex2];
+
+      unsigned int faceIndex = 0;
+
+      int n = 0;
+      float grid[8] = {0};
+      std::array<std::array<float, 3>, 12> edges;
+      int x[3] = {0};
+
+      //March over the volume
+      int dims[3] = {width+1, depth+1, height+1};
+      for(x[2]=0; x[2]<dims[2]-1; ++x[2], n+=dims[0])
+      for(x[1]=0; x[1]<dims[1]-1; ++x[1], ++n)
+      for(x[0]=0; x[0]<dims[0]-1; ++x[0], ++n) {
+        //For each cell, compute cube mask
+        int cube_index = 0;
+        for(int i=0; i<8; ++i) {
+          int *v = cubeVerts[i];
+          float s = potentials[
+            (x[0]+v[0]) +
+            (((x[2]+v[2])) * dims[0]) +
+            ((x[1]+v[1]) * dims[0] * dims[1])
+          ];
+
+          grid[i] = s;
+          cube_index |= (s > 0) ? 1 << i : 0;
+        }
+        //Compute vertices
+        int edge_mask = edgeTable[cube_index];
+        if(edge_mask == 0) {
+          continue;
+        }
+        for(int i=0; i<12; ++i) {
+          if((edge_mask & (1<<i)) == 0) {
+            continue;
+          }
+          int *e = edgeIndex[i];
+          int *p0 = cubeVerts[e[0]];
+          int *p1 = cubeVerts[e[1]];
+          float a = grid[e[0]];
+          float b = grid[e[1]];
+          float d = a - b;
+          float t = a / d;
+          std::array<float, 3> &v = edges[i];
+          for(int j=0; j<3; ++j) {
+            v[j] = ((x[j] + p0[j]) + t * (p1[j] - p0[j])); // + shift[j];
+          }
+        }
+        //Add faces
+        int *f = triTable[cube_index];
+        for(int i=0;f[i]!=-1;i+=3) {
+          std::array<float, 3> &a = edges[f[i]];
+          std::array<float, 3> &b = edges[f[i+2]];
+          std::array<float, 3> &c = edges[f[i+1]];
+
+          const int baseIndex = faceIndex*3;
+          positions[baseIndex] = a[0];
+          positions[baseIndex+1] = a[1];
+          positions[baseIndex+2] = a[2];
+          positions[baseIndex+3] = b[0];
+          positions[baseIndex+4] = b[1];
+          positions[baseIndex+5] = b[2];
+          positions[baseIndex+6] = c[0];
+          positions[baseIndex+7] = c[1];
+          positions[baseIndex+8] = c[2];
+
+          barycentrics[baseIndex] = 1;
+          barycentrics[baseIndex+1] = 0;
+          barycentrics[baseIndex+2] = 0;
+          barycentrics[baseIndex+3] = 0;
+          barycentrics[baseIndex+4] = 1;
+          barycentrics[baseIndex+5] = 0;
+          barycentrics[baseIndex+6] = 0;
+          barycentrics[baseIndex+7] = 0;
+          barycentrics[baseIndex+8] = 1;
+
+          const int gridI = faceIndex/3;
+          const int baseIndex2 = faceIndex*2;
+          if ((gridI%2) == 0) {
+            const float cx = std::fmod(((float)gridI/2.0f), (marchCubesTexSquares));
+            const float cy = std::floor((float)gridI/2.0f/(marchCubesTexSquares));
+            uvs[baseIndex2] = cx*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+1] = cy*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+2] = (cx+1.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+3] = (cy+1.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+4] = cx*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+5] = (cy+1.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+
+            uvs2[baseIndex2] = (cx+1.0f/marchCubesTexTriangleSize)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+1] = (cy+1.0f/marchCubesTexTriangleSize*2.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+2] = (cx+1.0f-1.0f/marchCubesTexTriangleSize*2.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+3] = (cy+1.0f-1.0f/marchCubesTexTriangleSize)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+4] = (cx+1.0f/marchCubesTexTriangleSize)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+5] = (cy+1.0f-1.0f/marchCubesTexTriangleSize)*marchCubesTexTriangleSize/marchCubesTexSize;
+          } else {
+            const float cx = std::fmod((((float)gridI-1.0f)/2.0f), (marchCubesTexSquares));
+            const float cy = std::floor(((float)gridI-1.0f)/2.0f/(marchCubesTexSquares));
+            uvs[baseIndex2] = cx*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+1] = cy*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+2] = (cx+1.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+3] = cy*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+4] = (cx+1.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs[baseIndex2+5] = (cy+1.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+
+            uvs2[baseIndex2] = (cx+1.0f/marchCubesTexTriangleSize*2.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+1] = (cy+1.0f/marchCubesTexTriangleSize)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+2] = (cx+1.0f-1.0f/marchCubesTexTriangleSize)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+3] = (cy+1.0f/marchCubesTexTriangleSize)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+4] = (cx+1.0f-1.0f/marchCubesTexTriangleSize)*marchCubesTexTriangleSize/marchCubesTexSize;
+            uvs2[baseIndex2+5] = (cy+1.0f-1.0f/marchCubesTexTriangleSize*2.0f)*marchCubesTexTriangleSize/marchCubesTexSize;
+          }
+
+          faceIndex += 3;
+        }
+      }
+
+      positionIndexBuffer[i] = faceIndex*3;
+      barycentricIndexBuffer[i] = faceIndex*3;
+      uvIndexBuffer[i] = faceIndex*2;
+      uvIndex2Buffer[i] = faceIndex*2;
+
+      positionIndex += positionIndexBuffer[i];
+      barycentricIndex += barycentricIndexBuffer[i];
+      uvIndex += uvIndexBuffer[i];
+      uvIndex2 += uvIndex2Buffer[i];
+    } else {
+      positionIndexBuffer[i] = 0;
+      barycentricIndexBuffer[i] = 0;
+      uvIndexBuffer[i] = 0;
+      uvIndex2Buffer[i] = 0;
+    }
+  }
 }
-std::pair<bool, std::vector<std::shared_ptr<Subparcel>>> doLight(Tracker *tracker, float *position, float delta) {
-  int x = (int)position[0];
-  int y = (int)position[1];
-  int z = (int)position[2];
-  constexpr int radius = 1;
-  int dimsP1[3] = {
-    SUBPARCEL_SIZE_P1,
-    SUBPARCEL_SIZE_P1,
-    SUBPARCEL_SIZE_P1,
-  };
 
-  std::vector<std::shared_ptr<Subparcel>> mineSpecs;
-  std::function<void(int, int, int, float)> _applyRound = [&](int ax, int ay, int az, float value) -> void {
-    std::vector<int> mineSpecsRound;
-    for (int ddy = -1; ddy <= 1; ddy++) {
-      const int ady = ay + ddy;
-      for (int ddz = -1; ddz <= 1; ddz++) {
-        const int adz = az + ddz;
-        for (int ddx = -1; ddx <= 1; ddx++) {
-          const int adx = ax + ddx;
+void collide(float *positions, unsigned int numPositions, float origin[3], float direction[3], float *collision, unsigned int *collisionIndex) {
+  collision[0] = std::numeric_limits<float>::quiet_NaN();
+  collision[1] = std::numeric_limits<float>::quiet_NaN();
+  collision[2] = std::numeric_limits<float>::quiet_NaN();
 
-          const int sdx = (int)std::floor((float)adx/(float)SUBPARCEL_SIZE);
-          const int sdy = (int)std::floor((float)ady/(float)SUBPARCEL_SIZE);
-          const int sdz = (int)std::floor((float)adz/(float)SUBPARCEL_SIZE);
-          const int lx = ax - sdx*SUBPARCEL_SIZE;
-          const int ly = ay - sdy*SUBPARCEL_SIZE;
-          const int lz = az - sdz*SUBPARCEL_SIZE;
+  float closestDistance = std::numeric_limits<float>::infinity();
 
-          if (
-            lx >= 0 && lx < SUBPARCEL_SIZE_P1 &&
-            ly >= 0 && ly < SUBPARCEL_SIZE_P1 &&
-            lz >= 0 && lz < SUBPARCEL_SIZE_P1
-          ) {
-            const int index = getSubparcelIndex(sdx, sdy, sdz);
-            if (std::find(mineSpecsRound.begin(), mineSpecsRound.end(), index) == mineSpecsRound.end()) {
-              auto subparcelIter = tracker->subparcels.find(index);
-              if (subparcelIter != tracker->subparcels.end()) {
-                std::shared_ptr<Subparcel> subparcel = subparcelIter->second;
-
-                const int potentialIndex = getPotentialIndex(lx, ly, lz, dimsP1);
-                subparcel->lightfield[potentialIndex] += value;
-
-                mineSpecsRound.push_back(index);
-                if (std::find(mineSpecs.begin(), mineSpecs.end(), subparcel) == mineSpecs.end()) {
-                  mineSpecs.push_back(subparcel);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  };
-
-  {
-    std::lock_guard<std::mutex> lock(tracker->subparcelsMutex);
-
-    for (int dy = -radius; dy <= radius; dy++) {
-      const int ay = y + dy;
-      for (int dz = -radius; dz <= radius; dz++) {
-        const int az = z + dz;
-        for (int dx = -radius; dx <= radius; dx++) {
-          const int ax = x + dx;
-
-          const float dist = std::sqrt((float)dx*(float)dx + (float)dy*(float)dy + (float)dz*(float)dz);
-          const float maxDistScale = radius;
-          const float maxDist = std::sqrt(maxDistScale*maxDistScale + maxDistScale*maxDistScale + maxDistScale*maxDistScale);
-          const float distanceDiff = maxDist - dist;
-          if (distanceDiff > 0) {
-            const float value = (1.0f-dist/maxDist)*delta;
-            _applyRound(ax, ay, az, value);
-          }
-        }
+  const Ray ray(Vec(origin[0], origin[1], origin[2]), Vec(direction[0], direction[1], direction[2]));
+  for (unsigned int i = 0; i < numPositions; i += 9) {
+    Tri triangle(
+      Vec(positions[i], positions[i+1], positions[i+2]),
+      Vec(positions[i+3], positions[i+4], positions[i+5]),
+      Vec(positions[i+6], positions[i+7], positions[i+8])
+    );
+    Vec intersectionVector;
+    if (ray.intersectTriangle(triangle, intersectionVector)) {
+      const float distance = (intersectionVector - ray.origin).magnitude();
+      if (distance < closestDistance) {
+        collision[0] = intersectionVector.x;
+        collision[1] = intersectionVector.y;
+        collision[2] = intersectionVector.z;
+        closestDistance = distance;
+        *collisionIndex = i;
       }
     }
   }
-
-  return std::pair<bool, std::vector<std::shared_ptr<Subparcel>>>(true, std::move(mineSpecs));
 }
