@@ -311,6 +311,6 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -s ALLOW_MEMORY_GR
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
   -o bin/geometry.js
-  sed -iE 's/geometry.wasm/bin\/geometry.wasm/g' bin/geometry.js
+  sed -Ei 's/geometry.wasm/bin\/geometry.wasm/g' bin/geometry.js
   echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/geometry.js
 echo done
