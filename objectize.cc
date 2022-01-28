@@ -8,6 +8,7 @@
 // #include "convex.h"
 // #include "earcut.h"
 // #include <iostream>
+#include "cut.h"
 
 #include <deque>
 #include <map>
@@ -146,6 +147,36 @@ EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, P
   return scene->setCharacterControllerPosition(characterController, position);
 }
 
+EMSCRIPTEN_KEEPALIVE float *doCut(
+  float *positions,
+  unsigned int numPositions,
+  float *normals,
+  unsigned int numNormals,
+  float *uvs,
+  unsigned int numUvs,
+  unsigned int *faces,
+  unsigned int numFaces,
+
+  float *position,
+  float *quaternion,
+  float *scale
+) {
+  return cut(
+    positions,
+    numPositions,
+    normals,
+    numNormals,
+    uvs,
+    numUvs,
+    faces,
+    numFaces,
+
+    position,
+    quaternion,
+    scale
+  );
+}
+
 // EMSCRIPTEN_KEEPALIVE void doMarchingingCubes(
 //   int dims[3],
 //   float *potential,
@@ -166,4 +197,4 @@ EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float
   return marchingCubes(dims, potential, shift, scale);
 }
 
-}
+} // extern "C"
