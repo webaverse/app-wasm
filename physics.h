@@ -86,6 +86,7 @@ public:
   void disableGeometryQueries(unsigned int id);
   void enableGeometryQueries(unsigned int id);
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale, bool autoWake);
+  void getGlobalPosition(unsigned int id, float *position);
   void getVelocity(unsigned int id, float *velocity);
   void setVelocity(unsigned int id, float *velocity, bool autoWake);
   void setAngularVel(unsigned int id, float *velocity, bool autoWake);

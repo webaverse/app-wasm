@@ -548,6 +548,27 @@ void PScene::setTransform(unsigned int id, float *positions, float *quaternions,
     std::cerr << "set transform unknown actor id " << id << std::endl;
   }
 }
+void PScene::getGlobalPosition(unsigned int id, float *positions) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      PxVec3 position = actor->getGlobalPose().p;
+      positions[0]  = position[0]; 
+      positions[1]  = position[1]; 
+      positions[2]  = position[2]; 
+    }
+  } else {
+    std::cerr << "get position unknown actor id " << id << std::endl;
+    positions[0] = 0;
+    positions[1] = 0;
+    positions[2] = 0;
+  }
+}
 void PScene::getVelocity(unsigned int id, float *velocities) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
