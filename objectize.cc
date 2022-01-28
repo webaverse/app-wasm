@@ -2,7 +2,7 @@
 // #include "geometry.h"
 // #include "compose.h"
 // #include "noise.h"
-// #include "march.h"
+#include "march.h"
 // #include "collide.h"
 #include "physics.h"
 // #include "convex.h"
@@ -141,6 +141,26 @@ EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, 
 }
 EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, PxController *characterController, float *position) {
   return scene->setCharacterControllerPosition(characterController, position);
+}
+
+// EMSCRIPTEN_KEEPALIVE void doMarchingingCubes(
+//   int dims[3],
+//   float *potential,
+//   uint8_t *brush,
+//   float shift[3],
+//   float scale[3],
+//   float *positions,
+//   float *colors,
+//   unsigned int *faces,
+//   unsigned int *positionIndex,
+//   unsigned int *colorIndex,
+//   unsigned int *faceIndex)
+// {
+//   marchingCubes(dims, potential, brush, shift, scale, positions, colors, faces, *positionIndex, *colorIndex, *faceIndex);
+// }
+
+EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
+  return marchingCubes(dims, potential, shift, scale);
 }
 
 }
