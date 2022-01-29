@@ -752,6 +752,11 @@ void PScene::removeGeometry(unsigned int id) {
   });
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
+
+    PxScene *scene = actor->getScene();
+    if (scene != nullptr) {
+      scene->removeActor(*actor);
+    }
     actor->release();
     actors.erase(actorIter);
     simulationEventCallback->stateBitfields.erase(id);
