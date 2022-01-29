@@ -172,7 +172,7 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
         // std::cout << "reset" << std::endl;
         body->setLinearVelocity(PxVec3(velocities[i*3], velocities[i*3+1], velocities[i*3+2]), true);
         //body->setAngularVelocity(PxVec3(0, 0, 0), true);
-        actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+        // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
       }
       // actor->wakeUp();
     } else {
@@ -421,7 +421,7 @@ void PScene::disableGeometry(unsigned int id) {
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
 
-    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+    // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
@@ -455,7 +455,7 @@ void PScene::enableGeometry(unsigned int id) {
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
     
-    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
+    // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
 
     PxShape *shapes[32];
     for (int j = 0; ; j++) {
