@@ -71,13 +71,19 @@ PxFilterFlags ccdFilterShader(
   pairFlags |= PxPairFlag::eSOLVE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-  if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
+  /* if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
     pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
-  }
+  } */
   return result;
 }
+
+enum PhysicsObjectFlags {
+  NONE = 0,
+  ENABLE_PHYSICS = 1,
+  ENABLE_CCD = 2,
+};
 
 PScene::PScene() {
   allocator = new PxDefaultAllocator();
@@ -104,7 +110,7 @@ PScene::PScene() {
   {
     // PxTolerancesScale tolerancesScale;
     PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
-    sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
+    sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
     sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
     sceneDesc.simulationEventCallback = simulationEventCallback;
@@ -261,7 +267,15 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
   return numActors;
 }
 
-void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int ccdEnabled) {
+void PScene::addCapsuleGeometry(
+  float *position,
+  float *quaternion,
+  float radius,
+  float halfHeight,
+  float *mat,
+  unsigned int id,
+  unsigned int flags
+) {
   // PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
@@ -269,13 +283,34 @@ void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius
   PxCapsuleGeometry geometry(radius, halfHeight);
   PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
 
-  /* PxShape* aCapsuleShape = PxRigidActorExt::createExclusiveShape(*body,
-    PxCapsuleGeometry(radius, halfHeight), *material);
-  aCapsuleShape->setLocalPose(relativePose); */
+  // flags
+  const bool physicsEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_PHYSICS);
+  /* if (!physicsEnabled) {
+    PxRigidActor *actor = body;
 
-  body->userData = (void *)id;
+    constexpr int numShapes = 32;
+    PxShape *shapes[numShapes];
+    for (int j = 0; ; j++) {
+      memset(shapes, 0, sizeof(shapes));
+      if (actor->getShapes(shapes, numShapes, j * numShapes) == 0) {
+        break;
+      }
+      for (int i = 0; i < numShapes; ++i) {
+        if (shapes[i] == nullptr) {
+          break;
+        }
 
-  { 
+        PxShape *rigidShape = shapes[i];
+        rigidShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+      }
+    }
+  } */
+  const bool ccdEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_CCD);
+  if (ccdEnabled) {
+    body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+  }
+
+  /* {
     // LOL 1
     PxFilterData filterData{};
     filterData.word0 = id;
@@ -290,13 +325,14 @@ void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius
       shape->setSimulationFilterData(filterData);
     }
     // LOL 2
-  }
+  } */
 
-  if (ccdEnabled) {
-    body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
-  }
+  body->userData = (void *)id;
+
   PxRigidBodyExt::updateMassAndInertia(*body, 1.0f);
-  scene->addActor(*body);
+  if (physicsEnabled) {
+    scene->addActor(*body);
+  }
   actors.push_back(body);
 }
 
@@ -424,13 +460,13 @@ void PScene::disableGeometry(unsigned int id) {
     // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
-    if (body) {
+    /* if (body) {
       body->setLinearVelocity(PxVec3(0, 0, 0), false);
       body->setAngularVelocity(PxVec3(0, 0, 0), false);
-    }
+    } */
 
     PxShape *shapes[32];
-    for (int j = 0; ; j++) {
+    for (int j = 0;; j++) {
       memset(shapes, 0, sizeof(shapes));
       if (actor->getShapes(shapes, 32, j * 32) == 0) {
         break;
@@ -716,6 +752,11 @@ void PScene::removeGeometry(unsigned int id) {
   });
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
+
+    PxScene *scene = actor->getScene();
+    if (scene != nullptr) {
+      scene->removeActor(*actor);
+    }
     actor->release();
     actors.erase(actorIter);
     simulationEventCallback->stateBitfields.erase(id);
