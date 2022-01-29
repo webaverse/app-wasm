@@ -71,13 +71,19 @@ PxFilterFlags ccdFilterShader(
   pairFlags |= PxPairFlag::eSOLVE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-  if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
+  /* if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
     pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
-  }
+  } */
   return result;
 }
+
+enum PhysicsObjectFlags {
+  NONE = 0,
+  ENABLE_PHYSICS = 1,
+  ENABLE_CCD = 2,
+};
 
 PScene::PScene() {
   allocator = new PxDefaultAllocator();
