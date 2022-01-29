@@ -110,7 +110,7 @@ PScene::PScene() {
   {
     // PxTolerancesScale tolerancesScale;
     PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
-    sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
+    sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
     sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
     sceneDesc.simulationEventCallback = simulationEventCallback;
