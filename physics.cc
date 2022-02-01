@@ -198,7 +198,7 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
     const PxVec3 &p = actor2World.p;
     const PxQuat &q = actor2World.q;
     
-    const unsigned int id = (unsigned int)actors[i]->userData;
+    const unsigned int id = (unsigned int)actor->userData;
     ids[i] = id;
     
     positions[i*3] = p.x;
