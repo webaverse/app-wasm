@@ -193,7 +193,7 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 //   marchingCubes(dims, potential, brush, shift, scale, positions, colors, faces, *positionIndex, *colorIndex, *faceIndex);
 // }
 
-EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
+EMSCRIPTEN_KEEPALIVE float *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
 }
 
