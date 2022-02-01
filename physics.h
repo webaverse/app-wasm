@@ -15,6 +15,8 @@
 #include "extensions/PxDefaultErrorCallback.h"
 #include "extensions/PxDefaultCpuDispatcher.h"
 #include "extensions/PxDefaultSimulationFilterShader.h"
+#include "extensions/PxRevoluteJoint.h"
+#include "extensions/PxSphericalJoint.h"
 #include "geometry/PxTriangleMeshGeometry.h"
 #include "cooking/PxTriangleMeshDesc.h"
 #include "cooking/PxCooking.h"
