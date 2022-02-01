@@ -1,8 +1,3 @@
-// #include "DirectXMath.h"
-/* #include "PhysX/physx/include/geometry/PxMeshQuery.h"
-#include "geometry/PxCapsuleGeometry.h"
-#include "foundation/PxTransform.h"
- */
 #include "physics.h"
 
 using namespace physx;
