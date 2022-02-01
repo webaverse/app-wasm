@@ -61,6 +61,18 @@ public:
   virtual void onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count);
 };
 
+class Bone {
+public:
+  uint32_t id;
+  std::string name;
+  PxVec3 position;
+  PxQuat quaternion;
+  PxVec3 scale;
+  std::vector<Bone> children;
+  PxRigidActor *body;
+  PxRevoluteJoint *joint;
+};
+
 class PScene {
 public:
   PScene();
@@ -96,6 +108,8 @@ public:
   void destroyCharacterController(PxController *characterController);
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
+  void registerSkeleton(Bone &bone, Bone *parentBone);
+  void createSkeleton(unsigned char *buffer);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

@@ -1272,3 +1272,100 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
     }
   }
 }
+
+Bone parseBone(unsigned char *buffer, unsigned int &index) {
+  uint32_t id = *((uint32_t *)(buffer + index));
+  index += sizeof(uint32_t);
+
+  uint32_t nameLength = *((uint32_t *)(buffer + index));
+  index += sizeof(uint32_t);
+  std::string name((char *)(buffer + index), nameLength);
+  index += nameLength;
+
+  PxVec3 position{
+    *((float *)(buffer + index)),
+    *((float *)(buffer + index + sizeof(float))),
+    *((float *)(buffer + index + sizeof(float) * 2))
+  };
+  index += sizeof(float) * 3;
+
+  PxQuat quaternion{
+    *((float *)(buffer + index)),
+    *((float *)(buffer + index + sizeof(float))),
+    *((float *)(buffer + index + sizeof(float) * 2)),
+    *((float *)(buffer + index + sizeof(float) * 3))
+  };
+  index += sizeof(float) * 4;
+
+  PxVec3 scale{
+    *((float *)(buffer + index)),
+    *((float *)(buffer + index + sizeof(float))),
+    *((float *)(buffer + index + sizeof(float) * 2))
+  };
+  index += sizeof(float) * 3;
+
+  uint32_t numChildren = *((uint32_t *)(buffer + index));
+  index += sizeof(uint32_t);
+  std::vector<Bone> children(numChildren);
+  for (unsigned int i = 0; i < numChildren; i++) {
+    children[i] = parseBone(buffer, index);
+  }
+
+  return Bone{
+    id,
+    std::move(name),
+    position,
+    quaternion,
+    scale,
+    std::move(children),
+    nullptr,
+    nullptr
+  };
+}
+void PScene::registerSkeleton(Bone &bone, Bone *parentBone) {
+  std::cout << "register bone " << bone.id << " " << bone.name << " " <<
+    bone.position.x << "," << bone.position.y << "," << bone.position.z << " " <<
+    bone.quaternion.x << "," << bone.quaternion.y << "," << bone.quaternion.z << "," << bone.quaternion.w << " " <<
+    bone.scale.x << "," << bone.scale.y << "," << bone.scale.z << " " <<
+    bone.children.size() << std::endl;
+  
+  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxTransform transform(
+    bone.position,
+    bone.quaternion
+  );
+  PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
+  PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  box->userData = (void *)bone.id;
+  PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
+  scene->addActor(*box);
+  actors.push_back(box);
+  bone.body = box;
+  
+  // recurse
+  {
+    Bone &parent = bone;
+    PxTransform parentTransform(PxVec3{0, 0, -parent.scale.z * 0.5f});
+    for (unsigned int i = 0; i < bone.children.size(); i++) {
+      Bone &child = bone.children[i];
+      registerSkeleton(child, &parent);
+
+      /* if (parentBone != nullptr) {
+        PxTransform childTransform(PxVec3{0, 0, child.scale.z * 0.5f});
+        PxRevoluteJoint *joint = PxRevoluteJointCreate(
+          *physics,
+          parent.body, parentTransform,
+          child.body, childTransform
+        );
+        child.joint = joint;
+      } */
+    }
+  }
+}
+void PScene::createSkeleton(unsigned char *buffer) {
+  unsigned int index = 0;
+  Bone rootBone = parseBone(buffer, index);
+
+  Bone *parentBone = nullptr;
+  registerSkeleton(rootBone, parentBone);
+}
