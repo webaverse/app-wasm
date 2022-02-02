@@ -1350,7 +1350,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone) {
       Bone &child = bone.children[i];
       registerSkeleton(child, &parent);
 
-      /* if (parentBone != nullptr) {
+      if (parentBone != nullptr) {
         PxTransform childTransform(PxVec3{0, 0, child.scale.z * 0.5f});
         PxRevoluteJoint *joint = PxRevoluteJointCreate(
           *physics,
@@ -1358,7 +1358,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone) {
           child.body, childTransform
         );
         child.joint = joint;
-      } */
+      }
     }
   }
 }
