@@ -1323,11 +1323,11 @@ Bone parseBone(unsigned char *buffer, unsigned int &index) {
   };
 }
 void PScene::registerSkeleton(Bone &bone, Bone *parentBone) {
-  std::cout << "register bone " << bone.id << " " << bone.name << " " <<
+  /* std::cout << "register bone " << bone.id << " " << bone.name << " " <<
     bone.position.x << "," << bone.position.y << "," << bone.position.z << " " <<
     bone.quaternion.x << "," << bone.quaternion.y << "," << bone.quaternion.z << "," << bone.quaternion.w << " " <<
     bone.scale.x << "," << bone.scale.y << "," << bone.scale.z << " " <<
-    bone.children.size() << std::endl;
+    bone.children.size() << std::endl; */
   
   PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxTransform transform(
