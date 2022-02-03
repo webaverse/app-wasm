@@ -63,13 +63,43 @@ PxFilterFlags ccdFilterShader(
     constantBlock,
     constantBlockSize
   );
-  pairFlags |= PxPairFlag::eSOLVE_CONTACT;
-  pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
-  pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
   /* if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
     pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
+  } */
+  /* if (
+    filterData0.word2 == 2 || filterData0.word3 == 3 ||
+    filterData1.word2 == 2 || filterData1.word3 == 3
+  ) {
+    std::cout << "filter data 0: " << filterData0.word2 << " " << filterData0.word3 << " " << filterData1.word2 << " " << filterData1.word3 << std::endl;
+  } */
+  if (
+    (filterData0.word2 == 2 || filterData1.word2 == 2) &&
+    (filterData0.word3 == 3 || filterData1.word3 == 3)
+  ) {
+    pairFlags &= ~PxPairFlag::eSOLVE_CONTACT;
+    pairFlags &= ~PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    pairFlags &= ~PxPairFlag::eDETECT_DISCRETE_CONTACT;
+    pairFlags &= ~PxPairFlag::eDETECT_CCD_CONTACT;
+    // return PxFilterFlag::eKILL;
+  } else {
+    pairFlags |= PxPairFlag::eSOLVE_CONTACT;
+    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+    pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  }
+  /* if (
+    (filterData0.word0 != filterData1.word0) || // different characters
+    (filterData0.word1 != filterData1.word1 && filterData0.word1 != 0 && filterData1.word1 != 0) // different bones and no character
+  ) {
+    pairFlags |= PxPairFlag::eSOLVE_CONTACT;
+    pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+    pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  } else {
+    pairFlags &= ~PxPairFlag::eSOLVE_CONTACT;
+    pairFlags &= ~PxPairFlag::eDETECT_DISCRETE_CONTACT;
+    pairFlags &= ~PxPairFlag::eDETECT_CCD_CONTACT;
   } */
   return result;
 }
@@ -770,6 +800,22 @@ PxController *PScene::createCharacterController(float radius, float height, floa
   // desc.climbingMode = PxCapsuleClimbingMode::eCONSTRAINED;
   desc.material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxController *characterController = controllerManager->createController(desc);
+  
+  PxRigidDynamic *actor = characterController->getActor();
+  // actor->userData = (void *)(lolIndex++);
+  unsigned int numShapes = actor->getNbShapes();
+  if (numShapes == 1) {
+    PxShape *shapes[1];
+    actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+    PxShape *shape = shapes[0];
+    PxFilterData filterData{};
+    filterData.word0 = groupId;
+    filterData.word2 = 2;
+    shape->setSimulationFilterData(filterData); 
+  } else {
+    std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
+  }
+
   characterController->setPosition(PxExtendedVec3{position[0], position[1], position[2]});
   return characterController;
 }
@@ -1342,22 +1388,53 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   scene->addActor(*box);
   actors.push_back(box);
   bone.body = box;
+
+  unsigned int numShapes = box->getNbShapes();
+  if (numShapes == 1) {
+    PxShape *shapes[1];
+    box->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+    PxShape *shape = shapes[0];
+    PxFilterData filterData{};
+    filterData.word0 = groupId;
+    filterData.word1 = bone.id;
+    filterData.word3 = 3;
+    shape->setSimulationFilterData(filterData); 
+  } else {
+    std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
+  }
   
   // recurse
   {
     Bone &parent = bone;
     PxTransform parentTransform(PxVec3{0, 0, -parent.scale.z * 0.5f});
+    /* PxTransform parentTransform(
+      parent.position +
+        applyVectorQuaternion(PxVec3{0, 0, -parent.scale.z * 0.5f}, parent.quaternion),
+      parent.quaternion
+    ); */
     for (unsigned int i = 0; i < bone.children.size(); i++) {
       Bone &child = bone.children[i];
       registerSkeleton(child, &parent, groupId);
 
       if (parentBone != nullptr) {
         PxTransform childTransform(PxVec3{0, 0, child.scale.z * 0.5f});
-        PxRevoluteJoint *joint = PxRevoluteJointCreate(
+        /* PxTransform childTransform(
+          child.position +
+            applyVectorQuaternion(PxVec3{0, 0, -child.scale.z * 0.5f}, child.quaternion),
+          child.quaternion
+        ); */
+        /* PxRevoluteJoint *joint = PxRevoluteJointCreate(
+          *physics,
+          parent.body, parentTransform,
+          child.body, childTransform
+        ); */
+        PxSphericalJoint *joint = PxSphericalJointCreate(
           *physics,
           parent.body, parentTransform,
           child.body, childTransform
         );
+        joint->setProjectionLinearTolerance(0.1f);
+        joint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
         child.joint = joint;
       }
     }

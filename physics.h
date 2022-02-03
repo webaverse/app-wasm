@@ -17,6 +17,7 @@
 #include "extensions/PxDefaultSimulationFilterShader.h"
 #include "extensions/PxRevoluteJoint.h"
 #include "extensions/PxSphericalJoint.h"
+#include "extensions/PxD6Joint.h"
 #include "geometry/PxTriangleMeshGeometry.h"
 #include "cooking/PxTriangleMeshDesc.h"
 #include "cooking/PxCooking.h"
@@ -72,7 +73,7 @@ public:
   PxVec3 scale;
   std::vector<Bone> children;
   PxRigidActor *body;
-  PxRevoluteJoint *joint;
+  PxSphericalJoint *joint;
 };
 
 class PScene {
