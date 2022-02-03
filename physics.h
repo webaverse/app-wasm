@@ -80,7 +80,7 @@ public:
   PxQuat quaternion;
   PxVec3 scale;
   std::vector<std::unique_ptr<Bone>> children;
-  PxRigidActor *body;
+  PxRigidBody *body;
   PxSphericalJoint *joint;
 };
 
