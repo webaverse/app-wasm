@@ -1441,6 +1441,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     bone.position,
     bone.quaternion
   );
+  // XXX make this a capsule
   PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
   PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
   box->userData = (void *)bone.id;
