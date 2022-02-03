@@ -2,6 +2,9 @@
 
 using namespace physx;
 
+/*
+  SimulationEventCallback2
+*/
 SimulationEventCallback2::SimulationEventCallback2() {}
 SimulationEventCallback2::~SimulationEventCallback2() {}
 void SimulationEventCallback2::onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {}
@@ -44,6 +47,35 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
 }
 void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
+
+/*
+  CharacterControllerFilterCallback
+*/
+CharacterControllerFilterCallback::CharacterControllerFilterCallback() {}
+CharacterControllerFilterCallback::~CharacterControllerFilterCallback() {}
+PxQueryHitType::Enum CharacterControllerFilterCallback::preFilter(
+  const PxFilterData &filterData,
+  const PxShape *shape,
+  const PxRigidActor *actor,
+  PxHitFlags &queryFlags
+) {
+  const PxFilterData &filterDataShape = shape->getSimulationFilterData();
+  // std::cout << "filter pre " << filterDataShape.word0 << " " << filterDataShape.word1 << " " << filterDataShape.word2 <<  " " << filterDataShape.word3 << std::endl;
+  if (
+    (filterDataShape.word2 == 2) ||
+    (filterDataShape.word3 == 3)
+  ) {
+    return PxQueryHitType::eNONE;
+  } else {
+    return PxQueryHitType::eBLOCK;
+  }
+}
+PxQueryHitType::Enum CharacterControllerFilterCallback::postFilter(const PxFilterData &filterData, const PxQueryHit &hit) {
+  // std::cout << "filter post" << std::endl;
+  std::cerr << "CharacterControllerFilterCallback::postFilter not implemented!" << std::endl;
+  abort();
+  return PxQueryHitType::eNONE;
+}
 
 PxFilterFlags ccdFilterShader(
   PxFilterObjectAttributes attributes0,
@@ -830,7 +862,35 @@ unsigned int PScene::moveCharacterController(PxController *characterController, 
   };
   // PxF32 minDist = 0;
   // PxF32 elapsedTime = 0;
-  PxControllerFilters controllerFilters{};
+
+  // PxController *characterController = controllerManager->createController(desc);
+  
+  /* unsigned int groupId = 0;
+  PxRigidDynamic *actor = characterController->getActor();
+  // actor->userData = (void *)(lolIndex++);
+  unsigned int numShapes = actor->getNbShapes();
+  if (numShapes == 1) {
+    PxShape *shapes[1];
+    actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+    PxShape *shape = shapes[0];
+    const PxFilterData &filterData = shape->getSimulationFilterData();
+    groupId = filterData.word0;
+    // shape->setSimulationFilterData(filterData); 
+  } else {
+    std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
+  }
+
+  std::cout << "move character controller " << groupId << std::endl;
+
+  PxFilterData filterData{};
+  filterData.word0 = groupId;
+  filterData.word2 = 2; */
+
+  PxFilterData filterData{};
+  CharacterControllerFilterCallback cb;
+
+  PxControllerFilters controllerFilters(&filterData, &cb);
+  controllerFilters.mFilterFlags |= PxQueryFlag::ePREFILTER;
   PxObstacleContext *obstacles = nullptr;
   PxControllerCollisionFlags collisionFlags = characterController->move(
     disp,

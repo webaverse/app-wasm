@@ -64,6 +64,14 @@ public:
   virtual void onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count);
 };
 
+class CharacterControllerFilterCallback : public PxQueryFilterCallback {
+public:
+  CharacterControllerFilterCallback();
+  virtual ~CharacterControllerFilterCallback();
+  virtual PxQueryHitType::Enum preFilter(const PxFilterData &filterData, const PxShape *shape, const PxRigidActor *actor, PxHitFlags &queryFlags);
+  virtual PxQueryHitType::Enum postFilter(const PxFilterData &filterData, const PxQueryHit &hit);
+};
+
 class Bone {
 public:
   uint32_t id;
