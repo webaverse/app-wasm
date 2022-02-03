@@ -1503,6 +1503,12 @@ void setSkeleton(Bone *dst, Bone *src) {
   dst->quaternion = src->quaternion;
   dst->scale = src->scale;
 
+  PxTransform transform(
+    src->position,
+    src->quaternion
+  );
+  dst->body->setGlobalPose(transform, true);
+
   for (unsigned int i = 0; i < src->children.size(); i++) {
     setSkeleton(dst->children[i].get(), src->children[i].get());
   }
