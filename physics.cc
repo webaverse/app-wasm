@@ -1508,6 +1508,8 @@ void setSkeleton(Bone *dst, Bone *src) {
     src->quaternion
   );
   dst->body->setGlobalPose(transform, true);
+  dst->body->setLinearVelocity(PxVec3{0, 0, 0}, true);
+  dst->body->setAngularVelocity(PxVec3{0, 0, 0}, true);
 
   for (unsigned int i = 0; i < src->children.size(); i++) {
     setSkeleton(dst->children[i].get(), src->children[i].get());
