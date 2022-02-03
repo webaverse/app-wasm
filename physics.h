@@ -79,7 +79,7 @@ public:
   PxVec3 position;
   PxQuat quaternion;
   PxVec3 scale;
-  std::vector<Bone> children;
+  std::vector<std::unique_ptr<Bone>> children;
   PxRigidActor *body;
   PxSphericalJoint *joint;
 };
@@ -120,7 +120,8 @@ public:
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
   void registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId);
-  void createSkeleton(unsigned char *buffer, unsigned int groupId);
+  Bone *createSkeleton(unsigned char *buffer, unsigned int groupId);
+  void setSkeletonFromBuffer(Bone *skeleton, unsigned char *buffer);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

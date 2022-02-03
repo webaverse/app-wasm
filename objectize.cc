@@ -146,8 +146,11 @@ EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, 
 EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, PxController *characterController, float *position) {
   return scene->setCharacterControllerPosition(characterController, position);
 }
-EMSCRIPTEN_KEEPALIVE void createSkeleton(PScene *scene, unsigned char *buffer, unsigned int groupId) {
-  scene->createSkeleton(buffer, groupId);
+EMSCRIPTEN_KEEPALIVE Bone *createSkeleton(PScene *scene, unsigned char *buffer, unsigned int groupId) {
+  return scene->createSkeleton(buffer, groupId);
+}
+EMSCRIPTEN_KEEPALIVE void setSkeletonFromBuffer(PScene *scene, Bone *skeleton, unsigned char *buffer) {
+  scene->setSkeletonFromBuffer(skeleton, buffer);
 }
 
 EMSCRIPTEN_KEEPALIVE float *doCut(

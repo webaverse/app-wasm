@@ -1380,7 +1380,7 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
-Bone parseBone(unsigned char *buffer, unsigned int &index) {
+Bone *parseBone(unsigned char *buffer, unsigned int &index) {
   uint32_t id = *((uint32_t *)(buffer + index));
   index += sizeof(uint32_t);
 
@@ -1413,12 +1413,13 @@ Bone parseBone(unsigned char *buffer, unsigned int &index) {
 
   uint32_t numChildren = *((uint32_t *)(buffer + index));
   index += sizeof(uint32_t);
-  std::vector<Bone> children(numChildren);
+  std::vector<std::unique_ptr<Bone>> children(numChildren);
   for (unsigned int i = 0; i < numChildren; i++) {
-    children[i] = parseBone(buffer, index);
+    Bone *bone = parseBone(buffer, index);
+    children[i].reset(bone);
   }
 
-  return Bone{
+  return new Bone{
     id,
     std::move(name),
     position,
@@ -1463,32 +1464,26 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   } else {
     std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
   }
-  
-  // recurse
+
+  // recursively create children
+  {
+    Bone &parent = bone;
+    for (unsigned int i = 0; i < bone.children.size(); i++) {
+      Bone &child = *(bone.children[i]);
+
+      registerSkeleton(child, &parent, groupId);
+    }
+  }
+
+  // create joints
   {
     Bone &parent = bone;
     PxTransform parentTransform(PxVec3{0, 0, -parent.scale.z * 0.5f});
-    /* PxTransform parentTransform(
-      parent.position +
-        applyVectorQuaternion(PxVec3{0, 0, -parent.scale.z * 0.5f}, parent.quaternion),
-      parent.quaternion
-    ); */
     for (unsigned int i = 0; i < bone.children.size(); i++) {
-      Bone &child = bone.children[i];
-      registerSkeleton(child, &parent, groupId);
+      Bone &child = *(bone.children[i]);
 
       if (parentBone != nullptr) {
         PxTransform childTransform(PxVec3{0, 0, child.scale.z * 0.5f});
-        /* PxTransform childTransform(
-          child.position +
-            applyVectorQuaternion(PxVec3{0, 0, -child.scale.z * 0.5f}, child.quaternion),
-          child.quaternion
-        ); */
-        /* PxRevoluteJoint *joint = PxRevoluteJointCreate(
-          *physics,
-          parent.body, parentTransform,
-          child.body, childTransform
-        ); */
         PxSphericalJoint *joint = PxSphericalJointCreate(
           *physics,
           parent.body, parentTransform,
@@ -1501,10 +1496,29 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     }
   }
 }
-void PScene::createSkeleton(unsigned char *buffer, unsigned int  groupId) {
+void setSkeleton(Bone *dst, Bone *src) {
+  dst->id = src->id;
+  dst->name = src->name;
+  dst->position = src->position;
+  dst->quaternion = src->quaternion;
+  dst->scale = src->scale;
+
+  for (unsigned int i = 0; i < src->children.size(); i++) {
+    setSkeleton(dst->children[i].get(), src->children[i].get());
+  }
+}
+Bone *PScene::createSkeleton(unsigned char *buffer, unsigned int groupId) {
   unsigned int index = 0;
-  Bone rootBone = parseBone(buffer, index);
+  Bone *rootBone = parseBone(buffer, index);
 
   Bone *parentBone = nullptr;
-  registerSkeleton(rootBone, parentBone, groupId);
+  registerSkeleton(*rootBone, parentBone, groupId);
+
+  return rootBone;
+}
+void PScene::setSkeletonFromBuffer(Bone *rootBone, unsigned char *buffer) {
+  unsigned int index = 0;
+  std::unique_ptr<Bone> rootBone2(parseBone(buffer, index));
+
+  setSkeleton(rootBone, rootBone2.get());
 }
