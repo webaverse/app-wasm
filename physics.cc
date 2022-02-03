@@ -1375,8 +1375,8 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     bone.quaternion.x << "," << bone.quaternion.y << "," << bone.quaternion.z << "," << bone.quaternion.w << " " <<
     bone.scale.x << "," << bone.scale.y << "," << bone.scale.z << " " <<
     bone.children.size() << std::endl; */
-  
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+
+  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.0f);
   PxTransform transform(
     bone.position,
     bone.quaternion
