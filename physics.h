@@ -106,12 +106,12 @@ public:
   void setAngularVel(unsigned int id, float *velocity, bool autoWake);
   void setLinearLockFlags(unsigned int id, bool x, bool y, bool z);
   void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
-  PxController *createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat);
+  PxController *createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat, unsigned int groupId);
   void destroyCharacterController(PxController *characterController);
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
-  void registerSkeleton(Bone &bone, Bone *parentBone);
-  void createSkeleton(unsigned char *buffer);
+  void registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId);
+  void createSkeleton(unsigned char *buffer, unsigned int groupId);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

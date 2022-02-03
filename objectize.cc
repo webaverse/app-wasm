@@ -134,8 +134,8 @@ EMSCRIPTEN_KEEPALIVE void setLinearLockFlagsPhysics(PScene *scene, unsigned int 
 EMSCRIPTEN_KEEPALIVE void setAngularLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
   scene->setAngularLockFlags(id, x, y, z);
 }
-EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float stepOffset, float *position, float *mat) {
-  return scene->createCharacterController(radius, height, contactOffset, stepOffset, position, mat);
+EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float stepOffset, float *position, float *mat, unsigned int groupId) {
+  return scene->createCharacterController(radius, height, contactOffset, stepOffset, position, mat, groupId);
 }
 EMSCRIPTEN_KEEPALIVE void destroyCharacterControllerPhysics(PScene *scene, PxController *characterController) {
   scene->destroyCharacterController(characterController);
@@ -146,8 +146,8 @@ EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, 
 EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, PxController *characterController, float *position) {
   return scene->setCharacterControllerPosition(characterController, position);
 }
-EMSCRIPTEN_KEEPALIVE void createSkeleton(PScene *scene, unsigned char *buffer) {
-  scene->createSkeleton(buffer);
+EMSCRIPTEN_KEEPALIVE void createSkeleton(PScene *scene, unsigned char *buffer, unsigned int groupId) {
+  scene->createSkeleton(buffer, groupId);
 }
 
 EMSCRIPTEN_KEEPALIVE float *doCut(

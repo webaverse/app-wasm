@@ -759,7 +759,8 @@ void PScene::removeGeometry(unsigned int id) {
     std::cerr << "remove unknown actor id " << id << std::endl;
   }
 }
-PxController *PScene::createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat) {
+// int lolIndex = 1000;
+PxController *PScene::createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat, unsigned int groupId) {
   PxCapsuleControllerDesc desc{};
   desc.radius = radius;
   desc.height = height;
@@ -1322,7 +1323,7 @@ Bone parseBone(unsigned char *buffer, unsigned int &index) {
     nullptr
   };
 }
-void PScene::registerSkeleton(Bone &bone, Bone *parentBone) {
+void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId) {
   /* std::cout << "register bone " << bone.id << " " << bone.name << " " <<
     bone.position.x << "," << bone.position.y << "," << bone.position.z << " " <<
     bone.quaternion.x << "," << bone.quaternion.y << "," << bone.quaternion.z << "," << bone.quaternion.w << " " <<
@@ -1348,7 +1349,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone) {
     PxTransform parentTransform(PxVec3{0, 0, -parent.scale.z * 0.5f});
     for (unsigned int i = 0; i < bone.children.size(); i++) {
       Bone &child = bone.children[i];
-      registerSkeleton(child, &parent);
+      registerSkeleton(child, &parent, groupId);
 
       if (parentBone != nullptr) {
         PxTransform childTransform(PxVec3{0, 0, child.scale.z * 0.5f});
@@ -1362,10 +1363,10 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone) {
     }
   }
 }
-void PScene::createSkeleton(unsigned char *buffer) {
+void PScene::createSkeleton(unsigned char *buffer, unsigned int  groupId) {
   unsigned int index = 0;
   Bone rootBone = parseBone(buffer, index);
 
   Bone *parentBone = nullptr;
-  registerSkeleton(rootBone, parentBone);
+  registerSkeleton(rootBone, parentBone, groupId);
 }
