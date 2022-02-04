@@ -8,6 +8,7 @@
 // #include "convex.h"
 // #include "earcut.h"
 // #include <iostream>
+#include "terrain/perlin.h"
 
 #include <deque>
 #include <map>
@@ -36,9 +37,9 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *di
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
-  
+
   for (unsigned int i = 0; i < rayCount; i++) {
-    
+
     scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
 
     origin += 3;
@@ -161,6 +162,10 @@ EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, P
 
 EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
+}
+
+EMSCRIPTEN_KEEPALIVE float getPerlin(float x, float y, float z) {
+  return (float)Perlin::noise(x, y, z);
 }
 
 }
