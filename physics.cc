@@ -48,6 +48,11 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
 void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
 
+/* new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI/2)
+  .premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI/2)).toArray(); */
+// const PxQuat leftUpQuaternion{0.4999999999999999, 0.5, -0.5, 0.5000000000000001};
+const PxQuat leftUpQuaternion{0, 0.7071067811865475, 0, 0.7071067811865476};
+
 /*
   CharacterControllerFilterCallback
 */
