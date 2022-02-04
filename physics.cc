@@ -1504,7 +1504,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
         child.quaternion
       ).getInverse() * jointTransform;
 
-      std::cout << "bind " << parent.name << " " << child.name << std::endl;
+      // std::cout << "bind " << parent.name << " " << child.name << std::endl;
 
       /* PxTransform parentTransform{PxVec3{0, 0, -parent.boneLength * 0.5f}, leftUpQuaternion};
       PxTransform childTransform{PxVec3{0, 0, child.boneLength * 0.5f}, leftUpQuaternion}; */
