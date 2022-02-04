@@ -1416,6 +1416,9 @@ Bone *parseBone(unsigned char *buffer, unsigned int &index) {
   };
   index += sizeof(float) * 3;
 
+  float boneLength = *((float *)(buffer + index));
+  index += sizeof(float);
+
   uint32_t numChildren = *((uint32_t *)(buffer + index));
   index += sizeof(uint32_t);
   std::vector<std::unique_ptr<Bone>> children(numChildren);
@@ -1430,6 +1433,7 @@ Bone *parseBone(unsigned char *buffer, unsigned int &index) {
     position,
     quaternion,
     scale,
+    boneLength,
     std::move(children),
     nullptr,
     nullptr
@@ -1475,7 +1479,6 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     Bone &parent = bone;
     for (unsigned int i = 0; i < bone.children.size(); i++) {
       Bone &child = *(bone.children[i]);
-
       registerSkeleton(child, &parent, groupId);
     }
   }
@@ -1483,21 +1486,43 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   // create joints
   {
     Bone &parent = bone;
-    PxTransform parentTransform(PxVec3{0, 0, -parent.scale.z * 0.5f});
     for (unsigned int i = 0; i < bone.children.size(); i++) {
       Bone &child = *(bone.children[i]);
 
-      if (parentBone != nullptr) {
-        PxTransform childTransform(PxVec3{0, 0, child.scale.z * 0.5f});
-        PxSphericalJoint *joint = PxSphericalJointCreate(
-          *physics,
-          parent.body, parentTransform,
-          child.body, childTransform
-        );
-        joint->setProjectionLinearTolerance(0.1f);
-        joint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
-        child.joint = joint;
-      }
+      PxTransform jointTransform(
+        child.position +
+          child.quaternion.rotate(PxVec3{0, 0, child.boneLength * 0.5f}),
+        child.quaternion * leftUpQuaternion
+      );
+
+      PxTransform parentTransform = PxTransform(
+        parent.position,
+        parent.quaternion
+      ).getInverse() * jointTransform;
+      PxTransform childTransform = PxTransform(
+        child.position,
+        child.quaternion
+      ).getInverse() * jointTransform;
+
+      std::cout << "bind " << parent.name << " " << child.name << std::endl;
+
+      /* PxTransform parentTransform{PxVec3{0, 0, -parent.boneLength * 0.5f}, leftUpQuaternion};
+      PxTransform childTransform{PxVec3{0, 0, child.boneLength * 0.5f}, leftUpQuaternion}; */
+
+      PxD6Joint *joint = PxD6JointCreate(
+        *physics,
+        parent.body, parentTransform,
+        child.body, childTransform
+      );
+      // joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
+      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
+      joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
+      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
+      joint->setLinearLimit(PxD6Axis::eSWING1, PxJointLinearLimitPair(physics->getTolerancesScale(), -0.1f, 0.1f));
+      joint->setLinearLimit(PxD6Axis::eSWING2, PxJointLinearLimitPair(physics->getTolerancesScale(), -0.1f, 0.1f));
+      joint->setProjectionLinearTolerance(0.1f);
+      joint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+      child.joint = joint;
     }
   }
 }
@@ -1507,6 +1532,7 @@ void setSkeleton(Bone *dst, Bone *src) {
   dst->position = src->position;
   dst->quaternion = src->quaternion;
   dst->scale = src->scale;
+  dst->boneLength = src->boneLength;
 
   PxTransform transform(
     src->position,
@@ -1524,8 +1550,7 @@ Bone *PScene::createSkeleton(unsigned char *buffer, unsigned int groupId) {
   unsigned int index = 0;
   Bone *rootBone = parseBone(buffer, index);
 
-  Bone *parentBone = nullptr;
-  registerSkeleton(*rootBone, parentBone, groupId);
+  registerSkeleton(*rootBone, rootBone, groupId);
 
   return rootBone;
 }

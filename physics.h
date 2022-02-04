@@ -79,9 +79,10 @@ public:
   PxVec3 position;
   PxQuat quaternion;
   PxVec3 scale;
+  float boneLength;
   std::vector<std::unique_ptr<Bone>> children;
   PxRigidBody *body;
-  PxSphericalJoint *joint;
+  PxD6Joint *joint;
 };
 
 class PScene {
