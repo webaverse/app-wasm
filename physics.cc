@@ -50,8 +50,8 @@ void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, c
 
 /* new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI/2)
   .premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI/2)).toArray(); */
-// const PxQuat leftUpQuaternion{0.4999999999999999, 0.5, -0.5, 0.5000000000000001};
-const PxQuat leftUpQuaternion{0, 0.7071067811865475, 0, 0.7071067811865476};
+const PxQuat leftUpQuaternion{0.4999999999999999, 0.5, -0.5, 0.5000000000000001};
+// const PxQuat leftUpQuaternion{0, 0.7071067811865475, 0, 0.7071067811865476};
 
 /*
   CharacterControllerFilterCallback
@@ -1425,6 +1425,10 @@ Bone *parseBone(unsigned char *buffer, unsigned int &index) {
   };
   index += sizeof(float) * 3;
 
+  float radius = *((float *)(buffer + index));
+  index += sizeof(float);
+  float halfHeight = *((float *)(buffer + index));
+  index += sizeof(float);
   float boneLength = *((float *)(buffer + index));
   index += sizeof(float);
 
@@ -1442,6 +1446,8 @@ Bone *parseBone(unsigned char *buffer, unsigned int &index) {
     position,
     quaternion,
     scale,
+    radius,
+    halfHeight,
     boneLength,
     std::move(children),
     nullptr,
@@ -1461,18 +1467,24 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     bone.quaternion
   );
   // XXX make this a capsule
-  PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
-  PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
-  box->userData = (void *)bone.id;
-  PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
-  scene->addActor(*box);
-  actors.push_back(box);
-  bone.body = box;
+  
+  PxCapsuleGeometry geometry(bone.radius, bone.halfHeight);
+  // PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
+  PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  capsule->userData = (void *)bone.id;
+  // capsule->setMaxDepenetrationVelocity(1.0f);
+  // capsule->setAngularDamping(0.15f);
+  PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
+  scene->addActor(*capsule);
+  actors.push_back(capsule);
+  bone.body = capsule;
 
-  unsigned int numShapes = box->getNbShapes();
+  // capsule->setSolverIterationCounts(10, 10);
+
+  unsigned int numShapes = capsule->getNbShapes();
   if (numShapes == 1) {
     PxShape *shapes[1];
-    box->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+    capsule->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
     PxShape *shape = shapes[0];
     PxFilterData filterData{};
     filterData.word0 = groupId;
@@ -1499,9 +1511,9 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       Bone &child = *(bone.children[i]);
 
       PxTransform jointTransform(
-        child.position +
-          child.quaternion.rotate(PxVec3{0, 0, child.boneLength * 0.5f}),
-        child.quaternion * leftUpQuaternion
+        parent.position +
+          parent.quaternion.rotate(PxVec3{0, 0, -parent.boneLength * 0.5f}),
+        parent.quaternion * leftUpQuaternion
       );
 
       PxTransform parentTransform = PxTransform(
@@ -1523,14 +1535,35 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
         parent.body, parentTransform,
         child.body, childTransform
       );
-      // joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
-      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
-      joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
-      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
-      joint->setLinearLimit(PxD6Axis::eSWING1, PxJointLinearLimitPair(physics->getTolerancesScale(), -0.1f, 0.1f));
-      joint->setLinearLimit(PxD6Axis::eSWING2, PxJointLinearLimitPair(physics->getTolerancesScale(), -0.1f, 0.1f));
-      joint->setProjectionLinearTolerance(0.1f);
-      joint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+    
+      constexpr float swing0 = 3.14f / 4.f * 0.2;
+      constexpr float swing1 = 3.14f / 4.f * 0.2;
+      constexpr float twistLo = -3.14f / 8.f * 0.2;
+      constexpr float twistHi = 3.14f / 8.f * 0.2;
+
+      // if (parent.name != "Hips") {
+        /* joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
+        joint->setMotion(PxD6Axis::eY, PxD6Motion::eFREE);
+        joint->setMotion(PxD6Axis::eZ, PxD6Motion::eFREE); */
+        joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
+        joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
+        joint->setSwingLimit(physx::PxJointLimitCone(swing0, swing1));
+
+        // joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
+        // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
+        // if (parent.name != "Hips") {
+          joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
+          joint->setTwistLimit(physx::PxJointAngularLimitPair(twistLo, twistHi));
+        // }
+        // joint->setProjectionLinearTolerance(0.01f);
+        // joint->setProjectionAngularTolerance(3.14f * 0.01f);
+        // joint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
+        // joint->setConstraintFlag(PxConstraintFlag::ePROJECT_TO_ACTOR0, true);
+        // joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, false);
+        std::cout << "non-hips limit " << parent.name << " " << child.name << std::endl;
+      /* } else {
+        std::cout << "rigid hips" << parent.name << " " << child.name << std::endl;
+      } */
       child.joint = joint;
     }
   }
