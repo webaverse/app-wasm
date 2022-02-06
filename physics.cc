@@ -103,17 +103,6 @@ PxFilterFlags ccdFilterShader(
     constantBlock,
     constantBlockSize
   );
-  /* if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
-    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
-    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
-    pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
-  } */
-  /* if (
-    filterData0.word2 == 2 || filterData0.word3 == 3 ||
-    filterData1.word2 == 2 || filterData1.word3 == 3
-  ) {
-    std::cout << "filter data 0: " << filterData0.word2 << " " << filterData0.word3 << " " << filterData1.word2 << " " << filterData1.word3 << std::endl;
-  } */
   if (
     (filterData0.word2 == 2 || filterData1.word2 == 2) &&
     (filterData0.word3 == 3 || filterData1.word3 == 3)
@@ -129,18 +118,6 @@ PxFilterFlags ccdFilterShader(
     pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
     pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
   }
-  /* if (
-    (filterData0.word0 != filterData1.word0) || // different characters
-    (filterData0.word1 != filterData1.word1 && filterData0.word1 != 0 && filterData1.word1 != 0) // different bones and no character
-  ) {
-    pairFlags |= PxPairFlag::eSOLVE_CONTACT;
-    pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
-    pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-  } else {
-    pairFlags &= ~PxPairFlag::eSOLVE_CONTACT;
-    pairFlags &= ~PxPairFlag::eDETECT_DISCRETE_CONTACT;
-    pairFlags &= ~PxPairFlag::eDETECT_CCD_CONTACT;
-  } */
   return result;
 }
 
