@@ -51,11 +51,14 @@ void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, c
 /* new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI/2)
   .premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI/2)).toArray(); */
 // const PxQuat leftUpQuaternion{0.4999999999999999, 0.5, -0.5, 0.5000000000000001};
+// new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI/2)
 const PxQuat leftQuaternion{0, 0.7071067811865475, 0, 0.7071067811865476};
+// new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI/2)
 const PxQuat rightQuaternion{0, -0.7071067811865475, 0, 0.7071067811865476};
 
 /*
   CharacterControllerFilterCallback
+  This filters collisions for the character capsule and character skeletons
 */
 CharacterControllerFilterCallback::CharacterControllerFilterCallback() {}
 CharacterControllerFilterCallback::~CharacterControllerFilterCallback() {}
@@ -66,18 +69,17 @@ PxQueryHitType::Enum CharacterControllerFilterCallback::preFilter(
   PxHitFlags &queryFlags
 ) {
   const PxFilterData &filterDataShape = shape->getSimulationFilterData();
-  // std::cout << "filter pre " << filterDataShape.word0 << " " << filterDataShape.word1 << " " << filterDataShape.word2 <<  " " << filterDataShape.word3 << std::endl;
   if (
-    (filterDataShape.word2 == 2) ||
-    (filterDataShape.word3 == 3)
+    (filterDataShape.word2 == 2) || // this is an avara capsule
+    (filterDataShape.word3 == 3) // this is a skeleton bone
   ) {
-    return PxQueryHitType::eNONE;
+    return PxQueryHitType::eNONE; // do not collide
   } else {
-    return PxQueryHitType::eBLOCK;
+    return PxQueryHitType::eBLOCK; // maybe collide
   }
 }
 PxQueryHitType::Enum CharacterControllerFilterCallback::postFilter(const PxFilterData &filterData, const PxQueryHit &hit) {
-  // std::cout << "filter post" << std::endl;
+  // should never hit this since we are not using the postFilter flag
   std::cerr << "CharacterControllerFilterCallback::postFilter not implemented!" << std::endl;
   abort();
   return PxQueryHitType::eNONE;
