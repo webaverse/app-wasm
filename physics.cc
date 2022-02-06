@@ -845,32 +845,6 @@ unsigned int PScene::moveCharacterController(PxController *characterController, 
     displacement[1],
     displacement[2]
   };
-  // PxF32 minDist = 0;
-  // PxF32 elapsedTime = 0;
-
-  // PxController *characterController = controllerManager->createController(desc);
-  
-  /* unsigned int groupId = 0;
-  PxRigidDynamic *actor = characterController->getActor();
-  // actor->userData = (void *)(lolIndex++);
-  unsigned int numShapes = actor->getNbShapes();
-  if (numShapes == 1) {
-    PxShape *shapes[1];
-    actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
-    PxShape *shape = shapes[0];
-    const PxFilterData &filterData = shape->getSimulationFilterData();
-    groupId = filterData.word0;
-    // shape->setSimulationFilterData(filterData); 
-  } else {
-    std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
-  }
-
-  std::cout << "move character controller " << groupId << std::endl;
-
-  PxFilterData filterData{};
-  filterData.word0 = groupId;
-  filterData.word2 = 2; */
-
   PxFilterData filterData{};
   CharacterControllerFilterCallback cb;
 
@@ -893,15 +867,12 @@ unsigned int PScene::moveCharacterController(PxController *characterController, 
   unsigned int flags = 0;
   if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
     flags |= (1 << 0);
-    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
   }
   if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES) {
     flags |= (1 << 1);
-    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
   }
   if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_UP) {
     flags |= (1 << 2);
-    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
   }
   return flags;
 }
