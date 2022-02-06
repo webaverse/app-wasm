@@ -104,15 +104,16 @@ PxFilterFlags ccdFilterShader(
     constantBlockSize
   );
   if (
-    (filterData0.word2 == 2 || filterData1.word2 == 2) &&
-    (filterData0.word3 == 3 || filterData1.word3 == 3)
+    (filterData0.word2 == 2 || filterData1.word2 == 2) && // one of the objects is an avatar capsule
+    (filterData0.word3 == 3 || filterData1.word3 == 3) // one of the objects is a skeleton bone
   ) {
+    // do not colide
     pairFlags &= ~PxPairFlag::eSOLVE_CONTACT;
     pairFlags &= ~PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags &= ~PxPairFlag::eDETECT_DISCRETE_CONTACT;
     pairFlags &= ~PxPairFlag::eDETECT_CCD_CONTACT;
-    // return PxFilterFlag::eKILL;
   } else {
+    // maybe colide
     pairFlags |= PxPairFlag::eSOLVE_CONTACT;
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
@@ -827,7 +828,7 @@ PxController *PScene::createCharacterController(float radius, float height, floa
     PxShape *shape = shapes[0];
     PxFilterData filterData{};
     filterData.word0 = groupId; // character id
-    filterData.word2 = 2; // flag to signal this is a character capsule; used during filtering
+    filterData.word2 = 2; // signal this is a character capsule; used during filtering
     shape->setSimulationFilterData(filterData); 
   } else {
     std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
@@ -1438,9 +1439,9 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     capsule->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
     PxShape *shape = shapes[0];
     PxFilterData filterData{};
-    filterData.word0 = groupId;
-    filterData.word1 = bone.id;
-    filterData.word3 = 3;
+    filterData.word0 = groupId; // character id
+    filterData.word1 = bone.id; // the unique bone id in the character
+    filterData.word3 = 3; // signal this is a character skeleton bone; used during filtering
     shape->setSimulationFilterData(filterData); 
   } else {
     std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
