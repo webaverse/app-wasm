@@ -1526,8 +1526,14 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
           parent.quaternion.rotate(PxVec3{parent.boneLength * 0.5f, 0, 0}),
         parent.quaternion
       );
-      PxTransform parentTransform = parent.body->getGlobalPose().getInverse() * jointTransform;
-      PxTransform childTransform = child.body->getGlobalPose().getInverse() * jointTransform;
+      PxTransform parentTransform = PxTransform(
+        parent.position,
+        parent.quaternion
+      ).getInverse() * jointTransform;
+      PxTransform childTransform = PxTransform(
+        child.position,
+        child.quaternion
+      ).getInverse() * jointTransform;
 
       /* PxTransform parentTransform = PxTransform(
         PxVec3{parent.boneLength * 0.5f, 0, 0},
@@ -1554,7 +1560,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       constexpr float twistLo = -3.14f / 8.f * 0.2;
       constexpr float twistHi = 3.14f / 8.f * 0.2;
 
-      if (parent.name != "Hips") {
+      // if (parent.name != "Hips") {
         /* joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
         joint->setMotion(PxD6Axis::eY, PxD6Motion::eFREE);
         joint->setMotion(PxD6Axis::eZ, PxD6Motion::eFREE); */
@@ -1574,12 +1580,12 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
         // joint->setConstraintFlag(PxConstraintFlag::ePROJECT_TO_ACTOR0, true);
         // joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, false);
         // std::cout << "non-hips limit " << parent.name << " " << child.name << std::endl;
-      } else {
+      /* } else {
         joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
         joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
         joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
         // std::cout << "rigid hips" << parent.name << " " << child.name << std::endl;
-      }
+      } */
       child.joint = joint;
     }
   }
