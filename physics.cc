@@ -70,7 +70,7 @@ PxQueryHitType::Enum CharacterControllerFilterCallback::preFilter(
 ) {
   const PxFilterData &filterDataShape = shape->getSimulationFilterData();
   if (
-    (filterDataShape.word2 == 2) || // this is an avara capsule
+    (filterDataShape.word2 == 2) || // this is an avatar capsule
     (filterDataShape.word3 == 3) // this is a skeleton bone
   ) {
     return PxQueryHitType::eNONE; // do not collide
