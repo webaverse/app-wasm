@@ -826,8 +826,8 @@ PxController *PScene::createCharacterController(float radius, float height, floa
     actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
     PxShape *shape = shapes[0];
     PxFilterData filterData{};
-    filterData.word0 = groupId;
-    filterData.word2 = 2;
+    filterData.word0 = groupId; // character id
+    filterData.word2 = 2; // flag to signal this is a character capsule; used during filtering
     shape->setSimulationFilterData(filterData); 
   } else {
     std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
