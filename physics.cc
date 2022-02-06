@@ -328,47 +328,10 @@ void PScene::addCapsuleGeometry(
 
   // flags
   const bool physicsEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_PHYSICS);
-  /* if (!physicsEnabled) {
-    PxRigidActor *actor = body;
-
-    constexpr int numShapes = 32;
-    PxShape *shapes[numShapes];
-    for (int j = 0; ; j++) {
-      memset(shapes, 0, sizeof(shapes));
-      if (actor->getShapes(shapes, numShapes, j * numShapes) == 0) {
-        break;
-      }
-      for (int i = 0; i < numShapes; ++i) {
-        if (shapes[i] == nullptr) {
-          break;
-        }
-
-        PxShape *rigidShape = shapes[i];
-        rigidShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
-      }
-    }
-  } */
   const bool ccdEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_CCD);
   if (ccdEnabled) {
     body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
   }
-
-  /* {
-    // LOL 1
-    PxFilterData filterData{};
-    filterData.word0 = id;
-    filterData.word1 = TYPE::TYPE_CAPSULE;
-    // filterData.word1 = filterMask;  // word1 = ID mask to filter pairs that trigger a
-                                    // contact callback;
-    const PxU32 numShapes = body->getNbShapes();
-    PxShape *shapes[32];
-    body->getShapes(shapes, numShapes);
-    for (PxU32 i = 0; i < numShapes; i++){
-      PxShape *shape = shapes[i];
-      shape->setSimulationFilterData(filterData);
-    }
-    // LOL 2
-  } */
 
   body->userData = (void *)id;
 
