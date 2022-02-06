@@ -1157,6 +1157,63 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
   }
 }
 
+void PScene::overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit) {
+  PxTransform geomPose(
+    PxVec3{position[0], position[1], position[2]},
+    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
+  );
+  PxTransform meshPose{
+    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
+    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
+  };
+
+  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+  
+  Vec offset(0, 0, 0);
+  bool anyHadHit = false;
+  bool anyHadGrounded = false;
+  unsigned int localId = 0;
+  {
+      for (unsigned int i = 0; i < actors.size(); i++) {
+        PxRigidActor *actor = actors[i];
+        PxShape *shape;
+        actor->getShapes(&shape, 1);
+
+        if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+          PxGeometryHolder holder = shape->getGeometry();
+          PxGeometry &geometry = holder.any();
+
+          PxTransform meshPose2 = actor->getGlobalPose();
+          PxTransform meshPose3 = meshPose * meshPose2;
+
+          PxVec3 directionVec;
+          PxReal depthFloat;
+          bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
+          if (result) {
+            anyHadHit = true;
+            break;
+          }
+        }
+      }
+  }
+  if (anyHadHit) {
+    hit = 1;
+  } else {
+    hit = 0;
+  }
+}
+
+void PScene::overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit) {
+  PxBoxGeometry geom(hx, hy, hz);
+  PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion, hit);
+}
+
+void PScene::overlapCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit) {
+  PxCapsuleGeometry geom(radius, halfHeight);
+  PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion, hit);
+}
+
 void PScene::collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
