@@ -50,8 +50,9 @@ void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, c
 
 /* new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI/2)
   .premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI/2)).toArray(); */
-const PxQuat leftUpQuaternion{0.4999999999999999, 0.5, -0.5, 0.5000000000000001};
-// const PxQuat leftUpQuaternion{0, 0.7071067811865475, 0, 0.7071067811865476};
+// const PxQuat leftUpQuaternion{0.4999999999999999, 0.5, -0.5, 0.5000000000000001};
+const PxQuat leftQuaternion{0, 0.7071067811865475, 0, 0.7071067811865476};
+const PxQuat rightQuaternion{0, -0.7071067811865475, 0, 0.7071067811865476};
 
 /*
   CharacterControllerFilterCallback
@@ -1461,7 +1462,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     bone.scale.x << "," << bone.scale.y << "," << bone.scale.z << " " <<
     bone.children.size() << std::endl; */
 
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.0f);
+  PxMaterial *material = physics->createMaterial(1.f, 1.f, 1.f);
   PxTransform transform(
     bone.position,
     bone.quaternion
@@ -1510,20 +1511,32 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     for (unsigned int i = 0; i < bone.children.size(); i++) {
       Bone &child = *(bone.children[i]);
 
+      /* PxVec3 offset{parent.boneLength * 0.5f, 0, 0};
+      if (parent.name == "Hips" && child.name == "Left_leg" && child.name == "Right_leg") {
+        offset.x *= -1.f;
+      } */
+      /* PxTransform jointTransform(
+        child.position +
+          child.quaternion.rotate(PxVec3{-child.boneLength * 0.5f, 0, 0}),
+        child.quaternion
+      ); */
+
       PxTransform jointTransform(
         parent.position +
-          parent.quaternion.rotate(PxVec3{0, 0, -parent.boneLength * 0.5f}),
-        parent.quaternion * leftUpQuaternion
-      );
-
-      PxTransform parentTransform = PxTransform(
-        parent.position,
+          parent.quaternion.rotate(PxVec3{parent.boneLength * 0.5f, 0, 0}),
         parent.quaternion
-      ).getInverse() * jointTransform;
+      );
+      PxTransform parentTransform = parent.body->getGlobalPose().getInverse() * jointTransform;
+      PxTransform childTransform = child.body->getGlobalPose().getInverse() * jointTransform;
+
+      /* PxTransform parentTransform = PxTransform(
+        PxVec3{parent.boneLength * 0.5f, 0, 0},
+        PxQuat{0, 0, 0, 1}
+      );
       PxTransform childTransform = PxTransform(
-        child.position,
-        child.quaternion
-      ).getInverse() * jointTransform;
+        PxVec3{-child.boneLength * 0.5f, 0, 0},
+        child.quaternion.getConjugate() * parent.quaternion
+      ); */
 
       // std::cout << "bind " << parent.name << " " << child.name << std::endl;
 
@@ -1541,7 +1554,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       constexpr float twistLo = -3.14f / 8.f * 0.2;
       constexpr float twistHi = 3.14f / 8.f * 0.2;
 
-      // if (parent.name != "Hips") {
+      if (parent.name != "Hips") {
         /* joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
         joint->setMotion(PxD6Axis::eY, PxD6Motion::eFREE);
         joint->setMotion(PxD6Axis::eZ, PxD6Motion::eFREE); */
@@ -1560,10 +1573,13 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
         // joint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
         // joint->setConstraintFlag(PxConstraintFlag::ePROJECT_TO_ACTOR0, true);
         // joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, false);
-        std::cout << "non-hips limit " << parent.name << " " << child.name << std::endl;
-      /* } else {
-        std::cout << "rigid hips" << parent.name << " " << child.name << std::endl;
-      } */
+        // std::cout << "non-hips limit " << parent.name << " " << child.name << std::endl;
+      } else {
+        joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+        joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
+        joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
+        // std::cout << "rigid hips" << parent.name << " " << child.name << std::endl;
+      }
       child.joint = joint;
     }
   }
