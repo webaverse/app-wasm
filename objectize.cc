@@ -9,6 +9,7 @@
 // #include "earcut.h"
 // #include <iostream>
 #include "terrain/perlin.h"
+#include "terrain/chunk.h"
 
 #include <deque>
 #include <map>
@@ -166,6 +167,18 @@ EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float
 
 EMSCRIPTEN_KEEPALIVE float getPerlin(float x, float y, float z) {
   return (float)Perlin::noise(x, y, z);
+}
+
+EMSCRIPTEN_KEEPALIVE float* generateChunk(float x, float y, float z, float chunkSize) {
+  float origin[3] = {x, y, z};
+
+  Terrain::Chunk *chunk = new Terrain::Chunk(origin, chunkSize);
+
+  float* outputBuffer = chunk->getGeometryBuffer();
+
+  delete chunk;
+
+  return outputBuffer;
 }
 
 }
