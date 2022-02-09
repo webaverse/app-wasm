@@ -130,8 +130,8 @@ namespace Terrain {
             Vector3 vB = interpolateVerts(cubeCorners[a1], cubeCorners[b1]);
             Vector3 vC = interpolateVerts(cubeCorners[a2], cubeCorners[b2]);
             this->vertices.push_back(vA);
-            this->vertices.push_back(vB);
             this->vertices.push_back(vC);
+            this->vertices.push_back(vB);
         }
 
 	}
