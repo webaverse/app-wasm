@@ -1,4 +1,6 @@
 #include <vector>
+#include <map>
+#include <string>
 #include "vector.h"
 
 namespace Terrain
@@ -14,7 +16,7 @@ namespace Terrain
 	class Chunk
 	{
 		public:
-			Chunk(float origin[3], float chunkSize);
+			Chunk(float origin[3], float chunkSize, int level, float x, float z);
 			~Chunk();
 			float* getGeometryBuffer();
 		private:
@@ -27,9 +29,13 @@ namespace Terrain
 			std::vector<Vector3> vertices;
 			std::vector<int> indices;
 			std::vector<Vector4> points;
+			std::map<std::string, int> vertexDic;
 
 			int segment = 32;
 			float unitSize;
 			Vector3 origin;
+			Vector4 min;
+			Vector4 max;
+			int index;
 	};
 }

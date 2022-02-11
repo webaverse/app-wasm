@@ -10,10 +10,14 @@ namespace Terrain {
 
 	float isoLevel = 0.0;
 
-	Chunk::Chunk(float origin[3], float chunkSize) {
+	Chunk::Chunk(float origin[3], float chunkSize, int level, float x, float z) {
 		this->origin = {origin[0], origin[1], origin[2]};
 		this->unitSize = chunkSize / (float)this->segment;
 		this->points.resize((int)pow(this->segment + 1, 3));
+		this->max = {-10000.0, -10000.0, -10000.0, -10000.0};
+		this->min = {10000.0, 10000.0, 10000.0, 10000.0};
+		this->index = 0;
+
 		this->build();
 	}
 
@@ -23,12 +27,12 @@ namespace Terrain {
 	}
 
 	void Chunk::density(int x, int y, int z) {
-		float noiseScale = 2.99;
-		int octaves = 6;
-		float persistence = 1.0;
-        float lacunarity = 1.0;
-        float floorOffset = 20.19;
-        float hardFloor = -2.84;
+		float noiseScale = 3;
+		int octaves = 8;
+		float persistence = 1.15;
+        float lacunarity = 1.6;
+        float floorOffset = 20.0;
+        float hardFloor = 2.0;
         float hardFloorWeight = 3.05;
         float noiseWeight = 6.09;
 
@@ -36,10 +40,10 @@ namespace Terrain {
         Vector3 curPos{origin.x + v1.x, origin.y + v1.y, origin.z + v1.z};
         Vector3 offsetNoise{0.0, 0.0, 0.0};
         float noise = 0.0;
-        float frequency = noiseScale / 140.0;
+        float frequency = noiseScale / 2000.0;
         float amplitude = 1.0;
-        float weight = 1.0;
-        float weightMultiplier = 1.0;
+        float weight = 1.05;
+        float weightMultiplier = 1.05;
         float paramX = 1.0;
         float paramY = 0.1;
 
@@ -49,7 +53,7 @@ namespace Terrain {
         	v2.y = (v2.y + offsetNoise.y) * frequency;
         	v2.z = (v2.z + offsetNoise.z) * frequency;
 
-        	float n = (float)Perlin::noise(v2.x, v2.y, v2.z) / 6.88;
+        	float n = (float)Perlin::noise(v2.x, v2.y, v2.z) / 2;
         	float v = 1.0 - abs(n);
         	v = v * v;
         	v *= weight;
@@ -66,9 +70,22 @@ namespace Terrain {
             finalVal += hardFloorWeight;
         }
 
+        if (y == 0) {
+        	finalVal = 0.1;
+        }
+
         int index = indexFromCoord(x, y, z);
         this->points[index] = Vector4{curPos.x, curPos.y, curPos.z, finalVal};
 
+        this->min.x = fmin(this->min.x, this->points[index].x);
+        this->min.y = fmin(this->min.y, this->points[index].y);
+        this->min.z = fmin(this->min.z, this->points[index].z);
+        this->min.w = fmin(this->min.w, this->points[index].w);
+
+        this->max.x = fmax(this->max.x, this->points[index].x);
+        this->max.y = fmax(this->max.y, this->points[index].y);
+        this->max.z = fmax(this->max.z, this->points[index].z);
+        this->max.w = fmax(this->max.w, this->points[index].w);
 	}
 
 	Vector3 Chunk::interpolateVerts(Vector4 v1, Vector4 v2) {
@@ -95,6 +112,17 @@ namespace Terrain {
             this->points[this->indexFromCoord(x + 1, y + 1, z)],
             this->points[this->indexFromCoord(x + 1, y + 1, z + 1)],
             this->points[this->indexFromCoord(x, y + 1, z + 1)]
+        };
+
+        int cornerIndices[8] = {
+        	this->indexFromCoord(x, y, z),
+            this->indexFromCoord(x + 1, y, z),
+            this->indexFromCoord(x + 1, y, z + 1),
+            this->indexFromCoord(x, y, z + 1),
+            this->indexFromCoord(x, y + 1, z),
+            this->indexFromCoord(x + 1, y + 1, z),
+            this->indexFromCoord(x + 1, y + 1, z + 1),
+            this->indexFromCoord(x, y + 1, z + 1)
         };
 
         // Calculate unique index for each cube configuration.
@@ -126,14 +154,30 @@ namespace Terrain {
             int a2 = cornerIndexAFromEdge[triangulation[cubeIndex][i + 2]];
             int b2 = cornerIndexBFromEdge[triangulation[cubeIndex][i + 2]];
 
-            Vector3 vA = interpolateVerts(cubeCorners[a0], cubeCorners[b0]);
-            Vector3 vB = interpolateVerts(cubeCorners[a1], cubeCorners[b1]);
-            Vector3 vC = interpolateVerts(cubeCorners[a2], cubeCorners[b2]);
-            this->vertices.push_back(vA);
-            this->vertices.push_back(vC);
-            this->vertices.push_back(vB);
-        }
+            int segs[3][2] = {{a0, b0}, {a2, b2}, {a1, b1}};
 
+            for (int i = 0; i < 3; i++) {
+            	int v[2] = {segs[i][0], segs[i][1]};
+
+            	std::string vInx= std::to_string(std::min(cornerIndices[v[0]], cornerIndices[v[1]])) + "_" +
+            		std::to_string(std::max(cornerIndices[v[0]], cornerIndices[v[1]]));
+
+            	int vertexIndex;
+            	Vector3 vP;
+
+            	if (this->vertexDic.find(vInx) != this->vertexDic.end()) {
+            		vertexIndex = this->vertexDic[vInx];
+            	} else {
+            		vP = interpolateVerts(cubeCorners[v[0]], cubeCorners[v[1]]);
+            		vertexIndex = this->index;
+            		this->index++;
+            		this->vertexDic[vInx] = vertexIndex;
+            		this->vertices.push_back(vP);
+            	}
+
+            	this->indices.push_back(vertexIndex);
+            }
+        }
 	}
 
 	void Chunk::build() {
