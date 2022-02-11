@@ -181,6 +181,13 @@ namespace Terrain {
 	}
 
 	void Chunk::build() {
+
+		this->vertexDic.clear();
+		this->vertices.clear();
+		this->points = {};
+		this->index = 0;
+		this->indices = {};
+
 		// density
 
 		for (int i = 0; i <= segment; i++) {
@@ -199,12 +206,6 @@ namespace Terrain {
 					march(i, j, k);
 				}
 			}
-		}
-
-		// faces
-
-		for (int i = 0; i < this->vertices.size(); i++) {
-			this->indices.push_back(i);
 		}
 	}
 
