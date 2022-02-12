@@ -17,11 +17,19 @@ namespace Terrain
 	{
 		public:
 			Chunk(float origin[3], float chunkSize, int level, float x, float z);
+
+			void build(
+				float noiseScale, int octaves, float persistence, float lacunarity, float floorOffset,
+				float hardFloor, float hardFloorWeight, float noiseWeight
+			);
+
 			~Chunk();
 			float* getGeometryBuffer();
 		private:
-			void build();
-			void density(int x, int y, int z);
+			void density(int x, int y, int z,
+				float noiseScale, int octaves, float persistence, float lacunarity, float floorOffset,
+				float hardFloor, float hardFloorWeight, float noiseWeight
+			);
 			void march(int x, int y, int z);
 			int indexFromCoord(int x, int y, int z);
 			Vector3 interpolateVerts(Vector4 v1, Vector4 v2);

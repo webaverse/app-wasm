@@ -17,8 +17,6 @@ namespace Terrain {
 		this->max = {-10000.0, -10000.0, -10000.0, -10000.0};
 		this->min = {10000.0, 10000.0, 10000.0, 10000.0};
 		this->index = 0;
-
-		this->build();
 	}
 
 	int Chunk::indexFromCoord(int x, int y, int z) {
@@ -26,15 +24,19 @@ namespace Terrain {
 		return z * seg * seg + y * seg + x;
 	}
 
-	void Chunk::density(int x, int y, int z) {
-		float noiseScale = 3;
-		int octaves = 8;
-		float persistence = 1.15;
-        float lacunarity = 1.6;
-        float floorOffset = 20.0;
-        float hardFloor = 2.0;
-        float hardFloorWeight = 3.05;
-        float noiseWeight = 6.09;
+	void Chunk::density(
+		int x, int y, int z,
+		float noiseScale, int octaves, float persistence, float lacunarity, float floorOffset,
+		float hardFloor, float hardFloorWeight, float noiseWeight
+	) {
+		// float noiseScale = 3;
+		// int octaves = 8;
+		// float persistence = 1.15;
+  //       float lacunarity = 1.6;
+  //       float floorOffset = 20.0;
+  //       float hardFloor = 2.0;
+  //       float hardFloorWeight = 3.05;
+  //       float noiseWeight = 6.09;
 
         Vector3 v1{(float)x * unitSize, (float)y * unitSize, (float)z * unitSize};
         Vector3 curPos{origin.x + v1.x, origin.y + v1.y, origin.z + v1.z};
@@ -180,7 +182,10 @@ namespace Terrain {
         }
 	}
 
-	void Chunk::build() {
+	void Chunk::build(
+		float noiseScale, int octaves, float persistence, float lacunarity, float floorOffset,
+		float hardFloor, float hardFloorWeight, float noiseWeight
+	) {
 
 		this->vertexDic.clear();
 		this->vertices.clear();
@@ -193,7 +198,11 @@ namespace Terrain {
 		for (int i = 0; i <= segment; i++) {
 			for (int j = 0; j <= segment; j++) {
 				for (int k = 0; k <= segment; k++) {
-					density(i, j, k);
+					density(
+						i, j, k,
+						noiseScale, octaves, persistence, lacunarity, floorOffset,
+						hardFloor, hardFloorWeight, noiseWeight
+					);
 				}
 			}
 		}
