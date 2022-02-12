@@ -1198,8 +1198,7 @@ float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, flo
   float *outputBuffer = (float *)malloc((
     1 + // numOutIds
     outIds.size()
-  ) * 4);
-  // ) * sizeof(float));
+  ) * sizeof(float));
 
   outputBuffer[0] = outIds.size();
   memcpy(outputBuffer+1, &outIds[0], outIds.size()*4);
