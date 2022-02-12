@@ -1157,7 +1157,7 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
   }
 }
 
-float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
+float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
@@ -1206,14 +1206,14 @@ float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, flo
   return outputBuffer;
 }
 
-float *PScene::overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
+float *PScene::overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
   PxBoxGeometry geom(hx, hy, hz);
-  return PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion, hit, id);
+  return PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion);
 }
 
-float *PScene::overlapCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
+float *PScene::overlapCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
   PxCapsuleGeometry geom(radius, halfHeight);
-  return PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion, hit, id);
+  return PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion);
 }
 
 void PScene::collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {

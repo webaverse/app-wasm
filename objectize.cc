@@ -57,11 +57,11 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *sce
   }
 }
 
-EMSCRIPTEN_KEEPALIVE float *overlapBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int *hit, unsigned int *id) {
-  return scene->overlapBox(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, *hit, *id);
+EMSCRIPTEN_KEEPALIVE float *overlapBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+  return scene->overlapBox(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion);
 }
-EMSCRIPTEN_KEEPALIVE float *overlapCapsulePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int *hit, unsigned int *id) {
-  return scene->overlapCapsule(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, *hit, *id);
+EMSCRIPTEN_KEEPALIVE float *overlapCapsulePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+  return scene->overlapCapsule(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion);
 }
 EMSCRIPTEN_KEEPALIVE void collideBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded, unsigned int *id) {
   scene->collideBox(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
