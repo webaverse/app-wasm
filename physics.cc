@@ -1201,7 +1201,7 @@ float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, flo
   ) * sizeof(float));
 
   outputBuffer[0] = outIds.size();
-  memcpy(outputBuffer+1, &outIds[0], outIds.size()*4);
+  memcpy(outputBuffer+1, &outIds[0], outIds.size()*sizeof(float));
 
   return outputBuffer;
 }
