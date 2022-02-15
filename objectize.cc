@@ -94,6 +94,12 @@ EMSCRIPTEN_KEEPALIVE bool getBoundsPhysics(PScene *scene, unsigned int id, float
   return scene->getBounds(id, bounds);
 }
 
+EMSCRIPTEN_KEEPALIVE void enableActorPhysics(PScene *scene, unsigned int id) {
+  scene->enableActor(id);
+}
+EMSCRIPTEN_KEEPALIVE void disableActorPhysics(PScene *scene, unsigned int id) {
+  scene->disableActor(id);
+}
 EMSCRIPTEN_KEEPALIVE void disableGeometryPhysics(PScene *scene, unsigned int id) {
   scene->disableGeometry(id);
 }
