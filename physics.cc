@@ -449,7 +449,38 @@ void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *positi
     delete writeStream;
   }
 }
-
+void PScene::enablePhysics(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    PxScene *actorScene = actor->getScene();
+    if (actorScene == nullptr) {
+      scene->addActor(*actor);
+    } else {
+      std::cerr << "disable physics actor already had a scene " << id << std::endl;
+    }
+  } else {
+    std::cerr << "enable unknown actor id " << id << std::endl;
+  }
+}
+void PScene::disablePhysics(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    PxScene *actorScene = actor->getScene();
+    if (actorScene != nullptr) {
+      scenactorScene->removeActor(*actor);
+    } else {
+      std::cerr << "disable physics actor id had no scene " << id << std::endl;
+    }
+  } else {
+    std::cerr << "disable physics actor id " << id << std::endl;
+  }
+}
 void PScene::disableGeometry(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
