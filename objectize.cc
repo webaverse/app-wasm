@@ -37,7 +37,6 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *di
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
-  
   for (unsigned int i = 0; i < rayCount; i++) {
     
     scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
