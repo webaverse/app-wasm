@@ -473,7 +473,7 @@ void PScene::disablePhysics(unsigned int id) {
     PxRigidActor *actor = *actorIter;
     PxScene *actorScene = actor->getScene();
     if (actorScene != nullptr) {
-      scenactorScene->removeActor(*actor);
+      actorScene->removeActor(*actor);
     } else {
       std::cerr << "disable physics actor id had no scene " << id << std::endl;
     }
