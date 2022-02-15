@@ -449,7 +449,7 @@ void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *positi
     delete writeStream;
   }
 }
-void PScene::enablePhysics(unsigned int id) {
+void PScene::enableActor(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
   });
@@ -465,7 +465,7 @@ void PScene::enablePhysics(unsigned int id) {
     std::cerr << "enable unknown actor id " << id << std::endl;
   }
 }
-void PScene::disablePhysics(unsigned int id) {
+void PScene::disableActor(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
   });
