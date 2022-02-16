@@ -1349,9 +1349,9 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   for (unsigned int i = 0; i < actors.size(); i++) {
     PxRigidActor *actor = actors[i];
     PxShape *shape;
-    actor->getShapes(&shape, 1);
+    unsigned int numShapes = actor->getShapes(&shape, 1);
 
-    if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+    if (numShapes > 0 && shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
       PxGeometryHolder holder = shape->getGeometry();
       PxGeometry &geometry = holder.any();
 
