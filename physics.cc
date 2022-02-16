@@ -113,6 +113,7 @@ PScene::PScene() {
     sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
     sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
+    sceneDesc.broadPhaseType = PxBroadPhaseType::eABP;
     sceneDesc.simulationEventCallback = simulationEventCallback;
     if (!sceneDesc.cpuDispatcher) {
       physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
