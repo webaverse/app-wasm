@@ -86,6 +86,8 @@ public:
   void removeGeometry(unsigned int id);
   bool getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices, float *bounds);
   bool getBounds(unsigned int id, float *bounds);
+  void enableActor(unsigned int id);
+  void disableActor(unsigned int id);
   void disableGeometry(unsigned int id);
   void enableGeometry(unsigned int id);
   void disableGeometryQueries(unsigned int id);
