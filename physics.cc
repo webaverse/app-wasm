@@ -460,7 +460,7 @@ void PScene::enableActor(unsigned int id) {
     if (actorScene == nullptr) {
       scene->addActor(*actor);
     } else {
-      std::cerr << "disable physics actor already had a scene " << id << std::endl;
+      std::cerr << "enable physics actor already had a scene " << id << std::endl;
     }
   } else {
     std::cerr << "enable unknown actor id " << id << std::endl;
