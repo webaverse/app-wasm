@@ -9,6 +9,7 @@
 // #include "earcut.h"
 // #include <iostream>
 #include "cut.h"
+#include "terrain/terrain.h"
 
 #include <deque>
 #include <map>
@@ -209,6 +210,10 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 
 EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
+}
+
+EMSCRIPTEN_KEEPALIVE float* generateTerrain(float size, int levelCount, int maxSegment) {
+  return Terrain::generateTerrain(size, levelCount, maxSegment);
 }
 
 } // extern "C"
