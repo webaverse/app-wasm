@@ -190,11 +190,19 @@ EMSCRIPTEN_KEEPALIVE float getPerlin(float x, float y, float z) {
   // return outputBuffer;
 // }
 
-EMSCRIPTEN_KEEPALIVE float* generateChunk(
-  float x, float y, float z, float chunkSize
+// EMSCRIPTEN_KEEPALIVE float* generateChunk(
+//   float x, float y, float z, float chunkSize
+// ) {
+//   float origin[3] = {x, y, z};
+//   return Terrain::createChunk(origin, chunkSize, 32);
+// }
+
+EMSCRIPTEN_KEEPALIVE float* generateTerrain(
+  float size, int levelCount, int maxSegment
 ) {
-  float origin[3] = {x, y, z};
-  return Terrain::createChunk(origin, chunkSize, 32);
+  return Terrain::generateTerrain(size, levelCount, maxSegment);
 }
+
+
 
 }

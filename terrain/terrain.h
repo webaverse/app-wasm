@@ -10,5 +10,6 @@ namespace Terrain {
 
 	float* generateTerrain(float size, int levelCount, int maxSegment);
 
-	float *createChunk(float origin[3], float chunkSize, int segment);
+	void createChunk(float origin[3], float chunkSize, int segment,
+		std::vector<Vector3> & vertices, std::vector<int> & indices, int indexOffset);
 }

@@ -20,10 +20,39 @@ float hardFloor = 2.0;
 float hardFloorWeight = 3.06;
 float noiseWeight = 6.09;
 
-// float* generateTerrain(float size, int levelCount, int maxSegment) {
+float* generateTerrain(float size, int levelCount, int maxSegment) {
 
-// 	int wChunkCount = pow(2, levelCount);
-// }
+    std::vector<Vector3> vertices = {};
+    std::vector<int> indices = {};
+
+    float origin[3] = {0.0, 0.0, 0.0};
+
+    int segment = 32;
+
+    createChunk(origin, size, 32, vertices, indices, vertices.size());
+
+    float origin_1[3] = {size, 0.0, 0.0};
+
+    createChunk(origin_1, size, 32, vertices, indices, vertices.size());
+
+    int vertexCount = vertices.size() * 3;
+    int faceCount = indices.size();
+
+    int *outputBuffer = (int*)malloc(4 * sizeof(int));
+    outputBuffer[0] = vertexCount;
+    outputBuffer[1] = faceCount;
+
+    float *vertexBuffer = (float*)malloc(vertexCount * 4);
+    memcpy(vertexBuffer, &(vertices.front()), vertexCount * 4);
+
+    int *faceBuffer = (int*)malloc(faceCount * 4);
+    memcpy(faceBuffer, &(indices.front()), faceCount * 4);
+
+    outputBuffer[2] = (int)vertexBuffer;
+    outputBuffer[3] = (int)faceBuffer;
+
+    return (float*)outputBuffer;
+}
 
 int indexFromCoord(int x, int y, int z, int segment) {
 	int seg = segment + 1;
@@ -181,16 +210,19 @@ void march(
 	}
 
 
-float* createChunk(float origin[3], float chunkSize, int segment) {
+void createChunk(
+    float origin[3], float chunkSize, int segment,
+    std::vector<Vector3> & vertices, std::vector<int> & indices, int indexOffset
+) {
 
-	std::vector<Vector3> vertices = {};
-	std::vector<int> indices = {};
+	// std::vector<Vector3> vertices = {};
+	// std::vector<int> indices = {};
 	std::vector<Vector4> points = {};
 	std::map<std::string, int> vertexDic;
 
 	float unitSize = chunkSize / (float)segment;
 	Vector3 originPos{origin[0], origin[1], origin[2]};
-	int index = 0;
+	int index = indexOffset;
 
 	points.resize((int)pow(segment + 1, 3));
 
@@ -216,17 +248,30 @@ float* createChunk(float origin[3], float chunkSize, int segment) {
 
 	// generate one buffer
 
-	int vertexCount = vertices.size() * 3;
-	int faceCount = indices.size();
+	// int vertexCount = vertices.size() * 3;
+	// int faceCount = indices.size();
 
-	float *outputBuffer = (float*)malloc((2 + vertices.size() * 3 + indices.size()) * 4);
+	// float *outputBuffer = (float*)malloc((2 + vertices.size() * 3 + indices.size()) * 4);
 
-	memcpy(outputBuffer, &vertexCount, 4);
-	memcpy(outputBuffer + 1, &faceCount, 4);
-	memcpy(outputBuffer + 2, &(vertices.front()), vertices.size() * 3 * 4);
-	memcpy(outputBuffer + 2 + vertices.size() * 3, &(indices.front()), indices.size() * 4);
+	// memcpy(outputBuffer, &vertexCount, 4);
+	// memcpy(outputBuffer + 1, &faceCount, 4);
+	// memcpy(outputBuffer + 2, &(vertices.front()), vertices.size() * 3 * 4);
+	// memcpy(outputBuffer + 2 + vertices.size() * 3, &(indices.front()), indices.size() * 4);
 
-	return outputBuffer;
+	// int *outputBuffer = (int*)malloc(4 * sizeof(int));
+	// outputBuffer[0] = vertexCount;
+	// outputBuffer[1] = faceCount;
+
+	// float *vertexBuffer = (float*)malloc(vertexCount * 4);
+	// memcpy(vertexBuffer, &(vertices.front()), vertexCount * 4);
+
+	// int *faceBuffer = (int*)malloc(faceCount * 4);
+	// memcpy(faceBuffer, &(indices.front()), faceCount * 4);
+
+	// outputBuffer[2] = (int)vertexBuffer;
+	// outputBuffer[3] = (int)faceBuffer;
+
+	// return (float*)outputBuffer;
 
 }
 
