@@ -31,7 +31,6 @@ It is compiled with EMSDK.
 
 - Copy the `geometry.js` and `geometry.wasm` files from `app-wasm/bin`
 - Paste them into `app/public/bin` in the Webaverse app
-
 - Done! Now reload the Webaverse app and try out your own PhysX configuration!
 
 ---

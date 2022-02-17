@@ -8,8 +8,7 @@
 // #include "convex.h"
 // #include "earcut.h"
 // #include <iostream>
-#include "terrain/perlin.h"
-#include "terrain/terrain.h"
+#include "cut.h"
 
 #include <deque>
 #include <map>
@@ -38,7 +37,6 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *di
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
-
   for (unsigned int i = 0; i < rayCount; i++) {
 
     scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
@@ -58,14 +56,23 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *sce
   }
 }
 
-EMSCRIPTEN_KEEPALIVE void collidePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded, unsigned int *id) {
-  scene->collide(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
+EMSCRIPTEN_KEEPALIVE float *overlapBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+  return scene->overlapBox(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion);
+}
+EMSCRIPTEN_KEEPALIVE float *overlapCapsulePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+  return scene->overlapCapsule(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion);
+}
+EMSCRIPTEN_KEEPALIVE void collideBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded, unsigned int *id) {
+  scene->collideBox(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
+}
+EMSCRIPTEN_KEEPALIVE void collideCapsulePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded, unsigned int *id) {
+  scene->collideCapsule(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
 }
 EMSCRIPTEN_KEEPALIVE void getCollisionObjectPhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int *hit, unsigned int *id) {
   scene->getCollisionObject(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, *hit, *id);
 }
-EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int ccdEnabled) {
-  scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, mat, id, ccdEnabled);
+EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int flags) {
+  scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, mat, id, flags);
 }
 
 EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
@@ -93,6 +100,12 @@ EMSCRIPTEN_KEEPALIVE bool getBoundsPhysics(PScene *scene, unsigned int id, float
   return scene->getBounds(id, bounds);
 }
 
+EMSCRIPTEN_KEEPALIVE void enableActorPhysics(PScene *scene, unsigned int id) {
+  scene->enableActor(id);
+}
+EMSCRIPTEN_KEEPALIVE void disableActorPhysics(PScene *scene, unsigned int id) {
+  scene->disableActor(id);
+}
 EMSCRIPTEN_KEEPALIVE void disableGeometryPhysics(PScene *scene, unsigned int id) {
   scene->disableGeometry(id);
 }
@@ -116,6 +129,9 @@ EMSCRIPTEN_KEEPALIVE void removeGeometryPhysics(PScene *scene, unsigned int id) 
 }
 EMSCRIPTEN_KEEPALIVE void setTransformPhysics(PScene *scene, unsigned int id, float *position, float *quaternion, float *scale, bool autoWake) {
   scene->setTransform(id, position, quaternion, scale, autoWake);
+}
+EMSCRIPTEN_KEEPALIVE void getGlobalPositionPhysics(PScene *scene, unsigned int id, float *position) {
+  scene->getGlobalPosition(id, position);
 }
 EMSCRIPTEN_KEEPALIVE void getVelocityPhysics(PScene *scene, unsigned int id, float *velocity) {
   scene->getVelocity(id, velocity);
@@ -145,6 +161,36 @@ EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, P
   return scene->setCharacterControllerPosition(characterController, position);
 }
 
+EMSCRIPTEN_KEEPALIVE float *doCut(
+  float *positions,
+  unsigned int numPositions,
+  float *normals,
+  unsigned int numNormals,
+  float *uvs,
+  unsigned int numUvs,
+  unsigned int *faces,
+  unsigned int numFaces,
+
+  float *position,
+  float *quaternion,
+  float *scale
+) {
+  return cut(
+    positions,
+    numPositions,
+    normals,
+    numNormals,
+    uvs,
+    numUvs,
+    faces,
+    numFaces,
+
+    position,
+    quaternion,
+    scale
+  );
+}
+
 // EMSCRIPTEN_KEEPALIVE void doMarchingingCubes(
 //   int dims[3],
 //   float *potential,
@@ -165,44 +211,4 @@ EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float
   return marchingCubes(dims, potential, shift, scale);
 }
 
-EMSCRIPTEN_KEEPALIVE float getPerlin(float x, float y, float z) {
-  return (float)Perlin::noise(x, y, z);
-}
-
-// EMSCRIPTEN_KEEPALIVE float* generateChunk(
-//   float x, float y, float z, float chunkSize,
-//   float noiseScale, int octaves, float persistence, float lacunarity, float floorOffset,
-//   float hardFloor, float hardFloorWeight, float noiseWeight
-// ) {
-  // float origin[3] = {x, y, z};
-
-  // Terrain::Chunk *chunk = new Terrain::Chunk(origin, chunkSize, 0, 0.0, 0.0);
-
-  // chunk->build(
-  //   noiseScale, octaves, persistence, lacunarity, floorOffset, hardFloor, hardFloorWeight,
-  //   noiseWeight
-  // );
-
-  // float* outputBuffer = chunk->getGeometryBuffer();
-
-  // delete chunk;
-
-  // return outputBuffer;
-// }
-
-// EMSCRIPTEN_KEEPALIVE float* generateChunk(
-//   float x, float y, float z, float chunkSize
-// ) {
-//   float origin[3] = {x, y, z};
-//   return Terrain::createChunk(origin, chunkSize, 32);
-// }
-
-EMSCRIPTEN_KEEPALIVE float* generateTerrain(
-  float size, int levelCount, int maxSegment
-) {
-  return Terrain::generateTerrain(size, levelCount, maxSegment);
-}
-
-
-
-}
+} // extern "C"

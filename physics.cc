@@ -71,13 +71,19 @@ PxFilterFlags ccdFilterShader(
   pairFlags |= PxPairFlag::eSOLVE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
   pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-  if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
+  /* if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
     pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
-  }
+  } */
   return result;
 }
+
+enum PhysicsObjectFlags {
+  NONE = 0,
+  ENABLE_PHYSICS = 1,
+  ENABLE_CCD = 2,
+};
 
 PScene::PScene() {
   allocator = new PxDefaultAllocator();
@@ -104,9 +110,10 @@ PScene::PScene() {
   {
     // PxTolerancesScale tolerancesScale;
     PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
-    sceneDesc.gravity = physx::PxVec3(0.0f, -9.8f, 0.0f);
+    sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
     sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
+    sceneDesc.broadPhaseType = PxBroadPhaseType::eABP;
     sceneDesc.simulationEventCallback = simulationEventCallback;
     if (!sceneDesc.cpuDispatcher) {
       physx::PxDefaultCpuDispatcher* mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
@@ -172,7 +179,7 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
         // std::cout << "reset" << std::endl;
         body->setLinearVelocity(PxVec3(velocities[i*3], velocities[i*3+1], velocities[i*3+2]), true);
         //body->setAngularVelocity(PxVec3(0, 0, 0), true);
-        actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+        // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
       }
       // actor->wakeUp();
     } else {
@@ -261,7 +268,15 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
   return numActors;
 }
 
-void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int ccdEnabled) {
+void PScene::addCapsuleGeometry(
+  float *position,
+  float *quaternion,
+  float radius,
+  float halfHeight,
+  float *mat,
+  unsigned int id,
+  unsigned int flags
+) {
   // PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
@@ -269,13 +284,34 @@ void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius
   PxCapsuleGeometry geometry(radius, halfHeight);
   PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
 
-  /* PxShape* aCapsuleShape = PxRigidActorExt::createExclusiveShape(*body,
-    PxCapsuleGeometry(radius, halfHeight), *material);
-  aCapsuleShape->setLocalPose(relativePose); */
+  // flags
+  const bool physicsEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_PHYSICS);
+  /* if (!physicsEnabled) {
+    PxRigidActor *actor = body;
 
-  body->userData = (void *)id;
+    constexpr int numShapes = 32;
+    PxShape *shapes[numShapes];
+    for (int j = 0; ; j++) {
+      memset(shapes, 0, sizeof(shapes));
+      if (actor->getShapes(shapes, numShapes, j * numShapes) == 0) {
+        break;
+      }
+      for (int i = 0; i < numShapes; ++i) {
+        if (shapes[i] == nullptr) {
+          break;
+        }
 
-  { 
+        PxShape *rigidShape = shapes[i];
+        rigidShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+      }
+    }
+  } */
+  const bool ccdEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_CCD);
+  if (ccdEnabled) {
+    body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
+  }
+
+  /* {
     // LOL 1
     PxFilterData filterData{};
     filterData.word0 = id;
@@ -290,13 +326,14 @@ void PScene::addCapsuleGeometry(float *position, float *quaternion, float radius
       shape->setSimulationFilterData(filterData);
     }
     // LOL 2
-  }
+  } */
 
-  if (ccdEnabled) {
-    body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
-  }
+  body->userData = (void *)id;
+
   PxRigidBodyExt::updateMassAndInertia(*body, 1.0f);
-  scene->addActor(*body);
+  if (physicsEnabled) {
+    scene->addActor(*body);
+  }
   actors.push_back(body);
 }
 
@@ -413,7 +450,38 @@ void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *positi
     delete writeStream;
   }
 }
-
+void PScene::enableActor(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    PxScene *actorScene = actor->getScene();
+    if (actorScene == nullptr) {
+      scene->addActor(*actor);
+    } else {
+      std::cerr << "enable physics actor already had a scene " << id << std::endl;
+    }
+  } else {
+    std::cerr << "enable unknown actor id " << id << std::endl;
+  }
+}
+void PScene::disableActor(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    PxScene *actorScene = actor->getScene();
+    if (actorScene != nullptr) {
+      actorScene->removeActor(*actor);
+    } else {
+      std::cerr << "disable physics actor id had no scene " << id << std::endl;
+    }
+  } else {
+    std::cerr << "disable physics actor id " << id << std::endl;
+  }
+}
 void PScene::disableGeometry(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
@@ -421,16 +489,16 @@ void PScene::disableGeometry(unsigned int id) {
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
 
-    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+    // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
-    if (body) {
+    /* if (body) {
       body->setLinearVelocity(PxVec3(0, 0, 0), false);
       body->setAngularVelocity(PxVec3(0, 0, 0), false);
-    }
+    } */
 
     PxShape *shapes[32];
-    for (int j = 0; ; j++) {
+    for (int j = 0;; j++) {
       memset(shapes, 0, sizeof(shapes));
       if (actor->getShapes(shapes, 32, j * 32) == 0) {
         break;
@@ -455,7 +523,7 @@ void PScene::enableGeometry(unsigned int id) {
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
     
-    actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
+    // actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, false);
 
     PxShape *shapes[32];
     for (int j = 0; ; j++) {
@@ -546,6 +614,27 @@ void PScene::setTransform(unsigned int id, float *positions, float *quaternions,
     actor->setGlobalPose(transform, autoWake);
   } else {
     std::cerr << "set transform unknown actor id " << id << std::endl;
+  }
+}
+void PScene::getGlobalPosition(unsigned int id, float *positions) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      PxVec3 position = actor->getGlobalPose().p;
+      positions[0]  = position[0]; 
+      positions[1]  = position[1]; 
+      positions[2]  = position[2]; 
+    }
+  } else {
+    std::cerr << "get position unknown actor id " << id << std::endl;
+    positions[0] = 0;
+    positions[1] = 0;
+    positions[2] = 0;
   }
 }
 void PScene::getVelocity(unsigned int id, float *velocities) {
@@ -695,6 +784,11 @@ void PScene::removeGeometry(unsigned int id) {
   });
   if (actorIter != actors.end()) {
     PxRigidActor *actor = *actorIter;
+
+    PxScene *scene = actor->getScene();
+    if (scene != nullptr) {
+      scene->removeActor(*actor);
+    }
     actor->release();
     actors.erase(actorIter);
     simulationEventCallback->stateBitfields.erase(id);
@@ -1095,8 +1189,66 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
   }
 }
 
-void PScene::collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
+float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+  PxTransform geomPose(
+    PxVec3{position[0], position[1], position[2]},
+    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
+  );
+  PxTransform meshPose{
+    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
+    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
+  };
+
+  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+  
+  std::vector<float> outIds;
+  {
+      for (unsigned int i = 0; i < actors.size(); i++) {
+        PxRigidActor *actor = actors[i];
+        PxShape *shape;
+        actor->getShapes(&shape, 1);
+
+        if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+          PxGeometryHolder holder = shape->getGeometry();
+          PxGeometry &geometry = holder.any();
+
+          PxTransform meshPose2 = actor->getGlobalPose();
+          PxTransform meshPose3 = meshPose * meshPose2;
+
+          PxVec3 directionVec;
+          PxReal depthFloat;
+          bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
+          if (result) {
+            float id = (unsigned int)actor->userData;
+            outIds.push_back(id);
+          }
+        }
+      }
+  }
+
+  float *outputBuffer = (float *)malloc((
+    1 + // numOutIds
+    outIds.size()
+  ) * sizeof(float));
+
+  outputBuffer[0] = outIds.size();
+  memcpy(outputBuffer+1, &outIds[0], outIds.size()*sizeof(float));
+
+  return outputBuffer;
+}
+
+float *PScene::overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+  PxBoxGeometry geom(hx, hy, hz);
+  return PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion);
+}
+
+float *PScene::overlapCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
   PxCapsuleGeometry geom(radius, halfHeight);
+  return PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion);
+}
+
+void PScene::collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
@@ -1133,7 +1285,7 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
 
           PxVec3 directionVec;
           PxReal depthFloat;
-          bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, geom, geomPose, geometry, meshPose3);
+          bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, *geom, geomPose, geometry, meshPose3);
           if (result) {
             // std::cout << "collide shape " << (unsigned int)actor->userData << " " << (uint32_t)shape << " " << shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE) << std::endl; // XXX
             
@@ -1172,6 +1324,16 @@ void PScene::collide(float radius, float halfHeight, float *position, float *qua
   }
 }
 
+void PScene::collideBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
+  PxBoxGeometry geom(hx, hy, hz);
+  PScene::collide(&geom, position, quaternion, meshPosition, meshQuaternion, maxIter, hit, direction, grounded, id);
+}
+
+void PScene::collideCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
+  PxCapsuleGeometry geom(radius, halfHeight);
+  PScene::collide(&geom, position, quaternion, meshPosition, meshQuaternion, maxIter, hit, direction, grounded, id);
+}
+
 void PScene::getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
   PxCapsuleGeometry geom(radius, halfHeight);
   PxTransform geomPose(
@@ -1188,9 +1350,9 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   for (unsigned int i = 0; i < actors.size(); i++) {
     PxRigidActor *actor = actors[i];
     PxShape *shape;
-    actor->getShapes(&shape, 1);
+    unsigned int numShapes = actor->getShapes(&shape, 1);
 
-    if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+    if (numShapes > 0 && shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
       PxGeometryHolder holder = shape->getGeometry();
       PxGeometry &geometry = holder.any();
 
