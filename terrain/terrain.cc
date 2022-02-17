@@ -25,15 +25,17 @@ float* generateTerrain(float size, int levelCount, int maxSegment) {
     std::vector<Vector3> vertices = {};
     std::vector<int> indices = {};
 
-    float origin[3] = {0.0, 0.0, 0.0};
+    int chunkCount = (int)pow(2, levelCount);
 
-    int segment = 32;
 
-    createChunk(origin, size, 32, vertices, indices, vertices.size());
+    float chunkSize = size / (float)chunkCount;
 
-    float origin_1[3] = {size, 0.0, 0.0};
-
-    createChunk(origin_1, size, 32, vertices, indices, vertices.size());
+    for (int i = 0; i < chunkCount; i++) {
+        for (int j = 0; j < chunkCount; j++) {
+            float origin[3] = {(float)i * chunkSize, 0.0, (float)j * chunkSize};
+            createChunk(origin, chunkSize, maxSegment, vertices, indices, vertices.size());
+        }
+    }
 
     int vertexCount = vertices.size() * 3;
     int faceCount = indices.size();
