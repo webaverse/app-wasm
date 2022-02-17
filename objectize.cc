@@ -9,7 +9,7 @@
 // #include "earcut.h"
 // #include <iostream>
 #include "terrain/perlin.h"
-#include "terrain/chunk.h"
+#include "terrain/terrain.h"
 
 #include <deque>
 #include <map>
@@ -169,25 +169,32 @@ EMSCRIPTEN_KEEPALIVE float getPerlin(float x, float y, float z) {
   return (float)Perlin::noise(x, y, z);
 }
 
+// EMSCRIPTEN_KEEPALIVE float* generateChunk(
+//   float x, float y, float z, float chunkSize,
+//   float noiseScale, int octaves, float persistence, float lacunarity, float floorOffset,
+//   float hardFloor, float hardFloorWeight, float noiseWeight
+// ) {
+  // float origin[3] = {x, y, z};
+
+  // Terrain::Chunk *chunk = new Terrain::Chunk(origin, chunkSize, 0, 0.0, 0.0);
+
+  // chunk->build(
+  //   noiseScale, octaves, persistence, lacunarity, floorOffset, hardFloor, hardFloorWeight,
+  //   noiseWeight
+  // );
+
+  // float* outputBuffer = chunk->getGeometryBuffer();
+
+  // delete chunk;
+
+  // return outputBuffer;
+// }
+
 EMSCRIPTEN_KEEPALIVE float* generateChunk(
-  float x, float y, float z, float chunkSize,
-  float noiseScale, int octaves, float persistence, float lacunarity, float floorOffset,
-  float hardFloor, float hardFloorWeight, float noiseWeight
+  float x, float y, float z, float chunkSize
 ) {
   float origin[3] = {x, y, z};
-
-  Terrain::Chunk *chunk = new Terrain::Chunk(origin, chunkSize, 0, 0.0, 0.0);
-
-  chunk->build(
-    noiseScale, octaves, persistence, lacunarity, floorOffset, hardFloor, hardFloorWeight,
-    noiseWeight
-  );
-
-  float* outputBuffer = chunk->getGeometryBuffer();
-
-  delete chunk;
-
-  return outputBuffer;
+  return Terrain::createChunk(origin, chunkSize, 32);
 }
 
 }
