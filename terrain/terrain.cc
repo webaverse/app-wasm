@@ -32,7 +32,10 @@ float* generateTerrain(float size, int levelCount, int maxSegment) {
 
     for (int i = 0; i < chunkCount; i++) {
         for (int j = 0; j < chunkCount; j++) {
-            float origin[3] = {(float)i * chunkSize, 0.0, (float)j * chunkSize};
+            float origin[3] = {
+                (float)(i - chunkCount / 2) * chunkSize, 0.0,
+                (float)(j - chunkCount / 2) * chunkSize
+            };
             createChunk(origin, chunkSize, maxSegment, vertices, indices, vertices.size());
         }
     }
