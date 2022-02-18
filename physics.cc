@@ -1238,19 +1238,7 @@ float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, flo
   return outputBuffer;
 }
 
-float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, float, int detectDir) {
-  PxBoxGeometry geom(hx, hy, hz);
-  PxTransform geomPose(
-    PxVec3{position[0], position[1], position[2]},
-    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
-  );
-  PxTransform meshPose{
-    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
-    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
-  };
-
-  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
-  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, PxTransform geomPose, PxTransform meshPose, int detectDir) {
   
   float outY;
   bool anyHadHit = false;
@@ -1289,7 +1277,7 @@ float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, fl
   if (detectDir == 1) {
     if (anyHadHit) {
       position[1] += detectDir * detectStep;
-      PScene::detectPathVoxel(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, detectDir);
+      PScene::detectPathVoxelStep(geom, position, geomPose, meshPose, detectDir);
     } else {
       // do nothing, stop recur
     }
@@ -1299,13 +1287,29 @@ float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, fl
       // do nothing, stop recur
     } else {
       position[1] += detectDir * detectStep;
-      PScene::detectPathVoxel(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, detectDir);
+      PScene::detectPathVoxelStep(geom, position, geomPose, meshPose, detectDir);
     }
   }
+}
+float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+  PxBoxGeometry geom(hx, hy, hz);
+  PxTransform geomPose(
+    PxVec3{position[0], position[1], position[2]},
+    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
+  );
+  PxTransform meshPose{
+    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
+    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
+  };
+
+  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+  
+  PScene::detectPathVoxelStep(&geom, position, geomPose, meshPose, 0);
 
   float *outputBuffer = (float *)malloc(sizeof(float));
 
-  outputBuffer[0] = outY;
+  outputBuffer[0] = position[1];
 
   return outputBuffer;
 }
