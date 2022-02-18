@@ -1225,7 +1225,7 @@ void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quate
         bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
         if (result) {
           // bool includedInIgnores = false;
-          // const unsigned int id = (unsigned int)actor->userData;
+          const unsigned int id = (unsigned int)actor->userData;
           // for (int i = 0; i < numIgnorePhysicsIds; i++) {
           //   if (ignorePhysicsIds[i] == id) {
           //     includedInIgnores = true;
@@ -1234,9 +1234,10 @@ void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quate
           // }
 
           // if (!includedInIgnores) {
+          if ( id != 5) {
             anyHadHit = true;
             break;
-          // }
+          }
         }
       }
     }
