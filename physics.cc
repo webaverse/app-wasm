@@ -1191,7 +1191,7 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 
 void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
   if (*iter >= maxIter) return;
-  *iter += 1;
+  *iter = *iter + 1;
 
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
@@ -1273,9 +1273,10 @@ float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, fl
   unsigned int iter = 0;
   PScene::detectPathVoxelStep(&geom, position, quaternion, meshPosition, meshQuaternion, 0, &iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
 
-  float *outputBuffer = (float *)malloc(sizeof(float));
+  float *outputBuffer = (float *)malloc(2 * sizeof(float));
 
   outputBuffer[0] = position[1];
+  outputBuffer[1] = iter;
 
   return outputBuffer;
 }
