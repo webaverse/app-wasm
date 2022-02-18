@@ -20,62 +20,74 @@ float hardFloor = 2.0;
 float hardFloorWeight = 3.06;
 float noiseWeight = 6.09;
 
-float* generateTerrain(float size, int levelCount, int maxSegment) {
+float* generateTerrain(float chunkSize, int chunkCount, int maxSegment) {
 
-    std::vector<Vector3> vertices = {};
-    std::vector<int> indices = {};
+    // std::vector<Vector3> vertices = {};
+    // std::vector<int> indices = {};
 
-    int chunkCount = (int)pow(2, levelCount);
+    int cellCount = chunkCount * chunkCount * maxSegment * maxSegment;
 
-    float chunkSize = size / (float)chunkCount;
+    int chunkMaxVertexCount = maxSegment * maxSegment * 20;
+    int chunkMaxIndexCount = maxSegment * maxSegment * 20;
 
-    std::vector<int> chunkGroup = {};
+
+    float *vertexBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
+    int *faceBuffer = (int*)malloc(chunkCount * chunkCount * chunkMaxIndexCount * sizeof(int));
+    int *groupBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
+
+    // std::vector<int> chunkGroup = {};
 
     for (int i = 0; i < chunkCount; i++) {
         for (int j = 0; j < chunkCount; j++) {
-            for (int level = 0; level < levelCount; level++) {
-                float origin[3] = {
-                    (float)(i - chunkCount / 2) * chunkSize,
-                    0.0,
-                    (float)(j - chunkCount / 2) * chunkSize
-                };
+            float origin[3] = {
+                (float)(i - chunkCount / 2) * chunkSize,
+                0.0,
+                (float)(j - chunkCount / 2) * chunkSize
+            };
 
-                int groupStart = indices.size();
-                chunkGroup.push_back(groupStart);
+            // int groupStart = indices.size();
+            // chunkGroup.push_back(groupStart);
+            int chunkIndex = i * chunkCount + j;
 
-                createChunk(
-                    origin,
-                    chunkSize,
-                    maxSegment / (int)pow(2, levelCount - level - 1),
-                    vertices,
-                    indices,
-                    vertices.size()
-                );
+            int indexCount = 0;
 
-                chunkGroup.push_back(indices.size() - groupStart);
-            }
+            createChunk(
+                origin,
+                chunkSize,
+                maxSegment,
+                vertexBuffer,
+                faceBuffer,
+                chunkIndex * chunkMaxVertexCount,
+                chunkIndex * chunkMaxIndexCount,
+                indexCount
+            );
+
+            groupBuffer[chunkIndex * 2] = chunkIndex * chunkMaxIndexCount;
+            groupBuffer[chunkIndex * 2 + 1] = indexCount;
+
+            // chunkGroup.push_back(indices.size() - groupStart);
         }
     }
 
-    int vertexCount = vertices.size() * 3;
-    int faceCount = indices.size();
+    // int vertexCount = vertices.size() * 3;
+    // int faceCount = indices.size();
 
-    int *outputBuffer = (int*)malloc(5 * sizeof(int));
-    outputBuffer[0] = vertexCount;
-    outputBuffer[1] = faceCount;
+    int *outputBuffer = (int*)malloc(3 * sizeof(int));
+    // outputBuffer[0] = vertexCount;
+    // outputBuffer[1] = faceCount;
 
-    float *vertexBuffer = (float*)malloc(vertexCount * sizeof(float));
-    memcpy(vertexBuffer, &(vertices.front()), vertexCount * sizeof(float));
+    // float *vertexBuffer = (float*)malloc(vertexCount * sizeof(float));
+    // memcpy(vertexBuffer, &(vertices.front()), vertexCount * sizeof(float));
 
-    int *faceBuffer = (int*)malloc(faceCount * sizeof(int));
-    memcpy(faceBuffer, &(indices.front()), faceCount * sizeof(int));
+    // int *faceBuffer = (int*)malloc(faceCount * sizeof(int));
+    // memcpy(faceBuffer, &(indices.front()), faceCount * sizeof(int));
 
-    int *groupBuffer = (int*)malloc(chunkCount * chunkCount * 2 * levelCount * sizeof(int));
-    memcpy(groupBuffer, &(chunkGroup.front()), chunkCount * chunkCount * 2 * levelCount * sizeof(int));
+    // int *groupBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
+    // memcpy(groupBuffer, &(chunkGroup.front()), chunkCount * chunkCount * 2 * sizeof(int));
 
-    outputBuffer[2] = (int)vertexBuffer;
-    outputBuffer[3] = (int)faceBuffer;
-    outputBuffer[4] = (int)groupBuffer;
+    outputBuffer[0] = (int)vertexBuffer;
+    outputBuffer[1] = (int)faceBuffer;
+    outputBuffer[2] = (int)groupBuffer;
 
     return (float*)outputBuffer;
 }
@@ -143,8 +155,8 @@ void density(int x, int y, int z, Vector3 origin, float unitSize, int segment, s
 
 void march(
 	int x, int y, int z, int segment,
-	const std::vector<Vector4> & points, std::vector<Vector3> & vertices, std::vector<int> & indices,
-	std::map<std::string, int> & vertexDic, int & index
+	const std::vector<Vector4> & points, float *vertices, int *indices,
+	std::map<std::string, int> & vertexDic, int & index, int & faceIndex
 ) {
 
 		// 8 corners of the current cube
@@ -215,12 +227,18 @@ void march(
             	} else {
             		vP = interpolateVerts(cubeCorners[v[0]], cubeCorners[v[1]]);
             		vertexIndex = index;
-            		index++;
             		vertexDic[vInx] = vertexIndex;
-            		vertices.push_back(vP);
+            		// vertices.push_back(vP);
+                    vertices[index * 3] = vP.x;
+                    vertices[index * 3 + 1] = vP.y;
+                    vertices[index * 3 + 2] = vP.z;
+
+                    index++;
             	}
 
-            	indices.push_back(vertexIndex);
+            	// indices.push_back(vertexIndex);
+                indices[faceIndex] = vertexIndex;
+                faceIndex++;
             }
         }
 	}
@@ -228,7 +246,7 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    std::vector<Vector3> & vertices, std::vector<int> & indices, int indexOffset
+    float *vertices, int *indices, int vertexOffset, int indexOffset, int & indexCount
 ) {
 
 	// std::vector<Vector3> vertices = {};
@@ -238,7 +256,8 @@ void createChunk(
 
 	float unitSize = chunkSize / (float)segment;
 	Vector3 originPos{origin[0], origin[1], origin[2]};
-	int index = indexOffset;
+	int index = vertexOffset;
+    int faceIndex = indexOffset;
 
 	points.resize((int)pow(segment + 1, 3));
 
@@ -257,11 +276,12 @@ void createChunk(
 	for (int i = 0; i < segment; i++) {
 		for (int j = 0; j < segment; j++) {
 			for (int k = 0; k < segment; k++) {
-				march(i, j, k, segment, points, vertices, indices, vertexDic, index);
+				march(i, j, k, segment, points, vertices, indices, vertexDic, index, faceIndex);
 			}
 		}
 	}
 
+    indexCount = faceIndex - indexOffset;
 }
 
 }  // Terrain namespace

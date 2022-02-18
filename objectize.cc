@@ -212,8 +212,8 @@ EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float
   return marchingCubes(dims, potential, shift, scale);
 }
 
-EMSCRIPTEN_KEEPALIVE float* generateTerrain(float size, int levelCount, int maxSegment) {
-  return Terrain::generateTerrain(size, levelCount, maxSegment);
+EMSCRIPTEN_KEEPALIVE float* generateTerrain(float chunkSize, int chunkCount, int maxSegment) {
+  return Terrain::generateTerrain(chunkSize, chunkCount, maxSegment);
 }
 
 } // extern "C"
