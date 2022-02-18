@@ -1224,18 +1224,19 @@ void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quate
         PxReal depthFloat;
         bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
         if (result) {
-          // bool includedInIgnores = false;
           const unsigned int id = (unsigned int)actor->userData;
-          // for (int i = 0; i < numIgnorePhysicsIds; i++) {
-          //   if (ignorePhysicsIds[i] == id) {
-          //     includedInIgnores = true;
-          //     break;
-          //   }
-          // }
+          
+          bool includedInIgnores = false;
+          for (int i = 0; i < numIgnorePhysicsIds; i++) {
+            if (ignorePhysicsIds[i] == id) {
+              includedInIgnores = true;
+              break;
+            }
+          }
 
-          // if (!includedInIgnores) { // nok
-          // if ( id != 5) { // ok
-          if ( id != ignorePhysicsIds[0]) {
+          if (!includedInIgnores) {
+          // if ( id != 5) {
+          // if ( id != ignorePhysicsIds[0]) {
             anyHadHit = true;
             break;
           }
