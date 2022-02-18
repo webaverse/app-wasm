@@ -68,7 +68,7 @@ public:
 
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
   void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
-  void detectPathVoxelStep(PxGeometry *geom, float *position, PxTransform geomPose, PxTransform meshPose, int detectDir);
+  void detectPathVoxelStep(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir);
   float *detectPathVoxel(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
   float *overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
   float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
