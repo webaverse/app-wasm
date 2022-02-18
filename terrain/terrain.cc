@@ -118,16 +118,6 @@ void density(int x, int y, int z, Vector3 origin, float unitSize, int segment, s
 
     int index = indexFromCoord(x, y, z, segment);
     points[index] = Vector4{curPos.x, curPos.y, curPos.z, finalVal};
-
-    // this->min.x = fmin(this->min.x, this->points[index].x);
-    // this->min.y = fmin(this->min.y, this->points[index].y);
-    // this->min.z = fmin(this->min.z, this->points[index].z);
-    // this->min.w = fmin(this->min.w, this->points[index].w);
-
-    // this->max.x = fmax(this->max.x, this->points[index].x);
-    // this->max.y = fmax(this->max.y, this->points[index].y);
-    // this->max.z = fmax(this->max.z, this->points[index].z);
-    // this->max.w = fmax(this->max.w, this->points[index].w);
 }
 
 void march(
@@ -250,33 +240,6 @@ void createChunk(
 			}
 		}
 	}
-
-	// generate one buffer
-
-	// int vertexCount = vertices.size() * 3;
-	// int faceCount = indices.size();
-
-	// float *outputBuffer = (float*)malloc((2 + vertices.size() * 3 + indices.size()) * 4);
-
-	// memcpy(outputBuffer, &vertexCount, 4);
-	// memcpy(outputBuffer + 1, &faceCount, 4);
-	// memcpy(outputBuffer + 2, &(vertices.front()), vertices.size() * 3 * 4);
-	// memcpy(outputBuffer + 2 + vertices.size() * 3, &(indices.front()), indices.size() * 4);
-
-	// int *outputBuffer = (int*)malloc(4 * sizeof(int));
-	// outputBuffer[0] = vertexCount;
-	// outputBuffer[1] = faceCount;
-
-	// float *vertexBuffer = (float*)malloc(vertexCount * 4);
-	// memcpy(vertexBuffer, &(vertices.front()), vertexCount * 4);
-
-	// int *faceBuffer = (int*)malloc(faceCount * 4);
-	// memcpy(faceBuffer, &(indices.front()), faceCount * 4);
-
-	// outputBuffer[2] = (int)vertexBuffer;
-	// outputBuffer[3] = (int)faceBuffer;
-
-	// return (float*)outputBuffer;
 
 }
 
