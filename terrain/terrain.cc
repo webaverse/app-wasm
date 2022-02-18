@@ -27,34 +27,55 @@ float* generateTerrain(float size, int levelCount, int maxSegment) {
 
     int chunkCount = (int)pow(2, levelCount);
 
-
     float chunkSize = size / (float)chunkCount;
+
+    std::vector<int> chunkGroup = {};
 
     for (int i = 0; i < chunkCount; i++) {
         for (int j = 0; j < chunkCount; j++) {
-            float origin[3] = {
-                (float)(i - chunkCount / 2) * chunkSize, 0.0,
-                (float)(j - chunkCount / 2) * chunkSize
-            };
-            createChunk(origin, chunkSize, maxSegment, vertices, indices, vertices.size());
+            for (int level = 0; level < levelCount; level++) {
+                float origin[3] = {
+                    (float)(i - chunkCount / 2) * chunkSize,
+                    0.0,
+                    (float)(j - chunkCount / 2) * chunkSize
+                };
+
+                int groupStart = indices.size();
+                chunkGroup.push_back(groupStart);
+
+                createChunk(
+                    origin,
+                    chunkSize,
+                    maxSegment / (int)pow(2, levelCount - level - 1),
+                    vertices,
+                    indices,
+                    vertices.size()
+                );
+
+                chunkGroup.push_back(indices.size() - groupStart);
+            }
         }
     }
 
     int vertexCount = vertices.size() * 3;
     int faceCount = indices.size();
 
-    int *outputBuffer = (int*)malloc(4 * sizeof(int));
+    int *outputBuffer = (int*)malloc(5 * sizeof(int));
     outputBuffer[0] = vertexCount;
     outputBuffer[1] = faceCount;
 
-    float *vertexBuffer = (float*)malloc(vertexCount * 4);
-    memcpy(vertexBuffer, &(vertices.front()), vertexCount * 4);
+    float *vertexBuffer = (float*)malloc(vertexCount * sizeof(float));
+    memcpy(vertexBuffer, &(vertices.front()), vertexCount * sizeof(float));
 
-    int *faceBuffer = (int*)malloc(faceCount * 4);
-    memcpy(faceBuffer, &(indices.front()), faceCount * 4);
+    int *faceBuffer = (int*)malloc(faceCount * sizeof(int));
+    memcpy(faceBuffer, &(indices.front()), faceCount * sizeof(int));
+
+    int *groupBuffer = (int*)malloc(chunkCount * chunkCount * 2 * levelCount * sizeof(int));
+    memcpy(groupBuffer, &(chunkGroup.front()), chunkCount * chunkCount * 2 * levelCount * sizeof(int));
 
     outputBuffer[2] = (int)vertexBuffer;
     outputBuffer[3] = (int)faceBuffer;
+    outputBuffer[4] = (int)groupBuffer;
 
     return (float*)outputBuffer;
 }
