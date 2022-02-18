@@ -1311,7 +1311,7 @@ float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, flo
           PxReal depthFloat;
           bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
           if (result) {
-            float id = (unsigned int)actor->userData;
+            const unsigned int id = (unsigned int)actor->userData;
             outIds.push_back(id);
           }
         }
