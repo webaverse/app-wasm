@@ -1189,7 +1189,10 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
   }
 }
 
-void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir) {
+void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
+  if (*iter >= maxIter) return;
+  *iter += 1;
+
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
@@ -1221,8 +1224,19 @@ void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quate
         PxReal depthFloat;
         bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
         if (result) {
-          anyHadHit = true;
-          break;
+          // bool includedInIgnores = false;
+          // const unsigned int id = (unsigned int)actor->userData;
+          // for (int i = 0; i < numIgnorePhysicsIds; i++) {
+          //   if (ignorePhysicsIds[i] == id) {
+          //     includedInIgnores = true;
+          //     break;
+          //   }
+          // }
+
+          // if (!includedInIgnores) {
+            anyHadHit = true;
+            break;
+          // }
         }
       }
     }
@@ -1239,7 +1253,7 @@ void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quate
   if (detectDir == 1) {
     if (anyHadHit) {
       position[1] += detectDir * detectStep;
-      PScene::detectPathVoxelStep(geom, position, quaternion, meshPosition, meshQuaternion, detectDir);
+      PScene::detectPathVoxelStep(geom, position, quaternion, meshPosition, meshQuaternion, detectDir, iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
     } else {
       // do nothing, stop recur
     }
@@ -1249,14 +1263,15 @@ void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quate
       // do nothing, stop recur
     } else {
       position[1] += detectDir * detectStep;
-      PScene::detectPathVoxelStep(geom, position, quaternion, meshPosition, meshQuaternion, detectDir);
+      PScene::detectPathVoxelStep(geom, position, quaternion, meshPosition, meshQuaternion, detectDir, iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
     }
   }
 }
-float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
   PxBoxGeometry geom(hx, hy, hz);
   
-  PScene::detectPathVoxelStep(&geom, position, quaternion, meshPosition, meshQuaternion, 0);
+  unsigned int iter = 0;
+  PScene::detectPathVoxelStep(&geom, position, quaternion, meshPosition, meshQuaternion, 0, &iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
 
   float *outputBuffer = (float *)malloc(sizeof(float));
 
