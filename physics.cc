@@ -1233,8 +1233,9 @@ void PScene::detectPathVoxelStep(PxGeometry *geom, float *position, float *quate
           //   }
           // }
 
-          // if (!includedInIgnores) {
-          if ( id != 5) {
+          // if (!includedInIgnores) { // nok
+          // if ( id != 5) { // ok
+          if ( id != ignorePhysicsIds[0]) {
             anyHadHit = true;
             break;
           }
@@ -1277,7 +1278,7 @@ float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, fl
   float *outputBuffer = (float *)malloc(2 * sizeof(float));
 
   outputBuffer[0] = position[1];
-  outputBuffer[1] = iter;
+  outputBuffer[1] = ignorePhysicsIds[0]; // test
 
   return outputBuffer;
 }
