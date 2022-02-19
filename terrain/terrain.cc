@@ -32,7 +32,7 @@ float* generateTerrain(float chunkSize, int chunkCount, int maxSegment) {
 
 
     float *vertexBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
-    int *faceBuffer = (int*)malloc(chunkCount * chunkCount * chunkMaxIndexCount * sizeof(int));
+    uint32_t *faceBuffer = (uint32_t*)malloc(chunkCount * chunkCount * chunkMaxIndexCount * sizeof(uint32_t));
     int *groupBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
 
     // std::vector<int> chunkGroup = {};
@@ -155,7 +155,7 @@ void density(int x, int y, int z, Vector3 origin, float unitSize, int segment, s
 
 void march(
 	int x, int y, int z, int segment,
-	const std::vector<Vector4> & points, float *vertices, int *indices,
+	const std::vector<Vector4> & points, float *vertices, uint32_t *indices,
 	std::map<std::string, int> & vertexDic, int & index, int & faceIndex
 ) {
 
@@ -237,7 +237,7 @@ void march(
             	}
 
             	// indices.push_back(vertexIndex);
-                indices[faceIndex] = vertexIndex;
+                indices[faceIndex] = (uint32_t)vertexIndex;
                 faceIndex++;
             }
         }
@@ -246,7 +246,7 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    float *vertices, int *indices, int vertexOffset, int indexOffset, int & indexCount
+    float *vertices, uint32_t *indices, int vertexOffset, int indexOffset, int & indexCount
 ) {
 
 	// std::vector<Vector3> vertices = {};

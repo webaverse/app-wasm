@@ -216,4 +216,14 @@ EMSCRIPTEN_KEEPALIVE float* generateTerrain(float chunkSize, int chunkCount, int
   return Terrain::generateTerrain(chunkSize, chunkCount, maxSegment);
 }
 
+EMSCRIPTEN_KEEPALIVE void updateChunk(
+  float *vertices, uint32_t *indices, int *groups, float x, float y, float z, float chunkSize, int segment,
+  int chunkIndex, int vertexOffset, int indexOffset
+) {
+  int indexCount = 0;
+  float origin[3] = {x, y, z};
+  Terrain::createChunk(origin, chunkSize, segment, vertices, indices, vertexOffset, indexOffset, indexCount);
+  groups[chunkIndex * 2 + 1] = indexCount;
+}
+
 } // extern "C"
