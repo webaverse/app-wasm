@@ -21,7 +21,9 @@ float hardFloor = 2.0;
 float hardFloorWeight = 3.06;
 float noiseWeight = 6.09;
 
-float* generateTerrain(float chunkSize, int chunkCount, int maxSegment, int vertexStrideParam, int faceStrideParam) {
+float* generateTerrain(
+    float chunkSize, int chunkCount, int maxSegment, int vertexStrideParam, int faceStrideParam
+) {
 
     // std::vector<Vector3> vertices = {};
     // std::vector<int> indices = {};
@@ -72,21 +74,7 @@ float* generateTerrain(float chunkSize, int chunkCount, int maxSegment, int vert
         }
     }
 
-    // int vertexCount = vertices.size() * 3;
-    // int faceCount = indices.size();
-
     int *outputBuffer = (int*)malloc(4 * sizeof(int));
-    // outputBuffer[0] = vertexCount;
-    // outputBuffer[1] = faceCount;
-
-    // float *vertexBuffer = (float*)malloc(vertexCount * sizeof(float));
-    // memcpy(vertexBuffer, &(vertices.front()), vertexCount * sizeof(float));
-
-    // int *faceBuffer = (int*)malloc(faceCount * sizeof(int));
-    // memcpy(faceBuffer, &(indices.front()), faceCount * sizeof(int));
-
-    // int *groupBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
-    // memcpy(groupBuffer, &(chunkGroup.front()), chunkCount * chunkCount * 2 * sizeof(int));
 
     outputBuffer[0] = (int)vertexBuffer;
     outputBuffer[1] = (int)normalBuffer;
@@ -113,7 +101,9 @@ Vector3 interpolateVerts(Vector4 v1, Vector4 v2) {
 	};
 }
 
-void density(int x, int y, int z, Vector3 origin, float unitSize, int segment, std::vector<Vector4> & points) {
+void density(
+    int x, int y, int z, Vector3 origin, float unitSize, int segment, std::vector<Vector4> & points
+) {
 
     Vector3 v1{(float)x * unitSize, (float)y * unitSize, (float)z * unitSize};
     Vector3 curPos{origin.x + v1.x, origin.y + v1.y, origin.z + v1.z};
@@ -189,7 +179,8 @@ void march(
         // Calculate unique index for each cube configuration.
         // There are 256 possible values
         // A value of 0 means cube is entirely inside surface; 255 entirely outside.
-        // The value is used to look up the edge table, which indicates which edges of the cube are cut by the isosurface.
+        // The value is used to look up the edge table, which indicates which edges
+        // of the cube are cut by the isosurface.
         int cubeIndex = 0;
         if (cubeCorners[0].w < isoLevel) cubeIndex |= 1;
         if (cubeCorners[1].w < isoLevel) cubeIndex |= 2;
@@ -222,7 +213,8 @@ void march(
             for (int i = 0; i < 3; i++) {
             	int v[2] = {segs[i][0], segs[i][1]};
 
-            	std::string vInx= std::to_string(std::min(cornerIndices[v[0]], cornerIndices[v[1]])) + "_" +
+            	std::string vInx =
+                    std::to_string(std::min(cornerIndices[v[0]], cornerIndices[v[1]])) + "_" +
             		std::to_string(std::max(cornerIndices[v[0]], cornerIndices[v[1]]));
 
             	int vertexIndex;
@@ -277,7 +269,8 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    float *vertices, float *normals, uint32_t *indices, int vertexOffset, int indexOffset, int & indexCount
+    float *vertices, float *normals, uint32_t *indices,
+    int vertexOffset, int indexOffset, int & indexCount
 ) {
 
 	// std::vector<Vector3> vertices = {};
