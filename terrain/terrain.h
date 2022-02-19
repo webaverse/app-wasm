@@ -8,7 +8,7 @@ namespace Terrain {
 		float x; float y; float z; float w;
 	};
 
-	float* generateTerrain(float size, int levelCount, int maxSegment);
+	float* generateTerrain(float size, int levelCount, int maxSegment, int vertexStrideParam, int faceStrideParam);
 
 	void createChunk(
 		float origin[3], float chunkSize, int segment,

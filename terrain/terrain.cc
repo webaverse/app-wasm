@@ -21,15 +21,15 @@ float hardFloor = 2.0;
 float hardFloorWeight = 3.06;
 float noiseWeight = 6.09;
 
-float* generateTerrain(float chunkSize, int chunkCount, int maxSegment) {
+float* generateTerrain(float chunkSize, int chunkCount, int maxSegment, int vertexStrideParam, int faceStrideParam) {
 
     // std::vector<Vector3> vertices = {};
     // std::vector<int> indices = {};
 
     int cellCount = chunkCount * chunkCount * maxSegment * maxSegment;
 
-    int chunkMaxVertexCount = maxSegment * maxSegment * 20;
-    int chunkMaxIndexCount = maxSegment * maxSegment * 20;
+    int chunkMaxVertexCount = maxSegment * maxSegment * vertexStrideParam;
+    int chunkMaxIndexCount = maxSegment * maxSegment * faceStrideParam;
 
 
     float *vertexBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
@@ -266,9 +266,9 @@ void march(
             normal.normalize();
 
             for (int i = 0; i < 3; i++) {
-                normals≈[triangleVertexInices[i] * 3] = normal.x;
-                normals≈[triangleVertexInices[i] * 3 + 1] = normal.y;
-                normals≈[triangleVertexInices[i] * 3 + 2] = normal.z;
+                normals[triangleVertexInices[i] * 3] = normal.x;
+                normals[triangleVertexInices[i] * 3 + 1] = normal.y;
+                normals[triangleVertexInices[i] * 3 + 2] = normal.z;
             }
 
         }
