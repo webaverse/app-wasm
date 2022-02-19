@@ -6,6 +6,7 @@
 #include "terrain.h"
 #include "perlin.h"
 #include "mc.h"
+#include "../vector.h"
 
 namespace Terrain {
 
@@ -32,6 +33,7 @@ float* generateTerrain(float chunkSize, int chunkCount, int maxSegment) {
 
 
     float *vertexBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
+    float *normalBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
     uint32_t *faceBuffer = (uint32_t*)malloc(chunkCount * chunkCount * chunkMaxIndexCount * sizeof(uint32_t));
     int *groupBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
 
@@ -56,6 +58,7 @@ float* generateTerrain(float chunkSize, int chunkCount, int maxSegment) {
                 chunkSize,
                 maxSegment,
                 vertexBuffer,
+                normalBuffer,
                 faceBuffer,
                 chunkIndex * chunkMaxVertexCount,
                 chunkIndex * chunkMaxIndexCount,
@@ -72,7 +75,7 @@ float* generateTerrain(float chunkSize, int chunkCount, int maxSegment) {
     // int vertexCount = vertices.size() * 3;
     // int faceCount = indices.size();
 
-    int *outputBuffer = (int*)malloc(3 * sizeof(int));
+    int *outputBuffer = (int*)malloc(4 * sizeof(int));
     // outputBuffer[0] = vertexCount;
     // outputBuffer[1] = faceCount;
 
@@ -86,8 +89,9 @@ float* generateTerrain(float chunkSize, int chunkCount, int maxSegment) {
     // memcpy(groupBuffer, &(chunkGroup.front()), chunkCount * chunkCount * 2 * sizeof(int));
 
     outputBuffer[0] = (int)vertexBuffer;
-    outputBuffer[1] = (int)faceBuffer;
-    outputBuffer[2] = (int)groupBuffer;
+    outputBuffer[1] = (int)normalBuffer;
+    outputBuffer[2] = (int)faceBuffer;
+    outputBuffer[3] = (int)groupBuffer;
 
     return (float*)outputBuffer;
 }
@@ -155,7 +159,7 @@ void density(int x, int y, int z, Vector3 origin, float unitSize, int segment, s
 
 void march(
 	int x, int y, int z, int segment,
-	const std::vector<Vector4> & points, float *vertices, uint32_t *indices,
+	const std::vector<Vector4> & points, float *vertices, float *normals, uint32_t *indices,
 	std::map<std::string, int> & vertexDic, int & index, int & faceIndex
 ) {
 
@@ -213,6 +217,8 @@ void march(
 
             int segs[3][2] = {{a0, b0}, {a2, b2}, {a1, b1}};
 
+            int triangleVertexInices[3] = {0, 0, 0};
+
             for (int i = 0; i < 3; i++) {
             	int v[2] = {segs[i][0], segs[i][1]};
 
@@ -236,17 +242,42 @@ void march(
                     index++;
             	}
 
+                triangleVertexInices[i] = vertexIndex;
+
             	// indices.push_back(vertexIndex);
                 indices[faceIndex] = (uint32_t)vertexIndex;
                 faceIndex++;
             }
+
+            // calculate normals
+
+            Vec v[3];
+
+            for (int i = 0; i < 3; i++) {
+                v[i] = Vec(
+                    vertices[triangleVertexInices[i] * 3],
+                    vertices[triangleVertexInices[i] * 3 + 1],
+                    vertices[triangleVertexInices[i] * 3 + 2]
+                );
+            }
+
+            Vec normal = (v[1] - v[0]) ^ (v[2] - v[1]);
+
+            normal.normalize();
+
+            for (int i = 0; i < 3; i++) {
+                normals≈[triangleVertexInices[i] * 3] = normal.x;
+                normals≈[triangleVertexInices[i] * 3 + 1] = normal.y;
+                normals≈[triangleVertexInices[i] * 3 + 2] = normal.z;
+            }
+
         }
 	}
 
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    float *vertices, uint32_t *indices, int vertexOffset, int indexOffset, int & indexCount
+    float *vertices, float *normals, uint32_t *indices, int vertexOffset, int indexOffset, int & indexCount
 ) {
 
 	// std::vector<Vector3> vertices = {};
@@ -276,7 +307,7 @@ void createChunk(
 	for (int i = 0; i < segment; i++) {
 		for (int j = 0; j < segment; j++) {
 			for (int k = 0; k < segment; k++) {
-				march(i, j, k, segment, points, vertices, indices, vertexDic, index, faceIndex);
+				march(i, j, k, segment, points, vertices, normals, indices, vertexDic, index, faceIndex);
 			}
 		}
 	}
