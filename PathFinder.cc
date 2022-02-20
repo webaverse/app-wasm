@@ -9,8 +9,22 @@ using namespace physx;
 
 namespace PathFinder {
 
-void detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
-  if (*iter >= maxIter) return;
+std::vector<Voxel> voxels;
+
+std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
+
+  Voxel voxelA;
+  voxelA.position[0] = 1;
+  voxelA.position[1] = 3;
+  voxelA.position[2] = 5;
+  voxels.push_back(voxelA);
+
+  Voxel voxelB;
+  voxelB.position[0] = 2;
+  voxelB.position[1] = 4;
+  voxelB.position[2] = 6;
+
+  if (*iter >= maxIter) return voxels;
   *iter = *iter + 1;
 
   PxTransform geomPose(
@@ -89,6 +103,8 @@ void detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, f
       detectPathVoxelStep(actors, geom, position, quaternion, meshPosition, meshQuaternion, detectDir, iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
     }
   }
+
+  return voxels;
 }
 
 }
