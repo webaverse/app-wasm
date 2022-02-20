@@ -9,7 +9,27 @@ using namespace physx;
 
 namespace PathFinder {
 
+float voxelHeight = 1.5;
+float voxelHeightHalf = voxelHeight / 2;
+float heightTolerance = 0.6;
+Vector3 start;
+Vector3 dest;
+float detectStep = 0.1;
+float iterDetect = 0;
+float maxIterDetect = 1000;
+float iterStep = 0;
+float maxIterStep = 1000;
+bool allowNearest = true;
+float ignorePhysicsIds[1] = {5};
+
+std::vector<Voxel> frontiers;
+
 std::vector<Voxel> voxels;
+
+std::vector<Vector3> getPath(Vector3 start, Vector3 dest) {
+  std::vector<Vector3> waypointResult;
+  return waypointResult;
+}
 
 std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
 
