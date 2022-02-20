@@ -47,6 +47,11 @@ enum STATE_BITFIELD {
   STATE_BITFIELD_GROUNDED = 0x2,
 };
 
+class Voxel {
+  public:
+    float position[3];
+};
+
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
   std::map<unsigned int, unsigned int> stateBitfields;

@@ -1276,10 +1276,17 @@ float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, fl
   unsigned int iter = 0;
   PScene::detectPathVoxelStep(&geom, position, quaternion, meshPosition, meshQuaternion, 0, &iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
 
-  float *outputBuffer = (float *)malloc(2 * sizeof(float));
+  float *outputBuffer = (float *)malloc(4 * sizeof(float));
+
+  Voxel voxel;
+  voxel.position[0] = 3;
+  voxel.position[1] = 6;
+  voxel.position[2] = 9;
 
   outputBuffer[0] = position[1];
-  outputBuffer[1] = ignorePhysicsIds[0]; // test
+  outputBuffer[1] = voxel.position[0];
+  outputBuffer[2] = voxel.position[1];
+  outputBuffer[3] = voxel.position[2];
 
   return outputBuffer;
 }
