@@ -13,7 +13,7 @@ namespace PathFinder {
   struct Voxel {
     Vector3 position;
   };
-  std::vector<Vector3> getPath(Vector3 start, Vector3 dest);
+  std::vector<Voxel> getPath(Vector3 start, Vector3 dest);
   std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds);
 }
 

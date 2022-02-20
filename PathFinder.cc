@@ -21,14 +21,16 @@ float iterStep = 0;
 float maxIterStep = 1000;
 bool allowNearest = true;
 float ignorePhysicsIds[1] = {5};
-
+bool isFound = false;
 std::vector<Voxel> frontiers;
-
 std::vector<Voxel> voxels;
+std::vector<Voxel> waypointResult;
 
-std::vector<Vector3> getPath(Vector3 start, Vector3 dest) {
-  std::vector<Vector3> waypointResult;
-  return waypointResult;
+void reset() {
+  isFound = false;
+  frontiers.clear();
+  waypointResult.clear();
+  voxels.clear();
 }
 
 std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
@@ -126,6 +128,11 @@ std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeo
   }
 
   return voxels;
+}
+
+std::vector<Voxel> getPath(Vector3 start, Vector3 dest) {
+  reset();
+  return waypointResult;
 }
 
 }
