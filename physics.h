@@ -34,6 +34,7 @@
 #include <deque>
 #include <algorithm>
 #include <iostream>
+#include "PathFinder.h"
 
 using namespace physx;
 
@@ -73,7 +74,6 @@ public:
 
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
   void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
-  void detectPathVoxelStep(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds);
   float *detectPathVoxel(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds);
   float *overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
   float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
