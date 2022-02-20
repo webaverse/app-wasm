@@ -1195,12 +1195,15 @@ float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, fl
   unsigned int iter = 0;
   std::vector<PathFinder::Voxel> voxels = PathFinder::detectPathVoxelStep(actors, &geom, position, quaternion, meshPosition, meshQuaternion, 0, &iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
 
-  float *outputBuffer = (float *)malloc(4 * sizeof(float));
+  float *outputBuffer = (float *)malloc(7 * sizeof(float));
 
   outputBuffer[0] = position[1];
-  outputBuffer[1] = voxels[0].position[0];
-  outputBuffer[2] = voxels[0].position[1];
-  outputBuffer[3] = voxels[0].position[2];
+  outputBuffer[1] = voxels[0].position.x;
+  outputBuffer[2] = voxels[0].position.y;
+  outputBuffer[3] = voxels[0].position.z;
+  outputBuffer[4] = voxels[1].position.x;
+  outputBuffer[5] = voxels[1].position.y;
+  outputBuffer[6] = voxels[1].position.z;
 
   return outputBuffer;
 }

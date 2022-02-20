@@ -14,15 +14,16 @@ std::vector<Voxel> voxels;
 std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
 
   Voxel voxelA;
-  voxelA.position[0] = 1;
-  voxelA.position[1] = 3;
-  voxelA.position[2] = 5;
+  voxelA.position.x = 1;
+  voxelA.position.y = 3;
+  voxelA.position.z = 5;
   voxels.push_back(voxelA);
 
   Voxel voxelB;
-  voxelB.position[0] = 2;
-  voxelB.position[1] = 4;
-  voxelB.position[2] = 6;
+  voxelB.position.x = 2;
+  voxelB.position.y = 4;
+  voxelB.position.z = 6;
+  voxels.push_back(voxelB);
 
   if (*iter >= maxIter) return voxels;
   *iter = *iter + 1;
