@@ -473,8 +473,7 @@ void march(
             normal.normalize();
 
             for (int i = 0; i < 3; i++) {
-                Vector3 n = {normal.x, normal.y, normal.y};
-                normals[triangleVertexInices[i]] = n;
+                normals[triangleVertexInices[i]] = {normal.x, normal.y, normal.y};
             //     // normals[triangleVertexInices[i] * 3] = normal.x;
             //     // normals[triangleVertexInices[i] * 3 + 1] = normal.y;
             //     // normals[triangleVertexInices[i] * 3 + 2] = normal.z;
