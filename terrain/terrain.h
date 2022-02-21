@@ -15,7 +15,9 @@ namespace Terrain {
         int size;
     };
 
-	float* generateTerrain(float size, int levelCount, int maxSegment, int vertexStrideParam, int faceStrideParam);
+	float* generateTerrain(
+		float size, int levelCount, int maxSegment, int vertexBufferSizeParam, int indexBufferSizeParam
+	);
 
 	void deallocateChunk(
 	  int vetexSlot, int indexSlot, int totalChunkCount,

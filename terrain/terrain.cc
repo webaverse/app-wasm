@@ -23,21 +23,21 @@ float hardFloorWeight = 3.06;
 float noiseWeight = 6.09;
 
 float* generateTerrain(
-    float chunkSize, int chunkCount, int maxSegment, int vertexStrideParam, int faceStrideParam
+    float chunkSize, int chunkCount, int segment, int vertexBufferSizeParam, int faceBufferSizeParam
 ) {
 
     // std::vector<Vector3> vertices = {};
     // std::vector<int> indices = {};
 
-    int cellCount = chunkCount * chunkCount * maxSegment * maxSegment;
+    int cellCount = chunkCount * chunkCount * segment * segment;
 
-    int chunkMaxVertexCount = maxSegment * maxSegment * vertexStrideParam;
-    int chunkMaxIndexCount = maxSegment * maxSegment * faceStrideParam;
+    int maxVertexCount = cellCount * vertexBufferSizeParam;
+    int maxIndexCount = cellCount * faceBufferSizeParam;
 
 
-    float *vertexBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
-    float *normalBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
-    int *indexBuffer = (int*)malloc(chunkCount * chunkCount * chunkMaxIndexCount * sizeof(int));
+    float *vertexBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
+    float *normalBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
+    int *indexBuffer = (int*)malloc(maxIndexCount * sizeof(int));
     int *chunkVertexRangeBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
     int *vertexFreeRangeBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
     int *chunkIndexRangeBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
@@ -68,7 +68,7 @@ float* generateTerrain(
             createChunk(
                 origin,
                 chunkSize,
-                maxSegment,
+                segment,
                 vertices,
                 normals,
                 indices
@@ -96,10 +96,10 @@ float* generateTerrain(
     }
 
     vertexFreeRangeBuffer[0] = totalVertexCount;
-    vertexFreeRangeBuffer[1] = chunkMaxVertexCount * chunkCount * chunkCount - totalVertexCount;
+    vertexFreeRangeBuffer[1] = maxVertexCount - totalVertexCount;
 
     indexFreeRangeBuffer[0] = totalIndexCount;
-    indexFreeRangeBuffer[1] = chunkMaxIndexCount * chunkCount * chunkCount - totalIndexCount;
+    indexFreeRangeBuffer[1] = maxIndexCount - totalIndexCount;
 
     for (int i = 1; i < chunkCount * chunkCount; i++) {
         vertexFreeRangeBuffer[2 * i] = 0;
@@ -250,7 +250,7 @@ int* allocateChunk(
     vertexFreeRangeBuffer[2 * vertexFreeRangeIndex] = vertexOffset + vertices.size();
     vertexFreeRangeBuffer[2 * vertexFreeRangeIndex + 1] -= vertices.size();
 
-    // shift indices
+    // shift vertex indices
 
     for (int i = 0; i < indices.size(); i++) {
         indices[i] += vertexOffset;
