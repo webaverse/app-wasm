@@ -26,6 +26,7 @@ bool isFound = false;
 std::vector<Voxel *> frontiers;
 std::vector<Voxel *> voxels;
 std::vector<Voxel *> waypointResult;
+std::map<std::string, Voxel *> voxelo;
 Voxel localVoxel;
 Voxel *startVoxel;
 Voxel *destVoxel;
@@ -71,6 +72,17 @@ void reset() {
   frontiers.clear();
   waypointResult.clear();
   voxels.clear();
+  voxelo.clear();
+}
+
+Voxel *getVoxel(Vec position) {
+  // return voxelo[`${position.x}_${position.y}_${position.z}`];
+  return voxelo[std::to_string(position.x)+"_"+std::to_string(position.y)+"_"+std::to_string(position.z)];
+}
+
+void setVoxelo(Voxel *voxel) {
+  // voxelo[`${voxel.position.x}_${voxel.position.y}_${voxel.position.z}`] = voxel;
+  voxelo[std::to_string(voxel->position.x)+"_"+std::to_string(voxel->position.y)+"_"+std::to_string(voxel->position.z)] = voxel;
 }
 
 void detect(Voxel *voxel, int detectDir) {
@@ -174,6 +186,9 @@ Voxel *createVoxel(Vec position) { // TODO: Use pointer?
   detect(&localVoxel, 0);
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
 
+  Voxel *existingVoxel = getVoxel(localVoxel.position);
+  if(existingVoxel) return existingVoxel;
+
   // https://stackoverflow.com/a/18041130/3596736
   Voxel *voxel = (Voxel *)malloc(sizeof(Voxel));
   *voxel = Voxel();
@@ -181,6 +196,7 @@ Voxel *createVoxel(Vec position) { // TODO: Use pointer?
   resetVoxelAStar(voxel);
 
   voxel->position = localVoxel.position;
+  setVoxelo(voxel);
 
   return voxel;
 }
