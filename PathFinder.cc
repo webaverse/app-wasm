@@ -369,16 +369,20 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   // waypointResult[1].position = dest;
 
   // TEST:
-  Voxel testVoxelA;
-  testVoxelA.position.x = startVoxel._canLeft;
-  testVoxelA.position.y = startVoxel._canRight;
-  testVoxelA.position.z = startVoxel._canBtm;
-  waypointResult[0] = &testVoxelA;
-  Voxel testVoxelB;
-  testVoxelB.position.x = startVoxel._canTop;
-  testVoxelB.position.y = 3;
-  testVoxelB.position.z = 7;
-  waypointResult[1] = &testVoxelB;
+  // Voxel testVoxelA;
+  // testVoxelA.position.x = startVoxel._canLeft;
+  // testVoxelA.position.y = startVoxel._canRight;
+  // testVoxelA.position.z = startVoxel._canBtm;
+  // Voxel testVoxelB;
+  // testVoxelB.position.x = startVoxel._canTop;
+  // testVoxelB.position.y = .123;
+  // testVoxelB.position.z = waypointResult.size();
+
+  // waypointResult[0] = &testVoxelA;
+  // waypointResult[1] = &testVoxelB;
+
+  waypointResult[0] = startVoxel._leftVoxel;
+  waypointResult[1] = startVoxel._rightVoxel;
 
 
   return waypointResult;
