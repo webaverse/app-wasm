@@ -36,7 +36,7 @@ float* generateTerrain(
 
     float *vertexBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
     float *normalBuffer = (float*)malloc(chunkCount * chunkCount * chunkMaxVertexCount * 3 * sizeof(float));
-    uint32_t *faceBuffer = (uint32_t*)malloc(chunkCount * chunkCount * chunkMaxIndexCount * sizeof(uint32_t));
+    int *faceBuffer = (int*)malloc(chunkCount * chunkCount * chunkMaxIndexCount * sizeof(int));
     int *groupBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
 
     // std::vector<int> chunkGroup = {};
@@ -149,7 +149,7 @@ void density(
 
 void march(
 	int x, int y, int z, int segment,
-	const std::vector<Vector4> & points, float *vertices, float *normals, uint32_t *indices,
+	const std::vector<Vector4> & points, float *vertices, float *normals, int *indices,
 	std::map<std::string, int> & vertexDic, int & index, int & faceIndex
 ) {
 
@@ -237,7 +237,7 @@ void march(
                 triangleVertexInices[i] = vertexIndex;
 
             	// indices.push_back(vertexIndex);
-                indices[faceIndex] = (uint32_t)vertexIndex;
+                indices[faceIndex] = (int)vertexIndex;
                 faceIndex++;
             }
 
@@ -269,7 +269,7 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    float *vertices, float *normals, uint32_t *indices,
+    float *vertices, float *normals, int *indices,
     int vertexOffset, int indexOffset, int & indexCount
 ) {
 

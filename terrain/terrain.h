@@ -12,6 +12,6 @@ namespace Terrain {
 
 	void createChunk(
 		float origin[3], float chunkSize, int segment,
-    	float *vertices, float *normals, uint32_t *indices, int vertexOffset, int indexOffset, int & indexCount
+    	float *vertices, float *normals, int *indices, int vertexOffset, int indexOffset, int & indexCount
     );
 }

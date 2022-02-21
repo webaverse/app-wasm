@@ -217,7 +217,7 @@ EMSCRIPTEN_KEEPALIVE float* generateTerrain(float chunkSize, int chunkCount, int
 }
 
 EMSCRIPTEN_KEEPALIVE void updateChunk(
-  float *vertices, float *normals, uint32_t *indices, int *groups, float x, float y, float z, float chunkSize, int segment,
+  float *vertices, float *normals, int *indices, int *groups, float x, float y, float z, float chunkSize, int segment,
   int chunkIndex, int vertexOffset, int indexOffset
 ) {
   int indexCount = 0;
