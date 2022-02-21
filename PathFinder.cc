@@ -183,18 +183,18 @@ Voxel createVoxel(Vec position) {
   return voxel;
 }
 
-void setNextOfPathVoxel(Voxel voxel) {
-  // if (voxel != NULL) {
-  //   voxel._isPath = true;
-  //   if (voxel._prev) voxel._prev._next = voxel;
+void setNextOfPathVoxel(Voxel *voxel) {
+  if (voxel != NULL) {
+    (*voxel)._isPath = true;
+    if ((*voxel)._prev) (*(*voxel)._prev)._next = voxel;
 
-  //   this.setNextOfPathVoxel(voxel._prev);
-  // }
+    setNextOfPathVoxel((*voxel)._prev);
+  }
 }
 
 void found(Voxel voxel) {
   isFound = true;
-  setNextOfPathVoxel(voxel);
+  setNextOfPathVoxel(&voxel);
 
   Voxel wayPoint = startVoxel; // wayPoint: voxel
   Voxel result = wayPoint;
@@ -355,7 +355,7 @@ std::vector<Voxel> getPath(Vec _start, Vec _dest) {
   if (startVoxel.position.distanceTo(destVoxel.position) == 0) {
     found(destVoxel);
   } else {
-    // untilFound();
+    untilFound();
     // if (isFound) {
     //   interpoWaypointResult();
     //   simplifyWaypointResult(waypointResult[0]);
@@ -368,7 +368,18 @@ std::vector<Voxel> getPath(Vec _start, Vec _dest) {
   // waypointResult.push_back(Voxel());
   // waypointResult[1].position = dest;
 
+  // TEST:
+  Voxel testVoxelA;
+  testVoxelA.position.x = waypointResult.size();
+  testVoxelA.position.y = iterStep;
+  testVoxelA.position.z = frontiers.size();
+
+  waypointResult[0] = testVoxelA;
+
+
   return waypointResult;
+  // return waypointResult.size();
+  // return iterStep;
   // return isFound ? waypointResult : NULL;
 }
 
