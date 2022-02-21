@@ -256,14 +256,4 @@ EMSCRIPTEN_KEEPALIVE int* allocateChunk(
   );
 }
 
-EMSCRIPTEN_KEEPALIVE void updateChunk(
-  float *vertices, float *normals, int *indices, int *groups, float x, float y, float z, float chunkSize, int segment,
-  int chunkIndex, int vertexOffset, int indexOffset
-) {
-  // int indexCount = 0;
-  // float origin[3] = {x, y, z};
-  // Terrain::createChunk(origin, chunkSize, segment, vertices, normals, indices, vertexOffset, indexOffset, indexCount);
-  // groups[chunkIndex * 2 + 1] = indexCount;
-}
-
 } // extern "C"
