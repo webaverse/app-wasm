@@ -392,7 +392,7 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   Voxel testVoxelA;
   testVoxelA.position.x = frontiers.size();
   testVoxelA.position.y = iterStep;
-  testVoxelA.position.z = startVoxel->_canBtm;
+  testVoxelA.position.z = waypointResult.size();
   Voxel testVoxelB;
   testVoxelB.position.x = startVoxel->_canTop;
   testVoxelB.position.y = startVoxel->_btmVoxel == startVoxel->_topVoxel;
