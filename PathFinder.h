@@ -12,26 +12,26 @@ namespace PathFinder {
 	// };
   struct Voxel {
     Vec position;
-    bool _isStart;
-    bool _isDest;
-    bool _isReached;
-    float _priority;
-    float _costSoFar;
-    Voxel *_prev;
-    Voxel *_next;
-    Voxel *_leftVoxel;
-    Voxel *_rightVoxel;
-    Voxel *_btmVoxel;
-    Voxel *_topVoxel;
-    bool _canLeft;
-    bool _canRight;
-    bool _canBtm;
-    bool _canTop;
-    bool _isPath;
-    bool _isFrontier;
+    bool _isStart = false;
+    bool _isDest = false;
+    bool _isReached = false;
+    float _priority = 0;
+    float _costSoFar = 0;
+    Voxel *_prev = NULL;
+    Voxel *_next = NULL;
+    Voxel *_leftVoxel = NULL;
+    Voxel *_rightVoxel = NULL;
+    Voxel *_btmVoxel = NULL;
+    Voxel *_topVoxel = NULL;
+    bool _canLeft = false;
+    bool _canRight = false;
+    bool _canBtm = false;
+    bool _canTop = false;
+    bool _isPath = false;
+    bool _isFrontier = false;
   };
   void init(std::vector<PxRigidActor *> _actors, float hx, float hy, float hz, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, unsigned int _maxIterDetect, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
-  std::vector<Voxel> getPath(Vec start, Vec dest);
+  std::vector<Voxel *> getPath(Vec start, Vec dest);
 }
 
 #endif
