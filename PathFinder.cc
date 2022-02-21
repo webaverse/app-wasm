@@ -37,6 +37,8 @@ float meshQuaternion[4];
 unsigned int const numIgnorePhysicsIds = 1;
 unsigned int ignorePhysicsIds[numIgnorePhysicsIds];
 
+Vec localVector;
+
 void init(std::vector<PxRigidActor *> _actors, float hx, float hy, float hz, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, unsigned int _maxIterDetect, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
 
@@ -207,6 +209,95 @@ void found(Voxel voxel) {
     // result._next->_prev = &result;
 
     result = *result._next;
+  }
+}
+
+void generateVoxelMapLeft(Voxel currentVoxel) {
+  localVector = currentVoxel.position;
+  localVector.x += -1;
+  Voxel leftVoxel = createVoxel(localVector);
+  currentVoxel._leftVoxel = &leftVoxel;
+  if (leftVoxel.position.y - currentVoxel.position.y < heightTolerance) {
+    currentVoxel._canLeft = true;
+  }
+}
+
+void generateVoxelMapRight(Voxel currentVoxel) {
+  localVector = currentVoxel.position;
+  localVector.x += 1;
+  Voxel rightVoxel = createVoxel(localVector);
+  currentVoxel._rightVoxel = &rightVoxel;
+  if (rightVoxel.position.y - currentVoxel.position.y < heightTolerance) {
+    currentVoxel._canRight = true;
+  }
+}
+
+void generateVoxelMapBtm(Voxel currentVoxel) {
+  localVector = currentVoxel.position;
+  localVector.z += -1;
+  Voxel btmVoxel = createVoxel(localVector);
+  currentVoxel._btmVoxel = &btmVoxel;
+  if (btmVoxel.position.y - currentVoxel.position.y < heightTolerance) {
+    currentVoxel._canBtm = true;
+  }
+}
+
+void generateVoxelMapTop(Voxel currentVoxel) {
+  localVector = currentVoxel.position;
+  localVector.z += 1;
+  Voxel topVoxel = createVoxel(localVector);
+  currentVoxel._topVoxel = &topVoxel;
+  if (topVoxel.position.y - currentVoxel.position.y < heightTolerance) {
+    currentVoxel._canTop = true;
+  }
+}
+
+void step() {
+  if (frontiers.size() <= 0) {
+    // if (debugRender) console.log('finish');
+    return;
+  }
+  if (isFound) return;
+
+  Voxel currentVoxel = frontiers[0];
+  frontiers.erase(frontiers.begin()); // shift
+  currentVoxel._isFrontier = false;
+
+  if (!currentVoxel._leftVoxel) generateVoxelMapLeft(currentVoxel);
+  if (currentVoxel._canLeft) {
+    stepVoxel(currentVoxel._leftVoxel, currentVoxel);
+    if (isFound) return;
+  }
+
+  if (!currentVoxel._rightVoxel) generateVoxelMapRight(currentVoxel);
+  if (currentVoxel._canRight) {
+    stepVoxel(currentVoxel._rightVoxel, currentVoxel);
+    if (isFound) return;
+  }
+
+  if (!currentVoxel._btmVoxel) generateVoxelMapBtm(currentVoxel);
+  if (currentVoxel._canBtm) {
+    stepVoxel(currentVoxel._btmVoxel, currentVoxel);
+    if (isFound) return;
+  }
+
+  if (!currentVoxel._topVoxel) generateVoxelMapTop(currentVoxel);
+  if (currentVoxel._canTop) {
+    stepVoxel(currentVoxel._topVoxel, currentVoxel);
+    // if (isFound) return
+  }
+}
+
+void untilFound() {
+  iterStep = 0;
+  while (frontiers.size() > 0 && !isFound) {
+    if (iterStep >= maxIterStep) {
+      // console.log('maxIterDetect: untilFound');
+      return;
+    }
+    iterStep++;
+
+    step();
   }
 }
 

@@ -17,8 +17,16 @@ namespace PathFinder {
     bool _isReached;
     float _priority;
     float _costSoFar;
-    PathFinder::Voxel *_prev;
-    PathFinder::Voxel *_next;
+    Voxel *_prev;
+    Voxel *_next;
+    Voxel *_leftVoxel;
+    Voxel *_rightVoxel;
+    Voxel *_btmVoxel;
+    Voxel *_topVoxel;
+    bool _canLeft;
+    bool _canRight;
+    bool _canBtm;
+    bool _canTop;
     bool _isPath;
     bool _isFrontier;
   };
