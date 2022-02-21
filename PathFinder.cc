@@ -279,46 +279,47 @@ void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
     // prevVoxel._next = voxel; // Can't assign _next here, because one voxel will has multiple _next. Need use `setNextOfPathVoxel()`.
 
     // if (voxel->_isDest) {
-    if (voxel->position.distanceTo(dest) == 0) { // TODO: PERFORMANCE: distanceToSq, or overload ==, or compare separately.
+    // if (voxel->position.distanceTo(dest) == 0) { // TODO: PERFORMANCE: distanceToSq, or overload ==, or compare separately.
+    if(voxel->position.x == dest.x && voxel->position.z == dest.z) { // TEST
       found(voxel);
     }
   }
 }
 
 void step() {
-  // if (frontiers.size() <= 0) {
-  //   // if (debugRender) console.log('finish');
-  //   return;
-  // }
-  // if (isFound) return;
+  if (frontiers.size() <= 0) {
+    // if (debugRender) console.log('finish');
+    return;
+  }
+  if (isFound) return;
 
   Voxel *currentVoxel = frontiers[0];
   frontiers.erase(frontiers.begin()); // shift
   currentVoxel->_isFrontier = false;
 
   if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
-  // if (currentVoxel->_canLeft) {
-  //   stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
-  //   // if (isFound) return;
-  // }
+  if (currentVoxel->_canLeft) {
+    stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
+    if (isFound) return;
+  }
 
   if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
-  // if (currentVoxel->_canRight) {
-  //   stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
-  //   // if (isFound) return;
-  // }
+  if (currentVoxel->_canRight) {
+    stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
+    if (isFound) return;
+  }
 
   if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
-  // if (currentVoxel->_canBtm) {
-  //   stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
-  //   // if (isFound) return;
-  // }
+  if (currentVoxel->_canBtm) {
+    stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
+    if (isFound) return;
+  }
 
   if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
-  // if (currentVoxel->_canTop) {
-  //   stepVoxel(currentVoxel->_topVoxel, currentVoxel);
-  //   // if (isFound) return
-  // }
+  if (currentVoxel->_canTop) {
+    stepVoxel(currentVoxel->_topVoxel, currentVoxel);
+    // if (isFound) return
+  }
 }
 
 void untilFound() {
@@ -354,18 +355,18 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   destVoxel = createVoxel(dest);
   destVoxel->_isDest = true;
 
-  step();
-  // if (startVoxel == destVoxel) {
-  //   found(destVoxel);
-  // } else {
-  //   // untilFound();
-  //   // if (isFound) {
-  //   //   interpoWaypointResult();
-  //   //   simplifyWaypointResult(waypointResult[0]);
-  //   //   waypointResult.shift();
-  //   // }
-  //   // console.log('waypointResult', waypointResult.length);
-  // }
+  // step();
+  if (startVoxel == destVoxel) {
+    found(destVoxel);
+  } else {
+    untilFound();
+    // if (isFound) {
+    //   interpoWaypointResult();
+    //   simplifyWaypointResult(waypointResult[0]);
+    //   waypointResult.shift();
+    // }
+    // console.log('waypointResult', waypointResult.length);
+  }
 
   // waypointResult.push_back(destVoxel);
   // waypointResult.push_back(Voxel());
@@ -373,8 +374,8 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
 
   // TEST:
   Voxel testVoxelA;
-  testVoxelA.position.x = startVoxel->_canLeft;
-  testVoxelA.position.y = startVoxel->_canRight;
+  testVoxelA.position.x = frontiers.size();
+  testVoxelA.position.y = iterStep;
   testVoxelA.position.z = startVoxel->_canBtm;
   Voxel testVoxelB;
   testVoxelB.position.x = startVoxel->_canTop;
