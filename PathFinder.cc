@@ -189,8 +189,7 @@ Voxel *createVoxel(Vec position) { // TODO: Use pointer?
   Voxel *existingVoxel = getVoxel(localVoxel.position);
   if(existingVoxel) return existingVoxel;
 
-  // https://stackoverflow.com/a/18041130/3596736
-  Voxel *voxel = (Voxel *)malloc(sizeof(Voxel));
+  Voxel *voxel = (Voxel *)malloc(sizeof(Voxel)); // https://stackoverflow.com/a/18041130/3596736
   *voxel = Voxel();
   voxels.push_back(voxel);
   resetVoxelAStar(voxel);
@@ -215,18 +214,19 @@ void found(Voxel *voxel) {
   setNextOfPathVoxel(voxel);
 
   Voxel wayPoint = *startVoxel; // wayPoint: voxel
-  Voxel result = wayPoint;
-  waypointResult.push_back(&result);
+  Voxel *result = (Voxel *)malloc(sizeof(Voxel)); // https://stackoverflow.com/a/18041130/3596736
+  *result = wayPoint; // TODO: Directly = *startVoxel;
+  waypointResult.push_back(result);
   while (wayPoint._next) {
     wayPoint = *wayPoint._next;
 
-    result._next = &wayPoint;
-    waypointResult.push_back(result._next);
+    result->_next = (Voxel *)malloc(sizeof(Voxel)); // https://stackoverflow.com/a/18041130/3596736
+    *result->_next = wayPoint;
+    waypointResult.push_back(result->_next);
 
-    result._next->_prev = &result;
-    // result._next->_prev = &result;
+    result->_next->_prev = result;
 
-    result = *result._next;
+    result = result->_next;
   }
 }
 
@@ -388,21 +388,21 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   // waypointResult.push_back(Voxel());
   // waypointResult[1].position = dest;
 
-  // TEST:
-  Voxel testVoxelA;
-  testVoxelA.position.x = frontiers.size();
-  testVoxelA.position.y = iterStep;
-  testVoxelA.position.z = waypointResult.size();
-  Voxel testVoxelB;
-  testVoxelB.position.x = startVoxel->_canTop;
-  testVoxelB.position.y = startVoxel->_btmVoxel == startVoxel->_topVoxel;
-  testVoxelB.position.z = frontiers.size();
+  // // TEST:
+  // Voxel testVoxelA;
+  // testVoxelA.position.x = frontiers.size();
+  // testVoxelA.position.y = iterStep;
+  // testVoxelA.position.z = waypointResult.size();
+  // Voxel testVoxelB;
+  // testVoxelB.position.x = startVoxel->_canTop;
+  // testVoxelB.position.y = startVoxel->_btmVoxel == startVoxel->_topVoxel;
+  // testVoxelB.position.z = frontiers.size();
 
-  waypointResult[0] = &testVoxelA;
-  waypointResult[1] = &testVoxelB;
+  // waypointResult[0] = &testVoxelA;
+  // waypointResult[1] = &testVoxelB;
 
-  waypointResult[2] = startVoxel->_btmVoxel;
-  waypointResult[3] = startVoxel->_topVoxel;
+  // waypointResult[2] = startVoxel->_btmVoxel;
+  // waypointResult[3] = startVoxel->_topVoxel;
 
 
   return waypointResult;
