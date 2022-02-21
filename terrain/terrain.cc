@@ -41,6 +41,9 @@ float* generateTerrain(
 
     // std::vector<int> chunkGroup = {};
 
+    int totalVertexCount = 0;
+    int totalIndexCount = 0;
+
     for (int i = 0; i < chunkCount; i++) {
         for (int j = 0; j < chunkCount; j++) {
             float origin[3] = {
@@ -49,26 +52,41 @@ float* generateTerrain(
                 (float)(j - chunkCount / 2) * chunkSize
             };
 
-            // int groupStart = indices.size();
             // chunkGroup.push_back(groupStart);
             int chunkIndex = i * chunkCount + j;
 
             int indexCount = 0;
 
+            std::vector<Vector3> vertices = {};
+            std::vector<Vector3> normals = {};
+            std::vector<int> indices = {};
+
+            // int groupStart = totalIndexCount;
+
             createChunk(
                 origin,
                 chunkSize,
                 maxSegment,
-                vertexBuffer,
-                normalBuffer,
-                faceBuffer,
-                chunkIndex * chunkMaxVertexCount,
-                chunkIndex * chunkMaxIndexCount,
+                vertices,
+                normals,
+                indices,
+                totalVertexCount,
+                totalIndexCount,
                 indexCount
             );
 
-            groupBuffer[chunkIndex * 2] = chunkIndex * chunkMaxIndexCount;
+            memcpy(vertexBuffer + totalVertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
+            memcpy(normalBuffer + totalVertexCount * 3, &(normals.front()), normals.size() * sizeof(Vector3));
+            memcpy(faceBuffer + totalIndexCount, &(indices.front()), indices.size() * sizeof(int));
+
+            groupBuffer[chunkIndex * 2] = totalIndexCount;
             groupBuffer[chunkIndex * 2 + 1] = indexCount;
+
+            totalVertexCount += vertices.size();
+            totalIndexCount += indices.size();
+
+            printf(">>> vertices size: %lu\n", vertices.size());
+            printf(">>> normal size: %lu\n", normals.size());
 
             // chunkGroup.push_back(indices.size() - groupStart);
         }
@@ -149,8 +167,9 @@ void density(
 
 void march(
 	int x, int y, int z, int segment,
-	const std::vector<Vector4> & points, float *vertices, float *normals, int *indices,
-	std::map<std::string, int> & vertexDic, int & index, int & faceIndex
+	const std::vector<Vector4> & points,
+    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices,
+	std::map<std::string, int> & vertexDic, const int vertexOffset, int & index, int & faceIndex
 ) {
 
 		// 8 corners of the current cube
@@ -226,30 +245,32 @@ void march(
             		vP = interpolateVerts(cubeCorners[v[0]], cubeCorners[v[1]]);
             		vertexIndex = index;
             		vertexDic[vInx] = vertexIndex;
-            		// vertices.push_back(vP);
-                    vertices[index * 3] = vP.x;
-                    vertices[index * 3 + 1] = vP.y;
-                    vertices[index * 3 + 2] = vP.z;
+            		vertices.push_back(vP);
+                    // vertices[index * 3] = vP.x;
+                    // vertices[index * 3 + 1] = vP.y;
+                    // vertices[index * 3 + 2] = vP.z;
 
                     index++;
             	}
 
                 triangleVertexInices[i] = vertexIndex;
 
-            	// indices.push_back(vertexIndex);
-                indices[faceIndex] = (int)vertexIndex;
+            	indices.push_back(vertexIndex);
+                // indices[faceIndex] = vertexIndex;
                 faceIndex++;
             }
 
             // calculate normals
 
+            normals.resize(vertices.size());
+
             Vec v[3];
 
             for (int i = 0; i < 3; i++) {
                 v[i] = Vec(
-                    vertices[triangleVertexInices[i] * 3],
-                    vertices[triangleVertexInices[i] * 3 + 1],
-                    vertices[triangleVertexInices[i] * 3 + 2]
+                    vertices[triangleVertexInices[i] * 3].x,
+                    vertices[triangleVertexInices[i] * 3].y,
+                    vertices[triangleVertexInices[i] * 3].z
                 );
             }
 
@@ -258,9 +279,11 @@ void march(
             normal.normalize();
 
             for (int i = 0; i < 3; i++) {
-                normals[triangleVertexInices[i] * 3] = normal.x;
-                normals[triangleVertexInices[i] * 3 + 1] = normal.y;
-                normals[triangleVertexInices[i] * 3 + 2] = normal.z;
+                Vector3 n = {normal.x, normal.y, normal.y};
+                normals[triangleVertexInices[i] - vertexOffset] = n;
+            //     // normals[triangleVertexInices[i] * 3] = normal.x;
+            //     // normals[triangleVertexInices[i] * 3 + 1] = normal.y;
+            //     // normals[triangleVertexInices[i] * 3 + 2] = normal.z;
             }
 
         }
@@ -269,12 +292,10 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    float *vertices, float *normals, int *indices,
+    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices,
     int vertexOffset, int indexOffset, int & indexCount
 ) {
 
-	// std::vector<Vector3> vertices = {};
-	// std::vector<int> indices = {};
 	std::vector<Vector4> points = {};
 	std::map<std::string, int> vertexDic;
 
@@ -300,7 +321,7 @@ void createChunk(
 	for (int i = 0; i < segment; i++) {
 		for (int j = 0; j < segment; j++) {
 			for (int k = 0; k < segment; k++) {
-				march(i, j, k, segment, points, vertices, normals, indices, vertexDic, index, faceIndex);
+				march(i, j, k, segment, points, vertices, normals, indices, vertexDic, vertexOffset, index, faceIndex);
 			}
 		}
 	}

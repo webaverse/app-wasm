@@ -1,3 +1,5 @@
+#include <vector>
+
 namespace Terrain {
 
 	struct Vector3 {
@@ -12,6 +14,7 @@ namespace Terrain {
 
 	void createChunk(
 		float origin[3], float chunkSize, int segment,
-    	float *vertices, float *normals, int *indices, int vertexOffset, int indexOffset, int & indexCount
+    	std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices,
+    	int vertexOffset, int indexOffset, int & indexCount
     );
 }
