@@ -55,8 +55,6 @@ float* generateTerrain(
             // chunkGroup.push_back(groupStart);
             int chunkIndex = i * chunkCount + j;
 
-            int indexCount = 0;
-
             std::vector<Vector3> vertices = {};
             std::vector<Vector3> normals = {};
             std::vector<int> indices = {};
@@ -69,18 +67,19 @@ float* generateTerrain(
                 maxSegment,
                 vertices,
                 normals,
-                indices,
-                totalVertexCount,
-                totalIndexCount,
-                indexCount
+                indices
             );
+
+            for (int i = 0; i < indices.size(); i++) {
+                indices[i] += totalVertexCount;
+            }
 
             memcpy(vertexBuffer + totalVertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
             memcpy(normalBuffer + totalVertexCount * 3, &(normals.front()), normals.size() * sizeof(Vector3));
             memcpy(faceBuffer + totalIndexCount, &(indices.front()), indices.size() * sizeof(int));
 
             groupBuffer[chunkIndex * 2] = totalIndexCount;
-            groupBuffer[chunkIndex * 2 + 1] = indexCount;
+            groupBuffer[chunkIndex * 2 + 1] = indices.size();
 
             totalVertexCount += vertices.size();
             totalIndexCount += indices.size();
@@ -169,7 +168,7 @@ void march(
 	int x, int y, int z, int segment,
 	const std::vector<Vector4> & points,
     std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices,
-	std::map<std::string, int> & vertexDic, const int vertexOffset, int & index, int & faceIndex
+	std::map<std::string, int> & vertexDic, int & index
 ) {
 
 		// 8 corners of the current cube
@@ -257,7 +256,6 @@ void march(
 
             	indices.push_back(vertexIndex);
                 // indices[faceIndex] = vertexIndex;
-                faceIndex++;
             }
 
             // calculate normals
@@ -268,9 +266,9 @@ void march(
 
             for (int i = 0; i < 3; i++) {
                 v[i] = Vec(
-                    vertices[triangleVertexInices[i] * 3].x,
-                    vertices[triangleVertexInices[i] * 3].y,
-                    vertices[triangleVertexInices[i] * 3].z
+                    vertices[triangleVertexInices[i]].x,
+                    vertices[triangleVertexInices[i]].y,
+                    vertices[triangleVertexInices[i]].z
                 );
             }
 
@@ -280,7 +278,7 @@ void march(
 
             for (int i = 0; i < 3; i++) {
                 Vector3 n = {normal.x, normal.y, normal.y};
-                normals[triangleVertexInices[i] - vertexOffset] = n;
+                normals[triangleVertexInices[i]] = n;
             //     // normals[triangleVertexInices[i] * 3] = normal.x;
             //     // normals[triangleVertexInices[i] * 3 + 1] = normal.y;
             //     // normals[triangleVertexInices[i] * 3 + 2] = normal.z;
@@ -292,8 +290,7 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices,
-    int vertexOffset, int indexOffset, int & indexCount
+    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices
 ) {
 
 	std::vector<Vector4> points = {};
@@ -301,8 +298,7 @@ void createChunk(
 
 	float unitSize = chunkSize / (float)segment;
 	Vector3 originPos{origin[0], origin[1], origin[2]};
-	int index = vertexOffset;
-    int faceIndex = indexOffset;
+	int index = 0;
 
 	points.resize((int)pow(segment + 1, 3));
 
@@ -321,12 +317,10 @@ void createChunk(
 	for (int i = 0; i < segment; i++) {
 		for (int j = 0; j < segment; j++) {
 			for (int k = 0; k < segment; k++) {
-				march(i, j, k, segment, points, vertices, normals, indices, vertexDic, vertexOffset, index, faceIndex);
+				march(i, j, k, segment, points, vertices, normals, indices, vertexDic, index);
 			}
 		}
 	}
-
-    indexCount = faceIndex - indexOffset;
 }
 
 }  // Terrain namespace
