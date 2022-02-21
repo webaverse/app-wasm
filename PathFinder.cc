@@ -252,6 +252,37 @@ void generateVoxelMapTop(Voxel currentVoxel) {
   }
 }
 
+bool compareVoxelPriority(Voxel a, Voxel b) {
+  return (a._priority < b._priority);
+}
+
+void stepVoxel(Voxel voxel, Voxel prevVoxel) {
+  float newCost = prevVoxel._costSoFar + 1;
+  // if (voxel._isReached === false || newCost < voxel._costSoFar) {
+  if (voxel._isReached == false) {
+    // Seems no need `|| newCost < voxel._costSoFar` ? Need? http://disq.us/p/2mgpazs
+    voxel._isReached = true;
+    voxel._costSoFar = newCost;
+
+    // voxel._priority = tmpVec2.set(voxel._x, voxel._z).manhattanDistanceTo(dest)
+    // voxel._priority = tmpVec2.set(voxel._x, voxel._z).distanceToSquared(dest)
+    voxel._priority = voxel.position.distanceTo(dest);
+    voxel._priority += newCost;
+    frontiers.push_back(voxel);
+    // frontiers.sort((a, b) => a._priority - b._priority);
+    sort(frontiers.begin(), frontiers.end(), compareVoxelPriority);
+
+    voxel._isFrontier = true;
+    voxel._prev = &prevVoxel;
+    // prevVoxel._next = voxel; // Can't assign _next here, because one voxel will has multiple _next. Need use `setNextOfPathVoxel()`.
+
+    // if (voxel._isDest) {
+    if (voxel.position.distanceTo(dest) == 0) { // TODO: PERFORMANCE: distanceToSq, or overload ==, or compare separately.
+      found(voxel);
+    }
+  }
+}
+
 void step() {
   if (frontiers.size() <= 0) {
     // if (debugRender) console.log('finish');
@@ -265,25 +296,25 @@ void step() {
 
   if (!currentVoxel._leftVoxel) generateVoxelMapLeft(currentVoxel);
   if (currentVoxel._canLeft) {
-    stepVoxel(currentVoxel._leftVoxel, currentVoxel);
+    stepVoxel(*currentVoxel._leftVoxel, currentVoxel);
     if (isFound) return;
   }
 
   if (!currentVoxel._rightVoxel) generateVoxelMapRight(currentVoxel);
   if (currentVoxel._canRight) {
-    stepVoxel(currentVoxel._rightVoxel, currentVoxel);
+    stepVoxel(*currentVoxel._rightVoxel, currentVoxel);
     if (isFound) return;
   }
 
   if (!currentVoxel._btmVoxel) generateVoxelMapBtm(currentVoxel);
   if (currentVoxel._canBtm) {
-    stepVoxel(currentVoxel._btmVoxel, currentVoxel);
+    stepVoxel(*currentVoxel._btmVoxel, currentVoxel);
     if (isFound) return;
   }
 
   if (!currentVoxel._topVoxel) generateVoxelMapTop(currentVoxel);
   if (currentVoxel._canTop) {
-    stepVoxel(currentVoxel._topVoxel, currentVoxel);
+    stepVoxel(*currentVoxel._topVoxel, currentVoxel);
     // if (isFound) return
   }
 }
