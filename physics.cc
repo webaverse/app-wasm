@@ -1198,15 +1198,23 @@ float *PScene::detectPathVoxel(float *_start, float *_dest, float hx, float hy, 
   Vec dest(_dest[0], _dest[1], _dest[2]);
   std::vector<PathFinder::Voxel *> voxels = PathFinder::getPath(start, dest);
 
-  float *outputBuffer = (float *)malloc(7 * sizeof(float));
+  float *outputBuffer = (float *)malloc(12 * 3 * sizeof(float)); // TODO: Don't * 3;
 
-  outputBuffer[0] = position[1];
-  outputBuffer[1] = voxels[0]->position.x;
-  outputBuffer[2] = voxels[0]->position.y;
-  outputBuffer[3] = voxels[0]->position.z;
-  outputBuffer[4] = voxels[1]->position.x;
-  outputBuffer[5] = voxels[1]->position.y;
-  outputBuffer[6] = voxels[1]->position.z;
+  outputBuffer[0] = voxels[0]->position.x;
+  outputBuffer[1] = voxels[0]->position.y;
+  outputBuffer[2] = voxels[0]->position.z;
+
+  outputBuffer[3] = voxels[1]->position.x;
+  outputBuffer[4] = voxels[1]->position.y;
+  outputBuffer[5] = voxels[1]->position.z;
+
+  outputBuffer[6] = voxels[2]->position.x;
+  outputBuffer[7] = voxels[2]->position.y;
+  outputBuffer[8] = voxels[2]->position.z;
+  
+  outputBuffer[9] = voxels[3]->position.x;
+  outputBuffer[10] = voxels[3]->position.y;
+  outputBuffer[11] = voxels[3]->position.z;
 
   return outputBuffer;
 }

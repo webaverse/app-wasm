@@ -27,8 +27,8 @@ std::vector<Voxel *> frontiers;
 std::vector<Voxel *> voxels;
 std::vector<Voxel *> waypointResult;
 Voxel localVoxel;
-Voxel *startVoxel;
-Voxel *destVoxel;
+Voxel startVoxel;
+Voxel destVoxel;
 PxBoxGeometry geom;
 float position[3];
 float quaternion[4];
@@ -167,7 +167,7 @@ void resetVoxelAStar(Voxel *voxel) {
   voxel->_isFrontier = false;
 }
 
-Voxel *createVoxel(Vec position) { // TODO: Use pointer?
+Voxel createVoxel(Vec position) { // TODO: Use pointer?
   localVoxel.position = position;
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
   iterDetect = 0;
@@ -180,7 +180,7 @@ Voxel *createVoxel(Vec position) { // TODO: Use pointer?
 
   voxel.position = localVoxel.position;
 
-  return &voxel;
+  return voxel;
 }
 
 void setNextOfPathVoxel(Voxel *voxel) {
@@ -196,7 +196,7 @@ void found(Voxel *voxel) {
   isFound = true;
   setNextOfPathVoxel(voxel);
 
-  Voxel wayPoint = *startVoxel; // wayPoint: voxel
+  Voxel wayPoint = startVoxel; // wayPoint: voxel
   Voxel result = wayPoint;
   waypointResult.push_back(&result);
   while (wayPoint._next) {
@@ -215,9 +215,9 @@ void found(Voxel *voxel) {
 void generateVoxelMapLeft(Voxel *currentVoxel) {
   localVector = currentVoxel->position;
   localVector.x += -1;
-  Voxel *leftVoxel = createVoxel(localVector);
-  currentVoxel->_leftVoxel = leftVoxel;
-  if (leftVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+  Voxel leftVoxel = createVoxel(localVector);
+  currentVoxel->_leftVoxel = &leftVoxel;
+  if (leftVoxel.position.y - currentVoxel->position.y < heightTolerance) {
     currentVoxel->_canLeft = true;
   }
 }
@@ -225,9 +225,9 @@ void generateVoxelMapLeft(Voxel *currentVoxel) {
 void generateVoxelMapRight(Voxel *currentVoxel) {
   localVector = currentVoxel->position;
   localVector.x += 1;
-  Voxel *rightVoxel = createVoxel(localVector);
-  currentVoxel->_rightVoxel = rightVoxel;
-  if (rightVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+  Voxel rightVoxel = createVoxel(localVector);
+  currentVoxel->_rightVoxel = &rightVoxel;
+  if (rightVoxel.position.y - currentVoxel->position.y < heightTolerance) {
     currentVoxel->_canRight = true;
   }
 }
@@ -235,9 +235,9 @@ void generateVoxelMapRight(Voxel *currentVoxel) {
 void generateVoxelMapBtm(Voxel *currentVoxel) {
   localVector = currentVoxel->position;
   localVector.z += -1;
-  Voxel *btmVoxel = createVoxel(localVector);
-  currentVoxel->_btmVoxel = btmVoxel;
-  if (btmVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+  Voxel btmVoxel = createVoxel(localVector);
+  currentVoxel->_btmVoxel = &btmVoxel;
+  if (btmVoxel.position.y - currentVoxel->position.y < heightTolerance) {
     currentVoxel->_canBtm = true;
   }
 }
@@ -245,9 +245,9 @@ void generateVoxelMapBtm(Voxel *currentVoxel) {
 void generateVoxelMapTop(Voxel *currentVoxel) {
   localVector = currentVoxel->position;
   localVector.z += 1;
-  Voxel *topVoxel = createVoxel(localVector);
-  currentVoxel->_topVoxel = topVoxel;
-  if (topVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+  Voxel topVoxel = createVoxel(localVector);
+  currentVoxel->_topVoxel = &topVoxel;
+  if (topVoxel.position.y - currentVoxel->position.y < heightTolerance) {
     currentVoxel->_canTop = true;
   }
 }
@@ -284,11 +284,11 @@ void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
 }
 
 void step() {
-  if (frontiers.size() <= 0) {
-    // if (debugRender) console.log('finish');
-    return;
-  }
-  if (isFound) return;
+  // if (frontiers.size() <= 0) {
+  //   // if (debugRender) console.log('finish');
+  //   return;
+  // }
+  // if (isFound) return;
 
   Voxel *currentVoxel = frontiers[0];
   frontiers.erase(frontiers.begin()); // shift
@@ -297,19 +297,19 @@ void step() {
   if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
   if (currentVoxel->_canLeft) {
     stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
-    if (isFound) return;
+    // if (isFound) return;
   }
 
   if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
   if (currentVoxel->_canRight) {
     stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
-    if (isFound) return;
+    // if (isFound) return;
   }
 
   if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
   if (currentVoxel->_canBtm) {
     stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
-    if (isFound) return;
+    // if (isFound) return;
   }
 
   if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
@@ -343,46 +343,47 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   dest.z = std::round(_dest.z);
 
   startVoxel = createVoxel(start);
-  startVoxel->_isStart = true;
-  startVoxel->_isReached = true;
-  startVoxel->_priority = start.distanceTo(dest);
-  startVoxel->_costSoFar = 0;
-  frontiers.push_back(startVoxel);
+  startVoxel._isStart = true;
+  startVoxel._isReached = true;
+  startVoxel._priority = start.distanceTo(dest);
+  startVoxel._costSoFar = 0;
+  frontiers.push_back(&startVoxel);
 
   destVoxel = createVoxel(dest);
-  destVoxel->_isDest = true;
+  destVoxel._isDest = true;
 
-  if (startVoxel == destVoxel) {
-    found(destVoxel);
-  } else {
-    untilFound();
-    // if (isFound) {
-    //   interpoWaypointResult();
-    //   simplifyWaypointResult(waypointResult[0]);
-    //   waypointResult.shift();
-    // }
-    // console.log('waypointResult', waypointResult.length);
-  }
+  step();
+  // if (startVoxel == destVoxel) {
+  //   found(destVoxel);
+  // } else {
+  //   // untilFound();
+  //   // if (isFound) {
+  //   //   interpoWaypointResult();
+  //   //   simplifyWaypointResult(waypointResult[0]);
+  //   //   waypointResult.shift();
+  //   // }
+  //   // console.log('waypointResult', waypointResult.length);
+  // }
 
   // waypointResult.push_back(destVoxel);
   // waypointResult.push_back(Voxel());
   // waypointResult[1].position = dest;
 
   // TEST:
-  // Voxel testVoxelA;
-  // testVoxelA.position.x = startVoxel->_canLeft;
-  // testVoxelA.position.y = startVoxel->_canRight;
-  // testVoxelA.position.z = startVoxel->_canBtm;
-  // Voxel testVoxelB;
-  // testVoxelB.position.x = startVoxel->_canTop;
-  // testVoxelB.position.y = .123;
-  // testVoxelB.position.z = waypointResult.size();
+  Voxel testVoxelA;
+  testVoxelA.position.x = startVoxel._canLeft;
+  testVoxelA.position.y = startVoxel._canRight;
+  testVoxelA.position.z = startVoxel._canBtm;
+  Voxel testVoxelB;
+  testVoxelB.position.x = startVoxel._canTop;
+  testVoxelB.position.y = .123;
+  testVoxelB.position.z = waypointResult.size();
 
-  // waypointResult[0] = &testVoxelA;
-  // waypointResult[1] = &testVoxelB;
+  waypointResult[0] = &testVoxelA;
+  waypointResult[1] = &testVoxelB;
 
-  waypointResult[0] = startVoxel->_leftVoxel;
-  waypointResult[1] = startVoxel->_rightVoxel;
+  waypointResult[2] = startVoxel._btmVoxel;
+  waypointResult[3] = startVoxel._topVoxel;
 
 
   return waypointResult;
