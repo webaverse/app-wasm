@@ -79,7 +79,7 @@ void detect(Voxel *voxel, int detectDir) {
   iterDetect = iterDetect + 1;
 
   PxTransform geomPose(
-    PxVec3{(*voxel).position.x, (*voxel).position.y, (*voxel).position.z},
+    PxVec3{voxel->position.x, voxel->position.y, voxel->position.z},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
   );
   PxTransform meshPose{
@@ -139,32 +139,32 @@ void detect(Voxel *voxel, int detectDir) {
   float detectStep = 0.1;
   if (detectDir == 1) {
     if (anyHadHit) {
-      (*voxel).position.y += detectDir * detectStep;
+      voxel->position.y += detectDir * detectStep;
       detect(voxel, detectDir);
     } else {
       // do nothing, stop recur
     }
   } else if (detectDir == -1) {
     if (anyHadHit) {
-      (*voxel).position.y += detectStep;
+      voxel->position.y += detectStep;
       // do nothing, stop recur
     } else {
-      (*voxel).position.y += detectDir * detectStep;
+      voxel->position.y += detectDir * detectStep;
       detect(voxel, detectDir);
     }
   }
 }
 
 void resetVoxelAStar(Voxel *voxel) {
-  (*voxel)._isStart = false;
-  (*voxel)._isDest = false;
-  (*voxel)._isReached = false;
-  (*voxel)._priority = 0;
-  (*voxel)._costSoFar = 0;
-  (*voxel)._prev = NULL;
-  (*voxel)._next = NULL;
-  (*voxel)._isPath = false;
-  (*voxel)._isFrontier = false;
+  voxel->_isStart = false;
+  voxel->_isDest = false;
+  voxel->_isReached = false;
+  voxel->_priority = 0;
+  voxel->_costSoFar = 0;
+  voxel->_prev = NULL;
+  voxel->_next = NULL;
+  voxel->_isPath = false;
+  voxel->_isFrontier = false;
 }
 
 Voxel *createVoxel(Vec position) { // TODO: Use pointer?
@@ -185,10 +185,10 @@ Voxel *createVoxel(Vec position) { // TODO: Use pointer?
 
 void setNextOfPathVoxel(Voxel *voxel) {
   if (voxel != NULL) {
-    (*voxel)._isPath = true;
-    if ((*voxel)._prev) (*(*voxel)._prev)._next = voxel;
+    voxel->_isPath = true;
+    if (voxel->_prev) voxel->_prev->_next = voxel;
 
-    setNextOfPathVoxel((*voxel)._prev);
+    setNextOfPathVoxel(voxel->_prev);
   }
 }
 
@@ -196,7 +196,7 @@ void found(Voxel *voxel) {
   isFound = true;
   setNextOfPathVoxel(voxel);
 
-  Voxel wayPoint = (*startVoxel); // wayPoint: voxel
+  Voxel wayPoint = *startVoxel; // wayPoint: voxel
   Voxel result = wayPoint;
   waypointResult.push_back(&result);
   while (wayPoint._next) {
@@ -205,7 +205,7 @@ void found(Voxel *voxel) {
     result._next = &wayPoint;
     waypointResult.push_back(result._next);
 
-    (*(result._next))._prev = &result;
+    result._next->_prev = &result;
     // result._next->_prev = &result;
 
     result = *result._next;
@@ -213,71 +213,71 @@ void found(Voxel *voxel) {
 }
 
 void generateVoxelMapLeft(Voxel *currentVoxel) {
-  localVector = (*currentVoxel).position;
+  localVector = currentVoxel->position;
   localVector.x += -1;
   Voxel *leftVoxel = createVoxel(localVector);
-  (*currentVoxel)._leftVoxel = leftVoxel;
-  if (leftVoxel->position.y - (*currentVoxel).position.y < heightTolerance) {
-    (*currentVoxel)._canLeft = true;
+  currentVoxel->_leftVoxel = leftVoxel;
+  if (leftVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+    currentVoxel->_canLeft = true;
   }
 }
 
 void generateVoxelMapRight(Voxel *currentVoxel) {
-  localVector = (*currentVoxel).position;
+  localVector = currentVoxel->position;
   localVector.x += 1;
   Voxel *rightVoxel = createVoxel(localVector);
-  (*currentVoxel)._rightVoxel = rightVoxel;
-  if (rightVoxel->position.y - (*currentVoxel).position.y < heightTolerance) {
-    (*currentVoxel)._canRight = true;
+  currentVoxel->_rightVoxel = rightVoxel;
+  if (rightVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+    currentVoxel->_canRight = true;
   }
 }
 
 void generateVoxelMapBtm(Voxel *currentVoxel) {
-  localVector = (*currentVoxel).position;
+  localVector = currentVoxel->position;
   localVector.z += -1;
   Voxel *btmVoxel = createVoxel(localVector);
-  (*currentVoxel)._btmVoxel = btmVoxel;
-  if (btmVoxel->position.y - (*currentVoxel).position.y < heightTolerance) {
-    (*currentVoxel)._canBtm = true;
+  currentVoxel->_btmVoxel = btmVoxel;
+  if (btmVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+    currentVoxel->_canBtm = true;
   }
 }
 
 void generateVoxelMapTop(Voxel *currentVoxel) {
-  localVector = (*currentVoxel).position;
+  localVector = currentVoxel->position;
   localVector.z += 1;
   Voxel *topVoxel = createVoxel(localVector);
-  (*currentVoxel)._topVoxel = topVoxel;
-  if (topVoxel->position.y - (*currentVoxel).position.y < heightTolerance) {
-    (*currentVoxel)._canTop = true;
+  currentVoxel->_topVoxel = topVoxel;
+  if (topVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+    currentVoxel->_canTop = true;
   }
 }
 
 bool compareVoxelPriority(Voxel *a, Voxel *b) {
-  return ((*a)._priority < (*b)._priority);
+  return (a->_priority < b->_priority);
 }
 
 void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
-  float newCost = (*prevVoxel)._costSoFar + 1;
-  // if ((*voxel)._isReached === false || newCost < (*voxel)._costSoFar) {
-  if ((*voxel)._isReached == false) {
-    // Seems no need `|| newCost < (*voxel)._costSoFar` ? Need? http://disq.us/p/2mgpazs
-    (*voxel)._isReached = true;
-    (*voxel)._costSoFar = newCost;
+  float newCost = prevVoxel->_costSoFar + 1;
+  // if (voxel->_isReached === false || newCost < voxel->_costSoFar) {
+  if (voxel->_isReached == false) {
+    // Seems no need `|| newCost < voxel->_costSoFar` ? Need? http://disq.us/p/2mgpazs
+    voxel->_isReached = true;
+    voxel->_costSoFar = newCost;
 
-    // (*voxel)._priority = tmpVec2.set((*voxel)._x, (*voxel)._z).manhattanDistanceTo(dest)
-    // (*voxel)._priority = tmpVec2.set((*voxel)._x, (*voxel)._z).distanceToSquared(dest)
-    (*voxel)._priority = (*voxel).position.distanceTo(dest);
-    (*voxel)._priority += newCost;
+    // voxel->_priority = tmpVec2.set(voxel->_x, voxel->_z).manhattanDistanceTo(dest)
+    // voxel->_priority = tmpVec2.set(voxel->_x, voxel->_z).distanceToSquared(dest)
+    voxel->_priority = voxel->position.distanceTo(dest);
+    voxel->_priority += newCost;
     frontiers.push_back(voxel);
     // frontiers.sort((a, b) => a._priority - b._priority);
     sort(frontiers.begin(), frontiers.end(), compareVoxelPriority);
 
-    (*voxel)._isFrontier = true;
-    (*voxel)._prev = prevVoxel;
+    voxel->_isFrontier = true;
+    voxel->_prev = prevVoxel;
     // prevVoxel._next = voxel; // Can't assign _next here, because one voxel will has multiple _next. Need use `setNextOfPathVoxel()`.
 
-    // if ((*voxel)._isDest) {
-    if ((*voxel).position.distanceTo(dest) == 0) { // TODO: PERFORMANCE: distanceToSq, or overload ==, or compare separately.
+    // if (voxel->_isDest) {
+    if (voxel->position.distanceTo(dest) == 0) { // TODO: PERFORMANCE: distanceToSq, or overload ==, or compare separately.
       found(voxel);
     }
   }
@@ -292,29 +292,29 @@ void step() {
 
   Voxel *currentVoxel = frontiers[0];
   frontiers.erase(frontiers.begin()); // shift
-  (*currentVoxel)._isFrontier = false;
+  currentVoxel->_isFrontier = false;
 
-  if (!(*currentVoxel)._leftVoxel) generateVoxelMapLeft(currentVoxel);
-  if ((*currentVoxel)._canLeft) {
-    stepVoxel((*currentVoxel)._leftVoxel, currentVoxel);
+  if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
+  if (currentVoxel->_canLeft) {
+    stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
     if (isFound) return;
   }
 
-  if (!(*currentVoxel)._rightVoxel) generateVoxelMapRight(currentVoxel);
-  if ((*currentVoxel)._canRight) {
-    stepVoxel((*currentVoxel)._rightVoxel, currentVoxel);
+  if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
+  if (currentVoxel->_canRight) {
+    stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
     if (isFound) return;
   }
 
-  if (!(*currentVoxel)._btmVoxel) generateVoxelMapBtm(currentVoxel);
-  if ((*currentVoxel)._canBtm) {
-    stepVoxel((*currentVoxel)._btmVoxel, currentVoxel);
+  if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
+  if (currentVoxel->_canBtm) {
+    stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
     if (isFound) return;
   }
 
-  if (!(*currentVoxel)._topVoxel) generateVoxelMapTop(currentVoxel);
-  if ((*currentVoxel)._canTop) {
-    stepVoxel((*currentVoxel)._topVoxel, currentVoxel);
+  if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
+  if (currentVoxel->_canTop) {
+    stepVoxel(currentVoxel->_topVoxel, currentVoxel);
     // if (isFound) return
   }
 }
@@ -343,14 +343,14 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   dest.z = std::round(_dest.z);
 
   startVoxel = createVoxel(start);
-  (*startVoxel)._isStart = true;
-  (*startVoxel)._isReached = true;
-  (*startVoxel)._priority = start.distanceTo(dest);
-  (*startVoxel)._costSoFar = 0;
+  startVoxel->_isStart = true;
+  startVoxel->_isReached = true;
+  startVoxel->_priority = start.distanceTo(dest);
+  startVoxel->_costSoFar = 0;
   frontiers.push_back(startVoxel);
 
   destVoxel = createVoxel(dest);
-  (*destVoxel)._isDest = true;
+  destVoxel->_isDest = true;
 
   if (startVoxel == destVoxel) {
     found(destVoxel);
@@ -370,19 +370,19 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
 
   // TEST:
   // Voxel testVoxelA;
-  // testVoxelA.position.x = (*startVoxel)._canLeft;
-  // testVoxelA.position.y = (*startVoxel)._canRight;
-  // testVoxelA.position.z = (*startVoxel)._canBtm;
+  // testVoxelA.position.x = startVoxel->_canLeft;
+  // testVoxelA.position.y = startVoxel->_canRight;
+  // testVoxelA.position.z = startVoxel->_canBtm;
   // Voxel testVoxelB;
-  // testVoxelB.position.x = (*startVoxel)._canTop;
+  // testVoxelB.position.x = startVoxel->_canTop;
   // testVoxelB.position.y = .123;
   // testVoxelB.position.z = waypointResult.size();
 
   // waypointResult[0] = &testVoxelA;
   // waypointResult[1] = &testVoxelB;
 
-  waypointResult[0] = (*startVoxel)._leftVoxel;
-  waypointResult[1] = (*startVoxel)._rightVoxel;
+  waypointResult[0] = startVoxel->_leftVoxel;
+  waypointResult[1] = startVoxel->_rightVoxel;
 
 
   return waypointResult;
