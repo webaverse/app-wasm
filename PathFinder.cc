@@ -27,6 +27,8 @@ std::vector<Voxel> frontiers;
 std::vector<Voxel> voxels;
 std::vector<Voxel> waypointResult;
 Voxel localVoxel;
+Voxel startVoxel;
+Voxel destVoxel;
 PxBoxGeometry geom;
 float position[3];
 float quaternion[4];
@@ -151,6 +153,18 @@ void detect(Voxel *voxel, int detectDir) {
   }
 }
 
+void resetVoxelAStar(Voxel voxel) {
+  voxel._isStart = false;
+  voxel._isDest = false;
+  voxel._isReached = false;
+  voxel._priority = 0;
+  voxel._costSoFar = 0;
+  voxel._prev = NULL;
+  voxel._next = NULL;
+  voxel._isPath = false;
+  voxel._isFrontier = false;
+}
+
 Voxel createVoxel(Vec position) {
   localVoxel.position = position;
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
@@ -159,9 +173,41 @@ Voxel createVoxel(Vec position) {
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
 
   Voxel voxel;
+  voxels.push_back(voxel);
+  resetVoxelAStar(voxel);
+
   voxel.position = localVoxel.position;
 
   return voxel;
+}
+
+void setNextOfPathVoxel(Voxel voxel) {
+  // if (voxel != NULL) {
+  //   voxel._isPath = true;
+  //   if (voxel._prev) voxel._prev._next = voxel;
+
+  //   this.setNextOfPathVoxel(voxel._prev);
+  // }
+}
+
+void found(Voxel voxel) {
+  isFound = true;
+  setNextOfPathVoxel(voxel);
+
+  Voxel wayPoint = startVoxel; // wayPoint: voxel
+  Voxel result = wayPoint;
+  waypointResult.push_back(result);
+  while (wayPoint._next) {
+    wayPoint = *wayPoint._next;
+
+    result._next = &wayPoint;
+    waypointResult.push_back(*result._next);
+
+    (*(result._next))._prev = &result;
+    // result._next->_prev = &result;
+
+    result = *result._next;
+  }
 }
 
 std::vector<Voxel> getPath(Vec _start, Vec _dest) {
@@ -174,13 +220,34 @@ std::vector<Voxel> getPath(Vec _start, Vec _dest) {
   dest.y = _dest.y;
   dest.z = std::round(_dest.z);
 
-  Voxel destVoxel = createVoxel(dest);
+  startVoxel = createVoxel(start);
+  startVoxel._isStart = true;
+  startVoxel._isReached = true;
+  startVoxel._priority = start.distanceTo(dest);
+  startVoxel._costSoFar = 0;
+  frontiers.push_back(startVoxel);
 
-  waypointResult.push_back(destVoxel);
-  waypointResult.push_back(Voxel());
-  waypointResult[1].position = dest;
+  destVoxel = createVoxel(dest);
+  destVoxel._isDest = true;
+
+  if (startVoxel.position.distanceTo(destVoxel.position) == 0) {
+    found(destVoxel);
+  } else {
+    // untilFound();
+    // if (isFound) {
+    //   interpoWaypointResult();
+    //   simplifyWaypointResult(waypointResult[0]);
+    //   waypointResult.shift();
+    // }
+    // console.log('waypointResult', waypointResult.length);
+  }
+
+  // waypointResult.push_back(destVoxel);
+  // waypointResult.push_back(Voxel());
+  // waypointResult[1].position = dest;
 
   return waypointResult;
+  // return isFound ? waypointResult : NULL;
 }
 
 }
