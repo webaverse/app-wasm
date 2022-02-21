@@ -18,7 +18,7 @@ Vec start;
 Vec dest;
 float detectStep = 0.1;
 unsigned int iterDetect = 0;
-unsigned int maxIterDetect = 1000;
+unsigned int maxIterDetect = 2000;
 unsigned int iterStep = 0;
 unsigned int maxIterStep = 1000;
 bool allowNearest = true;
@@ -50,6 +50,15 @@ void init(std::vector<PxRigidActor *> _actors, float hx, float hy, float hz, flo
   quaternion[2] = _quaternion[2];
   quaternion[3] = _quaternion[3];
 
+  meshPosition[0] = _meshPosition[0];
+  meshPosition[1] = _meshPosition[1];
+  meshPosition[2] = _meshPosition[2];
+
+  meshQuaternion[0] = _meshQuaternion[0];
+  meshQuaternion[1] = _meshQuaternion[1];
+  meshQuaternion[2] = _meshQuaternion[2];
+  meshQuaternion[3] = _meshQuaternion[3];
+
   ignorePhysicsIds[0] = _ignorePhysicsIds[0];
 }
 
@@ -66,7 +75,7 @@ void detect(Voxel *voxel, int detectDir) {
   iterDetect = iterDetect + 1;
 
   PxTransform geomPose(
-    PxVec3{position[0], position[1], position[2]},
+    PxVec3{(*voxel).position.x, (*voxel).position.y, (*voxel).position.z},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
   );
   PxTransform meshPose{
@@ -77,7 +86,6 @@ void detect(Voxel *voxel, int detectDir) {
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
   Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
   
-  float outY;
   bool anyHadHit = false;
   {
     for (unsigned int i = 0; i < actors.size(); i++) {
@@ -147,11 +155,13 @@ Voxel createVoxel(Vec position) {
   localVoxel.position = position;
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
   iterDetect = 0;
-  
-  // PathFinder::init(actors);
-  // std::vector<PathFinder::Voxel> voxels = PathFinder::detectPathVoxelStep(&geom, position, quaternion, meshPosition, meshQuaternion, 0, numIgnorePhysicsIds);
+  detect(&localVoxel, 0);
+  localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
 
-  return localVoxel;
+  Voxel voxel;
+  voxel.position = localVoxel.position;
+
+  return voxel;
 }
 
 std::vector<Voxel> getPath(Vec _start, Vec _dest) {
@@ -164,8 +174,9 @@ std::vector<Voxel> getPath(Vec _start, Vec _dest) {
   dest.y = _dest.y;
   dest.z = std::round(_dest.z);
 
-  waypointResult.push_back(Voxel());
-  waypointResult[0].position = start;
+  Voxel destVoxel = createVoxel(dest);
+
+  waypointResult.push_back(destVoxel);
   waypointResult.push_back(Voxel());
   waypointResult[1].position = dest;
 
