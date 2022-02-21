@@ -10,7 +10,29 @@ namespace Terrain {
 		float x; float y; float z; float w;
 	};
 
+	struct Range {
+        int offset;
+        int size;
+    };
+
 	float* generateTerrain(float size, int levelCount, int maxSegment, int vertexStrideParam, int faceStrideParam);
+
+	void deallocateChunk(
+	  int vetexSlot, int indexSlot, int totalChunkCount,
+	  int *chunkVertexRangeBuffer,
+	  int *vertexFreeRangeBuffer,
+	  int *chunkIndexRangeBuffer,
+	  int *indexFreeRangeBuffer
+	);
+
+	int* allocateChunk(
+	  float *vertexBuffer, float *normalBuffer, int *indexBuffer,
+	  int *chunkVertexRangeBuffer,
+	  int *vertexFreeRangeBuffer,
+	  int *chunkIndexRangeBuffer,
+	  int *indexFreeRangeBuffer,
+	  float x, float y, float z, float chunkSize, int segment, int totalChunkCount
+	);
 
 	void createChunk(
 		float origin[3], float chunkSize, int segment,

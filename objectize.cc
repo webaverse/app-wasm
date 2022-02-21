@@ -216,6 +216,42 @@ EMSCRIPTEN_KEEPALIVE float* generateTerrain(float chunkSize, int chunkCount, int
   return Terrain::generateTerrain(chunkSize, chunkCount, maxSegment, vertexStrideParam, faceStrideParam);
 }
 
+EMSCRIPTEN_KEEPALIVE void deallocateChunk(
+  int vertexSlot, int indexSlot, int totalChunkCount,
+  int *chunkVertexRangeBuffer,
+  int *vertexFreeRangeBuffer,
+  int *chunkIndexRangeBuffer,
+  int *indexFreeRangeBuffer
+) {
+
+  Terrain::deallocateChunk(
+    vertexSlot, indexSlot, totalChunkCount,
+    chunkVertexRangeBuffer,
+    vertexFreeRangeBuffer,
+    chunkIndexRangeBuffer,
+    indexFreeRangeBuffer
+  );
+}
+
+EMSCRIPTEN_KEEPALIVE int* allocateChunk(
+  float *vertexBuffer, float *normalBuffer, int *indexBuffer,
+  int *chunkVertexRangeBuffer,
+  int *vertexFreeRangeBuffer,
+  int *chunkIndexRangeBuffer,
+  int *indexFreeRangeBuffer,
+  float x, float y, float z, float chunkSize, int segment, int totalChunkCount
+) {
+
+  return Terrain::allocateChunk(
+    vertexBuffer, normalBuffer, indexBuffer,
+    chunkVertexRangeBuffer,
+    vertexFreeRangeBuffer,
+    chunkIndexRangeBuffer,
+    indexFreeRangeBuffer,
+    x, y, z, chunkSize, segment, totalChunkCount
+  );
+}
+
 EMSCRIPTEN_KEEPALIVE void updateChunk(
   float *vertices, float *normals, int *indices, int *groups, float x, float y, float z, float chunkSize, int segment,
   int chunkIndex, int vertexOffset, int indexOffset
