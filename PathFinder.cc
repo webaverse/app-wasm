@@ -155,19 +155,19 @@ void detect(Voxel *voxel, int detectDir) {
   }
 }
 
-void resetVoxelAStar(Voxel voxel) {
-  voxel._isStart = false;
-  voxel._isDest = false;
-  voxel._isReached = false;
-  voxel._priority = 0;
-  voxel._costSoFar = 0;
-  voxel._prev = NULL;
-  voxel._next = NULL;
-  voxel._isPath = false;
-  voxel._isFrontier = false;
+void resetVoxelAStar(Voxel *voxel) {
+  (*voxel)._isStart = false;
+  (*voxel)._isDest = false;
+  (*voxel)._isReached = false;
+  (*voxel)._priority = 0;
+  (*voxel)._costSoFar = 0;
+  (*voxel)._prev = NULL;
+  (*voxel)._next = NULL;
+  (*voxel)._isPath = false;
+  (*voxel)._isFrontier = false;
 }
 
-Voxel createVoxel(Vec position) {
+Voxel createVoxel(Vec position) { // TODO: Use pointer?
   localVoxel.position = position;
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
   iterDetect = 0;
@@ -176,7 +176,7 @@ Voxel createVoxel(Vec position) {
 
   Voxel voxel;
   voxels.push_back(&voxel);
-  resetVoxelAStar(voxel);
+  resetVoxelAStar(&voxel);
 
   voxel.position = localVoxel.position;
 
@@ -252,8 +252,8 @@ void generateVoxelMapTop(Voxel *currentVoxel) {
   }
 }
 
-bool compareVoxelPriority(Voxel a, Voxel b) {
-  return (a._priority < b._priority);
+bool compareVoxelPriority(Voxel *a, Voxel *b) {
+  return ((*a)._priority < (*b)._priority);
 }
 
 void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
