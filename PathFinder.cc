@@ -9,22 +9,49 @@ using namespace physx;
 
 namespace PathFinder {
 
+std::vector<PxRigidActor *> actors;
+
 float voxelHeight = 1.5;
 float voxelHeightHalf = voxelHeight / 2;
 float heightTolerance = 0.6;
-Vector3 start;
-Vector3 dest;
+Vec start;
+Vec dest;
 float detectStep = 0.1;
-float iterDetect = 0;
-float maxIterDetect = 1000;
-float iterStep = 0;
-float maxIterStep = 1000;
+unsigned int iterDetect = 0;
+unsigned int maxIterDetect = 1000;
+unsigned int iterStep = 0;
+unsigned int maxIterStep = 1000;
 bool allowNearest = true;
-float ignorePhysicsIds[1] = {5};
 bool isFound = false;
 std::vector<Voxel> frontiers;
 std::vector<Voxel> voxels;
 std::vector<Voxel> waypointResult;
+Voxel localVoxel;
+PxBoxGeometry geom;
+float position[3];
+float quaternion[4];
+float meshPosition[3];
+float meshQuaternion[4];
+unsigned int const numIgnorePhysicsIds = 1;
+unsigned int ignorePhysicsIds[numIgnorePhysicsIds];
+
+void init(std::vector<PxRigidActor *> _actors, float hx, float hy, float hz, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, unsigned int _maxIterDetect, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
+  actors = _actors;
+
+  PxBoxGeometry _geom(hx, hy, hz);
+  geom = _geom;
+
+  position[0] = _position[0];
+  position[1] = _position[1];
+  position[2] = _position[2];
+
+  quaternion[0] = _quaternion[0];
+  quaternion[1] = _quaternion[1];
+  quaternion[2] = _quaternion[2];
+  quaternion[3] = _quaternion[3];
+
+  ignorePhysicsIds[0] = _ignorePhysicsIds[0];
+}
 
 void reset() {
   isFound = false;
@@ -33,22 +60,10 @@ void reset() {
   voxels.clear();
 }
 
-std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
+void detect(Voxel *voxel, int detectDir) {
 
-  Voxel voxelA;
-  voxelA.position.x = 1;
-  voxelA.position.y = 3;
-  voxelA.position.z = 5;
-  voxels.push_back(voxelA);
-
-  Voxel voxelB;
-  voxelB.position.x = 2;
-  voxelB.position.y = 4;
-  voxelB.position.z = 6;
-  voxels.push_back(voxelB);
-
-  if (*iter >= maxIter) return voxels;
-  *iter = *iter + 1;
+  if (iterDetect >= maxIterDetect) return;
+  iterDetect = iterDetect + 1;
 
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
@@ -79,7 +94,7 @@ std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeo
 
         PxVec3 directionVec;
         PxReal depthFloat;
-        bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
+        bool result = PxGeometryQuery::overlap(geom, geomPose, geometry, meshPose3);
         if (result) {
           const unsigned int id = (unsigned int)actor->userData;
           
@@ -112,26 +127,48 @@ std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeo
   float detectStep = 0.1;
   if (detectDir == 1) {
     if (anyHadHit) {
-      position[1] += detectDir * detectStep;
-      detectPathVoxelStep(actors, geom, position, quaternion, meshPosition, meshQuaternion, detectDir, iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
+      (*voxel).position.y += detectDir * detectStep;
+      detect(voxel, detectDir);
     } else {
       // do nothing, stop recur
     }
   } else if (detectDir == -1) {
     if (anyHadHit) {
-      position[1] += detectStep;
+      (*voxel).position.y += detectStep;
       // do nothing, stop recur
     } else {
-      position[1] += detectDir * detectStep;
-      detectPathVoxelStep(actors, geom, position, quaternion, meshPosition, meshQuaternion, detectDir, iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
+      (*voxel).position.y += detectDir * detectStep;
+      detect(voxel, detectDir);
     }
   }
-
-  return voxels;
 }
 
-std::vector<Voxel> getPath(Vector3 start, Vector3 dest) {
+Voxel createVoxel(Vec position) {
+  localVoxel.position = position;
+  localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
+  iterDetect = 0;
+  
+  // PathFinder::init(actors);
+  // std::vector<PathFinder::Voxel> voxels = PathFinder::detectPathVoxelStep(&geom, position, quaternion, meshPosition, meshQuaternion, 0, numIgnorePhysicsIds);
+
+  return localVoxel;
+}
+
+std::vector<Voxel> getPath(Vec _start, Vec _dest) {
   reset();
+
+  start.x = std::round(_start.x);
+  start.y = _start.y;
+  start.z = std::round(_start.z);
+  dest.x = std::round(_dest.x);
+  dest.y = _dest.y;
+  dest.z = std::round(_dest.z);
+
+  waypointResult.push_back(Voxel());
+  waypointResult[0].position = start;
+  waypointResult.push_back(Voxel());
+  waypointResult[1].position = dest;
+
   return waypointResult;
 }
 

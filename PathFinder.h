@@ -7,14 +7,17 @@
 using namespace physx;
 
 namespace PathFinder {
-	struct Vector3 {
-		float x; float y; float z;
-	};
+	// struct Vector3 {
+	// 	float x; float y; float z;
+	// };
   struct Voxel {
-    Vector3 position;
+    Vec position;
+    bool _isStart;
+    bool _isReached;
+    float _priority;
   };
-  std::vector<Voxel> getPath(Vector3 start, Vector3 dest);
-  std::vector<Voxel> detectPathVoxelStep(std::vector<PxRigidActor *> actors, PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, int detectDir, unsigned int *iter, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds);
+  void init(std::vector<PxRigidActor *> _actors, float hx, float hy, float hz, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, unsigned int _maxIterDetect, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
+  std::vector<Voxel> getPath(Vec start, Vec dest);
 }
 
 #endif
