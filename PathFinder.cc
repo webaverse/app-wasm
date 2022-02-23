@@ -399,6 +399,24 @@ void untilFound() {
   while (frontiers.size() > 0 && !isFound) {
     if (iterStep >= maxIterStep) {
       // console.log('maxIterDetect: untilFound');
+
+      if (allowNearest) {
+        float minDistanceSquared = std::numeric_limits<float>::infinity();
+        Voxel *minDistanceSquaredFrontier;
+        int len = frontiers.size();
+        for (int i = 0; i < len; i++) {
+          Voxel *frontier = frontiers[i];
+          float distanceSquared = frontier->position.distanceToSq(dest);
+          if (distanceSquared < minDistanceSquared) {
+            minDistanceSquared = distanceSquared;
+            minDistanceSquaredFrontier = frontier;
+          }
+        }
+        if (minDistanceSquaredFrontier) { // May all frontiers disappeared because of enclosed by obstacles, thus no minDistanceSquaredFrontier.
+          found(minDistanceSquaredFrontier);
+        }
+      }
+
       return;
     }
     iterStep++;
