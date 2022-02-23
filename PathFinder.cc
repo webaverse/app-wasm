@@ -22,6 +22,7 @@ unsigned int maxIterDetect = 2000;
 unsigned int iterStep = 0;
 unsigned int maxIterStep = 1000;
 bool allowNearest = true;
+unsigned int maxVoxelCacheLen = 10000;
 bool isFound = false;
 std::vector<Voxel *> frontiers;
 std::vector<Voxel *> voxels;
@@ -68,12 +69,32 @@ void init(std::vector<PxRigidActor *> _actors, float hx, float hy, float hz, flo
   ignorePhysicsIds[0] = _ignorePhysicsIds[0];
 }
 
+void resetVoxelAStar(Voxel *voxel) {
+  voxel->_isStart = false;
+  voxel->_isDest = false;
+  voxel->_isReached = false;
+  voxel->_priority = 0;
+  voxel->_costSoFar = 0;
+  voxel->_prev = NULL;
+  voxel->_next = NULL;
+  voxel->_isPath = false;
+  voxel->_isFrontier = false;
+}
+
 void reset() {
   isFound = false;
   frontiers.clear();
   waypointResult.clear();
-  voxels.clear();
-  voxelo.clear();
+
+  // // pure realtime, no any cache
+  // voxels.clear();
+  // voxelo.clear();
+
+  // simple cache
+  int len = voxels.size();
+  for (int i = 0; i < len; i++) {
+    resetVoxelAStar(voxels[i]);
+  }
 }
 
 void interpoWaypointResult() {
@@ -221,18 +242,6 @@ void detect(Voxel *voxel, int detectDir) {
       detect(voxel, detectDir);
     }
   }
-}
-
-void resetVoxelAStar(Voxel *voxel) {
-  voxel->_isStart = false;
-  voxel->_isDest = false;
-  voxel->_isReached = false;
-  voxel->_priority = 0;
-  voxel->_costSoFar = 0;
-  voxel->_prev = NULL;
-  voxel->_next = NULL;
-  voxel->_isPath = false;
-  voxel->_isFrontier = false;
 }
 
 Voxel *createVoxel(Vec position) { // TODO: Use pointer?
@@ -425,8 +434,14 @@ void untilFound() {
   }
 }
 
+void disposeVoxelCache() {
+  voxels.clear();
+  voxelo.clear();
+}
+
 std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   reset();
+  if (voxels.size() > maxVoxelCacheLen) disposeVoxelCache();
 
   start.x = std::round(_start.x);
   start.y = _start.y;
