@@ -39,6 +39,7 @@ unsigned int const numIgnorePhysicsIds = 1;
 unsigned int ignorePhysicsIds[numIgnorePhysicsIds];
 
 Vec localVector;
+Vec localVector2;
 
 void init(std::vector<PxRigidActor *> _actors, float hx, float hy, float hz, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, unsigned int _maxIterDetect, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
@@ -73,6 +74,25 @@ void reset() {
   waypointResult.clear();
   voxels.clear();
   voxelo.clear();
+}
+
+void interpoWaypointResult() {
+  Voxel *tempResult = waypointResult[0];
+  waypointResult.erase(waypointResult.begin());
+  localVector = tempResult->position;
+  while (tempResult->_next) {
+    localVector2 = tempResult->_next->position;
+
+    tempResult->_next->position.x += localVector.x;
+    tempResult->_next->position.x /= 2;
+    tempResult->_next->position.y += localVector.y;
+    tempResult->_next->position.y /= 2;
+    tempResult->_next->position.z += localVector.z;
+    tempResult->_next->position.z /= 2;
+
+    tempResult = tempResult->_next;
+    localVector = localVector2;
+  }
 }
 
 Voxel *getVoxel(Vec position) {
@@ -376,11 +396,11 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
     found(destVoxel);
   } else {
     untilFound();
-    // if (isFound) {
-    //   interpoWaypointResult();
-    //   simplifyWaypointResult(waypointResult[0]);
-    //   waypointResult.shift();
-    // }
+    if (isFound) {
+      interpoWaypointResult();
+      // simplifyWaypointResult(waypointResult[0]);
+      // waypointResult.shift();
+    }
     // console.log('waypointResult', waypointResult.length);
   }
 
