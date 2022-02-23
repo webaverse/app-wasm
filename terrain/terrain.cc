@@ -195,7 +195,7 @@ void deallocateChunk(
     chunkIndexRangeBuffer[indexSlot * 2 + 1] = 0;
 }
 
-int* allocateChunk(
+int* generateAndAllocateChunk(
     float *vertexBuffer, float *normalBuffer, int *indexBuffer,
     int *chunkVertexRangeBuffer,
     int *vertexFreeRangeBuffer,

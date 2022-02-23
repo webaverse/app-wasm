@@ -27,7 +27,7 @@ namespace Terrain {
 	  int *indexFreeRangeBuffer
 	);
 
-	int* allocateChunk(
+	int* generateAndAllocateChunk(
 	  float *vertexBuffer, float *normalBuffer, int *indexBuffer,
 	  int *chunkVertexRangeBuffer,
 	  int *vertexFreeRangeBuffer,
