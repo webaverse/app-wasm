@@ -56,8 +56,8 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *sce
   }
 }
 
-EMSCRIPTEN_KEEPALIVE float *detectPathVoxelPhysics(PScene *scene, float *_start, float *_dest, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIterDetect, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
-  return scene->detectPathVoxel(_start, _dest, hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, maxIterDetect, numIgnorePhysicsIds, ignorePhysicsIds);
+EMSCRIPTEN_KEEPALIVE float *getPathPhysics(PScene *scene, float *_start, float *_dest, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIterDetect, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
+  return scene->getPath(_start, _dest, hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, maxIterDetect, numIgnorePhysicsIds, ignorePhysicsIds);
 }
 
 EMSCRIPTEN_KEEPALIVE float *overlapBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {

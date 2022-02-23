@@ -1190,7 +1190,7 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 }
 
 // TODO: Rename to getPath()
-float *PScene::detectPathVoxel(float *_start, float *_dest, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIterDetect, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
+float *PScene::getPath(float *_start, float *_dest, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIterDetect, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
   PxBoxGeometry geom(hx, hy, hz);
   
   PathFinder::init(actors, hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, maxIterDetect, numIgnorePhysicsIds, ignorePhysicsIds);
@@ -1227,26 +1227,6 @@ float *PScene::detectPathVoxel(float *_start, float *_dest, float hx, float hy, 
 
   return outputBuffer;
 }
-
-// float *PScene::detectPathVoxel(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
-//   PxBoxGeometry geom(hx, hy, hz);
-  
-//   unsigned int iter = 0;
-//   PathFinder::init(actors);
-//   std::vector<PathFinder::Voxel> voxels = PathFinder::detectPathVoxelStep(&geom, position, quaternion, meshPosition, meshQuaternion, 0, &iter, maxIter, numIgnorePhysicsIds, ignorePhysicsIds);
-
-//   float *outputBuffer = (float *)malloc(7 * sizeof(float));
-
-//   outputBuffer[0] = position[1];
-//   outputBuffer[1] = voxels[0].position.distanceTo(voxels[1].position);
-//   outputBuffer[2] = voxels[0].position.y;
-//   outputBuffer[3] = voxels[0].position.z;
-//   outputBuffer[4] = voxels[1].position.x;
-//   outputBuffer[5] = voxels[1].position.y;
-//   outputBuffer[6] = voxels[1].position.z;
-
-//   return outputBuffer;
-// }
 
 float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
   PxTransform geomPose(
