@@ -95,6 +95,42 @@ void interpoWaypointResult() {
   }
 }
 
+// https://stackoverflow.com/a/4609795/3596736
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
+// https://www.geeksforgeeks.org/how-to-find-index-of-a-given-element-in-a-vector-in-cpp/
+int getIndex(std::vector<Voxel *> v, Voxel * K) { // TODO: Support general type.
+    auto it = find(v.begin(), v.end(), K);
+    if (it != v.end()) { // If element was found
+        int index = it - v.begin();
+        return index;
+    }
+    else {
+        return -1;
+    }
+}
+
+void simplifyWaypointResult(Voxel *result) {
+  if (result && result->_next && result->_next->_next) {
+    if (
+      sgn(result->_next->_next->position.x - result->_next->position.x) == sgn(result->_next->position.x - result->position.x) &&
+      sgn(result->_next->_next->position.z - result->_next->position.z) == sgn(result->_next->position.z - result->position.z)
+    ) {
+      // waypointResult.splice(waypointResult.indexOf(result->_next), 1);
+      int index = getIndex(waypointResult, result->_next);
+      waypointResult.erase(waypointResult.begin() + index);
+
+      result->_next = result->_next->_next;
+      result->_next->_prev = result;
+      simplifyWaypointResult(result);
+    } else {
+      simplifyWaypointResult(result->_next);
+    }
+  }
+}
+
 Voxel *getVoxel(Vec position) {
   // return voxelo[`${position.x}_${position.y}_${position.z}`];
   return voxelo[std::to_string(position.x)+"_"+std::to_string(position.y)+"_"+std::to_string(position.z)];
@@ -398,8 +434,8 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
     untilFound();
     if (isFound) {
       interpoWaypointResult();
-      // simplifyWaypointResult(waypointResult[0]);
-      // waypointResult.shift();
+      simplifyWaypointResult(waypointResult[0]);
+      waypointResult.erase(waypointResult.begin()); // waypointResult.shift();
     }
     // console.log('waypointResult', waypointResult.length);
   }
