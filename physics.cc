@@ -275,87 +275,53 @@ void PScene::addCapsuleGeometry(
   float halfHeight,
   float *mat,
   unsigned int id,
+  unsigned int dynamic,
   unsigned int flags
 ) {
-  // PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxTransform relativePose(PxQuat(PxHalfPi, PxVec3(0,0,1)));
   PxCapsuleGeometry geometry(radius, halfHeight);
-  PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
-
-  // flags
-  const bool physicsEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_PHYSICS);
-  /* if (!physicsEnabled) {
-    PxRigidActor *actor = body;
-
-    constexpr int numShapes = 32;
-    PxShape *shapes[numShapes];
-    for (int j = 0; ; j++) {
-      memset(shapes, 0, sizeof(shapes));
-      if (actor->getShapes(shapes, numShapes, j * numShapes) == 0) {
-        break;
-      }
-      for (int i = 0; i < numShapes; ++i) {
-        if (shapes[i] == nullptr) {
-          break;
-        }
-
-        PxShape *rigidShape = shapes[i];
-        rigidShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
-      }
-    }
-  } */
+  
+  // const bool physicsEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_PHYSICS);
   const bool ccdEnabled = (bool)(flags & PhysicsObjectFlags::ENABLE_CCD);
-  if (ccdEnabled) {
-    body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
-  }
 
-  /* {
-    // LOL 1
-    PxFilterData filterData{};
-    filterData.word0 = id;
-    filterData.word1 = TYPE::TYPE_CAPSULE;
-    // filterData.word1 = filterMask;  // word1 = ID mask to filter pairs that trigger a
-                                    // contact callback;
-    const PxU32 numShapes = body->getNbShapes();
-    PxShape *shapes[32];
-    body->getShapes(shapes, numShapes);
-    for (PxU32 i = 0; i < numShapes; i++){
-      PxShape *shape = shapes[i];
-      shape->setSimulationFilterData(filterData);
+  PxRigidActor *actor;
+  if (dynamic) {
+    PxRigidDynamic *body = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+    PxRigidBodyExt::updateMassAndInertia(*body, 1.0f);
+    if (ccdEnabled) {
+      body->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
     }
-    // LOL 2
-  } */
-
-  body->userData = (void *)id;
-
-  PxRigidBodyExt::updateMassAndInertia(*body, 1.0f);
-  if (physicsEnabled) {
-    scene->addActor(*body);
+    actor = body;
+  } else {
+    PxRigidStatic *body = PxCreateStatic(*physics, transform, geometry, *material);
+    actor = body;
   }
-  actors.push_back(body);
+
+  actor->userData = (void *)id;
+  scene->addActor(*actor);
+  actors.push_back(actor);
 }
 
 void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
+  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
+  PxBoxGeometry geometry(size[0], size[1], size[2]);
+  
+  PxRigidActor *actor;
   if (dynamic) {
-    PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
-    PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
-    PxBoxGeometry geometry(size[0], size[1], size[2]);
     PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
-    box->userData = (void *)id;
     PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
-    scene->addActor(*box);
-    actors.push_back(box);
+    actor = box;
   } else {
-    PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
-    PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
-    PxBoxGeometry geometry(size[0], size[1], size[2]);
-    PxRigidStatic *floor = PxCreateStatic(*physics, transform, geometry, *material);
-    floor->userData = (void *)id;
-    scene->addActor(*floor);
-    actors.push_back(floor);
+    PxRigidStatic *box = PxCreateStatic(*physics, transform, geometry, *material);
+    actor = box;
   }
+
+  actor->userData = (void *)id;
+  scene->addActor(*actor);
+  actors.push_back(actor);
 }
 
 void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
@@ -796,7 +762,7 @@ void PScene::removeGeometry(unsigned int id) {
     std::cerr << "remove unknown actor id " << id << std::endl;
   }
 }
-PxController *PScene::createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat) {
+PxController *PScene::createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat, unsigned int id) {
   PxCapsuleControllerDesc desc{};
   desc.radius = radius;
   desc.height = height;
@@ -807,9 +773,38 @@ PxController *PScene::createCharacterController(float radius, float height, floa
   desc.material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxController *characterController = controllerManager->createController(desc);
   characterController->setPosition(PxExtendedVec3{position[0], position[1], position[2]});
+
+  PxRigidDynamic *actor = characterController->getActor();
+  // if (id != 0) {
+    actor->userData = (void *)id;
+    actors.push_back(actor);
+  // }
+
+  /* {
+    PxShape *shapes[32];
+    for (int j = 0;; j++) {
+      memset(shapes, 0, sizeof(shapes));
+      if (actor->getShapes(shapes, 32, j * 32) == 0) {
+        break;
+      }
+      for (int i = 0; i < 32; ++i) {
+        if (shapes[i] == nullptr) {
+          break;
+        }
+
+        PxShape *rigidShape = shapes[i];
+        rigidShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+      }
+    }
+  } */
+
   return characterController;
 }
 void PScene::destroyCharacterController(PxController *characterController) {
+  PxRigidDynamic *actor = characterController->getActor();
+  auto actorIter = std::find(actors.begin(), actors.end(), actor);
+  actors.erase(actorIter);
+
   characterController->release();
 }
 unsigned int PScene::moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut) {
