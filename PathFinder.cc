@@ -32,10 +32,6 @@ Voxel localVoxel;
 Voxel *startVoxel;
 Voxel *destVoxel;
 PxBoxGeometry geom;
-float position[3] = {0, 0, 0};
-float quaternion[4] = {0, 0, 0, 1};
-float meshPosition[3] = {0, 0, 0};
-float meshQuaternion[4] = {0, 0, 0, 1};
 unsigned int const numIgnorePhysicsIds = 1;
 unsigned int ignorePhysicsIds[numIgnorePhysicsIds];
 
@@ -149,17 +145,7 @@ void detect(Voxel *voxel, int detectDir) {
   if (iterDetect >= maxIterDetect) return;
   iterDetect = iterDetect + 1;
 
-  PxTransform geomPose(
-    PxVec3{voxel->position.x, voxel->position.y, voxel->position.z},
-    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
-  );
-  PxTransform meshPose{
-    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
-    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
-  };
-
-  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
-  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+  PxTransform geomPose(PxVec3{voxel->position.x, voxel->position.y, voxel->position.z});
   
   bool anyHadHit = false;
   {
@@ -172,12 +158,11 @@ void detect(Voxel *voxel, int detectDir) {
         PxGeometryHolder holder = shape->getGeometry();
         PxGeometry &geometry = holder.any();
 
-        PxTransform meshPose2 = actor->getGlobalPose();
-        PxTransform meshPose3 = meshPose * meshPose2;
+        PxTransform meshPose = actor->getGlobalPose();
 
         PxVec3 directionVec;
         PxReal depthFloat;
-        bool result = PxGeometryQuery::overlap(geom, geomPose, geometry, meshPose3);
+        bool result = PxGeometryQuery::overlap(geom, geomPose, geometry, meshPose);
         if (result) {
           const unsigned int id = (unsigned int)actor->userData;
           
