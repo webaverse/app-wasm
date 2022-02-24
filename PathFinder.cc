@@ -41,8 +41,7 @@ Vec localVector2;
 void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
 
-  PxBoxGeometry _geom(0.5, _hy, 0.5);
-  geom = _geom;
+  geom = PxBoxGeometry(0.5, _hy, 0.5);
 
   ignorePhysicsIds[0] = _ignorePhysicsIds[0];
 }
@@ -425,44 +424,18 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   destVoxel = createVoxel(dest);
   destVoxel->_isDest = true;
 
-  // step();
   if (startVoxel == destVoxel) {
     found(destVoxel);
   } else {
     untilFound();
-    // if (isFound) {
-    //   interpoWaypointResult();
-    //   simplifyWaypointResult(waypointResult[0]);
-    //   waypointResult.erase(waypointResult.begin()); // waypointResult.shift();
-    // }
-    // console.log('waypointResult', waypointResult.length);
+    if (isFound) {
+      interpoWaypointResult();
+      simplifyWaypointResult(waypointResult[0]);
+      waypointResult.erase(waypointResult.begin()); // waypointResult.shift();
+    }
   }
 
-  // waypointResult.push_back(destVoxel);
-  // waypointResult.push_back(Voxel());
-  // waypointResult[1].position = dest;
-
-  // // TEST:
-  // Voxel testVoxelA;
-  // testVoxelA.position.x = frontiers.size();
-  // testVoxelA.position.y = iterStep;
-  // testVoxelA.position.z = waypointResult.size();
-  // Voxel testVoxelB;
-  // testVoxelB.position.x = startVoxel->_canTop;
-  // testVoxelB.position.y = startVoxel->_btmVoxel == startVoxel->_topVoxel;
-  // testVoxelB.position.z = frontiers.size();
-
-  // waypointResult[0] = &testVoxelA;
-  // waypointResult[1] = &testVoxelB;
-
-  // waypointResult[2] = startVoxel->_btmVoxel;
-  // waypointResult[3] = startVoxel->_topVoxel;
-
-
   return waypointResult;
-  // return waypointResult.size();
-  // return iterStep;
-  // return isFound ? waypointResult : NULL;
 }
 
 }
