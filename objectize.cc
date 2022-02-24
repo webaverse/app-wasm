@@ -56,8 +56,12 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *sce
   }
 }
 
-EMSCRIPTEN_KEEPALIVE float *getPathPhysics(PScene *scene, float *_start, float *_dest, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIterDetect, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
-  return scene->getPath(_start, _dest, hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, maxIterDetect, numIgnorePhysicsIds, ignorePhysicsIds);
+// EMSCRIPTEN_KEEPALIVE float *getPathPhysics(PScene *scene, float *_start, float *_dest, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIterDetect, unsigned int numIgnorePhysicsIds, unsigned int *ignorePhysicsIds) {
+//   return scene->getPath(_start, _dest, hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, maxIterDetect, numIgnorePhysicsIds, ignorePhysicsIds);
+// }
+
+EMSCRIPTEN_KEEPALIVE float *getPathPhysics(PScene *scene, float *_start, float *_dest, float _hy, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
+  return scene->getPath(_start, _dest, _hy, _position, _quaternion, _meshPosition, _meshQuaternion, _heightTolerance, _detectStep, _maxIterdetect, _maxIterStep, _maxVoxelCacheLen, _numIgnorePhysicsIds, _ignorePhysicsIds);
 }
 
 EMSCRIPTEN_KEEPALIVE float *overlapBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
