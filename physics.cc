@@ -1191,7 +1191,6 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 
 // TODO: Rename to getPath()
 float *PScene::getPath(float *_start, float *_dest, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
-  PxBoxGeometry geom(0.5, _hy, 0.5);
   
   PathFinder::init(actors, _hy, _heightTolerance, _detectStep, _maxIterdetect, _maxIterStep, _maxVoxelCacheLen, _numIgnorePhysicsIds, _ignorePhysicsIds);
   Vec start(_start[0], _start[1], _start[2]);
@@ -1205,25 +1204,6 @@ float *PScene::getPath(float *_start, float *_dest, float _hy, float _heightTole
     outputBuffer[i*3+2] = waypointResult[i]->position.y;
     outputBuffer[i*3+3] = waypointResult[i]->position.z;
   }
-
-  // // TEST:
-  // float *outputBuffer = (float *)malloc(12 * 3 * sizeof(float)); // TODO: Don't * 3;
-
-  // outputBuffer[0] = waypointResult[0]->position.x;
-  // outputBuffer[1] = waypointResult[0]->position.y;
-  // outputBuffer[2] = waypointResult[0]->position.z;
-
-  // outputBuffer[3] = waypointResult[1]->position.x;
-  // outputBuffer[4] = waypointResult[1]->position.y;
-  // outputBuffer[5] = waypointResult[1]->position.z;
-
-  // outputBuffer[6] = waypointResult[2]->position.x;
-  // outputBuffer[7] = waypointResult[2]->position.y;
-  // outputBuffer[8] = waypointResult[2]->position.z;
-  
-  // outputBuffer[9] = waypointResult[3]->position.x;
-  // outputBuffer[10] = waypointResult[3]->position.y;
-  // outputBuffer[11] = waypointResult[3]->position.z;
 
   return outputBuffer;
 }

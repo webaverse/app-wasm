@@ -160,8 +160,6 @@ void detect(Voxel *voxel, int detectDir) {
 
         PxTransform meshPose = actor->getGlobalPose();
 
-        PxVec3 directionVec;
-        PxReal depthFloat;
         bool result = PxGeometryQuery::overlap(geom, geomPose, geometry, meshPose);
         if (result) {
           const unsigned int id = (unsigned int)actor->userData;
