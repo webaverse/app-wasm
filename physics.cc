@@ -1189,7 +1189,6 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
   }
 }
 
-// TODO: Rename to getPath()
 float *PScene::getPath(float *_start, float *_dest, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   
   PathFinder::init(actors, _hy, _heightTolerance, _detectStep, _maxIterdetect, _maxIterStep, _maxVoxelCacheLen, _numIgnorePhysicsIds, _ignorePhysicsIds);

@@ -7,9 +7,6 @@
 using namespace physx;
 
 namespace PathFinder {
-	// struct Vector3 {
-	// 	float x; float y; float z;
-	// };
   struct Voxel {
     Vec position;
     bool _isStart = false;
