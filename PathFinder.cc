@@ -100,7 +100,7 @@ template <typename T> int sgn(T val) {
 }
 
 // https://www.geeksforgeeks.org/how-to-find-index-of-a-given-element-in-a-vector-in-cpp/
-int getIndex(std::vector<Voxel *> v, Voxel * K) { // TODO: Support general type.
+int getIndex(std::vector<Voxel *> v, Voxel * K) {
     auto it = find(v.begin(), v.end(), K);
     if (it != v.end()) { // If element was found
         int index = it - v.begin();
@@ -207,7 +207,7 @@ void detect(Voxel *voxel, int detectDir) {
   }
 }
 
-Voxel *createVoxel(Vec position) { // TODO: Use pointer?
+Voxel *createVoxel(Vec position) {
   localVoxel.position = position;
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
   iterDetect = 0;
@@ -241,9 +241,9 @@ void found(Voxel *voxel) {
   isFound = true;
   setNextOfPathVoxel(voxel);
 
-  Voxel wayPoint = *startVoxel; // wayPoint: voxel
+  Voxel wayPoint = *startVoxel;
   Voxel *result = (Voxel *)malloc(sizeof(Voxel)); // https://stackoverflow.com/a/18041130/3596736
-  *result = wayPoint; // TODO: Directly = *startVoxel;
+  *result = wayPoint;
   waypointResult.push_back(result);
   while (wayPoint._next) {
     wayPoint = *wayPoint._next;
@@ -323,8 +323,6 @@ void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
     // prevVoxel._next = voxel; // Can't assign _next here, because one voxel will has multiple _next. Need use `setNextOfPathVoxel()`.
 
     if (voxel->_isDest) {
-    // if (voxel->position.distanceTo(dest) == 0) { // TODO: PERFORMANCE: distanceToSq, or overload ==, or compare separately.
-    // if(voxel->position.x == dest.x && voxel->position.z == dest.z) { // TEST
       found(voxel);
     }
   }
