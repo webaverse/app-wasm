@@ -1190,10 +1190,10 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 }
 
 // TODO: Rename to getPath()
-float *PScene::getPath(float *_start, float *_dest, float _hy, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
+float *PScene::getPath(float *_start, float *_dest, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   PxBoxGeometry geom(0.5, _hy, 0.5);
   
-  PathFinder::init(actors, _hy, _position, _quaternion, _meshPosition, _meshQuaternion, _heightTolerance, _detectStep, _maxIterdetect, _maxIterStep, _maxVoxelCacheLen, _numIgnorePhysicsIds, _ignorePhysicsIds);
+  PathFinder::init(actors, _hy, _heightTolerance, _detectStep, _maxIterdetect, _maxIterStep, _maxVoxelCacheLen, _numIgnorePhysicsIds, _ignorePhysicsIds);
   Vec start(_start[0], _start[1], _start[2]);
   Vec dest(_dest[0], _dest[1], _dest[2]);
   std::vector<PathFinder::Voxel *> waypointResult = PathFinder::getPath(start, dest);

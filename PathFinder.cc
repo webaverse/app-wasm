@@ -32,39 +32,21 @@ Voxel localVoxel;
 Voxel *startVoxel;
 Voxel *destVoxel;
 PxBoxGeometry geom;
-float position[3];
-float quaternion[4];
-float meshPosition[3];
-float meshQuaternion[4];
+float position[3] = {0, 0, 0};
+float quaternion[4] = {0, 0, 0, 1};
+float meshPosition[3] = {0, 0, 0};
+float meshQuaternion[4] = {0, 0, 0, 1};
 unsigned int const numIgnorePhysicsIds = 1;
 unsigned int ignorePhysicsIds[numIgnorePhysicsIds];
 
 Vec localVector;
 Vec localVector2;
 
-void init(std::vector<PxRigidActor *> _actors, float _hy, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
+void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
 
   PxBoxGeometry _geom(0.5, _hy, 0.5);
   geom = _geom;
-
-  position[0] = _position[0];
-  position[1] = _position[1];
-  position[2] = _position[2];
-
-  quaternion[0] = _quaternion[0];
-  quaternion[1] = _quaternion[1];
-  quaternion[2] = _quaternion[2];
-  quaternion[3] = _quaternion[3];
-
-  meshPosition[0] = _meshPosition[0];
-  meshPosition[1] = _meshPosition[1];
-  meshPosition[2] = _meshPosition[2];
-
-  meshQuaternion[0] = _meshQuaternion[0];
-  meshQuaternion[1] = _meshQuaternion[1];
-  meshQuaternion[2] = _meshQuaternion[2];
-  meshQuaternion[3] = _meshQuaternion[3];
 
   ignorePhysicsIds[0] = _ignorePhysicsIds[0];
 }

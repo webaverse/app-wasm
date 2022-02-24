@@ -30,7 +30,7 @@ namespace PathFinder {
     bool _isPath = false;
     bool _isFrontier = false;
   };
-  void init(std::vector<PxRigidActor *> _actors, float _hy, float *_position, float *_quaternion, float *_meshPosition, float *_meshQuaternion, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
+  void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
   std::vector<Voxel *> getPath(Vec start, Vec dest);
 }
 
