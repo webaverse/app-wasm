@@ -322,9 +322,9 @@ void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
     voxel->_prev = prevVoxel;
     // prevVoxel._next = voxel; // Can't assign _next here, because one voxel will has multiple _next. Need use `setNextOfPathVoxel()`.
 
-    // if (voxel->_isDest) {
+    if (voxel->_isDest) {
     // if (voxel->position.distanceTo(dest) == 0) { // TODO: PERFORMANCE: distanceToSq, or overload ==, or compare separately.
-    if(voxel->position.x == dest.x && voxel->position.z == dest.z) { // TEST
+    // if(voxel->position.x == dest.x && voxel->position.z == dest.z) { // TEST
       found(voxel);
     }
   }
