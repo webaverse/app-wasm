@@ -32,8 +32,8 @@ Voxel localVoxel;
 Voxel *startVoxel;
 Voxel *destVoxel;
 PxBoxGeometry geom;
-unsigned int const numIgnorePhysicsIds = 1;
-unsigned int ignorePhysicsIds[numIgnorePhysicsIds];
+unsigned int numIgnorePhysicsIds;
+unsigned int *ignorePhysicsIds;
 
 Vec localVector;
 Vec localVector2;
@@ -43,7 +43,8 @@ void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance
 
   geom = PxBoxGeometry(0.5, _hy, 0.5);
 
-  ignorePhysicsIds[0] = _ignorePhysicsIds[0];
+  numIgnorePhysicsIds = _numIgnorePhysicsIds;
+  ignorePhysicsIds = _ignorePhysicsIds;
 }
 
 void resetVoxelAStar(Voxel *voxel) {
@@ -172,8 +173,6 @@ void detect(Voxel *voxel, int detectDir) {
           }
 
           if (!includedInIgnores) {
-          // if ( id != 5) {
-          // if ( id != ignorePhysicsIds[0]) {
             anyHadHit = true;
             break;
           }
