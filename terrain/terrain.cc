@@ -441,6 +441,8 @@ void march(
             		vertexIndex = index;
             		vertexDic[vInx] = vertexIndex;
             		vertices.push_back(vP);
+                    normals.push_back({0.0, 0.0, 0.0});
+
                     // vertices[index * 3] = vP.x;
                     // vertices[index * 3 + 1] = vP.y;
                     // vertices[index * 3 + 2] = vP.z;
@@ -473,10 +475,9 @@ void march(
             normal.normalize();
 
             for (int i = 0; i < 3; i++) {
-                normals[triangleVertexInices[i]] = {normal.x, normal.y, normal.y};
-            //     // normals[triangleVertexInices[i] * 3] = normal.x;
-            //     // normals[triangleVertexInices[i] * 3 + 1] = normal.y;
-            //     // normals[triangleVertexInices[i] * 3 + 2] = normal.z;
+                normals[triangleVertexInices[i]].x += normal.x;
+                normals[triangleVertexInices[i]].y += normal.y;
+                normals[triangleVertexInices[i]].z += normal.z;
             }
 
         }
@@ -516,6 +517,14 @@ void createChunk(
 			}
 		}
 	}
+
+    // normalize summed vertex normals
+
+    for (int i = 0; i < normals.size(); i++) {
+        Vector3 n = normals[i];
+        float length = sqrt(n.x * n.x + n.y * n.y + n.z * n.z);
+        normals[i] = {n.x / length, n.y / length, n.z / length};
+    }
 }
 
 }  // Terrain namespace
