@@ -1184,6 +1184,24 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
   }
 }
 
+float *PScene::getPath(float *_start, float *_dest, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
+  
+  PathFinder::init(actors, _hy, _heightTolerance, _detectStep, _maxIterdetect, _maxIterStep, _maxVoxelCacheLen, _numIgnorePhysicsIds, _ignorePhysicsIds);
+  Vec start(_start[0], _start[1], _start[2]);
+  Vec dest(_dest[0], _dest[1], _dest[2]);
+  std::vector<PathFinder::Voxel *> waypointResult = PathFinder::getPath(start, dest);
+
+  float *outputBuffer = (float *)malloc((1 + waypointResult.size() * 3) * sizeof(float));
+  outputBuffer[0] = waypointResult.size();
+  for (int i = 0; i < waypointResult.size(); i++) {
+    outputBuffer[i*3+1] = waypointResult[i]->position.x;
+    outputBuffer[i*3+2] = waypointResult[i]->position.y;
+    outputBuffer[i*3+3] = waypointResult[i]->position.z;
+  }
+
+  return outputBuffer;
+}
+
 float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
@@ -1215,7 +1233,7 @@ float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, flo
           PxReal depthFloat;
           bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
           if (result) {
-            float id = (unsigned int)actor->userData;
+            const unsigned int id = (unsigned int)actor->userData;
             outIds.push_back(id);
           }
         }
