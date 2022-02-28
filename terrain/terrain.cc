@@ -29,7 +29,9 @@ float* generateTerrain(
     // std::vector<Vector3> vertices = {};
     // std::vector<int> indices = {};
 
-    int cellCount = chunkCount * chunkCount * segment * segment;
+    int totalChunkCount = pow(chunkCount, 3);
+
+    int cellCount = totalChunkCount * segment * segment;
 
     int maxVertexCount = cellCount * vertexBufferSizeParam;
     int maxIndexCount = cellCount * faceBufferSizeParam;
@@ -38,10 +40,10 @@ float* generateTerrain(
     float *vertexBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
     float *normalBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
     int *indexBuffer = (int*)malloc(maxIndexCount * sizeof(int));
-    int *chunkVertexRangeBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
-    int *vertexFreeRangeBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
-    int *chunkIndexRangeBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
-    int *indexFreeRangeBuffer = (int*)malloc(chunkCount * chunkCount * 2 * sizeof(int));
+    int *chunkVertexRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
+    int *vertexFreeRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
+    int *chunkIndexRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
+    int *indexFreeRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
 
     // std::vector<int> chunkGroup = {};
 
@@ -50,48 +52,50 @@ float* generateTerrain(
 
     for (int i = 0; i < chunkCount; i++) {
         for (int j = 0; j < chunkCount; j++) {
-            float origin[3] = {
-                (float)(i - chunkCount / 2) * chunkSize,
-                0.0,
-                (float)(j - chunkCount / 2) * chunkSize
-            };
+            for (int k = 0; k < chunkCount; k++) {
+                float origin[3] = {
+                    (float)(i - chunkCount / 2) * chunkSize,
+                    (float)(j - chunkCount / 2) * chunkSize,
+                    (float)(k - chunkCount / 2) * chunkSize
+                };
 
-            // chunkGroup.push_back(groupStart);
-            int chunkIndex = i * chunkCount + j;
+                // chunkGroup.push_back(groupStart);
+                int chunkIndex = i * chunkCount * chunkCount + j * chunkCount + k;
 
-            std::vector<Vector3> vertices = {};
-            std::vector<Vector3> normals = {};
-            std::vector<int> indices = {};
+                std::vector<Vector3> vertices = {};
+                std::vector<Vector3> normals = {};
+                std::vector<int> indices = {};
 
-            // int groupStart = totalIndexCount;
+                // int groupStart = totalIndexCount;
 
-            createChunk(
-                origin,
-                chunkSize,
-                segment,
-                vertices,
-                normals,
-                indices
-            );
+                createChunk(
+                    origin,
+                    chunkSize,
+                    segment,
+                    vertices,
+                    normals,
+                    indices
+                );
 
-            for (int i = 0; i < indices.size(); i++) {
-                indices[i] += totalVertexCount;
+                for (int l = 0; l < indices.size(); l++) {
+                    indices[l] += totalVertexCount;
+                }
+
+                memcpy(vertexBuffer + totalVertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
+                memcpy(normalBuffer + totalVertexCount * 3, &(normals.front()), normals.size() * sizeof(Vector3));
+                memcpy(indexBuffer + totalIndexCount, &(indices.front()), indices.size() * sizeof(int));
+
+                chunkVertexRangeBuffer[chunkIndex * 2] = totalVertexCount;
+                chunkVertexRangeBuffer[chunkIndex * 2 + 1] = vertices.size();
+
+                chunkIndexRangeBuffer[chunkIndex * 2] = totalIndexCount;
+                chunkIndexRangeBuffer[chunkIndex * 2 + 1] = indices.size();
+
+                totalVertexCount += vertices.size();
+                totalIndexCount += indices.size();
+
+                // chunkGroup.push_back(indices.size() - groupStart);
             }
-
-            memcpy(vertexBuffer + totalVertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
-            memcpy(normalBuffer + totalVertexCount * 3, &(normals.front()), normals.size() * sizeof(Vector3));
-            memcpy(indexBuffer + totalIndexCount, &(indices.front()), indices.size() * sizeof(int));
-
-            chunkVertexRangeBuffer[chunkIndex * 2] = totalVertexCount;
-            chunkVertexRangeBuffer[chunkIndex * 2 + 1] = vertices.size();
-
-            chunkIndexRangeBuffer[chunkIndex * 2] = totalIndexCount;
-            chunkIndexRangeBuffer[chunkIndex * 2 + 1] = indices.size();
-
-            totalVertexCount += vertices.size();
-            totalIndexCount += indices.size();
-
-            // chunkGroup.push_back(indices.size() - groupStart);
         }
     }
 
@@ -101,7 +105,7 @@ float* generateTerrain(
     indexFreeRangeBuffer[0] = totalIndexCount;
     indexFreeRangeBuffer[1] = maxIndexCount - totalIndexCount;
 
-    for (int i = 1; i < chunkCount * chunkCount; i++) {
+    for (int i = 1; i < totalChunkCount; i++) {
         vertexFreeRangeBuffer[2 * i] = 0;
         vertexFreeRangeBuffer[2 * i + 1] = 0;
         indexFreeRangeBuffer[2 * i] = 0;
