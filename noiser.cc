@@ -166,6 +166,8 @@ void Noiser::fillElevations(int ox, int oz, float *elevations) {
   }
 }
 
+/*
+
 void _fillOblateSpheroid(float centerX, float centerY, float centerZ, int minX, int minZ, int maxX, int maxZ, float radius, float *ether) {
   const int radiusCeil = (int)std::ceil(radius);
   for (int z = -radiusCeil; z <= radiusCeil; z++) {
@@ -571,3 +573,6 @@ void Noiser::fill(int ox, int oz, unsigned char *biomes, float *elevations, floa
     flod(ethers, shift, peeks + i * 16);
   }
 }
+
+*/
+

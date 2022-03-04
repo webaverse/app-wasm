@@ -320,7 +320,7 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALL
   -IPhysX/physx/source/geomutils/src/sweep \
   -IRectBinPack/include \
   -Iconcaveman \
-  objectize.cc vector.cc physics.cc terrain/perlin.cc terrain/terrain.cc \
+  objectize.cc vector.cc physics.cc noiser.cc terrain/perlin.cc terrain/terrain.cc \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
