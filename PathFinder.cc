@@ -400,6 +400,10 @@ void disposeVoxelCache() {
   voxelo.clear();
 }
 
+std::vector<Voxel *> getVoxels() {
+  return voxels;
+}
+
 std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   reset();
   if (voxels.size() > maxVoxelCacheLen) disposeVoxelCache();
