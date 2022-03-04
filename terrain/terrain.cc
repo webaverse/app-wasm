@@ -8,6 +8,7 @@
 #include "perlin.h"
 #include "mc.h"
 #include "../vector.h"
+#include "../noiser.h"
 
 namespace Terrain {
 
@@ -492,6 +493,7 @@ void createChunk(
     float origin[3], float chunkSize, int segment,
     std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices
 ) {
+    Noiser noiser(0);
 
 	std::vector<Vector4> points = {};
 	std::map<std::string, int> vertexDic;
