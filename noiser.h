@@ -39,14 +39,15 @@ class Noiser {
     std::unordered_map<std::pair<int, int>, float> elevationCache;
 
     explicit Noiser(int seed);
+    ~Noiser();
 
     unsigned char getBiome(int x, int z);
     float getBiomeHeight(unsigned char b, int x, int z);
     float getElevation(int x, int z);
     double getTemperature(double x, double z);
     double getHumidity(double x, double z);
-    void fillBiomes(int ox, int oz, unsigned char *biomes, unsigned char *temperature, unsigned char *humidity);
-    void fillElevations(int ox, int oz, float *elevations);
+    void fillBiomes(int ox, int oz, int numCells, unsigned char *biomes, unsigned char *temperature, unsigned char *humidity);
+    void fillElevations(int ox, int oz, int numCells, float *elevations);
     // void fillEther(int ox, int oz, float *elevations, float *ether);
     // void fillLiquid(int ox, int oz, float *ether, float *elevations, float *water, float *lava);
     // void applyEther(float *newEther, unsigned int numNewEthers, float *ether);

@@ -45,6 +45,8 @@ Noiser::Noiser(int seed) :
   lavaNoise(rng(), 0.01, 4)
 {}
 
+Noiser::~Noiser() { }
+
 unsigned char Noiser::getBiome(int x, int z) {
   const std::pair<int, int> key(x, z);
   std::unordered_map<std::pair<int, int>, unsigned char>::iterator entryIter = biomeCache.find(key);
@@ -135,33 +137,36 @@ double Noiser::getHumidity(double x, double z) {
   return humidityNoise.in2D(x + 1000, z + 1000);
 }
 
-void Noiser::fillBiomes(int ox, int oz, unsigned char *biomes, unsigned char *temperature, unsigned char *humidity) {
+void Noiser::fillBiomes(int ox, int oz, int numCells, unsigned char *biomes, unsigned char *temperature, unsigned char *humidity) {
   float totalTemperature = 0;
   float totalHumidity = 0;
 
+  int numCellsOverscan = numCells + 1;
+
   unsigned int index = 0;
-  for (int z = 0; z < NUM_CELLS_OVERSCAN; z++) {
-    for (int x = 0; x < NUM_CELLS_OVERSCAN; x++) {
-      int ax = (ox * NUM_CELLS) + x;
-      int az = (oz * NUM_CELLS) + z;
+  for (int z = 0; z < numCells + 1; z++) {
+    for (int x = 0; x < numCells + 1; x++) {
+      int ax = (ox * numCells) + x;
+      int az = (oz * numCells) + z;
       biomes[index++] = getBiome(ax, az);
       totalTemperature += this->getTemperature(ax, az);
       totalHumidity += this->getHumidity(ax, az);
     }
   }
 
-  totalTemperature /= (NUM_CELLS_OVERSCAN * NUM_CELLS_OVERSCAN);
-  totalHumidity /= (NUM_CELLS_OVERSCAN * NUM_CELLS_OVERSCAN);
+  totalTemperature /= (numCellsOverscan * numCellsOverscan);
+  totalHumidity /= (numCellsOverscan * numCellsOverscan);
 
   *temperature = (unsigned char)(std::min<float>(totalTemperature, 1.0) * 255.0);
   *humidity = (unsigned char)(std::min<float>(totalHumidity, 1.0) * 255.0);
 }
 
-void Noiser::fillElevations(int ox, int oz, float *elevations) {
+void Noiser::fillElevations(int ox, int oz, int numCells, float *elevations) {
+  int numCellsOverscan = numCells + 1;
   unsigned int index = 0;
-  for (int z = 0; z < NUM_CELLS_OVERSCAN; z++) {
-    for (int x = 0; x < NUM_CELLS_OVERSCAN; x++) {
-      elevations[index++] = getElevation((ox * NUM_CELLS) + x, (oz * NUM_CELLS) + z);
+  for (int z = 0; z < numCellsOverscan; z++) {
+    for (int x = 0; x < numCellsOverscan; x++) {
+      elevations[index++] = getElevation((ox * numCells) + x, (oz * numCells) + z);
     }
   }
 }

@@ -196,8 +196,8 @@ void deallocateChunk(
         totalChunkCount
     );
 
-    chunkVertexRangeBuffer[vertexSlot * 2 + 1] = 0;
-    chunkIndexRangeBuffer[indexSlot * 2 + 1] = 0;
+    chunkVertexRangeBuffer[vertexSlot * 2 + 1] = -1;
+    chunkIndexRangeBuffer[indexSlot * 2 + 1] = -1;
 }
 
 int* generateAndAllocateChunk(
@@ -240,7 +240,7 @@ int* generateAndAllocateChunk(
     int vertexSlot = -1;
 
     for (int i = 0; i < totalChunkCount; i++) {
-        if (chunkVertexRangeBuffer[2 * i + 1] == 0) {
+        if (chunkVertexRangeBuffer[2 * i + 1] == -1) {
             vertexSlot = i;
             break;
         }
@@ -277,7 +277,7 @@ int* generateAndAllocateChunk(
     int indexSlot = -1;
 
     for (int i = 0; i < totalChunkCount; i++) {
-        if (chunkIndexRangeBuffer[2 * i + 1] == 0) {
+        if (chunkIndexRangeBuffer[2 * i + 1] == -1) {
             indexSlot = i;
             break;
         }
@@ -493,7 +493,22 @@ void createChunk(
     float origin[3], float chunkSize, int segment,
     std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices
 ) {
-    Noiser noiser(0);
+    Noiser *noiser = new Noiser(0);
+
+    int pointCount = (segment + 1) * (segment + 1);
+
+    unsigned char biomes[pointCount];
+    unsigned char temperature;
+    unsigned char humidity;
+    float elevations[pointCount];
+
+    int ox = (int)round(origin[0] / chunkSize);
+    int oz = (int)round(origin[2] / chunkSize);
+
+    noiser->fillBiomes(ox, oz, segment, biomes, &temperature, &humidity);
+    noiser->fillElevations(ox, oz, segment, elevations);
+
+    delete noiser;
 
 	std::vector<Vector4> points = {};
 	std::map<std::string, int> vertexDic;
@@ -509,7 +524,15 @@ void createChunk(
 	for (int i = 0; i <= segment; i++) {
 		for (int j = 0; j <= segment; j++) {
 			for (int k = 0; k <= segment; k++) {
-				density(i, j, k, originPos, unitSize, segment, points);
+				// density(i, j, k, originPos, unitSize, segment, points);
+
+                Vector3 curPos{
+                    originPos.x + i * unitSize, originPos.y + j * unitSize, originPos.z + k * unitSize
+                };
+                int pointIndex = indexFromCoord(i, j, k, segment);
+                points[pointIndex] = Vector4{
+                    curPos.x, curPos.y, curPos.z, elevations[k * (segment + 1) + i] - curPos.y
+                };
 			}
 		}
 	}
