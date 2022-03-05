@@ -23,6 +23,8 @@ float hardFloor = 2.0;
 float hardFloorWeight = 3.06;
 float noiseWeight = 6.09;
 
+int NUM_BUFFER = 7;
+
 float* generateTerrain(
     float chunkSize, int chunkCount, int segment, int vertexBufferSizeParam, int faceBufferSizeParam
 ) {
@@ -113,7 +115,7 @@ float* generateTerrain(
         indexFreeRangeBuffer[2 * i + 1] = 0;
     }
 
-    int *outputBuffer = (int*)malloc(7 * sizeof(int));
+    int *outputBuffer = (int*)malloc(NUM_BUFFER * sizeof(int));
 
     outputBuffer[0] = (int)vertexBuffer;
     outputBuffer[1] = (int)normalBuffer;
