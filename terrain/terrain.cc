@@ -23,7 +23,7 @@ float hardFloor = 2.0;
 float hardFloorWeight = 3.06;
 float noiseWeight = 6.09;
 
-int NUM_BUFFER = 7;
+int NUM_BUFFER = 8;
 
 float* generateTerrain(
     float chunkSize, int chunkCount, int segment, int vertexBufferSizeParam, int faceBufferSizeParam
@@ -42,6 +42,7 @@ float* generateTerrain(
 
     float *vertexBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
     float *normalBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
+    int *biomeBuffer = (int*)malloc(maxVertexCount * sizeof(int));
     int *indexBuffer = (int*)malloc(maxIndexCount * sizeof(int));
     int *chunkVertexRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
     int *vertexFreeRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
@@ -67,6 +68,7 @@ float* generateTerrain(
 
                 std::vector<Vector3> vertices = {};
                 std::vector<Vector3> normals = {};
+                std::vector<int> biomes = {};
                 std::vector<int> indices = {};
 
                 // int groupStart = totalIndexCount;
@@ -77,6 +79,7 @@ float* generateTerrain(
                     segment,
                     vertices,
                     normals,
+                    biomes,
                     indices
                 );
 
@@ -86,6 +89,7 @@ float* generateTerrain(
 
                 memcpy(vertexBuffer + totalVertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
                 memcpy(normalBuffer + totalVertexCount * 3, &(normals.front()), normals.size() * sizeof(Vector3));
+                memcpy(biomeBuffer + totalVertexCount, &(biomes.front()), biomes.size() * sizeof(int));
                 memcpy(indexBuffer + totalIndexCount, &(indices.front()), indices.size() * sizeof(int));
 
                 chunkVertexRangeBuffer[chunkIndex * 2] = totalVertexCount;
@@ -119,6 +123,7 @@ float* generateTerrain(
 
     outputBuffer[0] = (int)vertexBuffer;
     outputBuffer[1] = (int)normalBuffer;
+    outputBuffer[7] = (int)biomeBuffer;
     outputBuffer[2] = (int)indexBuffer;
     outputBuffer[3] = (int)chunkVertexRangeBuffer;
     outputBuffer[4] = (int)vertexFreeRangeBuffer;
@@ -203,7 +208,7 @@ void deallocateChunk(
 }
 
 int* generateAndAllocateChunk(
-    float *vertexBuffer, float *normalBuffer, int *indexBuffer,
+    float *vertexBuffer, float *normalBuffer, int *biomeBuffer, int *indexBuffer,
     int *chunkVertexRangeBuffer,
     int *vertexFreeRangeBuffer,
     int *chunkIndexRangeBuffer,
@@ -213,6 +218,7 @@ int* generateAndAllocateChunk(
 
     std::vector<Vector3> vertices{};
     std::vector<Vector3> normals{};
+    std::vector<int> biomes{};
     std::vector<int> indices{};
 
     float origin[3] = {x, y, z};
@@ -223,6 +229,7 @@ int* generateAndAllocateChunk(
         segment,
         vertices,
         normals,
+        biomes,
         indices
     );
 
@@ -253,6 +260,7 @@ int* generateAndAllocateChunk(
 
     memcpy(vertexBuffer + vertexOffset * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
     memcpy(normalBuffer + vertexOffset * 3, &(normals.front()), normals.size() * sizeof(Vector3));
+    memcpy(biomeBuffer + vertexOffset, &(biomes.front()), biomes.size() * sizeof(int));
 
     vertexFreeRangeBuffer[2 * vertexFreeRangeIndex] = vertexOffset + vertices.size();
     vertexFreeRangeBuffer[2 * vertexFreeRangeIndex + 1] -= vertices.size();
@@ -370,8 +378,8 @@ void density(
 void march(
 	int x, int y, int z, int segment,
 	const std::vector<Vector4> & points,
-    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices,
-	std::map<std::string, int> & vertexDic, int & index
+    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & biomes, std::vector<int> & indices,
+	std::map<std::string, int> & vertexDic, int & index, unsigned char biome
 ) {
 
 		// 8 corners of the current cube
@@ -449,6 +457,7 @@ void march(
             		vertexDic[vInx] = vertexIndex;
             		vertices.push_back(vP);
                     normals.push_back({0.0, 0.0, 0.0});
+                    biomes.push_back(biome);
 
                     // vertices[index * 3] = vP.x;
                     // vertices[index * 3 + 1] = vP.y;
@@ -493,7 +502,7 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & indices
+    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & vertexBiomes, std::vector<int> & indices
 ) {
     Noiser *noiser = new Noiser(0);
 
@@ -544,7 +553,7 @@ void createChunk(
 	for (int i = 0; i < segment; i++) {
 		for (int j = 0; j < segment; j++) {
 			for (int k = 0; k < segment; k++) {
-				march(i, j, k, segment, points, vertices, normals, indices, vertexDic, index);
+				march(i, j, k, segment, points, vertices, normals, vertexBiomes, indices, vertexDic, index, biomes[k * (segment + 1) + i]);
 			}
 		}
 	}
