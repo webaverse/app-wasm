@@ -242,7 +242,7 @@ EMSCRIPTEN_KEEPALIVE void deallocateChunk(
 }
 
 EMSCRIPTEN_KEEPALIVE int* generateChunk(
-  float *vertexBuffer, float *normalBuffer, int *biomeBuffer, int *indexBuffer,
+  float *vertexBuffer, float *normalBuffer, float *biomeBuffer, int *indexBuffer,
   int *chunkVertexRangeBuffer,
   int *vertexFreeRangeBuffer,
   int *chunkIndexRangeBuffer,

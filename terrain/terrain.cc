@@ -42,7 +42,7 @@ float* generateTerrain(
 
     float *vertexBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
     float *normalBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
-    int *biomeBuffer = (int*)malloc(maxVertexCount * sizeof(int));
+    float *biomeBuffer = (float*)malloc(maxVertexCount * sizeof(float));
     int *indexBuffer = (int*)malloc(maxIndexCount * sizeof(int));
     int *chunkVertexRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
     int *vertexFreeRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
@@ -68,7 +68,7 @@ float* generateTerrain(
 
                 std::vector<Vector3> vertices = {};
                 std::vector<Vector3> normals = {};
-                std::vector<int> biomes = {};
+                std::vector<float> biomes = {};
                 std::vector<int> indices = {};
 
                 // int groupStart = totalIndexCount;
@@ -89,7 +89,7 @@ float* generateTerrain(
 
                 memcpy(vertexBuffer + totalVertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
                 memcpy(normalBuffer + totalVertexCount * 3, &(normals.front()), normals.size() * sizeof(Vector3));
-                memcpy(biomeBuffer + totalVertexCount, &(biomes.front()), biomes.size() * sizeof(int));
+                memcpy(biomeBuffer + totalVertexCount, &(biomes.front()), biomes.size() * sizeof(float));
                 memcpy(indexBuffer + totalIndexCount, &(indices.front()), indices.size() * sizeof(int));
 
                 chunkVertexRangeBuffer[chunkIndex * 2] = totalVertexCount;
@@ -208,7 +208,7 @@ void deallocateChunk(
 }
 
 int* generateAndAllocateChunk(
-    float *vertexBuffer, float *normalBuffer, int *biomeBuffer, int *indexBuffer,
+    float *vertexBuffer, float *normalBuffer, float *biomeBuffer, int *indexBuffer,
     int *chunkVertexRangeBuffer,
     int *vertexFreeRangeBuffer,
     int *chunkIndexRangeBuffer,
@@ -218,7 +218,7 @@ int* generateAndAllocateChunk(
 
     std::vector<Vector3> vertices{};
     std::vector<Vector3> normals{};
-    std::vector<int> biomes{};
+    std::vector<float> biomes{};
     std::vector<int> indices{};
 
     float origin[3] = {x, y, z};
@@ -260,7 +260,7 @@ int* generateAndAllocateChunk(
 
     memcpy(vertexBuffer + vertexOffset * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
     memcpy(normalBuffer + vertexOffset * 3, &(normals.front()), normals.size() * sizeof(Vector3));
-    memcpy(biomeBuffer + vertexOffset, &(biomes.front()), biomes.size() * sizeof(int));
+    memcpy(biomeBuffer + vertexOffset, &(biomes.front()), biomes.size() * sizeof(float));
 
     vertexFreeRangeBuffer[2 * vertexFreeRangeIndex] = vertexOffset + vertices.size();
     vertexFreeRangeBuffer[2 * vertexFreeRangeIndex + 1] -= vertices.size();
@@ -378,7 +378,7 @@ void density(
 void march(
 	int x, int y, int z, int segment,
 	const std::vector<Vector4> & points,
-    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & biomes, std::vector<int> & indices,
+    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<float> & biomes, std::vector<int> & indices,
 	std::map<std::string, int> & vertexDic, int & index, unsigned char biome
 ) {
 
@@ -502,7 +502,7 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<int> & vertexBiomes, std::vector<int> & indices
+    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<float> & vertexBiomes, std::vector<int> & indices
 ) {
     Noiser *noiser = new Noiser(0);
 
