@@ -39,9 +39,9 @@ std::vector<Voxel *> frontiers;
 std::vector<Voxel *> voxels;
 std::map<std::string, Voxel *> voxelo;
 Quat startDestQuaternion;
-std::string directions[6] = {"left", "right", "btm", "top", "back", "front"};
-std::string directionsNoTop[6] = {"left", "right", "btm", "back", "front"};
-std::string directionsOnlyBtm[6] = {"btm"};
+// std::string directionsAll[6] = {"left", "right", "btm", "top", "back", "front"};
+// std::string directionsNoTop[6] = {"left", "right", "btm", "back", "front"};
+// std::string directionsOnlyBtm[6] = {"btm"};
 //
 bool isWalk = true;
 
@@ -86,15 +86,8 @@ void reset() {
   frontiers.clear();
   waypointResult.clear();
 
-  // // pure realtime, no any cache
-  // voxels.clear();
-  // voxelo.clear();
-
-  // simple cache
-  int len = voxels.size();
-  for (int i = 0; i < len; i++) {
-    resetVoxelAStar(voxels[i]);
-  }
+  voxels.clear();
+  voxelo.clear();
 }
 
 float roundToHeightTolerance(float y) {
@@ -157,13 +150,15 @@ void simplifyWaypointResult(Voxel *result) {
 }
 
 Voxel *getVoxel(Vec position) {
-  // return voxelo[`${position.x}_${position.y}_${position.z}`];
   return voxelo[std::to_string(position.x)+"_"+std::to_string(position.y)+"_"+std::to_string(position.z)];
 }
 
 void setVoxelo(Voxel *voxel) {
-  // voxelo[`${voxel.position.x}_${voxel.position.y}_${voxel.position.z}`] = voxel;
   voxelo[std::to_string(voxel->position.x)+"_"+std::to_string(voxel->position.y)+"_"+std::to_string(voxel->position.z)] = voxel;
+}
+
+bool detect(Vec *position) {
+  return detect(position, false);
 }
 
 bool detect(Vec *position, bool isGlobal) {
@@ -215,21 +210,12 @@ bool detect(Vec *position, bool isGlobal) {
 }
 
 Voxel *createVoxel(Vec position) {
-  localVoxel.position = position;
-  localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
-  iterDetect = 0;
-  detect(&localVoxel.position, 0);
-  localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
-
-  Voxel *existingVoxel = getVoxel(localVoxel.position);
-  if(existingVoxel) return existingVoxel;
-
   Voxel *voxel = (Voxel *)malloc(sizeof(Voxel)); // https://stackoverflow.com/a/18041130/3596736
   *voxel = Voxel();
   voxels.push_back(voxel);
   resetVoxelAStar(voxel);
 
-  voxel->position = localVoxel.position;
+  voxel->position = position;
   setVoxelo(voxel);
 
   return voxel;
@@ -266,42 +252,110 @@ void found(Voxel *voxel) {
 }
 
 void generateVoxelMapLeft(Voxel *currentVoxel) {
-  localVector = currentVoxel->position;
-  localVector.x += -1;
-  Voxel *leftVoxel = createVoxel(localVector);
-  currentVoxel->_leftVoxel = leftVoxel;
-  if (leftVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+  localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+
+  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  if (!neighborVoxel) {
+    bool collide = detect(&localVectorGenerateVoxelMap);
+    if (!collide) {
+      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+    }
+  }
+
+  if (neighborVoxel) {
+    currentVoxel->_leftVoxel = neighborVoxel;
     currentVoxel->_canLeft = true;
   }
 }
 
 void generateVoxelMapRight(Voxel *currentVoxel) {
-  localVector = currentVoxel->position;
-  localVector.x += 1;
-  Voxel *rightVoxel = createVoxel(localVector);
-  currentVoxel->_rightVoxel = rightVoxel;
-  if (rightVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+  localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+
+  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  if (!neighborVoxel) {
+    bool collide = detect(&localVectorGenerateVoxelMap);
+    if (!collide) {
+      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+    }
+  }
+
+  if (neighborVoxel) {
+    currentVoxel->_rightVoxel = neighborVoxel;
     currentVoxel->_canRight = true;
   }
 }
 
 void generateVoxelMapBtm(Voxel *currentVoxel) {
-  localVector = currentVoxel->position;
-  localVector.z += -1;
-  Voxel *btmVoxel = createVoxel(localVector);
-  currentVoxel->_btmVoxel = btmVoxel;
-  if (btmVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+  localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+
+  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  if (!neighborVoxel) {
+    bool collide = detect(&localVectorGenerateVoxelMap);
+    if (!collide) {
+      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+    }
+  }
+
+  if (neighborVoxel) {
+    currentVoxel->_btmVoxel = neighborVoxel;
     currentVoxel->_canBtm = true;
   }
 }
 
 void generateVoxelMapTop(Voxel *currentVoxel) {
-  localVector = currentVoxel->position;
-  localVector.z += 1;
-  Voxel *topVoxel = createVoxel(localVector);
-  currentVoxel->_topVoxel = topVoxel;
-  if (topVoxel->position.y - currentVoxel->position.y < heightTolerance) {
+  localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+
+  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  if (!neighborVoxel) {
+    bool collide = detect(&localVectorGenerateVoxelMap);
+    if (!collide) {
+      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+    }
+  }
+
+  if (neighborVoxel) {
+    currentVoxel->_topVoxel = neighborVoxel;
     currentVoxel->_canTop = true;
+  }
+}
+
+void generateVoxelMapBack(Voxel *currentVoxel) {
+  localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+
+  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  if (!neighborVoxel) {
+    bool collide = detect(&localVectorGenerateVoxelMap);
+    if (!collide) {
+      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+    }
+  }
+
+  if (neighborVoxel) {
+    currentVoxel->_backVoxel = neighborVoxel;
+    currentVoxel->_canBack = true;
+  }
+}
+
+void generateVoxelMapFront(Voxel *currentVoxel) {
+  localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+
+  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  if (!neighborVoxel) {
+    bool collide = detect(&localVectorGenerateVoxelMap);
+    if (!collide) {
+      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+    }
+  }
+
+  if (neighborVoxel) {
+    currentVoxel->_frontVoxel = neighborVoxel;
+    currentVoxel->_canFront = true;
   }
 }
 
@@ -310,10 +364,13 @@ bool compareVoxelPriority(Voxel *a, Voxel *b) {
 }
 
 void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
-  float newCost = prevVoxel->_costSoFar + 1;
+  // float newCost = prevVoxel->_costSoFar + 1;
+  float newCost = prevVoxel->_costSoFar + voxel->position.distanceTo(prevVoxel->position); // todo: performace: use already known direction instead of distanceTo().
+
   // if (voxel->_isReached === false || newCost < voxel->_costSoFar) {
   if (voxel->_isReached == false) {
     // Seems no need `|| newCost < voxel->_costSoFar` ? Need? http://disq.us/p/2mgpazs
+
     voxel->_isReached = true;
     voxel->_costSoFar = newCost;
 
@@ -322,7 +379,7 @@ void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
     voxel->_priority = voxel->position.distanceTo(dest);
     voxel->_priority += newCost;
     frontiers.push_back(voxel);
-    // frontiers.sort((a, b) => a._priority - b._priority);
+    // js: frontiers.sort((a, b) => a._priority - b._priority);
     sort(frontiers.begin(), frontiers.end(), compareVoxelPriority);
 
     voxel->_isFrontier = true;
@@ -343,31 +400,52 @@ void step() {
   if (isFound) return;
 
   Voxel *currentVoxel = frontiers[0];
-  frontiers.erase(frontiers.begin()); // shift
+  frontiers.erase(frontiers.begin()); // js: shift
   currentVoxel->_isFrontier = false;
 
-  if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
-  if (currentVoxel->_canLeft) {
-    stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
-    if (isFound) return;
-  }
+  // std::string *directions;
+  // unsigned int numDirections;
+  
+  bool canBtm = !detect(&localVectorStep);
+  Voxel *btmVoxel = getVoxel(localVectorStep);
 
-  if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
-  if (currentVoxel->_canRight) {
-    stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
-    if (isFound) return;
+  if (!(isWalk && canBtm)) {
+    if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
+    if (currentVoxel->_canLeft) {
+      stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
+      if (isFound) return;
+    }
+
+    if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
+    if (currentVoxel->_canRight) {
+      stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
+      if (isFound) return;
+    }
+
+    if (!(btmVoxel && btmVoxel == currentVoxel->_prev))
+      if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
+      if (currentVoxel->_canTop) {
+        stepVoxel(currentVoxel->_topVoxel, currentVoxel);
+        if (isFound) return;
+      }
+
+    if (!currentVoxel->_backVoxel) generateVoxelMapBack(currentVoxel);
+    if (currentVoxel->_canBack) {
+      stepVoxel(currentVoxel->_backVoxel, currentVoxel);
+      if (isFound) return;
+    }
+
+    if (!currentVoxel->_frontVoxel) generateVoxelMapFront(currentVoxel);
+    if (currentVoxel->_canFront) {
+      stepVoxel(currentVoxel->_frontVoxel, currentVoxel);
+      if (isFound) return;
+    }
   }
 
   if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
   if (currentVoxel->_canBtm) {
     stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
     if (isFound) return;
-  }
-
-  if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
-  if (currentVoxel->_canTop) {
-    stepVoxel(currentVoxel->_topVoxel, currentVoxel);
-    // if (isFound) return
   }
 }
 
@@ -413,8 +491,6 @@ std::vector<Voxel *> getVoxels() {
 
 void detectDestGlobal(Vec *position, int detectDir) {
   if (iterDetect >= maxIterDetect) {
-    // console.warn('maxIterDetect reached! High probability created wrong destVoxel with wrong position.y!');
-    // Use raycast first? No, raycast can only handle line not voxel.
     return;
   }
   iterDetect++;

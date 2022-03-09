@@ -20,10 +20,14 @@ namespace PathFinder {
     Voxel *_rightVoxel = NULL;
     Voxel *_btmVoxel = NULL;
     Voxel *_topVoxel = NULL;
+    Voxel *_backVoxel = NULL;
+    Voxel *_frontVoxel = NULL;
     bool _canLeft = false;
     bool _canRight = false;
     bool _canBtm = false;
     bool _canTop = false;
+    bool _canBack = false;
+    bool _canFront = false;
     bool _isPath = false;
     bool _isFrontier = false;
   };
