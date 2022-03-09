@@ -144,13 +144,7 @@ class Matrix {
 			te[ 14 ] = z;
     }
 
-    void setPosition(Vec position) {
-      float *te = this->elements;
-      
-			te[ 12 ] = position.x;
-			te[ 13 ] = position.y;
-			te[ 14 ] = position.z;
-    }
+    void setPosition(Vec position);
 
     void identity() {
       float *te = this->elements;

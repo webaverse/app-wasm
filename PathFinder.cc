@@ -157,10 +157,6 @@ void setVoxelo(Voxel *voxel) {
   voxelo[std::to_string(voxel->position.x)+"_"+std::to_string(voxel->position.y)+"_"+std::to_string(voxel->position.z)] = voxel;
 }
 
-bool detect(Vec *position) {
-  return detect(position, false);
-}
-
 bool detect(Vec *position, bool isGlobal) {
 
   if(isGlobal) {
@@ -207,6 +203,10 @@ bool detect(Vec *position, bool isGlobal) {
     }
   }
   return anyHadHit;
+}
+
+bool detect(Vec *position) {
+  return detect(position, false);
 }
 
 Voxel *createVoxel(Vec position) {
@@ -405,6 +405,27 @@ void step() {
 
   // std::string *directions;
   // unsigned int numDirections;
+  // if (isWalk) {
+  //   localVectorStep = currentVoxel->position;
+  //   localVectorStep.y -= heightTolerance;
+  //   bool canBtm = !detect(&localVectorStep);
+  //   Voxel *btmVoxel = getVoxel(localVectorStep);
+  //   if (canBtm) {
+  //     if (btmVoxel && btmVoxel == currentVoxel->_prev) {
+  //       directions = directionsNoTop;
+  //       numDirections = directionsNoTop->length();
+  //     } else {
+  //       directions = directionsOnlyBtm;
+  //       numDirections = directionsOnlyBtm->length();
+  //     }
+  //   } else {
+  //     directions = directionsAll;
+  //     numDirections = directionsAll->length();
+  //   }
+  // } else {
+  //   directions = directionsAll;
+  //   numDirections = directionsAll->length();
+  // }
   
   bool canBtm = !detect(&localVectorStep);
   Voxel *btmVoxel = getVoxel(localVectorStep);

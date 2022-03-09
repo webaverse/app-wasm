@@ -142,6 +142,14 @@ void Matrix::lookAt(Vec eye, Vec target, Vec up) {
   te[ 2 ] = _x.z; te[ 6 ] = _y.z; te[ 10 ] = _z.z;
 }
 
+void Matrix::setPosition(Vec position) {
+  float *te = this->elements;
+  
+  te[ 12 ] = position.x;
+  te[ 13 ] = position.y;
+  te[ 14 ] = position.z;
+}
+
 Vec &Vec::applyQuaternion(const Quat &q) {
   // const float x = this->x, y = this->y, z = this->z;
   const float qx = q.x, qy = q.y, qz = q.z, qw = q.w;
