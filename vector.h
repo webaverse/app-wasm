@@ -136,6 +136,22 @@ class Matrix {
 
     void lookAt(Vec eye, Vec target, Vec up);
 
+    void setPosition(float x, float y, float z) {
+      float *te = this->elements;
+      
+			te[ 12 ] = x;
+			te[ 13 ] = y;
+			te[ 14 ] = z;
+    }
+
+    void setPosition(Vec position) {
+      float *te = this->elements;
+      
+			te[ 12 ] = position.x;
+			te[ 13 ] = position.y;
+			te[ 14 ] = position.z;
+    }
+
     void identity() {
       float *te = this->elements;
 

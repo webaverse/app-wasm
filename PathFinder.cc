@@ -11,6 +11,16 @@ namespace PathFinder {
 
 std::vector<PxRigidActor *> actors;
 
+Vec localVectorZero;
+Vec localVectorGetPath;
+Vec localVectorGenerateVoxelMap;
+Vec localVectorInterpoWaypointResult;
+Vec localVectorInterpoWaypointResult2;
+Vec localVectorDetect;
+Vec localVectorStep;
+Vec up = Vec(0, 1, 0);
+Matrix localmatrix;
+
 float voxelHeight = 1.65;
 float heightTolerance = 0.5;
 unsigned int maxIterStep = 1000;
@@ -87,6 +97,10 @@ void reset() {
   }
 }
 
+float roundToHeightTolerance(float y) {
+  return round(y * 2) / 2; // Round to 0.5 because heightTolerance is 0.5;
+}
+
 void interpoWaypointResult() {
   Voxel *tempResult = waypointResult[0];
   waypointResult.erase(waypointResult.begin());
@@ -152,12 +166,17 @@ void setVoxelo(Voxel *voxel) {
   voxelo[std::to_string(voxel->position.x)+"_"+std::to_string(voxel->position.y)+"_"+std::to_string(voxel->position.z)] = voxel;
 }
 
-void detect(Voxel *voxel, int detectDir) {
+bool detect(Vec *position, bool isGlobal) {
 
-  if (iterDetect >= maxIterDetect) return;
-  iterDetect = iterDetect + 1;
-
-  PxTransform geomPose(PxVec3{voxel->position.x, voxel->position.y, voxel->position.z});
+  if(isGlobal) {
+    localVectorDetect = *position;
+  } else {
+    localVectorDetect = *position;
+    localVectorDetect.applyQuaternion(startDestQuaternion);
+    localVectorDetect += startGlobal;
+  }
+  PxTransform geomPose(PxVec3{localVectorDetect.x, localVectorDetect.y, localVectorDetect.z});
+  // todo: quaternion
   
   bool anyHadHit = false;
   {
@@ -192,38 +211,14 @@ void detect(Voxel *voxel, int detectDir) {
       }
     }
   }
-  if (detectDir == 0) {
-    if (anyHadHit) {
-      detectDir = 1;
-    } else {
-      detectDir = -1;
-    }
-  }
-
-  float detectStep = 0.1;
-  if (detectDir == 1) {
-    if (anyHadHit) {
-      voxel->position.y += detectDir * detectStep;
-      detect(voxel, detectDir);
-    } else {
-      // do nothing, stop recur
-    }
-  } else if (detectDir == -1) {
-    if (anyHadHit) {
-      voxel->position.y += detectStep;
-      // do nothing, stop recur
-    } else {
-      voxel->position.y += detectDir * detectStep;
-      detect(voxel, detectDir);
-    }
-  }
+  return anyHadHit;
 }
 
 Voxel *createVoxel(Vec position) {
   localVoxel.position = position;
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
   iterDetect = 0;
-  detect(&localVoxel, 0);
+  detect(&localVoxel.position, 0);
   localVoxel.position.y = std::round(localVoxel.position.y * 10) / 10; // Round position.y to 0.1 because detectStep is 0.1; // Need round both input and output of `detect()`, because of float calc precision problem. // TODO: Does cpp has precision problem too?
 
   Voxel *existingVoxel = getVoxel(localVoxel.position);
@@ -416,15 +411,15 @@ std::vector<Voxel *> getVoxels() {
   return voxels;
 }
 
-void detectDestGlobal(vec3 *position, int detectDir) {
-  if (this->iterDetect >= this->maxIterDetect) {
+void detectDestGlobal(Vec *position, int detectDir) {
+  if (iterDetect >= maxIterDetect) {
     // console.warn('maxIterDetect reached! High probability created wrong destVoxel with wrong position.y!');
     // Use raycast first? No, raycast can only handle line not voxel.
     return;
   }
-  this->iterDetect++;
+  iterDetect++;
 
-  const collide = this->detect(position, true);
+  bool collide = detect(position, true);
 
   if (detectDir == 0) {
     if (collide) {
@@ -436,18 +431,18 @@ void detectDestGlobal(vec3 *position, int detectDir) {
 
   if (detectDir == 1) {
     if (collide) {
-      position.y += detectDir * this->heightTolerance;
-      this->detectDestGlobal(position, detectDir);
+      position->y += detectDir * heightTolerance;
+      detectDestGlobal(position, detectDir);
     } else {
       // do nothing, stop recur
     }
   } else if (detectDir == -1) {
     if (collide) {
-      position.y += this->heightTolerance;
+      position->y += heightTolerance;
       // do nothing, stop recur
     } else {
-      position.y += detectDir * this->heightTolerance;
-      this->detectDestGlobal(position, detectDir);
+      position->y += detectDir * heightTolerance;
+      detectDestGlobal(position, detectDir);
     }
   }
 }
@@ -461,12 +456,32 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
     detectDestGlobal(&destGlobal, -1);
   }
 
-  start.x = std::round(_start.x);
-  start.y = _start.y;
-  start.z = std::round(_start.z);
-  dest.x = std::round(_dest.x);
-  dest.y = _dest.y;
-  dest.z = std::round(_dest.z);
+  localmatrix.identity();
+  if(isWalk) {
+    localVectorGetPath = destGlobal;
+    localVectorGetPath.y = startGlobal.y;
+    localmatrix.lookAt(localVectorGetPath, startGlobal, up);
+  } else {
+    localmatrix.lookAt(destGlobal, startGlobal, up);
+  }
+
+  startDestQuaternion.setFromRotationMatrix(localmatrix);
+
+  start.x = 0;
+  start.y = 0;
+  start.z = 0;
+  if(isWalk) {
+    dest.x = 0;
+    dest.y = roundToHeightTolerance(destGlobal.y - startGlobal.y);
+    localVectorGetPath = destGlobal - startGlobal;
+    localVectorGetPath.y = 0;
+    dest.z = localVectorGetPath.magnitude();
+  } else {
+    dest.x = 0;
+    dest.y = 0;
+    localVectorGetPath = destGlobal - startGlobal;
+    dest.z = localVectorGetPath.magnitude();
+  }
 
   startVoxel = createVoxel(start);
   startVoxel->_isStart = true;
@@ -483,34 +498,40 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   } else {
     untilFound();
     if (isFound) {
-      interpoWaypointResult();
-      simplifyWaypointResult(waypointResult[0]);
       waypointResult.erase(waypointResult.begin()); // waypointResult.shift();
     }
   }
 
-  // test
-  Matrix matrix;
-  matrix.identity();
-  matrix.lookAt(Vec(0,0,0), Vec(1,1,1), Vec(0,1,0));
-  waypointResult[0]->position.x = matrix.elements[0];
-  waypointResult[0]->position.y = matrix.elements[1];
-  waypointResult[0]->position.z = matrix.elements[2];
-  waypointResult[1]->position.x = matrix.elements[3];
-  waypointResult[1]->position.y = matrix.elements[4];
-  waypointResult[1]->position.z = matrix.elements[5];
-  waypointResult[2]->position.x = matrix.elements[6];
-  waypointResult[2]->position.y = matrix.elements[7];
-  waypointResult[2]->position.z = matrix.elements[8];
-  waypointResult[3]->position.x = matrix.elements[9];
-  waypointResult[3]->position.y = matrix.elements[10];
-  waypointResult[3]->position.z = matrix.elements[11];
-  waypointResult[4]->position.x = matrix.elements[12];
-  waypointResult[4]->position.y = matrix.elements[13];
-  waypointResult[4]->position.z = matrix.elements[14];
-  waypointResult[5]->position.x = matrix.elements[15];
-  waypointResult[5]->position.y = 0;
-  waypointResult[5]->position.z = 0;
+  if (isFound) {
+    for (int i = 0; i < waypointResult.size(); i++) {
+      Voxel *result = waypointResult[i];
+      result->position.applyQuaternion(startDestQuaternion);
+      result->position += startGlobal;
+    }
+  }
+
+  // // test
+  // Matrix matrix;
+  // matrix.identity();
+  // matrix.lookAt(Vec(0,0,0), Vec(1,1,1), Vec(0,1,0));
+  // waypointResult[0]->position.x = matrix.elements[0];
+  // waypointResult[0]->position.y = matrix.elements[1];
+  // waypointResult[0]->position.z = matrix.elements[2];
+  // waypointResult[1]->position.x = matrix.elements[3];
+  // waypointResult[1]->position.y = matrix.elements[4];
+  // waypointResult[1]->position.z = matrix.elements[5];
+  // waypointResult[2]->position.x = matrix.elements[6];
+  // waypointResult[2]->position.y = matrix.elements[7];
+  // waypointResult[2]->position.z = matrix.elements[8];
+  // waypointResult[3]->position.x = matrix.elements[9];
+  // waypointResult[3]->position.y = matrix.elements[10];
+  // waypointResult[3]->position.z = matrix.elements[11];
+  // waypointResult[4]->position.x = matrix.elements[12];
+  // waypointResult[4]->position.y = matrix.elements[13];
+  // waypointResult[4]->position.z = matrix.elements[14];
+  // waypointResult[5]->position.x = matrix.elements[15];
+  // waypointResult[5]->position.y = 0;
+  // waypointResult[5]->position.z = 0;
 
   return waypointResult;
 }
