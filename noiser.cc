@@ -162,7 +162,7 @@ void Noiser::fillBiomes(int ox, int oz, int numCells, unsigned char *biomes, uns
 }
 
 void Noiser::fillElevations(int ox, int oz, int numCells, float *elevations) {
-  int numCellsOverscan = numCells + 1;
+  int numCellsOverscan = numCells + 3;
   unsigned int index = 0;
   for (int z = 0; z < numCellsOverscan; z++) {
     for (int x = 0; x < numCellsOverscan; x++) {

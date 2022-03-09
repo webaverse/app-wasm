@@ -376,7 +376,7 @@ void density(
 }
 
 void march(
-	int x, int y, int z, int segment,
+	int x, int y, int z, int segment, Vector3 chunkMin, Vector3 chunkMax,
 	const std::vector<Vector4> & points,
     std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<float> & biomes, std::vector<int> & indices,
 	std::map<std::string, int> & vertexDic, int & index, unsigned char biome
@@ -506,7 +506,7 @@ void createChunk(
 ) {
     Noiser *noiser = new Noiser(0);
 
-    int pointCount = (segment + 1) * (segment + 1);
+    int pointCount = (segment + 3) * (segment + 3);
 
     unsigned char biomes[pointCount];
     unsigned char temperature;
@@ -528,32 +528,40 @@ void createChunk(
 	Vector3 originPos{origin[0], origin[1], origin[2]};
 	int index = 0;
 
-	points.resize((int)pow(segment + 1, 3));
+	points.resize((int)pow(segment + 3, 3));
 
 	// density
 
-	for (int i = 0; i <= segment; i++) {
-		for (int j = 0; j <= segment; j++) {
-			for (int k = 0; k <= segment; k++) {
+	for (int i = 0; i <= segment + 2; i++) {
+		for (int j = 0; j <= segment + 2; j++) {
+			for (int k = 0; k <= segment + 2; k++) {
 				// density(i, j, k, originPos, unitSize, segment, points);
 
                 Vector3 curPos{
-                    originPos.x + i * unitSize, originPos.y + j * unitSize, originPos.z + k * unitSize
+                    originPos.x + (i - 1) * unitSize, originPos.y + (j - 1) * unitSize, originPos.z + (k - 1) * unitSize
                 };
-                int pointIndex = indexFromCoord(i, j, k, segment);
+                int pointIndex = indexFromCoord(i, j, k, segment + 2);
                 points[pointIndex] = Vector4{
-                    curPos.x, curPos.y, curPos.z, elevations[k * (segment + 1) + i] - curPos.y
+                    curPos.x, curPos.y, curPos.z, elevations[k * (segment + 3) + i] - curPos.y
                 };
 			}
 		}
 	}
 
+    float epsilon = chunkSize * 1e-4;
+
+    Vector3 chunkMin{origin[0] - epsilon, origin[1] - epsilon, origin[2] - epsilon};
+    Vector3 chunkMax{origin[0] + chunkSize + epsilon, origin[1] + chunkSize + epsilon, origin[2] + chunkSize + epsilon};
+
 	// march cubes
 
-	for (int i = 0; i < segment; i++) {
-		for (int j = 0; j < segment; j++) {
-			for (int k = 0; k < segment; k++) {
-				march(i, j, k, segment, points, vertices, normals, vertexBiomes, indices, vertexDic, index, biomes[k * (segment + 1) + i]);
+	for (int i = 0; i < segment + 2; i++) {
+		for (int j = 0; j < segment + 2; j++) {
+			for (int k = 0; k < segment + 2; k++) {
+				march(i, j, k, segment + 2, chunkMin, chunkMax,
+                    points, vertices, normals, vertexBiomes, indices, vertexDic, index,
+                    0);
+                    // biomes[k * (segment + 1) + i]);
 			}
 		}
 	}
