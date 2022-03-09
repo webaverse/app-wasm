@@ -134,6 +134,17 @@ class Matrix {
       );
     }
 
+    void lookAt(Vec eye, Vec target, Vec up);
+
+    void identity() {
+      float *te = this->elements;
+
+      te[ 0 ] = 1; te[ 4 ] = 0; te[ 8 ] = 0; te[ 12 ] = 0;
+      te[ 1 ] = 0; te[ 5 ] = 1; te[ 9 ] = 0; te[ 13 ] = 0;
+      te[ 2 ] = 0; te[ 6 ] = 0; te[ 10 ] = 1; te[ 14 ] = 0;
+      te[ 3 ] = 0; te[ 7 ] = 0; te[ 11 ] = 0; te[ 15 ] = 1;
+    }
+
     static Matrix fromArray(float *elements) {
       return Matrix(elements);
     }

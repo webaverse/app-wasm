@@ -432,6 +432,29 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
     }
   }
 
+  // test
+  Matrix matrix;
+  matrix.identity();
+  matrix.lookAt(Vec(0,0,0), Vec(1,1,1), Vec(0,1,0));
+  waypointResult[0]->position.x = matrix.elements[0];
+  waypointResult[0]->position.y = matrix.elements[1];
+  waypointResult[0]->position.z = matrix.elements[2];
+  waypointResult[1]->position.x = matrix.elements[3];
+  waypointResult[1]->position.y = matrix.elements[4];
+  waypointResult[1]->position.z = matrix.elements[5];
+  waypointResult[2]->position.x = matrix.elements[6];
+  waypointResult[2]->position.y = matrix.elements[7];
+  waypointResult[2]->position.z = matrix.elements[8];
+  waypointResult[3]->position.x = matrix.elements[9];
+  waypointResult[3]->position.y = matrix.elements[10];
+  waypointResult[3]->position.z = matrix.elements[11];
+  waypointResult[4]->position.x = matrix.elements[12];
+  waypointResult[4]->position.y = matrix.elements[13];
+  waypointResult[4]->position.z = matrix.elements[14];
+  waypointResult[5]->position.x = matrix.elements[15];
+  waypointResult[5]->position.y = 0;
+  waypointResult[5]->position.z = 0;
+
   return waypointResult;
 }
 
