@@ -11,6 +11,12 @@ namespace PathFinder {
 
 std::vector<PxRigidActor *> actors;
 
+// for debug
+// Vec _vec;
+// bool _bool;
+// Voxel *_voxel;
+// end for debug
+
 Vec localVectorZero;
 Vec localVectorGetPath;
 Vec localVectorGenerateVoxelMap;
@@ -63,7 +69,9 @@ Vec localVector2;
 void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
 
-  geom = PxBoxGeometry(0.5, _hy, 0.5);
+  // todo:
+  // geom = PxBoxGeometry(0.5, _hy, 0.5); // formal
+  geom = PxBoxGeometry(0.5, voxelHeightHalf, 0.5); // test
 
   numIgnorePhysicsIds = _numIgnorePhysicsIds;
   ignorePhysicsIds = _ignorePhysicsIds;
@@ -91,7 +99,7 @@ void reset() {
 }
 
 float roundToHeightTolerance(float y) {
-  return round(y * 2) / 2; // Round to 0.5 because heightTolerance is 0.5;
+  return round(y * 2.) / 2.; // Round to 0.5 because heightTolerance is 0.5;
 }
 
 void interpoWaypointResult() {
@@ -253,9 +261,12 @@ void found(Voxel *voxel) {
 
 void generateVoxelMapLeft(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.x += -1;
+  // _vec = localVectorGenerateVoxelMap;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
 
   Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  // _voxel = neighborVoxel;
   if (!neighborVoxel) {
     bool collide = detect(&localVectorGenerateVoxelMap);
     if (!collide) {
@@ -271,6 +282,7 @@ void generateVoxelMapLeft(Voxel *currentVoxel) {
 
 void generateVoxelMapRight(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.x += 1;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
 
   Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
@@ -289,6 +301,7 @@ void generateVoxelMapRight(Voxel *currentVoxel) {
 
 void generateVoxelMapBtm(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.y += -heightTolerance;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
 
   Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
@@ -307,6 +320,7 @@ void generateVoxelMapBtm(Voxel *currentVoxel) {
 
 void generateVoxelMapTop(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.y += heightTolerance;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
 
   Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
@@ -325,6 +339,7 @@ void generateVoxelMapTop(Voxel *currentVoxel) {
 
 void generateVoxelMapBack(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.z += -1;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
 
   Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
@@ -343,6 +358,7 @@ void generateVoxelMapBack(Voxel *currentVoxel) {
 
 void generateVoxelMapFront(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
+  localVectorGenerateVoxelMap.z += 1;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
 
   Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
@@ -400,6 +416,7 @@ void step() {
   if (isFound) return;
 
   Voxel *currentVoxel = frontiers[0];
+  // _voxel = currentVoxel;
   frontiers.erase(frontiers.begin()); // js: shift
   currentVoxel->_isFrontier = false;
 
@@ -428,9 +445,11 @@ void step() {
   // }
   
   bool canBtm = !detect(&localVectorStep);
+  // _bool = canBtm;
   Voxel *btmVoxel = getVoxel(localVectorStep);
+  // _voxel = btmVoxel;
 
-  if (!(isWalk && canBtm)) {
+  // if (!(isWalk && canBtm)) {
     if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
     if (currentVoxel->_canLeft) {
       stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
@@ -443,12 +462,13 @@ void step() {
       if (isFound) return;
     }
 
-    if (!(btmVoxel && btmVoxel == currentVoxel->_prev))
+    // if (!(btmVoxel && btmVoxel == currentVoxel->_prev)) {
       if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
       if (currentVoxel->_canTop) {
         stepVoxel(currentVoxel->_topVoxel, currentVoxel);
         if (isFound) return;
       }
+    // }
 
     if (!currentVoxel->_backVoxel) generateVoxelMapBack(currentVoxel);
     if (currentVoxel->_canBack) {
@@ -461,7 +481,7 @@ void step() {
       stepVoxel(currentVoxel->_frontVoxel, currentVoxel);
       if (isFound) return;
     }
-  }
+  // }
 
   if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
   if (currentVoxel->_canBtm) {
@@ -572,12 +592,12 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
     dest.y = roundToHeightTolerance(destGlobal.y - startGlobal.y);
     localVectorGetPath = destGlobal - startGlobal;
     localVectorGetPath.y = 0;
-    dest.z = localVectorGetPath.magnitude();
+    dest.z = round(localVectorGetPath.magnitude());
   } else {
     dest.x = 0;
     dest.y = 0;
     localVectorGetPath = destGlobal - startGlobal;
-    dest.z = localVectorGetPath.magnitude();
+    dest.z = round(localVectorGetPath.magnitude());
   }
 
   startVoxel = createVoxel(start);
