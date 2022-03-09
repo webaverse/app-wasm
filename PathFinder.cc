@@ -11,29 +11,41 @@ namespace PathFinder {
 
 std::vector<PxRigidActor *> actors;
 
-float voxelHeight = 1.5;
-float voxelHeightHalf = voxelHeight / 2;
-float heightTolerance = 0.6;
-Vec start;
-Vec dest;
-float detectStep = 0.1;
+float voxelHeight = 1.65;
+float heightTolerance = 0.5;
+unsigned int maxIterStep = 1000;
+unsigned int *ignorePhysicsIds;
+//
+unsigned int iterStep = 0;
+bool allowNearest = true;
 unsigned int iterDetect = 0;
 unsigned int maxIterDetect = 2000;
-unsigned int iterStep = 0;
-unsigned int maxIterStep = 1000;
-bool allowNearest = true;
-unsigned int maxVoxelCacheLen = 10000;
-bool isFound = false;
+Vec start;
+Vec dest;
+Vec startGlobal;
+Vec destGlobal;
+float voxelHeightHalf = voxelHeight / 2;
 std::vector<Voxel *> frontiers;
 std::vector<Voxel *> voxels;
-std::vector<Voxel *> waypointResult;
 std::map<std::string, Voxel *> voxelo;
+Quat startDestQuaternion;
+std::string directions[6] = {"left", "right", "btm", "top", "back", "front"};
+std::string directionsNoTop[6] = {"left", "right", "btm", "back", "front"};
+std::string directionsOnlyBtm[6] = {"btm"};
+//
+bool isWalk = true;
+
+
+
+float detectStep = 0.1;
+unsigned int maxVoxelCacheLen = 10000;
+bool isFound = false;
+std::vector<Voxel *> waypointResult;
 Voxel localVoxel;
 Voxel *startVoxel;
 Voxel *destVoxel;
 PxBoxGeometry geom;
 unsigned int numIgnorePhysicsIds;
-unsigned int *ignorePhysicsIds;
 
 Vec localVector;
 Vec localVector2;
@@ -404,9 +416,50 @@ std::vector<Voxel *> getVoxels() {
   return voxels;
 }
 
+void detectDestGlobal(vec3 *position, int detectDir) {
+  if (this->iterDetect >= this->maxIterDetect) {
+    // console.warn('maxIterDetect reached! High probability created wrong destVoxel with wrong position.y!');
+    // Use raycast first? No, raycast can only handle line not voxel.
+    return;
+  }
+  this->iterDetect++;
+
+  const collide = this->detect(position, true);
+
+  if (detectDir == 0) {
+    if (collide) {
+      detectDir = 1;
+    } else {
+      detectDir = -1;
+    }
+  }
+
+  if (detectDir == 1) {
+    if (collide) {
+      position.y += detectDir * this->heightTolerance;
+      this->detectDestGlobal(position, detectDir);
+    } else {
+      // do nothing, stop recur
+    }
+  } else if (detectDir == -1) {
+    if (collide) {
+      position.y += this->heightTolerance;
+      // do nothing, stop recur
+    } else {
+      position.y += detectDir * this->heightTolerance;
+      this->detectDestGlobal(position, detectDir);
+    }
+  }
+}
+
 std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   reset();
-  if (voxels.size() > maxVoxelCacheLen) disposeVoxelCache();
+
+  startGlobal = _start;
+  destGlobal = _dest;
+  if(isWalk) {
+    detectDestGlobal(&destGlobal, -1);
+  }
 
   start.x = std::round(_start.x);
   start.y = _start.y;
