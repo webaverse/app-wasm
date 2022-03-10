@@ -27,20 +27,19 @@ Vec localVectorStep;
 Vec up = Vec(0, 1, 0);
 Matrix localmatrix;
 
-float voxelHeight = 1.65;
-float heightTolerance = 0.5;
-unsigned int maxIterStep = 1000;
+float heightTolerance;
+unsigned int maxIterStep;
 unsigned int *ignorePhysicsIds;
 //
 unsigned int iterStep = 0;
 bool allowNearest = true;
 unsigned int iterDetect = 0;
-unsigned int maxIterDetect = 2000;
+unsigned int maxIterDetect;
 Vec start;
 Vec dest;
 Vec startGlobal;
 Vec destGlobal;
-float voxelHeightHalf = voxelHeight / 2;
+float voxelHeightHalf;
 std::vector<Voxel *> frontiers;
 std::vector<Voxel *> voxels;
 std::map<std::string, Voxel *> voxelo;
@@ -53,8 +52,8 @@ bool isWalk = true;
 
 
 
-float detectStep = 0.1;
-unsigned int maxVoxelCacheLen = 10000;
+// float detectStep = 0.1; // todo: clean;
+// unsigned int maxVoxelCacheLen = 10000; // todo: clean;
 bool isFound = false;
 std::vector<Voxel *> waypointResult;
 Voxel localVoxel;
@@ -68,6 +67,12 @@ Vec localVector2;
 
 void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
+
+  voxelHeightHalf = _hy;
+  heightTolerance = _heightTolerance;
+  maxIterStep = _maxIterStep;
+  maxIterDetect = _maxIterdetect;
+
 
   // todo:
   // geom = PxBoxGeometry(0.5, _hy, 0.5); // formal
