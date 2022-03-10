@@ -110,6 +110,7 @@ void reset() {
 float roundToHeightTolerance(float y) {
   // return round(y * 2.) / 2.; // Round to 0.5 because heightTolerance is 0.5;
   y = round(y * (1 / heightTolerance)) / (1 / heightTolerance);
+  // y = round(y * 10) / 10; // js: y = parseFloat(y.toFixed(1));
   a1float = y;
   a1float = y;
   return y;
@@ -172,7 +173,8 @@ void simplifyWaypointResult(Voxel *result) {
 
 Voxel *getVoxel(Vec position) {
   if (position.y == -0) position.y = 0;
-  std::string key = std::to_string(position.x)+"_"+std::to_string(position.y)+"_"+std::to_string(position.z);
+  // round y and multiply 10 to solve y = such as 0.6000000238418579 problem. why js no such problem?
+  std::string key = std::to_string(position.x)+"_"+std::to_string(round(position.y*10))+"_"+std::to_string(position.z);
   a1vec = position;
   a1vec = position;
   a1string = key;
@@ -182,7 +184,8 @@ Voxel *getVoxel(Vec position) {
 
 void setVoxelo(Voxel *voxel) {
   if (voxel->position.y == -0) voxel->position.y = 0;
-  std::string key = std::to_string(voxel->position.x)+"_"+std::to_string(voxel->position.y)+"_"+std::to_string(voxel->position.z);
+  // round y and multiply 10 to solve y = such as 0.6000000238418579 problem. why js no such problem?
+  std::string key = std::to_string(voxel->position.x)+"_"+std::to_string(round(voxel->position.y*10))+"_"+std::to_string(voxel->position.z);
   a1vec = voxel->position;
   a1vec = voxel->position;
   a1string = key;
