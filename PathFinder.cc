@@ -526,12 +526,12 @@ void untilFound() {
   }
 }
 
-void disposeVoxelCache() {
-  voxels.clear();
-  voxelo.clear();
-}
-
-std::vector<Voxel *> getVoxels() {
+std::vector<Voxel *> getVoxels() { // test
+  for (int i = 0; i < voxels.size(); i++) {
+    Voxel *voxel = voxels[i];
+    voxel->position.applyQuaternion(startDestQuaternion);
+    voxel->position += startGlobal;
+  }
   return voxels;
 }
 
