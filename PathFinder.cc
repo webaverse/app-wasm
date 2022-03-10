@@ -597,8 +597,10 @@ void detectDestGlobal(Vec *position, int detectDir) {
   }
 }
 
-std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
+std::vector<Voxel *> getPath(Vec _start, Vec _dest, bool _isWalk) {
   reset();
+
+  isWalk = _isWalk;
 
   startGlobal = _start;
   destGlobal = _dest;

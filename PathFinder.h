@@ -32,7 +32,7 @@ namespace PathFinder {
     bool _isFrontier = false;
   };
   void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
-  std::vector<Voxel *> getPath(Vec start, Vec dest);
+  std::vector<Voxel *> getPath(Vec start, Vec dest, bool isWalk);
 }
 
 #endif
