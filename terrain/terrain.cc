@@ -527,12 +527,12 @@ void createChunk(
 ) {
     Noiser *noiser = new Noiser(0);
 
-    int pointCount = (segment + 3) * (segment + 3);
+    // int pointCount = (segment + 3) * (segment + 3);
 
-    unsigned char biomes[pointCount];
+    unsigned char biomes[(segment + 1) * (segment + 1)];
     unsigned char temperature;
     unsigned char humidity;
-    float elevations[pointCount];
+    float elevations[(segment + 3) * (segment + 3)];
 
     int ox = (int)round(origin[0] / chunkSize);
     int oz = (int)round(origin[2] / chunkSize);
@@ -579,9 +579,19 @@ void createChunk(
 	for (int i = 0; i < segment + 2; i++) {
 		for (int j = 0; j < segment + 2; j++) {
 			for (int k = 0; k < segment + 2; k++) {
-				march(i, j, k, segment + 2, chunkMin, chunkMax,
+                unsigned char biome;
+
+                if (i == 0 || i == segment + 1 || j == 0 || j == segment + 1 || k == 0 || k == segment + 1) {
+                    biome = 0;
+                } else {
+                    biome = biomes[(k - 1) * (segment + 1) + (i - 1)];
+                }
+
+				march(
+                    i, j, k, segment + 2, chunkMin, chunkMax,
                     points, vertices, normals, vertexBiomes, indices, vertexDic, index,
-                    0);
+                    biome
+                );
                     // biomes[k * (segment + 1) + i]);
 			}
 		}
