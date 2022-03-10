@@ -11,14 +11,6 @@ namespace PathFinder {
 
 std::vector<PxRigidActor *> actors;
 
-// for debug
-float a1float;
-Vec a1vec;
-bool a1bool;
-Voxel *a1voxel;
-std::string a1string;
-// end for debug
-
 Vec localVectorZero;
 Vec localVectorGetPath;
 Vec localVectorGenerateVoxelMap;
@@ -32,7 +24,6 @@ Matrix localmatrix;
 float heightTolerance;
 unsigned int maxIterStep;
 unsigned int *ignorePhysicsIds;
-//
 unsigned int iterStep = 0;
 bool allowNearest = true;
 unsigned int iterDetect = 0;
@@ -46,16 +37,7 @@ std::vector<Voxel *> frontiers;
 std::vector<Voxel *> voxels;
 std::map<std::string, Voxel *> voxelo;
 Quat startDestQuaternion;
-// std::string directionsAll[6] = {"left", "right", "btm", "top", "back", "front"};
-// std::string directionsNoTop[6] = {"left", "right", "btm", "back", "front"};
-// std::string directionsOnlyBtm[6] = {"btm"};
-//
 bool isWalk = true;
-
-
-
-// float detectStep = 0.1; // todo: clean;
-unsigned int maxVoxelCacheLen = 10000; // todo: clean;
 bool isFound = false;
 std::vector<Voxel *> waypointResult;
 Voxel localVoxel;
@@ -67,21 +49,13 @@ unsigned int numIgnorePhysicsIds;
 Vec localVector;
 Vec localVector2;
 
-void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _detectStep, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _maxVoxelCacheLen, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
+void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
-
   voxelHeightHalf = _hy;
   heightTolerance = _heightTolerance;
   maxIterStep = _maxIterStep;
   maxIterDetect = _maxIterdetect;
-
-  maxVoxelCacheLen = _maxVoxelCacheLen;
-
-
-  // todo:
-  // geom = PxBoxGeometry(0.5, _hy, 0.5); // formal
-  geom = PxBoxGeometry(0.5, voxelHeightHalf, 0.5); // test
-
+  geom = PxBoxGeometry(0.5, voxelHeightHalf, 0.5);
   numIgnorePhysicsIds = _numIgnorePhysicsIds;
   ignorePhysicsIds = _ignorePhysicsIds;
 }
@@ -108,11 +82,7 @@ void reset() {
 }
 
 float roundToHeightTolerance(float y) {
-  // return round(y * 2.) / 2.; // Round to 0.5 because heightTolerance is 0.5;
   y = round(y * (1 / heightTolerance)) / (1 / heightTolerance);
-  // y = round(y * 10) / 10; // js: y = parseFloat(y.toFixed(1));
-  a1float = y;
-  a1float = y;
   return y;
 }
 
@@ -158,7 +128,7 @@ void simplifyWaypointResult(Voxel *result) {
       sgn(result->_next->_next->position.x - result->_next->position.x) == sgn(result->_next->position.x - result->position.x) &&
       sgn(result->_next->_next->position.z - result->_next->position.z) == sgn(result->_next->position.z - result->position.z)
     ) {
-      // waypointResult.splice(waypointResult.indexOf(result->_next), 1);
+      // js: waypointResult.splice(waypointResult.indexOf(result->_next), 1);
       int index = getIndex(waypointResult, result->_next);
       waypointResult.erase(waypointResult.begin() + index);
 
@@ -175,10 +145,6 @@ Voxel *getVoxel(Vec position) {
   if (position.y == -0) position.y = 0;
   // round y and multiply 10 to solve y = such as 0.6000000238418579 problem. why js no such problem?
   std::string key = std::to_string(position.x)+"_"+std::to_string(round(position.y*10))+"_"+std::to_string(position.z);
-  a1vec = position;
-  a1vec = position;
-  a1string = key;
-  a1string = key;
   return voxelo[key];
 }
 
@@ -186,10 +152,6 @@ void setVoxelo(Voxel *voxel) {
   if (voxel->position.y == -0) voxel->position.y = 0;
   // round y and multiply 10 to solve y = such as 0.6000000238418579 problem. why js no such problem?
   std::string key = std::to_string(voxel->position.x)+"_"+std::to_string(round(voxel->position.y*10))+"_"+std::to_string(voxel->position.z);
-  a1vec = voxel->position;
-  a1vec = voxel->position;
-  a1string = key;
-  a1string = key;
   voxelo[key] = voxel;
 }
 
@@ -290,11 +252,9 @@ void found(Voxel *voxel) {
 void generateVoxelMapLeft(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
   localVectorGenerateVoxelMap.x += -1;
-  // _vec = localVectorGenerateVoxelMap;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
 
   Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
-  // _voxel = neighborVoxel;
   if (!neighborVoxel) {
     bool collide = detect(&localVectorGenerateVoxelMap);
     if (!collide) {
@@ -408,18 +368,11 @@ bool compareVoxelPriority(Voxel *a, Voxel *b) {
 }
 
 void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
-  // float newCost = prevVoxel->_costSoFar + 1;
   float newCost = prevVoxel->_costSoFar + voxel->position.distanceTo(prevVoxel->position); // todo: performace: use already known direction instead of distanceTo().
 
-  // if (voxel->_isReached === false || newCost < voxel->_costSoFar) {
   if (voxel->_isReached == false) {
-    // Seems no need `|| newCost < voxel->_costSoFar` ? Need? http://disq.us/p/2mgpazs
-
     voxel->_isReached = true;
     voxel->_costSoFar = newCost;
-
-    // voxel->_priority = tmpVec2.set(voxel->_x, voxel->_z).manhattanDistanceTo(dest)
-    // voxel->_priority = tmpVec2.set(voxel->_x, voxel->_z).distanceToSquared(dest)
     voxel->_priority = voxel->position.distanceTo(dest);
     voxel->_priority += newCost;
     frontiers.push_back(voxel);
@@ -428,7 +381,6 @@ void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
 
     voxel->_isFrontier = true;
     voxel->_prev = prevVoxel;
-    // prevVoxel._next = voxel; // Can't assign _next here, because one voxel will has multiple _next. Need use `setNextOfPathVoxel()`.
 
     if (voxel->_isDest) {
       found(voxel);
@@ -438,7 +390,6 @@ void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
 
 void step() {
   if (frontiers.size() <= 0) {
-    // if (debugRender) console.log('finish');
     return;
   }
   if (isFound) return;
@@ -446,30 +397,6 @@ void step() {
   Voxel *currentVoxel = frontiers[0];
   frontiers.erase(frontiers.begin()); // js: shift
   currentVoxel->_isFrontier = false;
-
-  // std::string *directions;
-  // unsigned int numDirections;
-  // if (isWalk) {
-  //   localVectorStep = currentVoxel->position;
-  //   localVectorStep.y -= heightTolerance;
-  //   bool canBtm = !detect(&localVectorStep);
-  //   Voxel *btmVoxel = getVoxel(localVectorStep);
-  //   if (canBtm) {
-  //     if (btmVoxel && btmVoxel == currentVoxel->_prev) {
-  //       directions = directionsNoTop;
-  //       numDirections = directionsNoTop->length();
-  //     } else {
-  //       directions = directionsOnlyBtm;
-  //       numDirections = directionsOnlyBtm->length();
-  //     }
-  //   } else {
-  //     directions = directionsAll;
-  //     numDirections = directionsAll->length();
-  //   }
-  // } else {
-  //   directions = directionsAll;
-  //   numDirections = directionsAll->length();
-  // }
   
   if (isWalk) {
     localVectorStep = currentVoxel->position;
@@ -609,7 +536,6 @@ void untilFound() {
   iterStep = 0;
   while (frontiers.size() > 0 && !isFound) {
     if (iterStep >= maxIterStep) {
-      // console.log('maxIterDetect: untilFound');
 
       if (allowNearest) {
         float minDistanceSquared = std::numeric_limits<float>::infinity();
@@ -634,17 +560,6 @@ void untilFound() {
 
     step();
   }
-}
-
-std::vector<Voxel *> getVoxels() { // test
-  for (int i = 0; i < voxels.size(); i++) {
-    Voxel *voxel = voxels[i];
-    if (maxVoxelCacheLen >= 100) {
-      voxel->position.applyQuaternion(startDestQuaternion);
-      voxel->position += startGlobal;
-    }
-  }
-  return voxels;
 }
 
 void detectDestGlobal(Vec *position, int detectDir) {
@@ -732,7 +647,7 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
   } else {
     untilFound();
     if (isFound) {
-      waypointResult.erase(waypointResult.begin()); // waypointResult.shift();
+      waypointResult.erase(waypointResult.begin()); // js: waypointResult.shift();
     }
   }
 
@@ -743,29 +658,6 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest) {
       result->position += startGlobal;
     }
   }
-
-  // // test
-  // Matrix matrix;
-  // matrix.identity();
-  // matrix.lookAt(Vec(0,0,0), Vec(1,1,1), Vec(0,1,0));
-  // waypointResult[0]->position.x = matrix.elements[0];
-  // waypointResult[0]->position.y = matrix.elements[1];
-  // waypointResult[0]->position.z = matrix.elements[2];
-  // waypointResult[1]->position.x = matrix.elements[3];
-  // waypointResult[1]->position.y = matrix.elements[4];
-  // waypointResult[1]->position.z = matrix.elements[5];
-  // waypointResult[2]->position.x = matrix.elements[6];
-  // waypointResult[2]->position.y = matrix.elements[7];
-  // waypointResult[2]->position.z = matrix.elements[8];
-  // waypointResult[3]->position.x = matrix.elements[9];
-  // waypointResult[3]->position.y = matrix.elements[10];
-  // waypointResult[3]->position.z = matrix.elements[11];
-  // waypointResult[4]->position.x = matrix.elements[12];
-  // waypointResult[4]->position.y = matrix.elements[13];
-  // waypointResult[4]->position.z = matrix.elements[14];
-  // waypointResult[5]->position.x = matrix.elements[15];
-  // waypointResult[5]->position.y = 0;
-  // waypointResult[5]->position.z = 0;
 
   return waypointResult;
 }
