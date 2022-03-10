@@ -403,6 +403,7 @@ void step() {
     localVectorStep.y -= heightTolerance;
     bool canBtm = !detect(&localVectorStep);
     Voxel *btmVoxel = getVoxel(localVectorStep);
+    // todo: may can use `unordered_map` with dynamic key ( like js object ) to eliminate the redundant codes below.
     if (canBtm) {
       if (btmVoxel && btmVoxel == currentVoxel->_prev) {
         // directions = this.directionsNoTop;
