@@ -438,6 +438,7 @@ void march(
             int segs[3][2] = {{a0, b0}, {a2, b2}, {a1, b1}};
 
             int triangleVertexInices[3] = {0, 0, 0};
+            Vec triangleVertices[3];
 
             for (int i = 0; i < 3; i++) {
             	int v[2] = {segs[i][0], segs[i][1]};
@@ -451,51 +452,71 @@ void march(
 
             	if (vertexDic.find(vInx) != vertexDic.end()) {
             		vertexIndex = vertexDic[vInx];
+                    vP = vertices[vertexIndex];
             	} else {
             		vP = interpolateVerts(cubeCorners[v[0]], cubeCorners[v[1]]);
-            		vertexIndex = index;
-            		vertexDic[vInx] = vertexIndex;
-            		vertices.push_back(vP);
-                    normals.push_back({0.0, 0.0, 0.0});
-                    biomes.push_back(biome);
 
-                    // vertices[index * 3] = vP.x;
-                    // vertices[index * 3 + 1] = vP.y;
-                    // vertices[index * 3 + 2] = vP.z;
+                    if ( true
+                        // vP.x > chunkMin.x && vP.x < chunkMax.x &&
+                        // vP.y > chunkMin.y && vP.y < chunkMax.y &&
+                        // vP.z > chunkMin.z && vP.z < chunkMax.z
+                    ) {
+                        vertexIndex = index;
+                        vertexDic[vInx] = vertexIndex;
+                        vertices.push_back(vP);
+                        normals.push_back({0.0, 0.0, 0.0});
+                        biomes.push_back(biome);
 
-                    index++;
+                        // vertices[index * 3] = vP.x;
+                        // vertices[index * 3 + 1] = vP.y;
+                        // vertices[index * 3 + 2] = vP.z;
+
+                        index++;
+                    } else {
+                        vertexIndex = -1;
+                    }
+
             	}
 
                 triangleVertexInices[i] = vertexIndex;
+                triangleVertices[i] = Vec(vP.x, vP.y, vP.z);
+            }
 
-            	indices.push_back(vertexIndex);
-                // indices[faceIndex] = vertexIndex;
+            if (
+                triangleVertexInices[0] != -1 &&
+                triangleVertexInices[1] != -1 &&
+                triangleVertexInices[2] != -1
+            ) {
+                indices.push_back(triangleVertexInices[0]);
+                indices.push_back(triangleVertexInices[1]);
+                indices.push_back(triangleVertexInices[2]);
             }
 
             // calculate normals
 
             normals.resize(vertices.size());
 
-            Vec v[3];
+            // Vec v[3];
 
-            for (int i = 0; i < 3; i++) {
-                v[i] = Vec(
-                    vertices[triangleVertexInices[i]].x,
-                    vertices[triangleVertexInices[i]].y,
-                    vertices[triangleVertexInices[i]].z
-                );
-            }
+            // for (int i = 0; i < 3; i++) {
+            //     v[i] = Vec(
+            //         vertices[triangleVertexInices[i]].x,
+            //         vertices[triangleVertexInices[i]].y,
+            //         vertices[triangleVertexInices[i]].z
+            //     );
+            // }
 
-            Vec normal = (v[1] - v[0]) ^ (v[2] - v[1]);
+            Vec normal = (triangleVertices[1] - triangleVertices[0]) ^ (triangleVertices[2] - triangleVertices[1]);
 
             normal.normalize();
 
             for (int i = 0; i < 3; i++) {
-                normals[triangleVertexInices[i]].x += normal.x;
-                normals[triangleVertexInices[i]].y += normal.y;
-                normals[triangleVertexInices[i]].z += normal.z;
+                if (triangleVertexInices[i] != -1) {
+                    normals[triangleVertexInices[i]].x += normal.x;
+                    normals[triangleVertexInices[i]].y += normal.y;
+                    normals[triangleVertexInices[i]].z += normal.z;
+                }
             }
-
         }
 	}
 
