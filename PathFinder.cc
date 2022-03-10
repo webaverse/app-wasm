@@ -12,9 +12,11 @@ namespace PathFinder {
 std::vector<PxRigidActor *> actors;
 
 // for debug
-// Vec _vec;
-// bool _bool;
-// Voxel *_voxel;
+float a1float;
+Vec a1vec;
+bool a1bool;
+Voxel *a1voxel;
+std::string a1string;
 // end for debug
 
 Vec localVectorZero;
@@ -53,7 +55,7 @@ bool isWalk = true;
 
 
 // float detectStep = 0.1; // todo: clean;
-// unsigned int maxVoxelCacheLen = 10000; // todo: clean;
+unsigned int maxVoxelCacheLen = 10000; // todo: clean;
 bool isFound = false;
 std::vector<Voxel *> waypointResult;
 Voxel localVoxel;
@@ -72,6 +74,8 @@ void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance
   heightTolerance = _heightTolerance;
   maxIterStep = _maxIterStep;
   maxIterDetect = _maxIterdetect;
+
+  maxVoxelCacheLen = _maxVoxelCacheLen;
 
 
   // todo:
@@ -104,7 +108,10 @@ void reset() {
 }
 
 float roundToHeightTolerance(float y) {
+  // return round(y * 2.) / 2.; // Round to 0.5 because heightTolerance is 0.5;
   y = round(y * (1 / heightTolerance)) / (1 / heightTolerance);
+  a1float = y;
+  a1float = y;
   return y;
 }
 
@@ -164,11 +171,23 @@ void simplifyWaypointResult(Voxel *result) {
 }
 
 Voxel *getVoxel(Vec position) {
-  return voxelo[std::to_string(position.x)+"_"+std::to_string(position.y)+"_"+std::to_string(position.z)];
+  if (position.y == -0) position.y = 0;
+  std::string key = std::to_string(position.x)+"_"+std::to_string(position.y)+"_"+std::to_string(position.z);
+  a1vec = position;
+  a1vec = position;
+  a1string = key;
+  a1string = key;
+  return voxelo[key];
 }
 
 void setVoxelo(Voxel *voxel) {
-  voxelo[std::to_string(voxel->position.x)+"_"+std::to_string(voxel->position.y)+"_"+std::to_string(voxel->position.z)] = voxel;
+  if (voxel->position.y == -0) voxel->position.y = 0;
+  std::string key = std::to_string(voxel->position.x)+"_"+std::to_string(voxel->position.y)+"_"+std::to_string(voxel->position.z);
+  a1vec = voxel->position;
+  a1vec = voxel->position;
+  a1string = key;
+  a1string = key;
+  voxelo[key] = voxel;
 }
 
 bool detect(Vec *position, bool isGlobal) {
@@ -617,8 +636,10 @@ void untilFound() {
 std::vector<Voxel *> getVoxels() { // test
   for (int i = 0; i < voxels.size(); i++) {
     Voxel *voxel = voxels[i];
-    voxel->position.applyQuaternion(startDestQuaternion);
-    voxel->position += startGlobal;
+    if (maxVoxelCacheLen >= 100) {
+      voxel->position.applyQuaternion(startDestQuaternion);
+      voxel->position += startGlobal;
+    }
   }
   return voxels;
 }
