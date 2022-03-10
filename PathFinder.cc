@@ -104,7 +104,8 @@ void reset() {
 }
 
 float roundToHeightTolerance(float y) {
-  return round(y * 2.) / 2.; // Round to 0.5 because heightTolerance is 0.5;
+  y = round(y * (1 / heightTolerance)) / (1 / heightTolerance);
+  return y;
 }
 
 void interpoWaypointResult() {
