@@ -456,20 +456,16 @@ void march(
             	} else {
             		vP = interpolateVerts(cubeCorners[v[0]], cubeCorners[v[1]]);
 
-                    if ( true
-                        // vP.x > chunkMin.x && vP.x < chunkMax.x &&
-                        // vP.y > chunkMin.y && vP.y < chunkMax.y &&
-                        // vP.z > chunkMin.z && vP.z < chunkMax.z
+                    if (
+                        vP.x > chunkMin.x && vP.x < chunkMax.x &&
+                        vP.y > chunkMin.y && vP.y < chunkMax.y &&
+                        vP.z > chunkMin.z && vP.z < chunkMax.z
                     ) {
                         vertexIndex = index;
                         vertexDic[vInx] = vertexIndex;
                         vertices.push_back(vP);
                         normals.push_back({0.0, 0.0, 0.0});
                         biomes.push_back(biome);
-
-                        // vertices[index * 3] = vP.x;
-                        // vertices[index * 3 + 1] = vP.y;
-                        // vertices[index * 3 + 2] = vP.z;
 
                         index++;
                     } else {
@@ -529,7 +525,7 @@ void createChunk(
 
     // int pointCount = (segment + 3) * (segment + 3);
 
-    unsigned char biomes[(segment + 1) * (segment + 1)];
+    unsigned char biomes[(segment + 3) * (segment + 3)];
     unsigned char temperature;
     unsigned char humidity;
     float elevations[(segment + 3) * (segment + 3)];
@@ -551,6 +547,10 @@ void createChunk(
 
 	points.resize((int)pow(segment + 3, 3));
 
+    bool validChunk = false;
+
+    int initialPotential = 0;
+
 	// density
 
 	for (int i = 0; i <= segment + 2; i++) {
@@ -561,13 +561,29 @@ void createChunk(
                 Vector3 curPos{
                     originPos.x + (i - 1) * unitSize, originPos.y + (j - 1) * unitSize, originPos.z + (k - 1) * unitSize
                 };
+
                 int pointIndex = indexFromCoord(i, j, k, segment + 2);
+
+                float potential = elevations[k * (segment + 3) + i] - curPos.y;
+
+                if (initialPotential == 0 && abs(potential) > 1e-7) {
+                    initialPotential = potential > 0 ? 1 : -1;
+                }
+
+                if ((potential > 0 && initialPotential == -1) || (potential < 0 && initialPotential == 1)) {
+                    validChunk = true;
+                }
+
                 points[pointIndex] = Vector4{
-                    curPos.x, curPos.y, curPos.z, elevations[k * (segment + 3) + i] - curPos.y
+                    curPos.x, curPos.y, curPos.z, potential
                 };
 			}
 		}
 	}
+
+    if (!validChunk) {
+        return;
+    }
 
     float epsilon = chunkSize * 1e-4;
 
@@ -582,9 +598,9 @@ void createChunk(
                 unsigned char biome;
 
                 if (i == 0 || i == segment + 1 || j == 0 || j == segment + 1 || k == 0 || k == segment + 1) {
-                    biome = 0;
+                    biome = biomes[k * (segment + 3) + i];
                 } else {
-                    biome = biomes[(k - 1) * (segment + 1) + (i - 1)];
+                    biome = biomes[k * (segment + 3) + i];
                 }
 
 				march(

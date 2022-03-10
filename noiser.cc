@@ -141,13 +141,13 @@ void Noiser::fillBiomes(int ox, int oz, int numCells, unsigned char *biomes, uns
   float totalTemperature = 0;
   float totalHumidity = 0;
 
-  int numCellsOverscan = numCells + 1;
+  int numCellsOverscan = numCells + 3;
 
   unsigned int index = 0;
-  for (int z = 0; z < numCells + 1; z++) {
-    for (int x = 0; x < numCells + 1; x++) {
-      int ax = (ox * numCells) + x;
-      int az = (oz * numCells) + z;
+  for (int z = 0; z < numCells + 3; z++) {
+    for (int x = 0; x < numCells + 3; x++) {
+      int ax = (ox * numCells) + x - 1;
+      int az = (oz * numCells) + z - 1;
       biomes[index++] = getBiome(ax, az);
       totalTemperature += this->getTemperature(ax, az);
       totalHumidity += this->getHumidity(ax, az);
