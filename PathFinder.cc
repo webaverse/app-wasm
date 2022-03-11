@@ -11,7 +11,6 @@ namespace PathFinder {
 
 std::vector<PxRigidActor *> actors;
 
-Vec localVectorZero;
 Vec localVectorGetPath;
 Vec localVectorGenerateVoxelMap;
 Vec localVectorInterpoWaypointResult;
@@ -40,15 +39,10 @@ Quat startDestQuaternion;
 bool isWalk = true;
 bool isFound = false;
 std::vector<Voxel *> waypointResult;
-Voxel localVoxel;
 Voxel *startVoxel;
 Voxel *destVoxel;
 PxBoxGeometry geom;
 unsigned int numIgnorePhysicsIds;
-
-Vec localVector;
-Vec localVector2;
-
 bool canLeft, canRight, canBtm, canTop, canBack, canFront;
 
 void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
@@ -91,19 +85,19 @@ float roundToHeightTolerance(float y) {
 void interpoWaypointResult() {
   Voxel *tempResult = waypointResult[0];
   waypointResult.erase(waypointResult.begin());
-  localVector = tempResult->position;
+  localVectorInterpoWaypointResult = tempResult->position;
   while (tempResult->_next) {
-    localVector2 = tempResult->_next->position;
+    localVectorInterpoWaypointResult2 = tempResult->_next->position;
 
-    tempResult->_next->position.x += localVector.x;
+    tempResult->_next->position.x += localVectorInterpoWaypointResult.x;
     tempResult->_next->position.x /= 2;
-    tempResult->_next->position.y += localVector.y;
+    tempResult->_next->position.y += localVectorInterpoWaypointResult.y;
     tempResult->_next->position.y /= 2;
-    tempResult->_next->position.z += localVector.z;
+    tempResult->_next->position.z += localVectorInterpoWaypointResult.z;
     tempResult->_next->position.z /= 2;
 
     tempResult = tempResult->_next;
-    localVector = localVector2;
+    localVectorInterpoWaypointResult = localVectorInterpoWaypointResult2;
   }
 }
 
@@ -604,6 +598,8 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest, bool _isWalk) {
   } else {
     untilFound();
     if (isFound) {
+      interpoWaypointResult();
+      simplifyWaypointResult(waypointResult[0]);
       waypointResult.erase(waypointResult.begin()); // js: waypointResult.shift();
     }
   }
