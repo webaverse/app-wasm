@@ -167,7 +167,6 @@ bool detect(Vec *position, bool isGlobal) {
     localVectorDetect += startGlobal;
   }
   PxTransform geomPose(PxVec3{localVectorDetect.x, localVectorDetect.y, localVectorDetect.z});
-  // todo: quaternion
   
   bool anyHadHit = false;
   {
@@ -369,8 +368,8 @@ bool compareVoxelPriority(Voxel *a, Voxel *b) {
   return (a->_priority < b->_priority);
 }
 
-void stepVoxel(Voxel *voxel, Voxel *prevVoxel) {
-  float newCost = prevVoxel->_costSoFar + voxel->position.distanceTo(prevVoxel->position); // todo: performace: use already known direction instead of distanceTo().
+void stepVoxel(Voxel *voxel, Voxel *prevVoxel, float cost) {
+  float newCost = prevVoxel->_costSoFar + cost;
 
   if (voxel->_isReached == false) {
     voxel->_isReached = true;
@@ -441,7 +440,7 @@ void step() {
   if (canLeft) {
     if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
     if (currentVoxel->_canLeft) {
-      stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
+      stepVoxel(currentVoxel->_leftVoxel, currentVoxel, 1);
       if (isFound) return;
     }
   }
@@ -449,7 +448,7 @@ void step() {
   if (canRight) {
     if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
     if (currentVoxel->_canRight) {
-      stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
+      stepVoxel(currentVoxel->_rightVoxel, currentVoxel, 1);
       if (isFound) return;
     }
   }
@@ -457,7 +456,7 @@ void step() {
   if (canBtm) {
     if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
     if (currentVoxel->_canBtm) {
-      stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
+      stepVoxel(currentVoxel->_btmVoxel, currentVoxel, heightTolerance);
       if (isFound) return;
     }
   }
@@ -465,7 +464,7 @@ void step() {
   if (canTop) {
     if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
     if (currentVoxel->_canTop) {
-      stepVoxel(currentVoxel->_topVoxel, currentVoxel);
+      stepVoxel(currentVoxel->_topVoxel, currentVoxel, heightTolerance);
       if (isFound) return;
     }
   }
@@ -473,7 +472,7 @@ void step() {
   if (canBack) {
     if (!currentVoxel->_backVoxel) generateVoxelMapBack(currentVoxel);
     if (currentVoxel->_canBack) {
-      stepVoxel(currentVoxel->_backVoxel, currentVoxel);
+      stepVoxel(currentVoxel->_backVoxel, currentVoxel, 1);
       if (isFound) return;
     }
   }
@@ -481,7 +480,7 @@ void step() {
   if (canFront) {
     if (!currentVoxel->_frontVoxel) generateVoxelMapFront(currentVoxel);
     if (currentVoxel->_canFront) {
-      stepVoxel(currentVoxel->_frontVoxel, currentVoxel);
+      stepVoxel(currentVoxel->_frontVoxel, currentVoxel, 1);
       if (isFound) return;
     }
   }
