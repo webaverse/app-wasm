@@ -49,6 +49,8 @@ unsigned int numIgnorePhysicsIds;
 Vec localVector;
 Vec localVector2;
 
+bool canLeft, canRight, canBtm, canTop, canBack, canFront;
+
 void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
   voxelHeightHalf = _hy;
@@ -401,129 +403,82 @@ void step() {
   if (isWalk) {
     localVectorStep = currentVoxel->position;
     localVectorStep.y -= heightTolerance;
-    bool canBtm = !detect(&localVectorStep);
+    bool btmEmpty = !detect(&localVectorStep);
     Voxel *btmVoxel = getVoxel(localVectorStep);
-    // todo: may can use `unordered_map` with dynamic key ( like js object ) to eliminate the redundant codes below.
-    if (canBtm) {
+    if (btmEmpty) {
       if (btmVoxel && btmVoxel == currentVoxel->_prev) {
-        // directions = this.directionsNoTop;
-
-        if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
-        if (currentVoxel->_canLeft) {
-          stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
-          if (isFound) return;
-        }
-
-        if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
-        if (currentVoxel->_canRight) {
-          stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
-          if (isFound) return;
-        }
-
-        if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
-        if (currentVoxel->_canBtm) {
-          stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
-          if (isFound) return;
-        }
-
-        // if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
-        // if (currentVoxel->_canTop) {
-        //   stepVoxel(currentVoxel->_topVoxel, currentVoxel);
-        //   if (isFound) return;
-        // }
-
-        if (!currentVoxel->_backVoxel) generateVoxelMapBack(currentVoxel);
-        if (currentVoxel->_canBack) {
-          stepVoxel(currentVoxel->_backVoxel, currentVoxel);
-          if (isFound) return;
-        }
-
-        if (!currentVoxel->_frontVoxel) generateVoxelMapFront(currentVoxel);
-        if (currentVoxel->_canFront) {
-          stepVoxel(currentVoxel->_frontVoxel, currentVoxel);
-          if (isFound) return;
-        }
+        canLeft = true;
+        canRight = true;
+        canBtm = true;
+        canTop = false;
+        canBack = true;
+        canFront = true;
       } else {
-        // directions = this.directionsOnlyBtm;
-
-        if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
-        if (currentVoxel->_canBtm) {
-          stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
-          if (isFound) return;
-        }
+        canLeft = false;
+        canRight = false;
+        canBtm = true;
+        canTop = false;
+        canBack = false;
+        canFront = false;
       }
     } else {
-      // directions = this.directions;
-
-      if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
-      if (currentVoxel->_canLeft) {
-        stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
-        if (isFound) return;
-      }
-
-      if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
-      if (currentVoxel->_canRight) {
-        stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
-        if (isFound) return;
-      }
-
-      if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
-      if (currentVoxel->_canBtm) {
-        stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
-        if (isFound) return;
-      }
-
-      if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
-      if (currentVoxel->_canTop) {
-        stepVoxel(currentVoxel->_topVoxel, currentVoxel);
-        if (isFound) return;
-      }
-
-      if (!currentVoxel->_backVoxel) generateVoxelMapBack(currentVoxel);
-      if (currentVoxel->_canBack) {
-        stepVoxel(currentVoxel->_backVoxel, currentVoxel);
-        if (isFound) return;
-      }
-
-      if (!currentVoxel->_frontVoxel) generateVoxelMapFront(currentVoxel);
-      if (currentVoxel->_canFront) {
-        stepVoxel(currentVoxel->_frontVoxel, currentVoxel);
-        if (isFound) return;
-      }
+      canLeft = true;
+      canRight = true;
+      canBtm = true;
+      canTop = true;
+      canBack = true;
+      canFront = true;
     }
   } else {
-    // directions = this.directions;
+    canLeft = true;
+    canRight = true;
+    canBtm = true;
+    canTop = true;
+    canBack = true;
+    canFront = true;
+  }
 
+  if (canLeft) {
     if (!currentVoxel->_leftVoxel) generateVoxelMapLeft(currentVoxel);
     if (currentVoxel->_canLeft) {
       stepVoxel(currentVoxel->_leftVoxel, currentVoxel);
       if (isFound) return;
     }
+  }
 
+  if (canRight) {
     if (!currentVoxel->_rightVoxel) generateVoxelMapRight(currentVoxel);
     if (currentVoxel->_canRight) {
       stepVoxel(currentVoxel->_rightVoxel, currentVoxel);
       if (isFound) return;
     }
+  }
 
+  if (canBtm) {
     if (!currentVoxel->_btmVoxel) generateVoxelMapBtm(currentVoxel);
     if (currentVoxel->_canBtm) {
       stepVoxel(currentVoxel->_btmVoxel, currentVoxel);
       if (isFound) return;
     }
+  }
 
+  if (canTop) {
     if (!currentVoxel->_topVoxel) generateVoxelMapTop(currentVoxel);
     if (currentVoxel->_canTop) {
       stepVoxel(currentVoxel->_topVoxel, currentVoxel);
       if (isFound) return;
     }
+  }
 
+  if (canBack) {
     if (!currentVoxel->_backVoxel) generateVoxelMapBack(currentVoxel);
     if (currentVoxel->_canBack) {
       stepVoxel(currentVoxel->_backVoxel, currentVoxel);
       if (isFound) return;
     }
+  }
 
+  if (canFront) {
     if (!currentVoxel->_frontVoxel) generateVoxelMapFront(currentVoxel);
     if (currentVoxel->_canFront) {
       stepVoxel(currentVoxel->_frontVoxel, currentVoxel);
