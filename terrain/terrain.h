@@ -38,6 +38,6 @@ namespace Terrain {
 
 	void createChunk(
 		float origin[3], float chunkSize, int segment,
-    	std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<float> & biomes, std::vector<int> & indices
+    	std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<Vector3> & biomes, std::vector<int> & indices
     );
 }
