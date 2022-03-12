@@ -43,7 +43,7 @@ class Noiser {
 
     unsigned char getBiome(int x, int z);
     float getBiomeHeight(unsigned char b, int x, int z);
-    float getElevation(int x, int z);
+    float getElevation(int x, int z, float *biomes);
     double getTemperature(double x, double z);
     double getHumidity(double x, double z);
     void fillBiomes(int ox, int oz, int numCells, unsigned char *biomes, unsigned char *temperature, unsigned char *humidity);

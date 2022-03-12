@@ -103,7 +103,7 @@ float Noiser::getBiomeHeight(unsigned char b, int x, int z) {
   }
 }
 
-float Noiser::getElevation(int x, int z) {
+float Noiser::getElevation(int x, int z, float *biomes) {
   const std::pair<int, int> key(x, z);
   std::unordered_map<std::pair<int, int>, float>::iterator entryIter = elevationCache.find(key);
 
@@ -119,11 +119,36 @@ float Noiser::getElevation(int x, int z) {
       }
     }
 
+    unsigned char maxBiomes[2];
+    unsigned int maxBiomeCounts[2];
+
+    maxBiomeCounts[0] = 0;
+    maxBiomeCounts[1] = 0;
+
     float elevationSum = 0;
     for (auto const &iter : biomeCounts) {
       elevationSum += iter.second * getBiomeHeight(iter.first, x, z);
+
+      // get most weighted two biomes
+      if (iter.second > maxBiomeCounts[0]) {
+        maxBiomeCounts[1] = maxBiomeCounts[0];
+        maxBiomes[1] = maxBiomes[0];
+
+        maxBiomeCounts[0] = iter.second;
+        maxBiomes[0] = iter.first;
+      }
+
     }
     elevation = elevationSum / ((8 * 2 + 1) * (8 * 2 + 1));
+
+    biomes[0] = maxBiomes[0];
+    if (maxBiomeCounts[1] != 0) {
+      biomes[1] = maxBiomes[1];
+      biomes[2] = (float)maxBiomeCounts[0] / (float)maxBiomeCounts[1];
+    } else {
+      biomes[1] = maxBiomes[0];
+      biomes[2] = 1.0;
+    }
 
     return elevation;
   }
@@ -166,7 +191,8 @@ void Noiser::fillElevations(int ox, int oz, int numCells, float *elevations) {
   unsigned int index = 0;
   for (int z = 0; z < numCellsOverscan; z++) {
     for (int x = 0; x < numCellsOverscan; x++) {
-      elevations[index++] = getElevation((ox * numCells) + x, (oz * numCells) + z);
+      float cellBiomes[3];
+      elevations[index++] = getElevation((ox * numCells) + x, (oz * numCells) + z, cellBiomes);
     }
   }
 }
