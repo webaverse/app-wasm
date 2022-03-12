@@ -1186,10 +1186,11 @@ void PScene::raycast(float *origin, float *direction, float *meshPosition, float
 
 float *PScene::getPath(float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   
-  PathFinder::init(actors, _hy, _heightTolerance, _maxIterdetect, _maxIterStep, _numIgnorePhysicsIds, _ignorePhysicsIds);
+  PathFinder pathFinder;
+  pathFinder.init(actors, _hy, _heightTolerance, _maxIterdetect, _maxIterStep, _numIgnorePhysicsIds, _ignorePhysicsIds);
   Vec start(_start[0], _start[1], _start[2]);
   Vec dest(_dest[0], _dest[1], _dest[2]);
-  std::vector<PathFinder::Voxel *> waypointResult = PathFinder::getPath(start, dest, _isWalk);
+  std::vector<Voxel *> waypointResult = pathFinder.getPath(start, dest, _isWalk);
 
   float *outputBuffer = (float *)malloc((
     1 + waypointResult.size() * 3

@@ -7,45 +7,7 @@
 
 using namespace physx;
 
-namespace PathFinder {
-
-std::vector<PxRigidActor *> actors;
-
-Vec localVectorGetPath;
-Vec localVectorGenerateVoxelMap;
-Vec localVectorInterpoWaypointResult;
-Vec localVectorInterpoWaypointResult2;
-Vec localVectorDetect;
-Vec localVectorStep;
-Vec up = Vec(0, 1, 0);
-Matrix localmatrix;
-
-float heightTolerance;
-unsigned int maxIterStep;
-unsigned int *ignorePhysicsIds;
-unsigned int iterStep = 0;
-bool allowNearest = true;
-unsigned int iterDetect = 0;
-unsigned int maxIterDetect;
-Vec start;
-Vec dest;
-Vec startGlobal;
-Vec destGlobal;
-float voxelHeightHalf;
-std::vector<Voxel *> frontiers;
-std::vector<Voxel *> voxels;
-std::map<std::string, Voxel *> voxelo;
-Quat startDestQuaternion;
-bool isWalk = true;
-bool isFound = false;
-std::vector<Voxel *> waypointResult;
-Voxel *startVoxel;
-Voxel *destVoxel;
-PxBoxGeometry geom;
-unsigned int numIgnorePhysicsIds;
-bool canLeft, canRight, canBtm, canTop, canBack, canFront;
-
-void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
+void PathFinder::init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
   voxelHeightHalf = _hy;
   heightTolerance = _heightTolerance;
@@ -56,7 +18,7 @@ void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance
   ignorePhysicsIds = _ignorePhysicsIds;
 }
 
-void resetVoxelAStar(Voxel *voxel) {
+void PathFinder::resetVoxelAStar(Voxel *voxel) {
   voxel->_isStart = false;
   voxel->_isDest = false;
   voxel->_isReached = false;
@@ -68,7 +30,7 @@ void resetVoxelAStar(Voxel *voxel) {
   voxel->_isFrontier = false;
 }
 
-void reset() {
+void PathFinder::reset() {
   isFound = false;
   frontiers.clear();
   waypointResult.clear();
@@ -77,12 +39,12 @@ void reset() {
   voxelo.clear();
 }
 
-float roundToHeightTolerance(float y) {
+float PathFinder::roundToHeightTolerance(float y) {
   y = round(y * (1 / heightTolerance)) / (1 / heightTolerance);
   return y;
 }
 
-void interpoWaypointResult() {
+void PathFinder::interpoWaypointResult() {
   Voxel *tempResult = waypointResult[0];
   waypointResult.erase(waypointResult.begin());
   localVectorInterpoWaypointResult = tempResult->position;
@@ -107,7 +69,7 @@ template <typename T> int sgn(T val) {
 }
 
 // https://www.geeksforgeeks.org/how-to-find-index-of-a-given-element-in-a-vector-in-cpp/
-int getIndex(std::vector<Voxel *> v, Voxel * K) {
+int PathFinder::getIndex(std::vector<Voxel *> v, Voxel * K) {
     auto it = find(v.begin(), v.end(), K);
     if (it != v.end()) { // If element was found
         int index = it - v.begin();
@@ -118,7 +80,7 @@ int getIndex(std::vector<Voxel *> v, Voxel * K) {
     }
 }
 
-void simplifyWaypointResult(Voxel *result) {
+void PathFinder::simplifyWaypointResult(Voxel *result) {
   if (result && result->_next && result->_next->_next) {
     if (
       sgn(result->_next->_next->position.x - result->_next->position.x) == sgn(result->_next->position.x - result->position.x) &&
@@ -137,21 +99,21 @@ void simplifyWaypointResult(Voxel *result) {
   }
 }
 
-Voxel *getVoxel(Vec position) {
+Voxel *PathFinder::getVoxel(Vec position) {
   if (position.y == -0) position.y = 0;
   // round y and multiply 10 to solve y = such as 0.6000000238418579 problem. why js no such problem?
   std::string key = std::to_string(position.x)+"_"+std::to_string(round(position.y*10))+"_"+std::to_string(position.z);
   return voxelo[key];
 }
 
-void setVoxelo(Voxel *voxel) {
+void PathFinder::setVoxelo(Voxel *voxel) {
   if (voxel->position.y == -0) voxel->position.y = 0;
   // round y and multiply 10 to solve y = such as 0.6000000238418579 problem. why js no such problem?
   std::string key = std::to_string(voxel->position.x)+"_"+std::to_string(round(voxel->position.y*10))+"_"+std::to_string(voxel->position.z);
   voxelo[key] = voxel;
 }
 
-bool detect(Vec *position, bool isGlobal) {
+bool PathFinder::detect(Vec *position, bool isGlobal) {
 
   if(isGlobal) {
     localVectorDetect = *position;
@@ -198,11 +160,11 @@ bool detect(Vec *position, bool isGlobal) {
   return anyHadHit;
 }
 
-bool detect(Vec *position) {
+bool PathFinder::detect(Vec *position) {
   return detect(position, false);
 }
 
-Voxel *createVoxel(Vec position) {
+Voxel *PathFinder::createVoxel(Vec position) {
   Voxel *voxel = (Voxel *)malloc(sizeof(Voxel)); // https://stackoverflow.com/a/18041130/3596736
   *voxel = Voxel();
   voxels.push_back(voxel);
@@ -214,7 +176,7 @@ Voxel *createVoxel(Vec position) {
   return voxel;
 }
 
-void setNextOfPathVoxel(Voxel *voxel) {
+void PathFinder::setNextOfPathVoxel(Voxel *voxel) {
   if (voxel != NULL) {
     voxel->_isPath = true;
     if (voxel->_prev) voxel->_prev->_next = voxel;
@@ -223,7 +185,7 @@ void setNextOfPathVoxel(Voxel *voxel) {
   }
 }
 
-void found(Voxel *voxel) {
+void PathFinder::found(Voxel *voxel) {
   isFound = true;
   setNextOfPathVoxel(voxel);
 
@@ -244,7 +206,7 @@ void found(Voxel *voxel) {
   }
 }
 
-void generateVoxelMapLeft(Voxel *currentVoxel) {
+void PathFinder::generateVoxelMapLeft(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
   localVectorGenerateVoxelMap.x += -1;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
@@ -263,7 +225,7 @@ void generateVoxelMapLeft(Voxel *currentVoxel) {
   }
 }
 
-void generateVoxelMapRight(Voxel *currentVoxel) {
+void PathFinder::generateVoxelMapRight(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
   localVectorGenerateVoxelMap.x += 1;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
@@ -282,7 +244,7 @@ void generateVoxelMapRight(Voxel *currentVoxel) {
   }
 }
 
-void generateVoxelMapBtm(Voxel *currentVoxel) {
+void PathFinder::generateVoxelMapBtm(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
   localVectorGenerateVoxelMap.y += -heightTolerance;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
@@ -301,7 +263,7 @@ void generateVoxelMapBtm(Voxel *currentVoxel) {
   }
 }
 
-void generateVoxelMapTop(Voxel *currentVoxel) {
+void PathFinder::generateVoxelMapTop(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
   localVectorGenerateVoxelMap.y += heightTolerance;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
@@ -320,7 +282,7 @@ void generateVoxelMapTop(Voxel *currentVoxel) {
   }
 }
 
-void generateVoxelMapBack(Voxel *currentVoxel) {
+void PathFinder::generateVoxelMapBack(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
   localVectorGenerateVoxelMap.z += -1;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
@@ -339,7 +301,7 @@ void generateVoxelMapBack(Voxel *currentVoxel) {
   }
 }
 
-void generateVoxelMapFront(Voxel *currentVoxel) {
+void PathFinder::generateVoxelMapFront(Voxel *currentVoxel) {
   localVectorGenerateVoxelMap = currentVoxel->position;
   localVectorGenerateVoxelMap.z += 1;
   localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
@@ -362,7 +324,7 @@ bool compareVoxelPriority(Voxel *a, Voxel *b) {
   return (a->_priority < b->_priority);
 }
 
-void stepVoxel(Voxel *voxel, Voxel *prevVoxel, float cost) {
+void PathFinder::stepVoxel(Voxel *voxel, Voxel *prevVoxel, float cost) {
   float newCost = prevVoxel->_costSoFar + cost;
 
   if (voxel->_isReached == false) {
@@ -383,7 +345,7 @@ void stepVoxel(Voxel *voxel, Voxel *prevVoxel, float cost) {
   }
 }
 
-void step() {
+void PathFinder::step() {
   if (frontiers.size() <= 0) {
     return;
   }
@@ -481,7 +443,7 @@ void step() {
 
 }
 
-void untilFound() {
+void PathFinder::untilFound() {
   iterStep = 0;
   while (frontiers.size() > 0 && !isFound) {
     if (iterStep >= maxIterStep) {
@@ -511,7 +473,7 @@ void untilFound() {
   }
 }
 
-void detectDestGlobal(Vec *position, int detectDir) {
+void PathFinder::detectDestGlobal(Vec *position, int detectDir) {
   if (iterDetect >= maxIterDetect) {
     return;
   }
@@ -545,7 +507,7 @@ void detectDestGlobal(Vec *position, int detectDir) {
   }
 }
 
-std::vector<Voxel *> getPath(Vec _start, Vec _dest, bool _isWalk) {
+std::vector<Voxel *> PathFinder::getPath(Vec _start, Vec _dest, bool _isWalk) {
   reset();
 
   isWalk = _isWalk;
@@ -613,6 +575,4 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest, bool _isWalk) {
   }
 
   return waypointResult;
-}
-
 }
