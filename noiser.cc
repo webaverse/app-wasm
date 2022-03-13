@@ -142,7 +142,7 @@ float Noiser::getElevation(int x, int z, float *biomes) {
     elevation = elevationSum / ((8 * 2 + 1) * (8 * 2 + 1));
 
     biomes[0] = maxBiomes[0];
-    biomes[1] = maxBiomes[1];
+    biomes[1] = maxBiomeCounts[1] == 0 ? maxBiomes[0] : maxBiomes[1];
     biomes[2] = (float)maxBiomeCounts[0] / (float)(maxBiomeCounts[0] + maxBiomeCounts[1]);
 
     return elevation;

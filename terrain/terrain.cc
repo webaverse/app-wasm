@@ -453,6 +453,7 @@ void march(
             	if (vertexDic.find(vInx) != vertexDic.end()) {
             		vertexIndex = vertexDic[vInx];
                     vP = vertices[vertexIndex];
+                    biomes[vertexIndex] = {biome[0], biome[1], biome[2]};
             	} else {
             		vP = interpolateVerts(cubeCorners[v[0]], cubeCorners[v[1]]);
 
@@ -599,7 +600,7 @@ void createChunk(
 		for (int j = 0; j < segment + 2; j++) {
 			for (int k = 0; k < segment + 2; k++) {
                 float *biome;
-                biome = biomes + k * (segment + 3) + i;
+                biome = biomes + 3 * (k * (segment + 3) + i);
 				march(
                     i, j, k, segment + 2, chunkMin, chunkMax,
                     points, vertices, normals, vertexBiomes, indices, vertexDic, index,
