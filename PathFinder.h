@@ -62,14 +62,7 @@ std::vector<Voxel *> getPath(Vec _start, Vec _dest, bool _isWalk);
 //
 
 std::vector<PxRigidActor *> actors;
-Vec localVectorGetPath;
-Vec localVectorGenerateVoxelMap;
-Vec localVectorInterpoWaypointResult;
-Vec localVectorInterpoWaypointResult2;
-Vec localVectorDetect;
-Vec localVectorStep;
 Vec up = Vec(0, 1, 0);
-Matrix localmatrix;
 float heightTolerance;
 unsigned int maxIterStep;
 unsigned int *ignorePhysicsIds;

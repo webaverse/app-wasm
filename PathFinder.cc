@@ -47,19 +47,19 @@ float PathFinder::roundToHeightTolerance(float y) {
 void PathFinder::interpoWaypointResult() {
   Voxel *tempResult = waypointResult[0];
   waypointResult.erase(waypointResult.begin());
-  localVectorInterpoWaypointResult = tempResult->position;
+  Vec position = tempResult->position;
   while (tempResult->_next) {
-    localVectorInterpoWaypointResult2 = tempResult->_next->position;
+    Vec positions2 = tempResult->_next->position;
 
-    tempResult->_next->position.x += localVectorInterpoWaypointResult.x;
+    tempResult->_next->position.x += position.x;
     tempResult->_next->position.x /= 2;
-    tempResult->_next->position.y += localVectorInterpoWaypointResult.y;
+    tempResult->_next->position.y += position.y;
     tempResult->_next->position.y /= 2;
-    tempResult->_next->position.z += localVectorInterpoWaypointResult.z;
+    tempResult->_next->position.z += position.z;
     tempResult->_next->position.z /= 2;
 
     tempResult = tempResult->_next;
-    localVectorInterpoWaypointResult = localVectorInterpoWaypointResult2;
+    position = positions2;
   }
 }
 
@@ -115,14 +115,15 @@ void PathFinder::setVoxelo(Voxel *voxel) {
 
 bool PathFinder::detect(Vec *position, bool isGlobal) {
 
+  Vec vec;
   if(isGlobal) {
-    localVectorDetect = *position;
+    vec = *position;
   } else {
-    localVectorDetect = *position;
-    localVectorDetect.applyQuaternion(startDestQuaternion);
-    localVectorDetect += startGlobal;
+    vec = *position;
+    vec.applyQuaternion(startDestQuaternion);
+    vec += startGlobal;
   }
-  PxTransform geomPose(PxVec3{localVectorDetect.x, localVectorDetect.y, localVectorDetect.z});
+  PxTransform geomPose(PxVec3{vec.x, vec.y, vec.z});
   
   bool anyHadHit = false;
   {
@@ -207,15 +208,15 @@ void PathFinder::found(Voxel *voxel) {
 }
 
 void PathFinder::generateVoxelMapLeft(Voxel *currentVoxel) {
-  localVectorGenerateVoxelMap = currentVoxel->position;
-  localVectorGenerateVoxelMap.x += -1;
-  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+  Vec position = currentVoxel->position;
+  position.x += -1;
+  position.y = roundToHeightTolerance(position.y);
 
-  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  Voxel *neighborVoxel = getVoxel(position);
   if (!neighborVoxel) {
-    bool collide = detect(&localVectorGenerateVoxelMap);
+    bool collide = detect(&position);
     if (!collide) {
-      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+      neighborVoxel = createVoxel(position);
     }
   }
 
@@ -226,15 +227,15 @@ void PathFinder::generateVoxelMapLeft(Voxel *currentVoxel) {
 }
 
 void PathFinder::generateVoxelMapRight(Voxel *currentVoxel) {
-  localVectorGenerateVoxelMap = currentVoxel->position;
-  localVectorGenerateVoxelMap.x += 1;
-  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+  Vec position = currentVoxel->position;
+  position.x += 1;
+  position.y = roundToHeightTolerance(position.y);
 
-  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  Voxel *neighborVoxel = getVoxel(position);
   if (!neighborVoxel) {
-    bool collide = detect(&localVectorGenerateVoxelMap);
+    bool collide = detect(&position);
     if (!collide) {
-      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+      neighborVoxel = createVoxel(position);
     }
   }
 
@@ -245,15 +246,15 @@ void PathFinder::generateVoxelMapRight(Voxel *currentVoxel) {
 }
 
 void PathFinder::generateVoxelMapBtm(Voxel *currentVoxel) {
-  localVectorGenerateVoxelMap = currentVoxel->position;
-  localVectorGenerateVoxelMap.y += -heightTolerance;
-  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+  Vec position = currentVoxel->position;
+  position.y += -heightTolerance;
+  position.y = roundToHeightTolerance(position.y);
 
-  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  Voxel *neighborVoxel = getVoxel(position);
   if (!neighborVoxel) {
-    bool collide = detect(&localVectorGenerateVoxelMap);
+    bool collide = detect(&position);
     if (!collide) {
-      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+      neighborVoxel = createVoxel(position);
     }
   }
 
@@ -264,15 +265,15 @@ void PathFinder::generateVoxelMapBtm(Voxel *currentVoxel) {
 }
 
 void PathFinder::generateVoxelMapTop(Voxel *currentVoxel) {
-  localVectorGenerateVoxelMap = currentVoxel->position;
-  localVectorGenerateVoxelMap.y += heightTolerance;
-  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+  Vec position = currentVoxel->position;
+  position.y += heightTolerance;
+  position.y = roundToHeightTolerance(position.y);
 
-  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  Voxel *neighborVoxel = getVoxel(position);
   if (!neighborVoxel) {
-    bool collide = detect(&localVectorGenerateVoxelMap);
+    bool collide = detect(&position);
     if (!collide) {
-      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+      neighborVoxel = createVoxel(position);
     }
   }
 
@@ -283,15 +284,15 @@ void PathFinder::generateVoxelMapTop(Voxel *currentVoxel) {
 }
 
 void PathFinder::generateVoxelMapBack(Voxel *currentVoxel) {
-  localVectorGenerateVoxelMap = currentVoxel->position;
-  localVectorGenerateVoxelMap.z += -1;
-  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+  Vec position = currentVoxel->position;
+  position.z += -1;
+  position.y = roundToHeightTolerance(position.y);
 
-  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  Voxel *neighborVoxel = getVoxel(position);
   if (!neighborVoxel) {
-    bool collide = detect(&localVectorGenerateVoxelMap);
+    bool collide = detect(&position);
     if (!collide) {
-      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+      neighborVoxel = createVoxel(position);
     }
   }
 
@@ -302,15 +303,15 @@ void PathFinder::generateVoxelMapBack(Voxel *currentVoxel) {
 }
 
 void PathFinder::generateVoxelMapFront(Voxel *currentVoxel) {
-  localVectorGenerateVoxelMap = currentVoxel->position;
-  localVectorGenerateVoxelMap.z += 1;
-  localVectorGenerateVoxelMap.y = roundToHeightTolerance(localVectorGenerateVoxelMap.y);
+  Vec position = currentVoxel->position;
+  position.z += 1;
+  position.y = roundToHeightTolerance(position.y);
 
-  Voxel *neighborVoxel = getVoxel(localVectorGenerateVoxelMap);
+  Voxel *neighborVoxel = getVoxel(position);
   if (!neighborVoxel) {
-    bool collide = detect(&localVectorGenerateVoxelMap);
+    bool collide = detect(&position);
     if (!collide) {
-      neighborVoxel = createVoxel(localVectorGenerateVoxelMap);
+      neighborVoxel = createVoxel(position);
     }
   }
 
@@ -356,10 +357,10 @@ void PathFinder::step() {
   currentVoxel->_isFrontier = false;
   
   if (isWalk) {
-    localVectorStep = currentVoxel->position;
-    localVectorStep.y -= heightTolerance;
-    bool btmEmpty = !detect(&localVectorStep);
-    Voxel *btmVoxel = getVoxel(localVectorStep);
+    Vec position = currentVoxel->position;
+    position.y -= heightTolerance;
+    bool btmEmpty = !detect(&position);
+    Voxel *btmVoxel = getVoxel(position);
     if (btmEmpty) {
       if (btmVoxel && btmVoxel == currentVoxel->_prev) {
         canLeft = true;
@@ -518,16 +519,17 @@ std::vector<Voxel *> PathFinder::getPath(Vec _start, Vec _dest, bool _isWalk) {
     detectDestGlobal(&destGlobal, -1);
   }
 
-  localmatrix.identity();
+  Matrix matrix;
+  matrix.identity();
   if(isWalk) {
-    localVectorGetPath = destGlobal;
-    localVectorGetPath.y = startGlobal.y;
-    localmatrix.lookAt(localVectorGetPath, startGlobal, up);
+    Vec vec = destGlobal;
+    vec.y = startGlobal.y;
+    matrix.lookAt(vec, startGlobal, up);
   } else {
-    localmatrix.lookAt(destGlobal, startGlobal, up);
+    matrix.lookAt(destGlobal, startGlobal, up);
   }
 
-  startDestQuaternion.setFromRotationMatrix(localmatrix);
+  startDestQuaternion.setFromRotationMatrix(matrix);
 
   start.x = 0;
   start.y = 0;
@@ -535,14 +537,14 @@ std::vector<Voxel *> PathFinder::getPath(Vec _start, Vec _dest, bool _isWalk) {
   if(isWalk) {
     dest.x = 0;
     dest.y = roundToHeightTolerance(destGlobal.y - startGlobal.y);
-    localVectorGetPath = destGlobal - startGlobal;
-    localVectorGetPath.y = 0;
-    dest.z = round(localVectorGetPath.magnitude());
+    Vec vec = destGlobal - startGlobal;
+    vec.y = 0;
+    dest.z = round(vec.magnitude());
   } else {
     dest.x = 0;
     dest.y = 0;
-    localVectorGetPath = destGlobal - startGlobal;
-    dest.z = round(localVectorGetPath.magnitude());
+    Vec vec = destGlobal - startGlobal;
+    dest.z = round(vec.magnitude());
   }
 
   startVoxel = createVoxel(start);
