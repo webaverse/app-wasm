@@ -33,8 +33,7 @@ struct Voxel {
 
 class PathFinder {
 public:
-PathFinder();
-void init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
+PathFinder(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
 void resetVoxelAStar(Voxel *voxel);
 void reset();
 float roundToHeightTolerance(float y);

@@ -7,11 +7,7 @@
 
 using namespace physx;
 
-PathFinder::PathFinder() {
-  
-}
-
-void PathFinder::init(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
+PathFinder::PathFinder(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   actors = _actors;
   voxelHeightHalf = _hy;
   heightTolerance = _heightTolerance;
