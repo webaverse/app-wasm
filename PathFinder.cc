@@ -18,27 +18,6 @@ PathFinder::PathFinder(std::vector<PxRigidActor *> _actors, float _hy, float _he
   ignorePhysicsIds = _ignorePhysicsIds;
 }
 
-void PathFinder::resetVoxelAStar(Voxel *voxel) {
-  voxel->_isStart = false;
-  voxel->_isDest = false;
-  voxel->_isReached = false;
-  voxel->_priority = 0;
-  voxel->_costSoFar = 0;
-  voxel->_prev = NULL;
-  voxel->_next = NULL;
-  voxel->_isPath = false;
-  voxel->_isFrontier = false;
-}
-
-void PathFinder::reset() {
-  isFound = false;
-  frontiers.clear();
-  waypointResult.clear();
-
-  voxels.clear();
-  voxelo.clear();
-}
-
 float PathFinder::roundToHeightTolerance(float y) {
   y = round(y * (1 / heightTolerance)) / (1 / heightTolerance);
   return y;
@@ -169,7 +148,6 @@ Voxel *PathFinder::createVoxel(Vec position) {
   Voxel *voxel = (Voxel *)malloc(sizeof(Voxel)); // https://stackoverflow.com/a/18041130/3596736
   *voxel = Voxel();
   voxels.push_back(voxel);
-  resetVoxelAStar(voxel);
 
   voxel->position = position;
   setVoxelo(voxel);
@@ -509,8 +487,6 @@ void PathFinder::detectDestGlobal(Vec *position, int detectDir) {
 }
 
 std::vector<Voxel *> PathFinder::getPath(Vec _start, Vec _dest, bool _isWalk) {
-  reset();
-
   isWalk = _isWalk;
 
   startGlobal = _start;
