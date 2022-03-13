@@ -452,7 +452,7 @@ void PathFinder::untilFound() {
   }
 }
 
-void PathFinder::detectDestGlobal(Vec *position, int detectDir) {
+void PathFinder::detectDestGlobal(Vec *position, DETECT_DIR detectDir) {
   if (iterDetect >= maxIterDetect) {
     return;
   }
@@ -460,22 +460,22 @@ void PathFinder::detectDestGlobal(Vec *position, int detectDir) {
 
   bool collide = detect(position, true);
 
-  if (detectDir == 0) {
+  if (detectDir == DETECT_DIR::UNKNOWN) {
     if (collide) {
-      detectDir = 1;
+      detectDir = DETECT_DIR::UP;
     } else {
-      detectDir = -1;
+      detectDir = DETECT_DIR::DOWN;
     }
   }
 
-  if (detectDir == 1) {
+  if (detectDir == DETECT_DIR::UP) {
     if (collide) {
       position->y += detectDir * heightTolerance;
       detectDestGlobal(position, detectDir);
     } else {
       // do nothing, stop recur
     }
-  } else if (detectDir == -1) {
+  } else if (detectDir == DETECT_DIR::DOWN) {
     if (collide) {
       position->y += heightTolerance;
       // do nothing, stop recur
@@ -492,7 +492,7 @@ std::vector<Voxel *> PathFinder::getPath(Vec _start, Vec _dest, bool _isWalk) {
   startGlobal = _start;
   destGlobal = _dest;
   if(isWalk) {
-    detectDestGlobal(&destGlobal, -1);
+    detectDestGlobal(&destGlobal, DETECT_DIR::DOWN);
   }
 
   Matrix matrix;

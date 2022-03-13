@@ -31,6 +31,12 @@ struct Voxel {
   bool _isFrontier = false;
 };
 
+enum DETECT_DIR {
+  UNKNOWN = 0,
+  UP = 1,
+  DOWN = -1,
+};
+
 class PathFinder {
 public:
 PathFinder(std::vector<PxRigidActor *> _actors, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
@@ -56,7 +62,7 @@ void generateVoxelMapFront(Voxel *currentVoxel);
 void stepVoxel(Voxel *voxel, Voxel *prevVoxel, float cost);
 void step();
 void untilFound();
-void detectDestGlobal(Vec *position, int detectDir);
+void detectDestGlobal(Vec *position, DETECT_DIR detectDir);
 std::vector<Voxel *> getPath(Vec _start, Vec _dest, bool _isWalk);
 
 //
