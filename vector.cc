@@ -1,9 +1,5 @@
 #include "vector.h"
 
-Vec _v1;
-Matrix _m1;
-Vec _zero;
-Vec _one = Vec( 1, 1, 1 );
 Vec _x;
 Vec _y;
 Vec _z;
