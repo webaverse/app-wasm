@@ -1,5 +1,13 @@
 #include "vector.h"
 
+Vec _v1;
+Matrix _m1;
+Vec _zero;
+Vec _one = Vec( 1, 1, 1 );
+Vec _x;
+Vec _y;
+Vec _z;
+
 Matrix::Matrix(const Vec &position, const Quat &quaternion, const Vec &scale) {
   float *te = this->elements;
 
@@ -108,6 +116,39 @@ Matrix &Matrix::decompose(Vec &position, Quat &quaternion, Vec &scale) {
 
   return *this;
 };
+
+void Matrix::lookAt(Vec eye, Vec target, Vec up) {
+  float *te = this->elements;
+  _z = eye - target;
+  if(_z.magnitude_sqr() == 0) {
+    _z.z = 1;
+  }
+  _z.normalize();
+  _x = up ^ _z;
+  if(_x.magnitude_sqr() == 0) {
+    if(abs(up.z) == 1) {
+      _z.x += 0.0001;
+    } else {
+      _z.z += 0.0001;
+    }
+    _z.normalize();
+    _x = up ^ _z;
+  }
+  _x.normalize();
+  _y = _z ^ _x;
+
+  te[ 0 ] = _x.x; te[ 4 ] = _y.x; te[ 8 ] = _z.x;
+  te[ 1 ] = _x.y; te[ 5 ] = _y.y; te[ 9 ] = _z.y;
+  te[ 2 ] = _x.z; te[ 6 ] = _y.z; te[ 10 ] = _z.z;
+}
+
+void Matrix::setPosition(Vec position) {
+  float *te = this->elements;
+  
+  te[ 12 ] = position.x;
+  te[ 13 ] = position.y;
+  te[ 14 ] = position.z;
+}
 
 Vec &Vec::applyQuaternion(const Quat &q) {
   // const float x = this->x, y = this->y, z = this->z;
