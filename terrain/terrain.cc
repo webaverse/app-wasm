@@ -453,7 +453,6 @@ void march(
             	if (vertexDic.find(vInx) != vertexDic.end()) {
             		vertexIndex = vertexDic[vInx];
                     vP = vertices[vertexIndex];
-                    biomes[vertexIndex] = {biome[0], biome[1], biome[2]};
             	} else {
             		vP = interpolateVerts(cubeCorners[v[0]], cubeCorners[v[1]]);
 
