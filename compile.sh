@@ -332,3 +332,6 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALL
   sed -Ei 's/geometry.wasm/bin\/geometry.wasm/g' bin/geometry.js
   echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/geometry.js
 echo done
+
+# Prevent compile window auto close after error, to see the error details. https://askubuntu.com/a/20353/1012283
+exec $SHELL
