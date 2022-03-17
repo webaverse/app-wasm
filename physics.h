@@ -18,6 +18,7 @@
 #include "extensions/PxRevoluteJoint.h"
 #include "extensions/PxSphericalJoint.h"
 #include "extensions/PxD6Joint.h"
+#include "extensions/PxFixedJoint.h"
 #include "geometry/PxTriangleMeshGeometry.h"
 #include "cooking/PxTriangleMeshDesc.h"
 #include "cooking/PxCooking.h"
@@ -57,6 +58,7 @@ public:
   SimulationEventCallback2();
   virtual ~SimulationEventCallback2();
   virtual void onConstraintBreak(PxConstraintInfo *constraints, PxU32 count);
+  virtual void onJointBreak();
   virtual void onWake(PxActor **actors, PxU32 count);
   virtual void onSleep(PxActor **actors, PxU32 count);
   virtual void onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs);

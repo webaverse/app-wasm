@@ -9,7 +9,12 @@ using namespace physx;
 */
 SimulationEventCallback2::SimulationEventCallback2() {}
 SimulationEventCallback2::~SimulationEventCallback2() {}
-void SimulationEventCallback2::onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {}
+void SimulationEventCallback2::onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {
+  std::cout << "-onConstraintBreak" << std::endl;
+}
+void SimulationEventCallback2::onJointBreak() {
+  std::cout << "-onJointBreak" << std::endl;
+}
 void SimulationEventCallback2::onWake(PxActor **actors, PxU32 count) {}
 void SimulationEventCallback2::onSleep(PxActor **actors, PxU32 count) {}
 void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
@@ -1388,18 +1393,20 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   
   PxCapsuleGeometry geometry(bone.radius, bone.halfHeight);
   // PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
-  PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, .001);
   capsule->userData = (void *)bone.id;
   // capsule->setMaxDepenetrationVelocity(1.0f);
   // capsule->setAngularDamping(0.15f);
-  // if(bone.id == 4) {
-  if(bone.name == "Hips") {
-    std::cout << "---updateMassAndInertia: " << bone.name << std::endl;
-    PxRigidBodyExt::updateMassAndInertia(*capsule, 0.0f);
-  } else {
-    std::cout << "---updateMassAndInertia: " << bone.name << std::endl;
-    PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
-  }
+  // // if(bone.id == 4) {
+  // if(bone.name == "Hips") {
+  //   std::cout << "---updateMassAndInertia: " << bone.name << std::endl;
+  //   PxRigidBodyExt::updateMassAndInertia(*capsule, 0.0f);
+  // } else {
+  //   std::cout << "---updateMassAndInertia: " << bone.name << std::endl;
+  //   PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
+  // }
+  // PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
+  PxRigidBodyExt::updateMassAndInertia(*capsule, 0.001f);
   scene->addActor(*capsule);
   actors.push_back(capsule);
   bone.body = capsule;
@@ -1473,20 +1480,36 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       /* PxTransform parentTransform{PxVec3{0, 0, -parent.boneLength * 0.5f}, leftUpQuaternion};
       PxTransform childTransform{PxVec3{0, 0, child.boneLength * 0.5f}, leftUpQuaternion}; */
 
-      PxD6Joint *joint = PxD6JointCreate(
+      // PxD6Joint *joint = PxD6JointCreate(
+      PxFixedJoint *joint = PxFixedJointCreate(
         *physics,
         parent.body, parentTransform,
         child.body, childTransform
       );
 
-      std::cout << "---bone.name: " << bone.name << std::endl;
+      // PxReal a;
+      // PxReal b;
+      // joint->getBreakForce(a, b);
+      // std::cout << "break force: " << a << " " << b << std::endl;
+
+      // std::cout << "---bone.name: " << bone.name << std::endl;
+      std::cout << "---parent.name: " << parent.name << "---child.name: " << child.name << std::endl;
     
       constexpr float swing0 = 3.14f / 4.f * 0.2;
       constexpr float swing1 = 3.14f / 4.f * 0.2;
       constexpr float twistLo = -3.14f / 8.f * 0.2;
       constexpr float twistHi = 3.14f / 8.f * 0.2;
 
-      joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
+      // joint->setMotion(PxD6Axis::eX, PxD6Motion::eLOCKED);
+      // joint->setMotion(PxD6Axis::eY, PxD6Motion::eLOCKED);
+      // joint->setMotion(PxD6Axis::eZ, PxD6Motion::eLOCKED);
+      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLOCKED);
+      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLOCKED);
+      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLOCKED);
+
+      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
+      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
       // vismark
       // if (parent.name != "Hips") {
         /* joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
