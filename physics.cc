@@ -1389,6 +1389,10 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   PxCapsuleGeometry geometry(bone.radius, bone.halfHeight);
   // PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
   PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  if(bone.name == "Hips") {
+    capsule->setMass(0);
+    capsule->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+  }
   capsule->userData = (void *)bone.id;
   // capsule->setMaxDepenetrationVelocity(1.0f);
   // capsule->setAngularDamping(0.15f);
@@ -1428,6 +1432,8 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       registerSkeleton(child, &parent, groupId);
     }
   }
+
+  std::cout << "-mass: " << bone.name << " " << capsule->getMass() << std::endl;
 
   // create joints
   {
@@ -1487,6 +1493,8 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       constexpr float twistHi = 3.14f / 8.f * 0.2;
 
       joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
+      joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
       // vismark
       // if (parent.name != "Hips") {
         /* joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
