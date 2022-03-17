@@ -84,6 +84,7 @@ public:
   float boneLength;
   std::vector<std::unique_ptr<Bone>> children;
   PxRigidBody *body;
+  // PxRigidActor *body;
   PxJoint *joint;
 };
 
