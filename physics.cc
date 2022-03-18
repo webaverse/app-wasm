@@ -1378,11 +1378,11 @@ Bone *parseBone(unsigned char *buffer, unsigned int &index) {
   };
 }
 void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId) {
-  std::cout << "---register bone " << bone.id << " " << bone.name << " " <<
+  /* std::cout << "---register bone " << bone.id << " " << bone.name << " " <<
     bone.position.x << "," << bone.position.y << "," << bone.position.z << " " <<
     bone.quaternion.x << "," << bone.quaternion.y << "," << bone.quaternion.z << "," << bone.quaternion.w << " " <<
     bone.scale.x << "," << bone.scale.y << "," << bone.scale.z << " " <<
-    bone.children.size() << std::endl;
+    bone.children.size() << std::endl; */
 
   PxMaterial *material = physics->createMaterial(1.f, 1.f, 1.f);
   PxTransform transform(
@@ -1393,7 +1393,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   
   PxCapsuleGeometry geometry(bone.radius, bone.halfHeight);
   // PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
-  PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, .001);
+  PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
   capsule->userData = (void *)bone.id;
   // capsule->setMaxDepenetrationVelocity(1.0f);
   // capsule->setAngularDamping(0.15f);
@@ -1406,9 +1406,10 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   //   PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
   // }
   // PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
-  PxRigidBodyExt::updateMassAndInertia(*capsule, 0.001f);
+  PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
   scene->addActor(*capsule);
   actors.push_back(capsule);
+  // capsule->setMass(0.001);
   bone.body = capsule;
 
   // capsule->setSolverIterationCounts(10, 10);
@@ -1480,8 +1481,8 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       /* PxTransform parentTransform{PxVec3{0, 0, -parent.boneLength * 0.5f}, leftUpQuaternion};
       PxTransform childTransform{PxVec3{0, 0, child.boneLength * 0.5f}, leftUpQuaternion}; */
 
-      // PxD6Joint *joint = PxD6JointCreate(
-      PxFixedJoint *joint = PxFixedJointCreate(
+      PxD6Joint *joint = PxD6JointCreate(
+      // PxFixedJoint *joint = PxFixedJointCreate(
         *physics,
         parent.body, parentTransform,
         child.body, childTransform
@@ -1493,7 +1494,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       // std::cout << "break force: " << a << " " << b << std::endl;
 
       // std::cout << "---bone.name: " << bone.name << std::endl;
-      std::cout << "---parent.name: " << parent.name << "---child.name: " << child.name << std::endl;
+      // std::cout << "---parent.name: " << parent.name << "---child.name: " << child.name << std::endl;
     
       constexpr float swing0 = 3.14f / 4.f * 0.2;
       constexpr float swing1 = 3.14f / 4.f * 0.2;
@@ -1508,7 +1509,7 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLOCKED);
 
       // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
-      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+      joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
       // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
       // vismark
       // if (parent.name != "Hips") {
