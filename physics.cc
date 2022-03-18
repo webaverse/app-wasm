@@ -1390,8 +1390,17 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   // PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
   PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
   if(bone.name == "Hips") {
-    capsule->setMass(0);
-    capsule->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+    // capsule->setMass(0);
+    // capsule->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+    //Lock the motion
+    capsule->setRigidDynamicLockFlags(
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+    );
   }
   capsule->userData = (void *)bone.id;
   // capsule->setMaxDepenetrationVelocity(1.0f);
@@ -1501,18 +1510,21 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
 
       std::cout << "---bone.name: " << bone.name << std::endl;
     
-      constexpr float swing0 = 3.14f / 4.f * 0.2;
-      constexpr float swing1 = 3.14f / 4.f * 0.2;
-      constexpr float twistLo = -3.14f / 8.f * 0.2;
-      constexpr float twistHi = 3.14f / 8.f * 0.2;
+      // constexpr float swing0 = 3.14f / 4.f * 0.2;
+      // constexpr float swing1 = 3.14f / 4.f * 0.2;
+      // constexpr float twistLo = -3.14f / 8.f * 0.2;
+      // constexpr float twistHi = 3.14f / 8.f * 0.2;
 
       // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
       // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
       // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
 
-      joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
-      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
-      joint->setSwingLimit(physx::PxJointLimitCone(PxPi/4, PxPi/4));
+      joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
+      joint->setTwistLimit(physx::PxJointAngularLimitPair(-PxPi/4, PxPi/4));
+
+      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
+      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
+      // joint->setSwingLimit(physx::PxJointLimitCone(PxPi/4, PxPi/4));
 
       // vismark
       // if (parent.name != "Hips") {
