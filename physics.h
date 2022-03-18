@@ -126,7 +126,7 @@ public:
   void setCharacterControllerPosition(PxController *characterController, float *position);
   void registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId);
   Bone *createSkeleton(unsigned char *buffer, unsigned int groupId);
-  void setSkeletonFromBuffer(Bone *skeleton, unsigned char *buffer);
+  void setSkeletonFromBuffer(Bone *skeleton, bool isChildren, unsigned char *buffer);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

@@ -152,8 +152,8 @@ EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, P
 EMSCRIPTEN_KEEPALIVE Bone *createSkeleton(PScene *scene, unsigned char *buffer, unsigned int groupId) {
   return scene->createSkeleton(buffer, groupId);
 }
-EMSCRIPTEN_KEEPALIVE void setSkeletonFromBuffer(PScene *scene, Bone *skeleton, unsigned char *buffer) {
-  scene->setSkeletonFromBuffer(skeleton, buffer);
+EMSCRIPTEN_KEEPALIVE void setSkeletonFromBuffer(PScene *scene, Bone *skeleton, bool isChildren, unsigned char *buffer) {
+  scene->setSkeletonFromBuffer(skeleton, isChildren, buffer);
 }
 
 EMSCRIPTEN_KEEPALIVE float *doCut(

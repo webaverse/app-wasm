@@ -1492,8 +1492,8 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       constexpr float twistLo = -3.14f / 8.f * 0.2;
       constexpr float twistHi = 3.14f / 8.f * 0.2;
 
-      joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
-      joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
+      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
       joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
       // vismark
       // if (parent.name != "Hips") {
@@ -1526,7 +1526,8 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     }
   }
 }
-void setSkeleton(Bone *dst, Bone *src) {
+void setSkeleton(Bone *dst, Bone *src, bool isChildren) {
+  // std:: cou
   dst->id = src->id;
   dst->name = src->name;
   dst->position = src->position;
@@ -1542,8 +1543,10 @@ void setSkeleton(Bone *dst, Bone *src) {
   dst->body->setLinearVelocity(PxVec3{0, 0, 0}, true);
   dst->body->setAngularVelocity(PxVec3{0, 0, 0}, true);
 
-  for (unsigned int i = 0; i < src->children.size(); i++) {
-    setSkeleton(dst->children[i].get(), src->children[i].get());
+  if(isChildren) {
+    for (unsigned int i = 0; i < src->children.size(); i++) {
+      setSkeleton(dst->children[i].get(), src->children[i].get(), true);
+    }
   }
 }
 Bone *PScene::createSkeleton(unsigned char *buffer, unsigned int groupId) {
@@ -1555,9 +1558,10 @@ Bone *PScene::createSkeleton(unsigned char *buffer, unsigned int groupId) {
 
   return rootBone;
 }
-void PScene::setSkeletonFromBuffer(Bone *rootBone, unsigned char *buffer) {
+void PScene::setSkeletonFromBuffer(Bone *rootBone, bool isChildren, unsigned char *buffer) {
+  // vismark
   unsigned int index = 0;
   std::unique_ptr<Bone> rootBone2(parseBone(buffer, index));
 
-  setSkeleton(rootBone, rootBone2.get());
+  setSkeleton(rootBone, rootBone2.get(), isChildren);
 }
