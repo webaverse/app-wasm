@@ -1479,6 +1479,20 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       /* PxTransform parentTransform{PxVec3{0, 0, -parent.boneLength * 0.5f}, leftUpQuaternion};
       PxTransform childTransform{PxVec3{0, 0, child.boneLength * 0.5f}, leftUpQuaternion}; */
 
+      //
+
+      // PxRevoluteJoint *joint = PxRevoluteJointCreate(
+      //   *physics,
+      //   parent.body, parentTransform,
+      //   child.body, childTransform
+      // );
+
+      // joint->setLimit(PxJointAngularLimitPair(0, PxPi/4, 0.01f));
+      // joint->setLimit(PxJointAngularLimitPair(0, PxPi/4));
+      // joint->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, true);
+
+      //
+
       PxD6Joint *joint = PxD6JointCreate(
         *physics,
         parent.body, parentTransform,
@@ -1494,7 +1508,12 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
 
       // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
       // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
-      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
+      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
+
+      joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
+      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
+      joint->setSwingLimit(physx::PxJointLimitCone(PxPi/4, PxPi/4));
+
       // vismark
       // if (parent.name != "Hips") {
         /* joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
@@ -1522,6 +1541,9 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
         joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
         // std::cout << "rigid hips" << parent.name << " " << child.name << std::endl;
       } */
+
+      //
+
       child.joint = joint;
     }
   }
