@@ -212,7 +212,7 @@ unsigned int PScene::getNumActors() {
   return actors.size();
 }
 
-void PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
+PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
   PxRigidActor *actor1;
   PxRigidActor *actor2;
   PxRigidDynamic *body1;
@@ -263,6 +263,14 @@ void PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, floa
     body1, transform1,
     body2, transform2
   );
+
+  // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+
+  return joint;
+}
+
+void PScene::setJointMotion(PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion) {
+  joint->setMotion(axis, motion);
 }
 
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {

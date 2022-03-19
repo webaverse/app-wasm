@@ -9,6 +9,7 @@
 // #include "earcut.h"
 // #include <iostream>
 #include "cut.h"
+#include "extensions/PxD6Joint.h"
 
 #include <deque>
 #include <map>
@@ -31,8 +32,11 @@ EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
 EMSCRIPTEN_KEEPALIVE unsigned int getNumActorsPhysics(PScene *scene) {
   return scene->getNumActors();
 }
-EMSCRIPTEN_KEEPALIVE void addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
+EMSCRIPTEN_KEEPALIVE PxD6Joint *addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
   return scene->addJoint(id1, id2, position1, position2, quaternion1, quaternion2);
+}
+EMSCRIPTEN_KEEPALIVE void setJointMotionPhysics(PScene *scene, PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion) {
+  return scene->setJointMotion(joint, axis, motion);
 }
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
