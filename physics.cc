@@ -1393,14 +1393,14 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
     // capsule->setMass(0);
     // capsule->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
     //Lock the motion
-    capsule->setRigidDynamicLockFlags(
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
-    );
+    // capsule->setRigidDynamicLockFlags(
+    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
+    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
+    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
+    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
+    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
+    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+    // );
   }
   capsule->userData = (void *)bone.id;
   // capsule->setMaxDepenetrationVelocity(1.0f);
@@ -1517,10 +1517,10 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
 
       // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
       // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
-      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
+      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
 
-      joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
-      joint->setTwistLimit(physx::PxJointAngularLimitPair(-PxPi/4, PxPi/4));
+      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
+      // joint->setTwistLimit(physx::PxJointAngularLimitPair(-PxPi/4, PxPi/4));
 
       // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
       // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
