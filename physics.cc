@@ -212,7 +212,7 @@ unsigned int PScene::getNumActors() {
   return actors.size();
 }
 
-void PScene::addJoint(unsigned int id1, unsigned int id2) {
+void PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
   PxRigidActor *actor1;
   PxRigidActor *actor2;
   PxRigidDynamic *body1;
@@ -247,6 +247,21 @@ void PScene::addJoint(unsigned int id1, unsigned int id2) {
     PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
     PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
     PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+  );
+
+  PxTransform transform1(
+    PxVec3{position1[0], position1[1], position1[2]},
+    PxQuat{quaternion1[0], quaternion1[1], quaternion1[2], quaternion1[3]}
+  );
+  PxTransform transform2(
+    PxVec3{position2[0], position2[1], position2[2]},
+    PxQuat{quaternion2[0], quaternion2[1], quaternion2[2], quaternion2[3]}
+  );
+
+  PxD6Joint *joint = PxD6JointCreate(
+    *physics,
+    body1, transform1,
+    body2, transform2
   );
 }
 
