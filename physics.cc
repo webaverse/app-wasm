@@ -208,6 +208,10 @@ PScene::~PScene() {
   abort();
 }
 
+unsigned int PScene::getNumActors() {
+  return actors.size();
+}
+
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
