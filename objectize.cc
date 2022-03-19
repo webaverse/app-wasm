@@ -31,6 +31,9 @@ EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
 EMSCRIPTEN_KEEPALIVE unsigned int getNumActorsPhysics(PScene *scene) {
   return scene->getNumActors();
 }
+EMSCRIPTEN_KEEPALIVE void addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2) {
+  return scene->addJoint(id1, id2);
+}
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
 }

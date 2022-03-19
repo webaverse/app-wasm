@@ -212,6 +212,44 @@ unsigned int PScene::getNumActors() {
   return actors.size();
 }
 
+void PScene::addJoint(unsigned int id1, unsigned int id2) {
+  PxRigidActor *actor1;
+  PxRigidActor *actor2;
+  PxRigidDynamic *body1;
+  PxRigidDynamic *body2;
+
+  auto actorIter1 = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id1;
+  });
+  if (actorIter1 != actors.end()) {
+    actor1 = *actorIter1;
+    body1 = dynamic_cast<PxRigidDynamic *>(actor1);
+    std::cout << "add joint got id " << id1 << std::endl;
+  } else {
+    std::cerr << "add joint unknown actor id " << id1 << std::endl;
+  }
+
+  auto actorIter2 = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id2;
+  });
+  if (actorIter2 != actors.end()) {
+    actor2 = *actorIter2;
+    body2 = dynamic_cast<PxRigidDynamic *>(actor2);
+    std::cout << "add joint got id " << id2 << std::endl;
+  } else {
+    std::cerr << "add joint unknown actor id " << id2 << std::endl;
+  }
+
+  body1->setRigidDynamicLockFlags(
+    PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
+    PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
+    PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
+    PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
+    PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
+    PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+  );
+}
+
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
@@ -601,10 +639,12 @@ void PScene::getGlobalPosition(unsigned int id, float *positions) {
     return (unsigned int)actor->userData == id;
   });
   if (actorIter != actors.end()) {
+    std::cerr << "get position a " << id << std::endl;
     PxRigidActor *actor = *actorIter;
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
+      std::cerr << "get position b " << id << std::endl;
       PxVec3 position = actor->getGlobalPose().p;
       positions[0]  = position[0]; 
       positions[1]  = position[1]; 
