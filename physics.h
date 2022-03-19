@@ -94,6 +94,9 @@ public:
   PScene();
   ~PScene();
 
+  unsigned int getNumActors();
+  PxD6Joint *addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1);
+  void setJointMotion(PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion);
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
   void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
   void collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
@@ -128,7 +131,7 @@ public:
   void setCharacterControllerPosition(PxController *characterController, float *position);
   void registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId);
   Bone *createSkeleton(unsigned char *buffer, unsigned int groupId);
-  void setSkeletonFromBuffer(Bone *skeleton, unsigned char *buffer);
+  void setSkeletonFromBuffer(Bone *skeleton, bool isChildren, unsigned char *buffer);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

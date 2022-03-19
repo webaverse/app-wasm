@@ -213,6 +213,73 @@ PScene::~PScene() {
   abort();
 }
 
+unsigned int PScene::getNumActors() {
+  return actors.size();
+}
+
+PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1 = false) {
+  PxRigidActor *actor1;
+  PxRigidActor *actor2;
+  PxRigidDynamic *body1;
+  PxRigidDynamic *body2;
+
+  auto actorIter1 = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id1;
+  });
+  if (actorIter1 != actors.end()) {
+    actor1 = *actorIter1;
+    body1 = dynamic_cast<PxRigidDynamic *>(actor1);
+    std::cout << "add joint got id " << id1 << std::endl;
+  } else {
+    std::cerr << "add joint unknown actor id " << id1 << std::endl;
+  }
+
+  auto actorIter2 = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id2;
+  });
+  if (actorIter2 != actors.end()) {
+    actor2 = *actorIter2;
+    body2 = dynamic_cast<PxRigidDynamic *>(actor2);
+    std::cout << "add joint got id " << id2 << std::endl;
+  } else {
+    std::cerr << "add joint unknown actor id " << id2 << std::endl;
+  }
+
+  if (fixBody1) {
+    body1->setRigidDynamicLockFlags(
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+    );
+  }
+
+  PxTransform transform1(
+    PxVec3{position1[0], position1[1], position1[2]},
+    PxQuat{quaternion1[0], quaternion1[1], quaternion1[2], quaternion1[3]}
+  );
+  PxTransform transform2(
+    PxVec3{position2[0], position2[1], position2[2]},
+    PxQuat{quaternion2[0], quaternion2[1], quaternion2[2], quaternion2[3]}
+  );
+
+  PxD6Joint *joint = PxD6JointCreate(
+    *physics,
+    body1, transform1,
+    body2, transform2
+  );
+
+  // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+
+  return joint;
+}
+
+void PScene::setJointMotion(PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion) {
+  joint->setMotion(axis, motion);
+}
+
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
@@ -602,10 +669,12 @@ void PScene::getGlobalPosition(unsigned int id, float *positions) {
     return (unsigned int)actor->userData == id;
   });
   if (actorIter != actors.end()) {
+    std::cerr << "get position a " << id << std::endl;
     PxRigidActor *actor = *actorIter;
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
+      std::cerr << "get position b " << id << std::endl;
       PxVec3 position = actor->getGlobalPose().p;
       positions[0]  = position[0]; 
       positions[1]  = position[1]; 
@@ -1394,6 +1463,19 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
   PxCapsuleGeometry geometry(bone.radius, bone.halfHeight);
   // PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
   PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  if(bone.name == "Hips") {
+    // capsule->setMass(0);
+    // capsule->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+    //Lock the motion
+    // capsule->setRigidDynamicLockFlags(
+    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
+    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
+    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
+    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
+    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
+    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+    // );
+  }
   capsule->userData = (void *)bone.id;
   // capsule->setMaxDepenetrationVelocity(1.0f);
   // capsule->setAngularDamping(0.15f);
@@ -1436,6 +1518,8 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       registerSkeleton(child, &parent, groupId);
     }
   }
+
+  std::cout << "-mass: " << bone.name << " " << capsule->getMass() << std::endl;
 
   // create joints
   {
@@ -1481,6 +1565,20 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       /* PxTransform parentTransform{PxVec3{0, 0, -parent.boneLength * 0.5f}, leftUpQuaternion};
       PxTransform childTransform{PxVec3{0, 0, child.boneLength * 0.5f}, leftUpQuaternion}; */
 
+      //
+
+      // PxRevoluteJoint *joint = PxRevoluteJointCreate(
+      //   *physics,
+      //   parent.body, parentTransform,
+      //   child.body, childTransform
+      // );
+
+      // joint->setLimit(PxJointAngularLimitPair(0, PxPi/4, 0.01f));
+      // joint->setLimit(PxJointAngularLimitPair(0, PxPi/4));
+      // joint->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, true);
+
+      //
+
       PxD6Joint *joint = PxD6JointCreate(
       // PxFixedJoint *joint = PxFixedJointCreate(
         *physics,
@@ -1496,21 +1594,22 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
       // std::cout << "---bone.name: " << bone.name << std::endl;
       // std::cout << "---parent.name: " << parent.name << "---child.name: " << child.name << std::endl;
     
-      constexpr float swing0 = 3.14f / 4.f * 0.2;
-      constexpr float swing1 = 3.14f / 4.f * 0.2;
-      constexpr float twistLo = -3.14f / 8.f * 0.2;
-      constexpr float twistHi = 3.14f / 8.f * 0.2;
-
-      // joint->setMotion(PxD6Axis::eX, PxD6Motion::eLOCKED);
-      // joint->setMotion(PxD6Axis::eY, PxD6Motion::eLOCKED);
-      // joint->setMotion(PxD6Axis::eZ, PxD6Motion::eLOCKED);
-      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLOCKED);
-      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLOCKED);
-      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLOCKED);
+      // constexpr float swing0 = 3.14f / 4.f * 0.2;
+      // constexpr float swing1 = 3.14f / 4.f * 0.2;
+      // constexpr float twistLo = -3.14f / 8.f * 0.2;
+      // constexpr float twistHi = 3.14f / 8.f * 0.2;
 
       // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
-      joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
-      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
+      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
+
+      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
+      // joint->setTwistLimit(physx::PxJointAngularLimitPair(-PxPi/4, PxPi/4));
+
+      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
+      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
+      // joint->setSwingLimit(physx::PxJointLimitCone(PxPi/4, PxPi/4));
+
       // vismark
       // if (parent.name != "Hips") {
         /* joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
@@ -1538,11 +1637,15 @@ void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId
         joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
         // std::cout << "rigid hips" << parent.name << " " << child.name << std::endl;
       } */
+
+      //
+
       child.joint = joint;
     }
   }
 }
-void setSkeleton(Bone *dst, Bone *src) {
+void setSkeleton(Bone *dst, Bone *src, bool isChildren) {
+  // std:: cou
   dst->id = src->id;
   dst->name = src->name;
   dst->position = src->position;
@@ -1558,8 +1661,10 @@ void setSkeleton(Bone *dst, Bone *src) {
   dst->body->setLinearVelocity(PxVec3{0, 0, 0}, true);
   dst->body->setAngularVelocity(PxVec3{0, 0, 0}, true);
 
-  for (unsigned int i = 0; i < src->children.size(); i++) {
-    setSkeleton(dst->children[i].get(), src->children[i].get());
+  if(isChildren) {
+    for (unsigned int i = 0; i < src->children.size(); i++) {
+      setSkeleton(dst->children[i].get(), src->children[i].get(), true);
+    }
   }
 }
 Bone *PScene::createSkeleton(unsigned char *buffer, unsigned int groupId) {
@@ -1571,9 +1676,10 @@ Bone *PScene::createSkeleton(unsigned char *buffer, unsigned int groupId) {
 
   return rootBone;
 }
-void PScene::setSkeletonFromBuffer(Bone *rootBone, unsigned char *buffer) {
+void PScene::setSkeletonFromBuffer(Bone *rootBone, bool isChildren, unsigned char *buffer) {
+  // vismark
   unsigned int index = 0;
   std::unique_ptr<Bone> rootBone2(parseBone(buffer, index));
 
-  setSkeleton(rootBone, rootBone2.get());
+  setSkeleton(rootBone, rootBone2.get(), isChildren);
 }
