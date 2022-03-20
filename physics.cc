@@ -420,7 +420,7 @@ void PScene::addCapsuleGeometry(
   actors.push_back(body);
 }
 
-void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
+void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
   if (dynamic) {
     PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
     PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
@@ -430,6 +430,23 @@ void PScene::addBoxGeometry(float *position, float *quaternion, float *size, uns
     PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
     scene->addActor(*box);
     actors.push_back(box);
+
+    if (groupId != -1) {
+      // collision filter
+      unsigned int numShapes = box->getNbShapes();
+      if (numShapes == 1) {
+        PxShape *shapes[1];
+        box->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+        PxShape *shape = shapes[0];
+        PxFilterData filterData{};
+        filterData.word0 = groupId; // character id
+        filterData.word1 = groupId; // the unique bone id in the character
+        filterData.word3 = 3; // signal this is a character skeleton bone; used during filtering
+        shape->setSimulationFilterData(filterData); 
+      } else {
+        std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
+      }
+    }
   } else {
     PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
     PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));

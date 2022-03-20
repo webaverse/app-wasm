@@ -83,8 +83,8 @@ EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *positi
   scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, mat, id, flags);
 }
 
-EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
-  scene->addBoxGeometry(position, quaternion, size, id, dynamic);
+EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
+  scene->addBoxGeometry(position, quaternion, size, id, dynamic, groupId);
 }
 
 EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {

@@ -105,7 +105,7 @@ public:
   void collideCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
   void getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id);
   void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int flags);
-  void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic);
+  void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId);
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, float *mat, PxDefaultMemoryOutputStream *writeStream);
