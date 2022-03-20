@@ -273,10 +273,24 @@ if [ ! -f physx-timestamp ]; then
   -c \
   && touch physx-timestamp
 fi
+if [ ! -f cut.o ]; then
+  echo 'building cut...'
+  emcc -s WASM=1 -O3 \
+  cut.cc \
+  -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
+  -c
+fi
+if [ ! -f march.o ]; then
+  echo 'building march...'
+  emcc -s WASM=1 -O3 \
+  march.cc \
+  -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
+  -c
+fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
 # emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=419430400 -s ALLOW_MEMORY_GROWTH=1 -O3
-emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -s ALLOW_MEMORY_GROWTH=0 -O3 \
+emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -306,7 +320,7 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -s ALLOW_MEMORY_GR
   -IPhysX/physx/source/geomutils/src/sweep \
   -IRectBinPack/include \
   -Iconcaveman \
-  objectize.cc vector.cc physics.cc \
+  objectize.cc vector.cc physics.cc PathFinder.cc \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
@@ -314,3 +328,6 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -s ALLOW_MEMORY_GR
   sed -Ei 's/geometry.wasm/bin\/geometry.wasm/g' bin/geometry.js
   echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/geometry.js
 echo done
+
+# Prevent compile window auto close after error, to see the error details. https://askubuntu.com/a/20353/1012283
+# exec $SHELL

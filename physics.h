@@ -34,6 +34,7 @@
 #include <deque>
 #include <algorithm>
 #include <iostream>
+#include "PathFinder.h"
 
 using namespace physx;
 
@@ -68,9 +69,15 @@ public:
 
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
   void raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion);
-  void collide(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  float *getPath(float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
+  float *overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
+  float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
+  float *overlapCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
+  void collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void collideBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void collideCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
   void getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id);
-  void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int ccdEnabled);
+  void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, float *mat, unsigned int id, unsigned int dynamic, unsigned int flags);
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic);
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
@@ -81,17 +88,20 @@ public:
   void removeGeometry(unsigned int id);
   bool getGeometry(unsigned int id, float *positions, unsigned int &numPositions, unsigned int *indices, unsigned int &numIndices, float *bounds);
   bool getBounds(unsigned int id, float *bounds);
+  void enableActor(unsigned int id);
+  void disableActor(unsigned int id);
   void disableGeometry(unsigned int id);
   void enableGeometry(unsigned int id);
   void disableGeometryQueries(unsigned int id);
   void enableGeometryQueries(unsigned int id);
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale, bool autoWake);
+  void getGlobalPosition(unsigned int id, float *position);
   void getVelocity(unsigned int id, float *velocity);
   void setVelocity(unsigned int id, float *velocity, bool autoWake);
   void setAngularVel(unsigned int id, float *velocity, bool autoWake);
   void setLinearLockFlags(unsigned int id, bool x, bool y, bool z);
   void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
-  PxController *createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat);
+  PxController *createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat, unsigned int id);
   void destroyCharacterController(PxController *characterController);
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
