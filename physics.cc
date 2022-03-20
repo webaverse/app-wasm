@@ -229,9 +229,9 @@ PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1
   if (actorIter1 != actors.end()) {
     actor1 = *actorIter1;
     body1 = dynamic_cast<PxRigidDynamic *>(actor1);
-    std::cout << "add joint got id " << id1 << std::endl;
+    std::cout << "add joint got id a" << id1 << std::endl;
   } else {
-    std::cerr << "add joint unknown actor id " << id1 << std::endl;
+    std::cerr << "add joint unknown actor id a" << id1 << std::endl;
   }
 
   auto actorIter2 = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
@@ -240,9 +240,9 @@ PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1
   if (actorIter2 != actors.end()) {
     actor2 = *actorIter2;
     body2 = dynamic_cast<PxRigidDynamic *>(actor2);
-    std::cout << "add joint got id " << id2 << std::endl;
+    std::cout << "add joint got id b" << id2 << std::endl;
   } else {
-    std::cerr << "add joint unknown actor id " << id2 << std::endl;
+    std::cerr << "add joint unknown actor id b" << id2 << std::endl;
   }
 
   if (fixBody1) {
@@ -278,6 +278,10 @@ PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1
 
 void PScene::setJointMotion(PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion) {
   joint->setMotion(axis, motion);
+}
+
+void PScene::setJointTwistLimit(PxD6Joint *joint, float lowerLimit, float upperLimit, float contactDist) {
+  joint->setTwistLimit(physx::PxJointAngularLimitPair(lowerLimit, upperLimit, contactDist));
 }
 
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
