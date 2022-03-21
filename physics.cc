@@ -284,6 +284,14 @@ void PScene::setJointTwistLimit(PxD6Joint *joint, float lowerLimit, float upperL
   joint->setTwistLimit(physx::PxJointAngularLimitPair(lowerLimit, upperLimit, contactDist));
 }
 
+void PScene::wakeUpAll() {
+  for (unsigned int i = 0; i < actors.size(); i++) {
+    PxRigidActor *actor = actors[i];
+    PxRigidDynamic *body = dynamic_cast<PxRigidDynamic *>(actor);
+    body->wakeUp();
+  }
+}
+
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
