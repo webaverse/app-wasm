@@ -44,6 +44,12 @@ EMSCRIPTEN_KEEPALIVE void setJointTwistLimitPhysics(PScene *scene, PxD6Joint *jo
 EMSCRIPTEN_KEEPALIVE void wakeUpAllPhysics(PScene *scene) {
   return scene->wakeUpAll();
 }
+EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhyscis(PScene *scene, PxRigidBody *body, float shapeDensities) {
+  return scene->updateMassAndInertia(body, shapeDensities);
+}
+EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, PxRigidBody *body) {
+  return scene->getBodyMass(body);
+}
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
 }
@@ -86,8 +92,8 @@ EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *positi
   scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, mat, id, flags);
 }
 
-EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
-  scene->addBoxGeometry(position, quaternion, size, id, dynamic, groupId);
+EMSCRIPTEN_KEEPALIVE PxRigidActor *addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
+  return scene->addBoxGeometry(position, quaternion, size, id, dynamic, groupId);
 }
 
 EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {

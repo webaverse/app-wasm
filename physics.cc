@@ -292,6 +292,14 @@ void PScene::wakeUpAll() {
   }
 }
 
+bool PScene::updateMassAndInertia(PxRigidBody *body, float shapeDensities) {
+  return PxRigidBodyExt::updateMassAndInertia(*body, shapeDensities);
+}
+
+float PScene::getBodyMass(PxRigidBody *body) {
+  return body->getMass();
+}
+
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   for (unsigned int i = 0; i < numIds; i++) {
     unsigned int id = ids[i];
@@ -428,7 +436,7 @@ void PScene::addCapsuleGeometry(
   actors.push_back(body);
 }
 
-void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
+PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
   if (dynamic) {
     PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
     PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
@@ -455,6 +463,7 @@ void PScene::addBoxGeometry(float *position, float *quaternion, float *size, uns
         std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
       }
     }
+    return box;
   } else {
     PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
     PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
@@ -463,6 +472,7 @@ void PScene::addBoxGeometry(float *position, float *quaternion, float *size, uns
     floor->userData = (void *)id;
     scene->addActor(*floor);
     actors.push_back(floor);
+    return floor;
   }
 }
 
