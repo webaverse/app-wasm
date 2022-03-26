@@ -41,6 +41,9 @@ EMSCRIPTEN_KEEPALIVE void setJointMotionPhysics(PScene *scene, PxD6Joint *joint,
 EMSCRIPTEN_KEEPALIVE void setJointTwistLimitPhysics(PScene *scene, PxD6Joint *joint, float lowerLimit, float upperLimit, float contactDist = -1.0f) {
   return scene->setJointTwistLimit(joint, lowerLimit, upperLimit, contactDist);
 }
+EMSCRIPTEN_KEEPALIVE void setJointSwingLimitPhysics(PScene *scene, PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist = -1.0f) {
+  return scene->setJointSwingLimit(joint, yLimitAngle, zLimitAngle, contactDist);
+}
 EMSCRIPTEN_KEEPALIVE void wakeUpAllPhysics(PScene *scene) {
   return scene->wakeUpAll();
 }

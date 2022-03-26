@@ -284,6 +284,10 @@ void PScene::setJointTwistLimit(PxD6Joint *joint, float lowerLimit, float upperL
   joint->setTwistLimit(physx::PxJointAngularLimitPair(lowerLimit, upperLimit, contactDist));
 }
 
+void PScene::setJointSwingLimit(PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist) {
+  joint->setSwingLimit(physx::PxJointLimitCone(yLimitAngle, zLimitAngle, contactDist));
+}
+
 void PScene::wakeUpAll() {
   for (unsigned int i = 0; i < actors.size(); i++) {
     PxRigidActor *actor = actors[i];
