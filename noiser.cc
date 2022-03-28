@@ -103,6 +103,10 @@ float Noiser::getBiomeHeight(unsigned char b, int x, int z) {
   }
 }
 
+bool compareWeight(std::pair<unsigned char, unsigned int> a, std::pair<unsigned char, unsigned int> b) {
+  return a.second > b.second;
+}
+
 float Noiser::getElevation(int x, int z, float *biomes) {
   const std::pair<int, int> key(x, z);
   std::unordered_map<std::pair<int, int>, float>::iterator entryIter = elevationCache.find(key);
@@ -113,6 +117,7 @@ float Noiser::getElevation(int x, int z, float *biomes) {
     float &elevation = elevationCache[key];
 
     std::unordered_map<unsigned char, unsigned int> biomeCounts;
+    std::vector<std::pair<unsigned char, unsigned int>> biomeCountsVector;
     for (int dz = -8; dz <= 8; dz++) {
       for (int dx = -8; dx <= 8; dx++) {
         biomeCounts[getBiome(x + dx, z + dz)]++;
@@ -128,6 +133,7 @@ float Noiser::getElevation(int x, int z, float *biomes) {
     float elevationSum = 0;
     for (auto const &iter : biomeCounts) {
       elevationSum += iter.second * getBiomeHeight(iter.first, x, z);
+      biomeCountsVector.push_back(iter);
 
       // get most weighted two biomes
       if (iter.second > maxBiomeCounts[0]) {
@@ -143,6 +149,14 @@ float Noiser::getElevation(int x, int z, float *biomes) {
 
     }
     elevation = elevationSum / ((8 * 2 + 1) * (8 * 2 + 1));
+
+    std::sort(biomeCountsVector.begin(), biomeCountsVector.end(), compareWeight);
+
+    maxBiomes[0] = biomeCountsVector[0].first;
+    maxBiomeCounts[0] = biomeCountsVector[0].second;
+
+    maxBiomes[0] = biomeCountsVector[0].first;
+    maxBiomeCounts[0] = biomeCountsVector[0].second;
 
     biomes[0] = maxBiomes[0];
     biomes[1] = maxBiomes[1]; //maxBiomeCounts[1] == 0 ? maxBiomes[0] : maxBiomes[1];
