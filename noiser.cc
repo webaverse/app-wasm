@@ -128,35 +128,29 @@ float Noiser::getElevation(int x, int z, float *biomes) {
     for (auto const &iter : biomeCounts) {
       elevationSum += iter.second * getBiomeHeight(iter.first, x, z);
       biomeCountsVector.push_back(iter);
-
-      // get most weighted two biomes
-      // if (iter.second > maxBiomeCounts[0]) {
-      //   maxBiomeCounts[1] = maxBiomeCounts[0];
-      //   maxBiomes[1] = maxBiomes[0];
-
-      //   maxBiomeCounts[0] = iter.second;
-      //   maxBiomes[0] = iter.first;
-      // } else if (iter.second > maxBiomeCounts[1]) {
-      //   maxBiomeCounts[1] = iter.second;
-      //   maxBiomes[1] = iter.first;
-      // }
-
     }
     elevation = elevationSum / ((8 * 2 + 1) * (8 * 2 + 1));
 
     std::sort(biomeCountsVector.begin(), biomeCountsVector.end(), compareWeight);
 
-    // maxBiomes[0] = biomeCountsVector[0].first;
-    // maxBiomeCounts[0] = biomeCountsVector[0].second;
-
-    // maxBiomes[1] = biomeCountsVector[1].first;
-    // maxBiomeCounts[1] = biomeCountsVector[1].second;
-
     biomes[0] = biomeCountsVector[0].first;
-    biomes[1] = biomeCountsVector[1].first; //maxBiomeCounts[1] == 0 ? maxBiomes[0] : maxBiomes[1];
-    biomes[2] = biomeCountsVector.size() > 1 ?
-      (float)biomeCountsVector[0].second / (float)(biomeCountsVector[0].second + biomeCountsVector[1].second) :
-      1.0;
+    biomes[1] = biomeCountsVector[1].first;
+    biomes[2] = biomeCountsVector[2].first;
+
+    unsigned int totalCount = 0;
+
+    for (int i = 0; i < 3; i++) {
+      if (biomeCountsVector.size() >= i + 1) {
+        totalCount += biomeCountsVector[i].second;
+        biomes[3 + i] = (float)biomeCountsVector[i].second;
+      } else {
+        biomes[3 + i] = 0;
+      }
+    }
+
+    for (int i = 0; i < 3; i++) {
+      biomes[3 + i] /= (float)totalCount;
+    }
 
     return elevation;
   }
@@ -199,10 +193,10 @@ void Noiser::fillElevations(int ox, int oz, int numCells, float *elevations, flo
   unsigned int index = 0;
   for (int z = 0; z < numCellsOverscan; z++) {
     for (int x = 0; x < numCellsOverscan; x++) {
-      float cellBiomes[3];
+      float cellBiomes[6];
       elevations[index] = getElevation((ox * numCells) + x, (oz * numCells) + z, cellBiomes);
-      for (int i = 0; i < 3; i++) {
-        biomes[3 * index + i] = cellBiomes[i];
+      for (int i = 0; i < 6; i++) {
+        biomes[6 * index + i] = cellBiomes[i];
       }
       index++;
     }
