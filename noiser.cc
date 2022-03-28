@@ -124,43 +124,37 @@ float Noiser::getElevation(int x, int z, float *biomes) {
       }
     }
 
-    unsigned char maxBiomes[2];
-    unsigned int maxBiomeCounts[2];
-
-    maxBiomeCounts[0] = 0;
-    maxBiomeCounts[1] = 0;
-
     float elevationSum = 0;
     for (auto const &iter : biomeCounts) {
       elevationSum += iter.second * getBiomeHeight(iter.first, x, z);
       biomeCountsVector.push_back(iter);
 
       // get most weighted two biomes
-      if (iter.second > maxBiomeCounts[0]) {
-        maxBiomeCounts[1] = maxBiomeCounts[0];
-        maxBiomes[1] = maxBiomes[0];
+      // if (iter.second > maxBiomeCounts[0]) {
+      //   maxBiomeCounts[1] = maxBiomeCounts[0];
+      //   maxBiomes[1] = maxBiomes[0];
 
-        maxBiomeCounts[0] = iter.second;
-        maxBiomes[0] = iter.first;
-      } else if (iter.second > maxBiomeCounts[1]) {
-        maxBiomeCounts[1] = iter.second;
-        maxBiomes[1] = iter.first;
-      }
+      //   maxBiomeCounts[0] = iter.second;
+      //   maxBiomes[0] = iter.first;
+      // } else if (iter.second > maxBiomeCounts[1]) {
+      //   maxBiomeCounts[1] = iter.second;
+      //   maxBiomes[1] = iter.first;
+      // }
 
     }
     elevation = elevationSum / ((8 * 2 + 1) * (8 * 2 + 1));
 
     std::sort(biomeCountsVector.begin(), biomeCountsVector.end(), compareWeight);
 
-    maxBiomes[0] = biomeCountsVector[0].first;
-    maxBiomeCounts[0] = biomeCountsVector[0].second;
+    // maxBiomes[0] = biomeCountsVector[0].first;
+    // maxBiomeCounts[0] = biomeCountsVector[0].second;
 
-    maxBiomes[0] = biomeCountsVector[0].first;
-    maxBiomeCounts[0] = biomeCountsVector[0].second;
+    // maxBiomes[1] = biomeCountsVector[1].first;
+    // maxBiomeCounts[1] = biomeCountsVector[1].second;
 
-    biomes[0] = maxBiomes[0];
-    biomes[1] = maxBiomes[1]; //maxBiomeCounts[1] == 0 ? maxBiomes[0] : maxBiomes[1];
-    biomes[2] = (float)maxBiomeCounts[0] / (float)(maxBiomeCounts[0] + maxBiomeCounts[1]);
+    biomes[0] = biomeCountsVector[0].first;
+    biomes[1] = biomeCountsVector[1].first; //maxBiomeCounts[1] == 0 ? maxBiomes[0] : maxBiomes[1];
+    biomes[2] = (float)biomeCountsVector[0].second / (float)(biomeCountsVector[0].second + biomeCountsVector[1].second);
 
     return elevation;
   }
