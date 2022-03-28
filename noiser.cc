@@ -103,7 +103,7 @@ float Noiser::getBiomeHeight(unsigned char b, int x, int z) {
   }
 }
 
-bool compareWeight(std::pair<unsigned char, unsigned int> a, std::pair<unsigned char, unsigned int> b) {
+bool compareWeight(std::pair<unsigned char, unsigned int> & a, std::pair<unsigned char, unsigned int> & b) {
   return a.second > b.second;
 }
 
@@ -154,7 +154,9 @@ float Noiser::getElevation(int x, int z, float *biomes) {
 
     biomes[0] = biomeCountsVector[0].first;
     biomes[1] = biomeCountsVector[1].first; //maxBiomeCounts[1] == 0 ? maxBiomes[0] : maxBiomes[1];
-    biomes[2] = (float)biomeCountsVector[0].second / (float)(biomeCountsVector[0].second + biomeCountsVector[1].second);
+    biomes[2] = biomeCountsVector.size() > 1 ?
+      (float)biomeCountsVector[0].second / (float)(biomeCountsVector[0].second + biomeCountsVector[1].second) :
+      1.0;
 
     return elevation;
   }
