@@ -529,6 +529,7 @@ void createChunk(
     unsigned char temperature;
     unsigned char humidity;
     float elevations[(segment + 3) * (segment + 3)];
+    float ether[(segment + 3) * (segment + 3) * (segment + 3)];
 
     int ox = (int)round(origin[0] / chunkSize);
     int oz = (int)round(origin[2] / chunkSize);
@@ -538,6 +539,7 @@ void createChunk(
     float biomes[6 * (segment + 3) * (segment + 3)];
 
     noiser->fillElevations(ox, oz, segment, elevations, biomes);
+    noiser->fillEther(ox, oz, segment, elevations, ether);
 
     delete noiser;
 
