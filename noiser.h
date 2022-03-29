@@ -48,7 +48,7 @@ class Noiser {
     double getHumidity(double x, double z);
     void fillBiomes(int ox, int oz, int numCells, unsigned char *biomes, unsigned char *temperature, unsigned char *humidity);
     void fillElevations(int ox, int oz, int numCells, float *elevations, float *biomes);
-    // void fillEther(int ox, int oz, float *elevations, float *ether);
+    void fillEther(int ox, int oz, int numCells, float *elevations, float *ether);
     // void fillLiquid(int ox, int oz, float *ether, float *elevations, float *water, float *lava);
     // void applyEther(float *newEther, unsigned int numNewEthers, float *ether);
     // void makeGeometries(int ox, int oy, float *ether, float *water, float *lava, float *positions, unsigned int *indices, unsigned int *attributeRanges, unsigned int *indexRanges);
