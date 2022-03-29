@@ -29,9 +29,6 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
-EMSCRIPTEN_KEEPALIVE unsigned int getNumActorsPhysics(PScene *scene) {
-  return scene->getNumActors();
-}
 EMSCRIPTEN_KEEPALIVE PxD6Joint *addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1) {
   return scene->addJoint(id1, id2, position1, position2, quaternion1, quaternion2, fixBody1);
 }
@@ -62,7 +59,6 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *di
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
-  
   for (unsigned int i = 0; i < rayCount; i++) {
     
     scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
@@ -190,12 +186,6 @@ EMSCRIPTEN_KEEPALIVE unsigned int moveCharacterControllerPhysics(PScene *scene, 
 EMSCRIPTEN_KEEPALIVE void setCharacterControllerPositionPhysics(PScene *scene, PxController *characterController, float *position) {
   return scene->setCharacterControllerPosition(characterController, position);
 }
-EMSCRIPTEN_KEEPALIVE Bone *createSkeleton(PScene *scene, unsigned char *buffer, unsigned int groupId) {
-  return scene->createSkeleton(buffer, groupId);
-}
-EMSCRIPTEN_KEEPALIVE void setSkeletonFromBuffer(PScene *scene, Bone *skeleton, bool isChildren, unsigned char *buffer) {
-  scene->setSkeletonFromBuffer(skeleton, isChildren, buffer);
-}
 
 EMSCRIPTEN_KEEPALIVE float *doCut(
   float *positions,
@@ -243,7 +233,7 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 //   marchingCubes(dims, potential, brush, shift, scale, positions, colors, faces, *positionIndex, *colorIndex, *faceIndex);
 // }
 
-EMSCRIPTEN_KEEPALIVE float *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
+EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
 }
 

@@ -59,7 +59,6 @@ public:
   SimulationEventCallback2();
   virtual ~SimulationEventCallback2();
   virtual void onConstraintBreak(PxConstraintInfo *constraints, PxU32 count);
-  virtual void onJointBreak();
   virtual void onWake(PxActor **actors, PxU32 count);
   virtual void onSleep(PxActor **actors, PxU32 count);
   virtual void onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs);
@@ -75,27 +74,11 @@ public:
   virtual PxQueryHitType::Enum postFilter(const PxFilterData &filterData, const PxQueryHit &hit);
 };
 
-class Bone {
-public:
-  uint32_t id;
-  std::string name;
-  PxVec3 position;
-  PxQuat quaternion;
-  PxVec3 scale;
-  float radius;
-  float halfHeight;
-  float boneLength;
-  std::vector<std::unique_ptr<Bone>> children;
-  PxRigidBody *body; // PxRigidActor *body;
-  PxJoint *joint;
-};
-
 class PScene {
 public:
   PScene();
   ~PScene();
 
-  unsigned int getNumActors();
   PxD6Joint *addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1);
   void setJointMotion(PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion);
   void setJointTwistLimit(PxD6Joint *joint, float lowerLimit, float upperLimit, float contactDist = -1.0f);
@@ -141,9 +124,6 @@ public:
   void destroyCharacterController(PxController *characterController);
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
-  void registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId);
-  Bone *createSkeleton(unsigned char *buffer, unsigned int groupId);
-  void setSkeletonFromBuffer(Bone *skeleton, bool isChildren, unsigned char *buffer);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;

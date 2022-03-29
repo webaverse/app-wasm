@@ -1,20 +1,17 @@
+// #include "DirectXMath.h"
+/* #include "PhysX/physx/include/geometry/PxMeshQuery.h"
+#include "geometry/PxCapsuleGeometry.h"
+#include "foundation/PxTransform.h"
+ */
 #include "physics.h"
 #include <string>
 #include <iostream>
 
 using namespace physx;
 
-/*
-  SimulationEventCallback2
-*/
 SimulationEventCallback2::SimulationEventCallback2() {}
 SimulationEventCallback2::~SimulationEventCallback2() {}
-void SimulationEventCallback2::onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {
-  std::cout << "-onConstraintBreak" << std::endl;
-}
-void SimulationEventCallback2::onJointBreak() {
-  std::cout << "-onJointBreak" << std::endl;
-}
+void SimulationEventCallback2::onConstraintBreak(PxConstraintInfo *constraints, PxU32 count) {}
 void SimulationEventCallback2::onWake(PxActor **actors, PxU32 count) {}
 void SimulationEventCallback2::onSleep(PxActor **actors, PxU32 count) {}
 void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) {
@@ -54,14 +51,6 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
 }
 void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
-
-/* new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI/2)
-  .premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI/2)).toArray(); */
-// const PxQuat leftUpQuaternion{0.4999999999999999, 0.5, -0.5, 0.5000000000000001};
-// new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI/2)
-const PxQuat leftQuaternion{0, 0.7071067811865475, 0, 0.7071067811865476};
-// new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI/2)
-const PxQuat rightQuaternion{0, -0.7071067811865475, 0, 0.7071067811865476};
 
 /*
   CharacterControllerFilterCallback
@@ -110,22 +99,14 @@ PxFilterFlags ccdFilterShader(
     constantBlock,
     constantBlockSize
   );
-  if (
-    (filterData0.word2 == 2 || filterData1.word2 == 2) && // one of the objects is an avatar capsule
-    (filterData0.word3 == 3 || filterData1.word3 == 3) // one of the objects is a skeleton bone
-  ) {
-    // do not colide
-    pairFlags &= ~PxPairFlag::eSOLVE_CONTACT;
-    pairFlags &= ~PxPairFlag::eNOTIFY_TOUCH_FOUND;
-    pairFlags &= ~PxPairFlag::eDETECT_DISCRETE_CONTACT;
-    pairFlags &= ~PxPairFlag::eDETECT_CCD_CONTACT;
-  } else {
-    // maybe colide
-    pairFlags |= PxPairFlag::eSOLVE_CONTACT;
+  pairFlags |= PxPairFlag::eSOLVE_CONTACT;
+  pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+  pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  /* if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
-    pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
-    pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
-  }
+    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
+    pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
+  } */
   return result;
 }
 
@@ -212,10 +193,6 @@ PScene::PScene() {
 PScene::~PScene() {
   std::cout << "scene destructor" << std::endl;
   abort();
-}
-
-unsigned int PScene::getNumActors() {
-  return actors.size();
 }
 
 PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1 = false) {
@@ -345,7 +322,7 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
     const PxVec3 &p = actor2World.p;
     const PxQuat &q = actor2World.q;
     
-    const unsigned int id = (unsigned int)actor->userData;
+    const unsigned int id = (unsigned int)actors[i]->userData;
     ids[i] = id;
     
     positions[i*3] = p.x;
@@ -454,9 +431,7 @@ PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *
   if (dynamic) {
     PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
     PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
-    scene->addActor(*box);
-    actors.push_back(box);
-
+    actor = box;
     if (groupId != -1) {
       // collision filter
       unsigned int numShapes = box->getNbShapes();
@@ -473,22 +448,16 @@ PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *
         std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
       }
     }
-    return box;
   } else {
-    PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
-    PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
-    PxBoxGeometry geometry(size[0], size[1], size[2]);
-    PxRigidStatic *floor = PxCreateStatic(*physics, transform, geometry, *material);
-    floor->userData = (void *)id;
-    scene->addActor(*floor);
-    actors.push_back(floor);
-    return floor;
-
+    PxRigidStatic *box = PxCreateStatic(*physics, transform, geometry, *material);
+    actor = box;
   }
 
   actor->userData = (void *)id;
   scene->addActor(*actor);
   actors.push_back(actor);
+
+  return actor;
 }
 
 void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
@@ -754,12 +723,10 @@ void PScene::getGlobalPosition(unsigned int id, float *positions) {
     return (unsigned int)actor->userData == id;
   });
   if (actorIter != actors.end()) {
-    std::cerr << "get position a " << id << std::endl;
     PxRigidActor *actor = *actorIter;
 
     PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
     if (body) {
-      std::cerr << "get position b " << id << std::endl;
       PxVec3 position = actor->getGlobalPose().p;
       positions[0]  = position[0]; 
       positions[1]  = position[1]; 
@@ -941,9 +908,10 @@ PxController *PScene::createCharacterController(float radius, float height, floa
   // desc.climbingMode = PxCapsuleClimbingMode::eCONSTRAINED;
   desc.material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxController *characterController = controllerManager->createController(desc);
-  
+  characterController->setPosition(PxExtendedVec3{position[0], position[1], position[2]});
+
   PxRigidDynamic *actor = characterController->getActor();
-  // actor->userData = (void *)(lolIndex++);
+  
   unsigned int numShapes = actor->getNbShapes();
   if (numShapes == 1) {
     PxShape *shapes[1];
@@ -957,9 +925,6 @@ PxController *PScene::createCharacterController(float radius, float height, floa
     std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
   }
 
-  characterController->setPosition(PxExtendedVec3{position[0], position[1], position[2]});
-
-  PxRigidDynamic *actor = characterController->getActor();
   // if (id != 0) {
     actor->userData = (void *)id;
     actors.push_back(actor);
@@ -1020,12 +985,15 @@ unsigned int PScene::moveCharacterController(PxController *characterController, 
   unsigned int flags = 0;
   if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
     flags |= (1 << 0);
+    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
   }
   if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_SIDES) {
     flags |= (1 << 1);
+    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
   }
   if (collisionFlags & PxControllerCollisionFlag::eCOLLISION_UP) {
     flags |= (1 << 2);
+    // characterController->setPosition(characterController->getPosition() + PxVec3(0, -0.01, 0));
   }
   return flags;
 }
@@ -1576,303 +1544,4 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
       }
     }
   }
-}
-
-Bone *parseBone(unsigned char *buffer, unsigned int &index) {
-  // vismark
-  uint32_t id = *((uint32_t *)(buffer + index));
-  index += sizeof(uint32_t);
-
-  uint32_t nameLength = *((uint32_t *)(buffer + index));
-  index += sizeof(uint32_t);
-  std::string name((char *)(buffer + index), nameLength);
-  index += nameLength;
-
-  PxVec3 position{
-    *((float *)(buffer + index)),
-    *((float *)(buffer + index + sizeof(float))),
-    *((float *)(buffer + index + sizeof(float) * 2))
-  };
-  index += sizeof(float) * 3;
-
-  PxQuat quaternion{
-    *((float *)(buffer + index)),
-    *((float *)(buffer + index + sizeof(float))),
-    *((float *)(buffer + index + sizeof(float) * 2)),
-    *((float *)(buffer + index + sizeof(float) * 3))
-  };
-  index += sizeof(float) * 4;
-
-  PxVec3 scale{
-    *((float *)(buffer + index)),
-    *((float *)(buffer + index + sizeof(float))),
-    *((float *)(buffer + index + sizeof(float) * 2))
-  };
-  index += sizeof(float) * 3;
-
-  float radius = *((float *)(buffer + index));
-  index += sizeof(float);
-  float halfHeight = *((float *)(buffer + index));
-  index += sizeof(float);
-  float boneLength = *((float *)(buffer + index));
-  index += sizeof(float);
-
-  uint32_t numChildren = *((uint32_t *)(buffer + index));
-  index += sizeof(uint32_t);
-  std::vector<std::unique_ptr<Bone>> children(numChildren);
-  for (unsigned int i = 0; i < numChildren; i++) {
-    Bone *bone = parseBone(buffer, index);
-    children[i].reset(bone);
-  }
-
-  return new Bone{
-    id,
-    std::move(name),
-    position,
-    quaternion,
-    scale,
-    radius,
-    halfHeight,
-    boneLength,
-    std::move(children),
-    nullptr,
-    nullptr
-  };
-}
-void PScene::registerSkeleton(Bone &bone, Bone *parentBone, unsigned int groupId) {
-  /* std::cout << "---register bone " << bone.id << " " << bone.name << " " <<
-    bone.position.x << "," << bone.position.y << "," << bone.position.z << " " <<
-    bone.quaternion.x << "," << bone.quaternion.y << "," << bone.quaternion.z << "," << bone.quaternion.w << " " <<
-    bone.scale.x << "," << bone.scale.y << "," << bone.scale.z << " " <<
-    bone.children.size() << std::endl; */
-
-  PxMaterial *material = physics->createMaterial(1.f, 1.f, 1.f);
-  PxTransform transform(
-    bone.position,
-    bone.quaternion
-  );
-  // XXX make this a capsule
-  
-  PxCapsuleGeometry geometry(bone.radius, bone.halfHeight);
-  // PxBoxGeometry geometry(bone.scale.x, bone.scale.y, bone.scale.z);
-  PxRigidDynamic *capsule = PxCreateDynamic(*physics, transform, geometry, *material, 1);
-  if(bone.name == "Hips") {
-    // capsule->setMass(0);
-    // capsule->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
-    //Lock the motion
-    // capsule->setRigidDynamicLockFlags(
-    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
-    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
-    //   PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
-    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
-    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
-    //   PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
-    // );
-  }
-  capsule->userData = (void *)bone.id;
-  // capsule->setMaxDepenetrationVelocity(1.0f);
-  // capsule->setAngularDamping(0.15f);
-  // // if(bone.id == 4) {
-  // if(bone.name == "Hips") {
-  //   std::cout << "---updateMassAndInertia: " << bone.name << std::endl;
-  //   PxRigidBodyExt::updateMassAndInertia(*capsule, 0.0f);
-  // } else {
-  //   std::cout << "---updateMassAndInertia: " << bone.name << std::endl;
-  //   PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
-  // }
-  // PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
-  PxRigidBodyExt::updateMassAndInertia(*capsule, 1.0f);
-  scene->addActor(*capsule);
-  actors.push_back(capsule);
-  // capsule->setMass(0.001);
-  bone.body = capsule;
-
-  // capsule->setSolverIterationCounts(10, 10);
-
-  unsigned int numShapes = capsule->getNbShapes();
-  if (numShapes == 1) {
-    PxShape *shapes[1];
-    capsule->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
-    PxShape *shape = shapes[0];
-    PxFilterData filterData{};
-    filterData.word0 = groupId; // character id
-    filterData.word1 = bone.id; // the unique bone id in the character
-    filterData.word3 = 3; // signal this is a character skeleton bone; used during filtering
-    shape->setSimulationFilterData(filterData); 
-  } else {
-    std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
-  }
-
-  // recursively create children
-  {
-    Bone &parent = bone;
-    for (unsigned int i = 0; i < bone.children.size(); i++) {
-      Bone &child = *(bone.children[i]);
-      registerSkeleton(child, &parent, groupId);
-    }
-  }
-
-  std::cout << "-mass: " << bone.name << " " << capsule->getMass() << std::endl;
-
-  // create joints
-  {
-    Bone &parent = bone;
-    for (unsigned int i = 0; i < bone.children.size(); i++) {
-      Bone &child = *(bone.children[i]);
-
-      /* PxVec3 offset{parent.boneLength * 0.5f, 0, 0};
-      if (parent.name == "Hips" && child.name == "Left_leg" && child.name == "Right_leg") {
-        offset.x *= -1.f;
-      } */
-      /* PxTransform jointTransform(
-        child.position +
-          child.quaternion.rotate(PxVec3{-child.boneLength * 0.5f, 0, 0}),
-        child.quaternion
-      ); */
-
-      PxTransform jointTransform(
-        parent.position +
-          parent.quaternion.rotate(PxVec3{parent.boneLength * 0.5f, 0, 0}),
-        parent.quaternion
-      );
-      PxTransform parentTransform = PxTransform(
-        parent.position,
-        parent.quaternion
-      ).getInverse() * jointTransform;
-      PxTransform childTransform = PxTransform(
-        child.position,
-        child.quaternion
-      ).getInverse() * jointTransform;
-
-      /* PxTransform parentTransform = PxTransform(
-        PxVec3{parent.boneLength * 0.5f, 0, 0},
-        PxQuat{0, 0, 0, 1}
-      );
-      PxTransform childTransform = PxTransform(
-        PxVec3{-child.boneLength * 0.5f, 0, 0},
-        child.quaternion.getConjugate() * parent.quaternion
-      ); */
-
-      // std::cout << "bind " << parent.name << " " << child.name << std::endl;
-
-      /* PxTransform parentTransform{PxVec3{0, 0, -parent.boneLength * 0.5f}, leftUpQuaternion};
-      PxTransform childTransform{PxVec3{0, 0, child.boneLength * 0.5f}, leftUpQuaternion}; */
-
-      //
-
-      // PxRevoluteJoint *joint = PxRevoluteJointCreate(
-      //   *physics,
-      //   parent.body, parentTransform,
-      //   child.body, childTransform
-      // );
-
-      // joint->setLimit(PxJointAngularLimitPair(0, PxPi/4, 0.01f));
-      // joint->setLimit(PxJointAngularLimitPair(0, PxPi/4));
-      // joint->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, true);
-
-      //
-
-      PxD6Joint *joint = PxD6JointCreate(
-      // PxFixedJoint *joint = PxFixedJointCreate(
-        *physics,
-        parent.body, parentTransform,
-        child.body, childTransform
-      );
-
-      // PxReal a;
-      // PxReal b;
-      // joint->getBreakForce(a, b);
-      // std::cout << "break force: " << a << " " << b << std::endl;
-
-      // std::cout << "---bone.name: " << bone.name << std::endl;
-      // std::cout << "---parent.name: " << parent.name << "---child.name: " << child.name << std::endl;
-    
-      // constexpr float swing0 = 3.14f / 4.f * 0.2;
-      // constexpr float swing1 = 3.14f / 4.f * 0.2;
-      // constexpr float twistLo = -3.14f / 8.f * 0.2;
-      // constexpr float twistHi = 3.14f / 8.f * 0.2;
-
-      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
-      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
-      joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
-
-      // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
-      // joint->setTwistLimit(physx::PxJointAngularLimitPair(-PxPi/4, PxPi/4));
-
-      // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
-      // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
-      // joint->setSwingLimit(physx::PxJointLimitCone(PxPi/4, PxPi/4));
-
-      // vismark
-      // if (parent.name != "Hips") {
-        /* joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
-        joint->setMotion(PxD6Axis::eY, PxD6Motion::eFREE);
-        joint->setMotion(PxD6Axis::eZ, PxD6Motion::eFREE); */
-        // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
-        // joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
-        // joint->setSwingLimit(physx::PxJointLimitCone(swing0, swing1));
-
-        // joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
-        // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
-        // if (parent.name != "Hips") {
-          // joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
-          // joint->setTwistLimit(physx::PxJointAngularLimitPair(twistLo, twistHi));
-        // }
-        // joint->setProjectionLinearTolerance(0.01f);
-        // joint->setProjectionAngularTolerance(3.14f * 0.01f);
-        // joint->setConstraintFlag(PxConstraintFlag::ePROJECTION, true);
-        // joint->setConstraintFlag(PxConstraintFlag::ePROJECT_TO_ACTOR0, true);
-        // joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, false);
-        // std::cout << "non-hips limit " << parent.name << " " << child.name << std::endl;
-      /* } else {
-        joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
-        joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
-        joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
-        // std::cout << "rigid hips" << parent.name << " " << child.name << std::endl;
-      } */
-
-      //
-
-      child.joint = joint;
-    }
-  }
-}
-void setSkeleton(Bone *dst, Bone *src, bool isChildren) {
-  // std:: cou
-  dst->id = src->id;
-  dst->name = src->name;
-  dst->position = src->position;
-  dst->quaternion = src->quaternion;
-  dst->scale = src->scale;
-  dst->boneLength = src->boneLength;
-
-  PxTransform transform(
-    src->position,
-    src->quaternion
-  );
-  dst->body->setGlobalPose(transform, true);
-  dst->body->setLinearVelocity(PxVec3{0, 0, 0}, true);
-  dst->body->setAngularVelocity(PxVec3{0, 0, 0}, true);
-
-  if(isChildren) {
-    for (unsigned int i = 0; i < src->children.size(); i++) {
-      setSkeleton(dst->children[i].get(), src->children[i].get(), true);
-    }
-  }
-}
-Bone *PScene::createSkeleton(unsigned char *buffer, unsigned int groupId) {
-  unsigned int index = 0;
-  Bone *rootBone = parseBone(buffer, index);
-
-  // vismark
-  registerSkeleton(*rootBone, rootBone, groupId);
-
-  return rootBone;
-}
-void PScene::setSkeletonFromBuffer(Bone *rootBone, bool isChildren, unsigned char *buffer) {
-  // vismark
-  unsigned int index = 0;
-  std::unique_ptr<Bone> rootBone2(parseBone(buffer, index));
-
-  setSkeleton(rootBone, rootBone2.get(), isChildren);
 }
