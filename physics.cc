@@ -99,9 +99,22 @@ PxFilterFlags ccdFilterShader(
     constantBlock,
     constantBlockSize
   );
-  pairFlags |= PxPairFlag::eSOLVE_CONTACT;
-  pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
-  pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  if (
+    (filterData0.word2 == 2 || filterData1.word2 == 2) && // one of the objects is an avatar capsule
+    (filterData0.word3 == 3 || filterData1.word3 == 3) // one of the objects is a skeleton bone
+  ) {
+    // do not colide
+    pairFlags &= ~PxPairFlag::eSOLVE_CONTACT;
+    pairFlags &= ~PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    pairFlags &= ~PxPairFlag::eDETECT_DISCRETE_CONTACT;
+    pairFlags &= ~PxPairFlag::eDETECT_CCD_CONTACT;
+  } else {
+    // maybe colide
+    pairFlags |= PxPairFlag::eSOLVE_CONTACT;
+    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+    pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  }
   /* if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
@@ -207,7 +220,7 @@ PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1
   if (actorIter1 != actors.end()) {
     actor1 = *actorIter1;
     body1 = dynamic_cast<PxRigidDynamic *>(actor1);
-    std::cout << "add joint got id a" << id1 << std::endl;
+    // std::cout << "add joint got id a" << id1 << std::endl;
   } else {
     std::cerr << "add joint unknown actor id a" << id1 << std::endl;
   }
@@ -218,7 +231,7 @@ PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1
   if (actorIter2 != actors.end()) {
     actor2 = *actorIter2;
     body2 = dynamic_cast<PxRigidDynamic *>(actor2);
-    std::cout << "add joint got id b" << id2 << std::endl;
+    // std::cout << "add joint got id b" << id2 << std::endl;
   } else {
     std::cerr << "add joint unknown actor id b" << id2 << std::endl;
   }
