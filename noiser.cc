@@ -210,10 +210,10 @@ void _fillOblateSpheroid(float centerX, float centerY, float centerZ, int numCel
   const int radiusCeil = (int)std::ceil(radius);
   for (int z = -radiusCeil; z <= radiusCeil; z++) {
     const float lz = centerZ + z;
-    if (lz >= minZ && lz < (maxZ + 1)) {
+    if (lz >= minZ && lz < (maxZ + 3)) {
       for (int x = -radiusCeil; x <= radiusCeil; x++) {
         const float lx = centerX + x;
-        if (lx >= minX && lx < (maxX + 1)) {
+        if (lx >= minX && lx < (maxX + 3)) {
           for (int y = -radiusCeil; y <= radiusCeil; y++) {
             const float ly = centerY + y;
             if (ly >= 0 && ly < numCellsOverscan) {
