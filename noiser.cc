@@ -204,7 +204,7 @@ void Noiser::fillElevations(int ox, int oz, int numCells, float *elevations, flo
 }
 
 void _fillOblateSpheroid(float centerX, float centerY, float centerZ, int numCells,
-  int minX, int minZ, int maxX, int maxZ, float radius, float *ether
+  int minX, int minY, int minZ, int maxX, int maxY, int maxZ, float radius, float *ether
 ) {
   int numCellsOverscan = numCells + 3;
   const int radiusCeil = (int)std::ceil(radius);
@@ -216,10 +216,10 @@ void _fillOblateSpheroid(float centerX, float centerY, float centerZ, int numCel
         if (lx >= minX && lx < (maxX + 3)) {
           for (int y = -radiusCeil; y <= radiusCeil; y++) {
             const float ly = centerY + y;
-            if (ly >= 0 && ly < numCellsOverscan) {
+            if (ly >= minY && ly < (maxY + 3)) {
               const float distance = x*x + 2 * y*y + z*z;
               if (distance < radius*radius) {
-                const int index = getEtherIndex(std::floor(lx - minX), std::floor(ly), std::floor(lz - minZ), numCellsOverscan);
+                const int index = getEtherIndex(std::floor(lx - minX), std::floor(ly - minY), std::floor(lz - minZ), numCellsOverscan);
                 const float distance2 = std::sqrt(distance);
                 ether[index] += 1 + ((radius - distance2) / radius);
               }
@@ -245,60 +245,66 @@ void Noiser::fillEther(int ox, int oy, int oz, int numCells, float unitSize, flo
   }
 
   for (int doz = -4; doz <= 4; doz++) {
-    for (int dox = -4; dox <= 4; dox++) {
-      const int aox = ox + dox;
-      const int aoz = oz + doz;
-      const int nx = aox * numCells + 1000;
-      const int nz = aoz * numCells + 1000;
-      const float n = nestNoise.in2D(nx, nz);
-      const int numNests = (int)std::floor(std::max<float>(n * 2, 0));
+    for (int doy = -4; doy <= 4; doy++) {
+      for (int dox = -4; dox <= 4; dox++) {
+        const int aox = ox + dox;
+        const int aoy = oy + doy;
+        const int aoz = oz + doz;
+        const int nx = aox * numCells + 1000;
+        const int ny = aoy * numCells + 1000;
+        const int nz = aoz * numCells + 1000;
+        const float n = nestNoise.in3D(nx, ny, nz);
+        const int numNests = (int)std::floor(std::max<float>(n * 2, 0));
 
-      for (int i = 0; i < numNests; i++) {
-        const int nx = aox * numCells + 1000 + i * 1000;
-        const int nz = aoz * numCells + 1000 + i * 1000;
-        const float nestX = ((float)(aox * numCells) + nestNoiseX.in2D(nx, nz) * numCells);
-        const float nestY = nestNoiseY.in2D(nx, nz) * numCells;
-        const float nestZ = ((float)(aoz * numCells) + nestNoiseZ.in2D(nx, nz) * numCells);
+        for (int i = 0; i < numNests; i++) {
+          const int nx = aox * numCells + 1000 + i * 1000;
+          const int ny = aoy * numCells + 1000 + i * 1000;
+          const int nz = aoz * numCells + 1000 + i * 1000;
+          const float nestX = ((float)(aox * numCells) + nestNoiseX.in3D(nx, ny, nz) * numCells);
+          const float nestY = ((float)(aoy * numCells) + nestNoiseY.in3D(nx, ny, nz) * numCells);
+          const float nestZ = ((float)(aoz * numCells) + nestNoiseZ.in3D(nx, ny, nz) * numCells);
 
-        const int numWorms = 1 + (int)std::floor(std::max<float>(wormNoise.in2D(nx, nz) * 3, 0));
-        for (int j = 0; j < numWorms; j++) {
-          float cavePosX = nestX;
-          float cavePosY = nestY;
-          float cavePosZ = nestZ;
-          const int caveLength = (int)((0.75 + caveLengthNoise.in2D(nx, nz) * 0.25) * numCells * 4);
+          const int numWorms = 1 + (int)std::floor(std::max<float>(wormNoise.in3D(nx, ny, nz) * 3, 0));
+          for (int j = 0; j < numWorms; j++) {
+            float cavePosX = nestX;
+            float cavePosY = nestY;
+            float cavePosZ = nestZ;
+            const int caveLength = (int)((0.75 + caveLengthNoise.in3D(nx, ny, nz) * 0.25) * numCells * 4);
 
-          float theta = caveThetaNoise.in2D(nx, nz) * PI * 2;
-          float deltaTheta = 0;
-          float phi = cavePhiNoise.in2D(nx, nz) * PI * 2;
-          float deltaPhi = 0;
+            float theta = caveThetaNoise.in3D(nx, ny, nz) * PI * 2;
+            float deltaTheta = 0;
+            float phi = cavePhiNoise.in3D(nx, ny, nz) * PI * 2;
+            float deltaPhi = 0;
 
-          const float caveRadius = caveRadiusNoise.in2D(nx, nz);
+            const float caveRadius = caveRadiusNoise.in3D(nx, ny, nz) * 0.5;
 
-          for (int len = 0; len < caveLength; len++) {
-            const int nx = aox * numCells + 1000 + i * 1000 + len * 1000;
-            const int nz = aoz * numCells + 1000 + i * 1000 + len * 1000;
+            for (int len = 0; len < caveLength; len++) {
+              const int nx = aox * numCells + 1000 + i * 1000 + len * 1000;
+              const int ny = aoy * numCells + 1000 + i * 1000 + len * 1000;
+              const int nz = aoz * numCells + 1000 + i * 1000 + len * 1000;
 
-            cavePosX += sin(theta) * cos(phi);
-            cavePosY += cos(theta) * cos(phi);
-            cavePosZ += sin(phi);
+              cavePosX += sin(theta) * cos(phi);
+              cavePosY += cos(theta) * cos(phi);
+              cavePosZ += sin(phi);
 
-            theta += deltaTheta * 0.2;
-            deltaTheta = (deltaTheta * 0.9) + (-0.5 + caveDeltaThetaNoise.in2D(nx, nz));
-            phi = phi/2 + deltaPhi/4;
-            deltaPhi = (deltaPhi * 0.75) + (-0.5 + caveDeltaPhiNoise.in2D(nx, nz));
+              theta += deltaTheta * 0.2;
+              deltaTheta = (deltaTheta * 0.9) + (-0.5 + caveDeltaThetaNoise.in3D(nx, ny, nz));
+              phi = phi/2 + deltaPhi/4;
+              deltaPhi = (deltaPhi * 0.75) + (-0.5 + caveDeltaPhiNoise.in3D(nx, ny, nz));
 
-            if (caveFillNoise.in2D(nx, nz) >= 0.25) {
-              const float centerPosX = cavePosX + (caveCenterNoiseX.in2D(nx, nz) * 4 - 2) * 0.2;
-              const float centerPosY = cavePosY + (caveCenterNoiseY.in2D(nx, nz) * 4 - 2) * 0.2;
-              const float centerPosZ = cavePosZ + (caveCenterNoiseZ.in2D(nx, nz) * 4 - 2) * 0.2;
+              if (caveFillNoise.in3D(nx, ny, nz) >= 0.25) {
+                const float centerPosX = cavePosX + (caveCenterNoiseX.in3D(nx, ny, nz) * 4 - 2) * 0.2;
+                const float centerPosY = cavePosY + (caveCenterNoiseY.in3D(nx, ny, nz) * 4 - 2) * 0.2;
+                const float centerPosZ = cavePosZ + (caveCenterNoiseZ.in3D(nx, ny, nz) * 4 - 2) * 0.2;
 
-              // const height = (1 - 0.3 + Math.pow(_random.elevationNoise.in2D(centerPosX + 1000, centerPosZ + 1000), 0.5)) * 64;
-              // let radius = (height - centerPosY) / height;
-              // radius = 1.3 + (radius * 3.5 + 1) * caveRadius;
-              const float radius = 2 + 3.5 * caveRadius * sin(len * PI / caveLength);
+                // const height = (1 - 0.3 + Math.pow(_random.elevationNoise.in2D(centerPosX + 1000, centerPosZ + 1000), 0.5)) * 64;
+                // let radius = (height - centerPosY) / height;
+                // radius = 1.3 + (radius * 3.5 + 1) * caveRadius;
+                const float radius = 2 + 3.5 * caveRadius * sin(len * PI / caveLength);
 
-              _fillOblateSpheroid(centerPosX, centerPosY, centerPosZ, numCells,
-                ox * numCells, oz * numCells, (ox + 1) * numCells, (oz + 1) * numCells, radius, ether);
+                _fillOblateSpheroid(centerPosX, centerPosY, centerPosZ, numCells,
+                  ox * numCells, oy * numCells, oz * numCells, (ox + 1) * numCells, (oy + 1) * numCells, (oz + 1) * numCells, radius, ether);
+              }
             }
           }
         }
