@@ -531,7 +531,10 @@ void createChunk(
     float elevations[(segment + 3) * (segment + 3)];
     float ether[(segment + 3) * (segment + 3) * (segment + 3)];
 
+    float unitSize = chunkSize / (float)segment;
+
     int ox = (int)round(origin[0] / chunkSize);
+    int oy = (int)round(origin[1] / chunkSize);
     int oz = (int)round(origin[2] / chunkSize);
 
     // noiser->fillBiomes(ox, oz, segment, biomes, &temperature, &humidity);
@@ -539,14 +542,13 @@ void createChunk(
     float biomes[6 * (segment + 3) * (segment + 3)];
 
     noiser->fillElevations(ox, oz, segment, elevations, biomes);
-    noiser->fillEther(ox, oz, segment, elevations, ether);
+    noiser->fillEther(ox, oy, oz, segment, unitSize, elevations, ether);
 
     delete noiser;
 
 	std::vector<Vector4> points = {};
 	std::map<std::string, int> vertexDic;
 
-	float unitSize = chunkSize / (float)segment;
 	Vector3 originPos{origin[0], origin[1], origin[2]};
 	int index = 0;
 
@@ -569,7 +571,8 @@ void createChunk(
 
                 int pointIndex = indexFromCoord(i, j, k, segment + 2);
 
-                float potential = elevations[k * (segment + 3) + i] - curPos.y;
+                // float potential = elevations[k * (segment + 3) + i] - curPos.y;
+                float potential = -ether[j * (segment + 3) * (segment + 3) + k * (segment + 3) + i];
 
                 if (initialPotential == 0 && abs(potential) > 1e-7) {
                     initialPotential = potential > 0 ? 1 : -1;

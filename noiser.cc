@@ -203,7 +203,9 @@ void Noiser::fillElevations(int ox, int oz, int numCells, float *elevations, flo
   }
 }
 
-void _fillOblateSpheroid(float centerX, float centerY, float centerZ, int numCells, int minX, int minZ, int maxX, int maxZ, float radius, float *ether) {
+void _fillOblateSpheroid(float centerX, float centerY, float centerZ, int numCells,
+  int minX, int minZ, int maxX, int maxZ, float radius, float *ether
+) {
   int numCellsOverscan = numCells + 3;
   const int radiusCeil = (int)std::ceil(radius);
   for (int z = -radiusCeil; z <= radiusCeil; z++) {
@@ -217,7 +219,7 @@ void _fillOblateSpheroid(float centerX, float centerY, float centerZ, int numCel
             if (ly >= 0 && ly < numCellsOverscan) {
               const float distance = x*x + 2 * y*y + z*z;
               if (distance < radius*radius) {
-                const int index = getEtherIndex(std::floor(lx - minX), std::floor(ly), std::floor(lz - minZ));
+                const int index = getEtherIndex(std::floor(lx - minX), std::floor(ly), std::floor(lz - minZ), numCellsOverscan);
                 const float distance2 = std::sqrt(distance);
                 ether[index] += 1 + ((radius - distance2) / radius);
               }
@@ -229,14 +231,15 @@ void _fillOblateSpheroid(float centerX, float centerY, float centerZ, int numCel
   }
 }
 
-void Noiser::fillEther(int ox, int oz, int numCells, float *elevations, float *ether) {
+void Noiser::fillEther(int ox, int oy, int oz, int numCells, float unitSize, float *elevations, float *ether) {
   int numCellsOverscan = numCells + 3;
   unsigned int index = 0;
   for (int y = 0; y < numCellsOverscan; y++) {
     for (int z = 0; z < numCellsOverscan; z++) {
       for (int x = 0; x < numCellsOverscan; x++) {
         const float elevation = elevations[x + z * numCellsOverscan];
-        ether[index++] = std::min<float>(std::max<float>((float)y - elevation, -1.0), 1.0);
+        float posY = (oy * numCells + y - 1) * unitSize;
+        ether[index++] = std::min<float>(std::max<float>((float)posY - elevation, -1.0), 1.0);
       }
     }
   }
@@ -253,9 +256,9 @@ void Noiser::fillEther(int ox, int oz, int numCells, float *elevations, float *e
       for (int i = 0; i < numNests; i++) {
         const int nx = aox * numCells + 1000 + i * 1000;
         const int nz = aoz * numCells + 1000 + i * 1000;
-        const float nestX = (float)(aox * numCells) + nestNoiseX.in2D(nx, nz) * numCells;
+        const float nestX = ((float)(aox * numCells) + nestNoiseX.in2D(nx, nz) * numCells);
         const float nestY = nestNoiseY.in2D(nx, nz) * numCells;
-        const float nestZ = (float)(aoz * numCells) + nestNoiseZ.in2D(nx, nz) * numCells;
+        const float nestZ = ((float)(aoz * numCells) + nestNoiseZ.in2D(nx, nz) * numCells);
 
         const int numWorms = 1 + (int)std::floor(std::max<float>(wormNoise.in2D(nx, nz) * 3, 0));
         for (int j = 0; j < numWorms; j++) {
@@ -294,7 +297,8 @@ void Noiser::fillEther(int ox, int oz, int numCells, float *elevations, float *e
               // radius = 1.3 + (radius * 3.5 + 1) * caveRadius;
               const float radius = 2 + 3.5 * caveRadius * sin(len * PI / caveLength);
 
-              _fillOblateSpheroid(centerPosX, centerPosY, centerPosZ, numCells, ox * numCells, oz * numCells, (ox + 1) * numCells, (oz + 1) * numCells, radius, ether);
+              _fillOblateSpheroid(centerPosX, centerPosY, centerPosZ, numCells,
+                ox * numCells, oz * numCells, (ox + 1) * numCells, (oz + 1) * numCells, radius, ether);
             }
           }
         }

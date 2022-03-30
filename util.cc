@@ -10,8 +10,8 @@ int getCoordOverscanIndex(int x, int z) {
 int getChunkIndex(int x, int z) {
   return (mod(x, 0xFFFF) << 16) | mod(z, 0xFFFF);
 }
-int getEtherIndex(int x, int y, int z) {
-  return x + (z * NUM_CELLS_OVERSCAN) + (y * NUM_CELLS_OVERSCAN * NUM_CELLS_OVERSCAN);
+int getEtherIndex(int x, int y, int z, int numCellsOverscan) {
+  return x + (z * numCellsOverscan) + (y * numCellsOverscan * numCellsOverscan);
 }
 int getBlockIndex(int x, int y, int z) {
   const int ay = y / 16;

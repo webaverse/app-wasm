@@ -23,7 +23,7 @@ const int NUM_VOXELS_CHUNKS_HEIGHT = BLOCK_BUFFER_SIZE / 4 / NUM_CHUNKS_HEIGHT;
 int mod(int value, int divisor);
 int getCoordOverscanIndex(int x, int z);
 int getChunkIndex(int x, int z);
-int getEtherIndex(int x, int y, int z);
+int getEtherIndex(int x, int y, int z, int numCellsOverscan);
 int getBlockIndex(int x, int y, int z);
 int getLightsArrayIndex(int x, int z);
 int getLightsIndex(int x, int y, int z);
