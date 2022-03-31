@@ -15,10 +15,8 @@
 #include "extensions/PxDefaultErrorCallback.h"
 #include "extensions/PxDefaultCpuDispatcher.h"
 #include "extensions/PxDefaultSimulationFilterShader.h"
-#include "extensions/PxRevoluteJoint.h"
 #include "extensions/PxSphericalJoint.h"
 #include "extensions/PxD6Joint.h"
-#include "extensions/PxFixedJoint.h"
 #include "geometry/PxTriangleMeshGeometry.h"
 #include "cooking/PxTriangleMeshDesc.h"
 #include "cooking/PxCooking.h"
@@ -83,7 +81,6 @@ public:
   void setJointMotion(PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion);
   void setJointTwistLimit(PxD6Joint *joint, float lowerLimit, float upperLimit, float contactDist = -1.0f);
   void setJointSwingLimit(PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist = -1.0f);
-  void wakeUpAll();
   bool updateMassAndInertia(PxRigidBody *body, float shapeDensities);
   float getBodyMass(PxRigidBody *body);
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);

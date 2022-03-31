@@ -9,7 +9,6 @@
 // #include "earcut.h"
 // #include <iostream>
 #include "cut.h"
-#include "extensions/PxD6Joint.h"
 
 #include <deque>
 #include <map>
@@ -40,9 +39,6 @@ EMSCRIPTEN_KEEPALIVE void setJointTwistLimitPhysics(PScene *scene, PxD6Joint *jo
 }
 EMSCRIPTEN_KEEPALIVE void setJointSwingLimitPhysics(PScene *scene, PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist = -1.0f) {
   return scene->setJointSwingLimit(joint, yLimitAngle, zLimitAngle, contactDist);
-}
-EMSCRIPTEN_KEEPALIVE void wakeUpAllPhysics(PScene *scene) {
-  return scene->wakeUpAll();
 }
 EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhyscis(PScene *scene, PxRigidBody *body, float shapeDensities) {
   return scene->updateMassAndInertia(body, shapeDensities);

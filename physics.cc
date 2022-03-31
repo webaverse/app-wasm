@@ -262,8 +262,6 @@ PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1
     body2, transform2
   );
 
-  // joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
-
   return joint;
 }
 
@@ -277,14 +275,6 @@ void PScene::setJointTwistLimit(PxD6Joint *joint, float lowerLimit, float upperL
 
 void PScene::setJointSwingLimit(PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist) {
   joint->setSwingLimit(physx::PxJointLimitCone(yLimitAngle, zLimitAngle, contactDist));
-}
-
-void PScene::wakeUpAll() {
-  for (unsigned int i = 0; i < actors.size(); i++) {
-    PxRigidActor *actor = actors[i];
-    PxRigidDynamic *body = dynamic_cast<PxRigidDynamic *>(actor);
-    body->wakeUp();
-  }
 }
 
 bool PScene::updateMassAndInertia(PxRigidBody *body, float shapeDensities) {

@@ -269,11 +269,8 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/physxcharacterkinematic/src/CctSweptBox.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctSweptCapsule.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctSweptVolume.cpp \
-  PhysX/physx/source/physxextensions/src/ExtRevoluteJoint.cpp \
-  PhysX/physx/source/physxextensions/src/ExtSphericalJoint.cpp \
   PhysX/physx/source/physxextensions/src/ExtD6Joint.cpp \
   PhysX/physx/source/physxextensions/src/ExtD6JointCreate.cpp \
-  PhysX/physx/source/physxextensions/src/ExtFixedJoint.cpp \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c \
   && touch physx-timestamp
@@ -295,7 +292,7 @@ fi
 echo 'building main...'
 # m = 64*1024; s = 350000000; Math.floor(s/m)*m;
 # emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=419430400 -s ALLOW_MEMORY_GROWTH=1 -O3
-emcc -g -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
+emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -335,4 +332,4 @@ emcc -g -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s 
 echo done
 
 # Prevent compile window auto close after error, to see the error details. https://askubuntu.com/a/20353/1012283
-exec $SHELL
+# exec $SHELL
