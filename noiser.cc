@@ -97,7 +97,7 @@ float Noiser::getBiomeHeight(unsigned char b, int x, int z) {
     biomeHeight = std::min<float>(biome.baseHeight +
       elevationNoise1.in2D(x * biome.amps[0][0], z * biome.amps[0][0]) * biome.amps[0][1] +
       elevationNoise2.in2D(x * biome.amps[1][0], z * biome.amps[1][0]) * biome.amps[1][1] +
-      elevationNoise3.in2D(x * biome.amps[2][0], z * biome.amps[2][0]) * biome.amps[2][1], 128 - 0.1);
+      elevationNoise3.in2D(x * biome.amps[2][0], z * biome.amps[2][0]) * biome.amps[2][1], 1024 - 0.1) + 100.0;
 
     return biomeHeight;
   }
@@ -239,7 +239,8 @@ void Noiser::fillEther(int ox, int oy, int oz, int numCells, float unitSize, flo
       for (int x = 0; x < numCellsOverscan; x++) {
         const float elevation = elevations[x + z * numCellsOverscan];
         float posY = (oy * numCells + y - 1) * unitSize;
-        ether[index++] = std::min<float>(std::max<float>((float)posY - elevation, -1.0), 1.0);
+        // ether[index++] = posY - elevation;
+        ether[index++] = std::min<float>(std::max<float>((float)posY - elevation, -5.0), 5.0);
       }
     }
   }
