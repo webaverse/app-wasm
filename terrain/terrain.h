@@ -16,7 +16,7 @@ namespace Terrain {
     };
 
     struct VertexBiome {
-    	float data[6];
+	   float data[8];
     };
 
 	float* generateTerrain(

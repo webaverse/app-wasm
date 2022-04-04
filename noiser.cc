@@ -133,23 +133,21 @@ float Noiser::getElevation(int x, int z, float *biomes) {
 
     std::sort(biomeCountsVector.begin(), biomeCountsVector.end(), compareWeight);
 
-    biomes[0] = biomeCountsVector[0].first;
-    biomes[1] = biomeCountsVector[1].first;
-    biomes[2] = biomeCountsVector[2].first;
-
     unsigned int totalCount = 0;
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
+      biomes[i] = biomeCountsVector[i].first;
+
       if (biomeCountsVector.size() >= i + 1) {
         totalCount += biomeCountsVector[i].second;
-        biomes[3 + i] = (float)biomeCountsVector[i].second;
+        biomes[4 + i] = (float)biomeCountsVector[i].second;
       } else {
-        biomes[3 + i] = 0;
+        biomes[4 + i] = 0;
       }
     }
 
-    for (int i = 0; i < 3; i++) {
-      biomes[3 + i] /= (float)totalCount;
+    for (int i = 0; i < 4; i++) {
+      biomes[4 + i] /= (float)totalCount;
     }
 
     return elevation;
@@ -193,10 +191,10 @@ void Noiser::fillElevations(int ox, int oz, int numCells, float *elevations, flo
   unsigned int index = 0;
   for (int z = 0; z < numCellsOverscan; z++) {
     for (int x = 0; x < numCellsOverscan; x++) {
-      float cellBiomes[6];
+      float cellBiomes[8];
       elevations[index] = getElevation((ox * numCells) + x, (oz * numCells) + z, cellBiomes);
-      for (int i = 0; i < 6; i++) {
-        biomes[6 * index + i] = cellBiomes[i];
+      for (int i = 0; i < 8; i++) {
+        biomes[8 * index + i] = cellBiomes[i];
       }
       index++;
     }
