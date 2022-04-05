@@ -1,4 +1,5 @@
 #include <vector>
+#include <map>
 #include "march.h"
 
 int edgeTable[256]={
@@ -323,6 +324,7 @@ float* marchingCubes(int dims[3], float *potential, float shift[3], float scale[
 
   std::vector<float> positions;
   std::vector<uint32_t> faces;
+  std::map<int, int> vertexDic;
 
   int n = 0;
   float grid[8] = {0};
@@ -353,24 +355,40 @@ float* marchingCubes(int dims[3], float *potential, float shift[3], float scale[
       if((edge_mask & (1<<i)) == 0) {
         continue;
       }
-      edges[i] = positionIndex / 3;
+      // edges[i] = positionIndex / 3;
       int *e = edgeIndex[i];
       int *p0 = cubeVerts[e[0]];
       int *p1 = cubeVerts[e[1]];
-      float a = grid[e[0]];
-      float b = grid[e[1]];
-      float d = a - b;
-      float t = a / d;
-      for(int j=0; j<3; ++j) {
-        positions.push_back((((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j]) * scale[j]);
-      }
+      int vIndex0 = p0[0] + x[0] + (p0[1] + x[1]) * dims[0] + (p0[2] + x[2]) * dims[0] * dims[1];
+      int vIndex1 = p1[0] + x[0] + (p1[1] + x[1]) * dims[0] + (p1[2] + x[2]) * dims[0] * dims[1];
+      int vertexKey = std::min(vIndex0, vIndex1) * dims[0] * dims[1] * dims[2] + std::max(vIndex0, vIndex1);
 
-      positionIndex += 3;
+      int vertexIndex;
+      float vertexPos[3];
+
+      if (vertexDic.find(vertexKey) != vertexDic.end()) {
+        vertexIndex = vertexDic[vertexKey];
+        vertexPos[0] = positions[vertexIndex * 3];
+        vertexPos[1] = positions[vertexIndex * 3 + 1];
+        vertexPos[2] = positions[vertexIndex * 3 + 2];
+      } else {
+        float a = grid[e[0]];
+        float b = grid[e[1]];
+        float d = a - b;
+        float t = a / d;
+        for(int j=0; j<3; ++j) {
+          positions.push_back((((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j]) * scale[j]);
+        }
+        vertexIndex = positionIndex / 3;
+        vertexDic[vertexKey] = vertexIndex;
+        positionIndex += 3;
+      }
+      edges[i] = vertexIndex;
     }
     //Add faces
     int *f = triTable[cube_index];
     for(int i=0;f[i]!=-1;i+=3) {
-	  	faces.push_back(edges[f[i]]);
+      faces.push_back(edges[f[i]]);
       faces.push_back(edges[f[i+1]]);
       faces.push_back(edges[f[i+2]]);
       faceIndex += 3;
