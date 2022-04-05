@@ -97,8 +97,8 @@ class Biome {
 
 const Biome BIOMES[] {
   { // biOcean
-    50,
-    {	   
+    5,
+    {
       {
         0.1,
         2
@@ -116,8 +116,8 @@ const Biome BIOMES[] {
     0
   },
   { // biPlains
-    68,
-    {	   
+    18,
+    {
       {
         0.1,
         1
@@ -135,8 +135,8 @@ const Biome BIOMES[] {
     1
   },
   { // biDesert
-    68,
-    {	   
+    18,
+    {
       {
         0.1,
         1
@@ -154,8 +154,8 @@ const Biome BIOMES[] {
     2
   },
   { // biExtremeHills
-    100,
-    {	   
+    300,
+    {
       {
         0.2,
         4
@@ -173,8 +173,8 @@ const Biome BIOMES[] {
     3
   },
   { // biForest
-    70,
-    {	   
+    150,
+    {
       {
         0.1,
         1
@@ -192,8 +192,8 @@ const Biome BIOMES[] {
     4
   },
   { // biTaiga
-    70,
-    {	   
+    150,
+    {
       {
         0.1,
         1
@@ -211,8 +211,8 @@ const Biome BIOMES[] {
     5
   },
   { // biSwampland
-    61.5,
-    {	   
+    11.5,
+    {
       {
         0.1,
         1.1
@@ -230,8 +230,8 @@ const Biome BIOMES[] {
     6
   },
   { // biRiver
-    56,
-    {	   
+    6,
+    {
       {
         0.2,
         0.1
@@ -250,7 +250,7 @@ const Biome BIOMES[] {
   },
   { // biNether
     0,
-    {	   
+    {
       {
         0.1,
         0
@@ -269,7 +269,7 @@ const Biome BIOMES[] {
   },
   { // biEnd
     0,
-    {	   
+    {
       {
         0.1,
         0
@@ -287,8 +287,8 @@ const Biome BIOMES[] {
     9
   },
   { // biFrozenOcean
-    40,
-    {	   
+    5,
+    {
       {
         0.1,
         2
@@ -306,8 +306,8 @@ const Biome BIOMES[] {
     10
   },
   { // biFrozenRiver
-    56,
-    {	   
+    6,
+    {
       {
         0.2,
         0.1
@@ -326,7 +326,7 @@ const Biome BIOMES[] {
   },
   { // biTundra
     68,
-    {	   
+    {
       {
         0.1,
         1
@@ -345,7 +345,7 @@ const Biome BIOMES[] {
   },
   { // biIceMountains
     80,
-    {	   
+    {
       {
         0.2,
         2
@@ -364,7 +364,7 @@ const Biome BIOMES[] {
   },
   { // biMushroomIsland
     80,
-    {	   
+    {
       {
         0.1,
         2
@@ -383,7 +383,7 @@ const Biome BIOMES[] {
   },
   { // biMushroomShore
     64,
-    {	   
+    {
       {
         0.1,
         1
@@ -401,8 +401,8 @@ const Biome BIOMES[] {
     15
   },
   { // biBeach
-    64,
-    {	   
+    14,
+    {
       {
         0.1,
         0.5
@@ -420,8 +420,8 @@ const Biome BIOMES[] {
     16
   },
   { // biDesertHills
-    75,
-    {	   
+    25,
+    {
       {
         0.2,
         2
@@ -439,8 +439,8 @@ const Biome BIOMES[] {
     17
   },
   { // biForestHills
-    80,
-    {	   
+    100,
+    {
       {
         0.2,
         2
@@ -451,7 +451,7 @@ const Biome BIOMES[] {
       },
       {
         0.01,
-        10
+        100
       }
     },
     2250012,
@@ -459,7 +459,7 @@ const Biome BIOMES[] {
   },
   { // biTaigaHills
     80,
-    {	   
+    {
       {
         0.2,
         2
@@ -478,7 +478,7 @@ const Biome BIOMES[] {
   },
   { // biExtremeHillsEdge
     80,
-    {	   
+    {
       {
         0.2,
         3
@@ -497,7 +497,7 @@ const Biome BIOMES[] {
   },
   { // biJungle
     70,
-    {	   
+    {
       {
         0.1,
         3
@@ -516,7 +516,7 @@ const Biome BIOMES[] {
   },
   { // biJungleHills
     80,
-    {	   
+    {
       {
         0.2,
         3
@@ -535,7 +535,7 @@ const Biome BIOMES[] {
   },
   { // biJungleEdge
     70,
-    {	   
+    {
       {
         0.1,
         3
@@ -554,7 +554,7 @@ const Biome BIOMES[] {
   },
   { // biDeepOcean
     40,
-    {	   
+    {
       {
         0.1,
         2
@@ -573,7 +573,7 @@ const Biome BIOMES[] {
   },
   { // biStoneBeach
     40,
-    {	   
+    {
       {
         0.1,
         2
@@ -592,7 +592,7 @@ const Biome BIOMES[] {
   },
   { // biColdBeach
     64,
-    {	   
+    {
       {
         0.1,
         0.5
@@ -611,7 +611,7 @@ const Biome BIOMES[] {
   },
   { // biBirchForest
     70,
-    {	   
+    {
       {
         0.1,
         1
@@ -630,7 +630,7 @@ const Biome BIOMES[] {
   },
   { // biBirchForestHills
     80,
-    {	   
+    {
       {
         0.2,
         2
@@ -649,7 +649,7 @@ const Biome BIOMES[] {
   },
   { // biRoofedForest
     70,
-    {	   
+    {
       {
         0.1,
         1
@@ -668,7 +668,7 @@ const Biome BIOMES[] {
   },
   { // biColdTaiga
     70,
-    {	   
+    {
       {
         0.1,
         1
@@ -687,7 +687,7 @@ const Biome BIOMES[] {
   },
   { // biColdTaigaHills
     80,
-    {	   
+    {
       {
         0.2,
         2
@@ -706,7 +706,7 @@ const Biome BIOMES[] {
   },
   { // biMegaTaiga
     70,
-    {	   
+    {
       {
         0.1,
         1
@@ -725,7 +725,7 @@ const Biome BIOMES[] {
   },
   { // biMegaTaigaHills
     80,
-    {	   
+    {
       {
         0.2,
         2
@@ -744,7 +744,7 @@ const Biome BIOMES[] {
   },
   { // biExtremeHillsPlus
     120,
-    {	   
+    {
       {
         0.2,
         4
@@ -763,7 +763,7 @@ const Biome BIOMES[] {
   },
   { // biSavanna
     68,
-    {	   
+    {
       {
         0.1,
         1
@@ -782,7 +782,7 @@ const Biome BIOMES[] {
   },
   { // biSavannaPlateau
     80,
-    {	   
+    {
       {
         0.1,
         1
@@ -801,7 +801,7 @@ const Biome BIOMES[] {
   },
   { // biMesa
     70,
-    {	   
+    {
       {
         0.2,
         2
@@ -820,7 +820,7 @@ const Biome BIOMES[] {
   },
   { // biMesaPlateauF
     80,
-    {	   
+    {
       {
         0.1,
         1
@@ -839,7 +839,7 @@ const Biome BIOMES[] {
   },
   { // biMesaPlateau
     80,
-    {	   
+    {
       {
         0.1,
         1
@@ -858,7 +858,7 @@ const Biome BIOMES[] {
   },
   { // biSunflowerPlains
     40,
-    {	   
+    {
       {
         0.1,
         2
@@ -877,7 +877,7 @@ const Biome BIOMES[] {
   },
   { // biDesertM
     40,
-    {	   
+    {
       {
         0.1,
         2
@@ -896,7 +896,7 @@ const Biome BIOMES[] {
   },
   { // biExtremeHillsM
     40,
-    {	   
+    {
       {
         0.1,
         2
@@ -915,7 +915,7 @@ const Biome BIOMES[] {
   },
   { // biFlowerForest
     40,
-    {	   
+    {
       {
         0.1,
         2
@@ -934,7 +934,7 @@ const Biome BIOMES[] {
   },
   { // biTaigaM
     40,
-    {	   
+    {
       {
         0.1,
         2
@@ -953,7 +953,7 @@ const Biome BIOMES[] {
   },
   { // biSwamplandM
     60,
-    {	   
+    {
       {
         1,
         3
@@ -972,7 +972,7 @@ const Biome BIOMES[] {
   },
   { // biIcePlainsSpikes
     40,
-    {	   
+    {
       {
         0.1,
         2
@@ -991,7 +991,7 @@ const Biome BIOMES[] {
   },
   { // biJungleM
     70,
-    {	   
+    {
       {
         0.1,
         3
@@ -1010,7 +1010,7 @@ const Biome BIOMES[] {
   },
   { // biJungleEdgeM
     70,
-    {	   
+    {
       {
         0.1,
         3
@@ -1029,7 +1029,7 @@ const Biome BIOMES[] {
   },
   { // biBirchForestM
     70,
-    {	   
+    {
       {
         0.1,
         1
@@ -1048,7 +1048,7 @@ const Biome BIOMES[] {
   },
   { // biBirchForestHillsM
     80,
-    {	   
+    {
       {
         0.2,
         2
@@ -1067,7 +1067,7 @@ const Biome BIOMES[] {
   },
   { // biRoofedForestM
     70,
-    {	   
+    {
       {
         0.1,
         1
@@ -1086,7 +1086,7 @@ const Biome BIOMES[] {
   },
   { // biColdTaigaM
     70,
-    {	   
+    {
       {
         0.1,
         1
@@ -1105,7 +1105,7 @@ const Biome BIOMES[] {
   },
   { // biMegaSpruceTaiga
     70,
-    {	   
+    {
       {
         0.1,
         1
@@ -1124,7 +1124,7 @@ const Biome BIOMES[] {
   },
   { // biMegaSpruceTaigaHills
     80,
-    {	   
+    {
       {
         0.2,
         2
@@ -1143,7 +1143,7 @@ const Biome BIOMES[] {
   },
   { // biExtremeHillsPlusM
     120,
-    {	   
+    {
       {
         0.2,
         4
@@ -1162,7 +1162,7 @@ const Biome BIOMES[] {
   },
   { // biSavannaM
     68,
-    {	   
+    {
       {
         0.1,
         1
@@ -1181,7 +1181,7 @@ const Biome BIOMES[] {
   },
   { // biSavannaPlateauM
     80,
-    {	   
+    {
       {
         0.1,
         1
@@ -1200,7 +1200,7 @@ const Biome BIOMES[] {
   },
   { // biMesaBryce
     80,
-    {	   
+    {
       {
         0.2,
         2
@@ -1219,7 +1219,7 @@ const Biome BIOMES[] {
   },
   { // biMesaPlateauFM
     80,
-    {	   
+    {
       {
         0.1,
         1
@@ -1238,7 +1238,7 @@ const Biome BIOMES[] {
   },
   { // biMesaPlateauM
     80,
-    {	   
+    {
       {
         0.1,
         1

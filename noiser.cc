@@ -38,11 +38,11 @@ Noiser::Noiser(int seed) :
   caveCenterNoiseX(rng(), 2, 1),
   caveCenterNoiseY(rng(), 2, 1),
   caveCenterNoiseZ(rng(), 2, 1),
-  oceanNoise(rng(), 0.001, 4),
-  riverNoise(rng(), 0.001, 4),
-  temperatureNoise(rng(), 0.001, 4),
-  humidityNoise(rng(), 0.001, 4),
-  lavaNoise(rng(), 0.01, 4)
+  oceanNoise(rng(), 0.005, 4),
+  riverNoise(rng(), 0.005, 4),
+  temperatureNoise(rng(), 0.005, 4),
+  humidityNoise(rng(), 0.005, 4),
+  lavaNoise(rng(), 0.005, 4)
 {}
 
 Noiser::~Noiser() { }
@@ -262,6 +262,8 @@ void Noiser::fillEther(int ox, int oy, int oz, int numCells, float unitSize, flo
           const float nestX = ((float)(aox * numCells) + nestNoiseX.in2D(nx, nz) * numCells);
           const float nestY = ((float)(aoy * numCells) + nestNoiseY.in3D(nx, ny, nz) * numCells);
           const float nestZ = ((float)(aoz * numCells) + nestNoiseZ.in2D(nx, nz) * numCells);
+
+          // unsigned char biome = getBiome((int)nestX, (int)nestZ);  // check biome
 
           const int numWorms = 1 + (int)std::floor(std::max<float>(wormNoise.in3D(nx, ny, nz) * 3, 0));
           for (int j = 0; j < numWorms; j++) {
