@@ -1128,59 +1128,47 @@ bool PScene::getBounds(unsigned int id, float *bounds) {
   return std::move(geometryObject);
 } */
 
-void PScene::raycast(float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex, Vec &outPosition, Quat &outQuaternion) {
+void PScene::raycast(
+  float *origin,
+  float *direction,
+  float maxDist,
+  unsigned int &hit,
+  float *position,
+  float *normal,
+  float &distance,
+  unsigned int &objectId,
+  unsigned int &faceIndex
+) {
   PxVec3 originVec{origin[0], origin[1], origin[2]};
   PxVec3 directionVec{direction[0], direction[1], direction[2]};
   Ray ray(Vec{origin[0], origin[1], origin[2]}, Vec{direction[0], direction[1], direction[2]});
-  PxTransform meshPose(
-    PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
-    PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
-  );
-  Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
-  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
 
-  PxRaycastHit hitInfo;
-  constexpr float maxDist = 1000.0;
+  // PxRaycastHit hitInfo;
+  // constexpr float maxDist = 1000.0;
   const PxHitFlags hitFlags = PxHitFlag::eDEFAULT;
   constexpr PxU32 maxHits = 1;
 
-  {
-    hit = 0;
-    for (unsigned int i = 0; i < actors.size(); i++) {
-      PxRigidActor *actor = actors[i];
-      PxShape *shape;
-      actor->getShapes(&shape, 1);
+  PxRaycastBuffer hitBuffer;
+  bool status = this->scene->raycast(originVec, directionVec, maxDist, hitBuffer);
+  if (status) {
+    unsigned int numHits = hitBuffer.getNbAnyHits();
+    for (unsigned int i = 0; i < numHits; i++) {
+      const PxRaycastHit &hitInfo = hitBuffer.getAnyHit(i);
+      PxRigidActor *actor = hitInfo.actor;
 
-      if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
-        PxGeometryHolder holder = shape->getGeometry();
-        PxGeometry &geometry = holder.any();
-        PxTransform meshPose2 = actor->getGlobalPose();
-        PxTransform meshPose3 = meshPose * meshPose2;
-        // PxTransform meshPose4 = meshPose2 * meshPose;
-
-        PxU32 hitCount = PxGeometryQuery::raycast(originVec, directionVec,
-                                                  geometry,
-                                                  meshPose3,
-                                                  maxDist,
-                                                  hitFlags,
-                                                  maxHits, &hitInfo);
-
-        if (hitCount > 0 && (!hit || hitInfo.distance < distance)) {
-          hit = 1;
-          position[0] = hitInfo.position.x;
-          position[1] = hitInfo.position.y;
-          position[2] = hitInfo.position.z;
-          normal[0] = hitInfo.normal.x;
-          normal[1] = hitInfo.normal.y;
-          normal[2] = hitInfo.normal.z;
-          distance = hitInfo.distance;
-          objectId = (unsigned int)actor->userData;
-          outPosition = Vec(meshPose2.p.x, meshPose2.p.y, meshPose2.p.z);
-          outQuaternion = Quat(meshPose2.q.x, meshPose2.q.y, meshPose2.q.z, meshPose2.q.w);
-          faceIndex = hitInfo.faceIndex;
-        }
-      }
+      hit = 1;
+      position[0] = hitInfo.position.x;
+      position[1] = hitInfo.position.y;
+      position[2] = hitInfo.position.z;
+      normal[0] = hitInfo.normal.x;
+      normal[1] = hitInfo.normal.y;
+      normal[2] = hitInfo.normal.z;
+      distance = hitInfo.distance;
+      objectId = actor != nullptr ? (unsigned int)actor->userData : 0;
+      faceIndex = hitInfo.faceIndex;
     }
+  } else {
+    hit = 0;
   }
 }
 
