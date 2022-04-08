@@ -32,27 +32,22 @@ EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *i
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
 }
 
-EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
-  scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
+EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float maxDist, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex) {
+  scene->raycast(origin, direction, maxDist, *hit, position, normal, *distance, *objectId, *faceIndex);
 }
 
-EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
+EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *scene, float *origin, float *direction, float maxDist, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex) {
   for (unsigned int i = 0; i < rayCount; i++) {
-    
-    scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
+    scene->raycast(origin, direction, maxDist, *hit, position, normal, *distance, *objectId, *faceIndex);
 
     origin += 3;
     direction += 3;
-    meshPosition += 3;
-    meshQuaternion += 4;
     hit += 1;
     position += 3;
     normal += 3;
     distance += 1;
     objectId += 1;
     faceIndex += 1;
-    outPosition += 1;
-    outQuaternion += 1;
   }
 }
 
