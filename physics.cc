@@ -1172,6 +1172,50 @@ void PScene::raycast(
   }
 }
 
+void PScene::sweepBox(
+  float *origin,
+  float *quaternion,
+  float *halfExtents,
+  float *direction,
+  float sweepDistance,
+  unsigned int &hit,
+  float *position,
+  float *normal,
+  float &distance,
+  unsigned int &objectId,
+  unsigned int &faceIndex
+) {
+  PxSweepBuffer hitBuffer;              // [out] Sweep results
+  // PxGeometry sweepShape;    // [in] swept shape
+  PxBoxGeometry sweepShape(halfExtents[0], halfExtents[1], halfExtents[2]);
+  PxTransform initialPose(
+    PxVec3{origin[0], origin[1], origin[2]},
+    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
+  );
+  PxVec3 sweepDirection{direction[0], direction[1], direction[2]}; // [in] normalized sweep direction
+  bool status = scene->sweep(sweepShape, initialPose, sweepDirection, sweepDistance, hitBuffer);
+  if (status) {
+    unsigned int numHits = hitBuffer.getNbAnyHits();
+    for (unsigned int i = 0; i < numHits; i++) {
+      const PxSweepHit &hitInfo = hitBuffer.getAnyHit(i);
+      PxRigidActor *actor = hitInfo.actor;
+
+      hit = 1;
+      position[0] = hitInfo.position.x;
+      position[1] = hitInfo.position.y;
+      position[2] = hitInfo.position.z;
+      normal[0] = hitInfo.normal.x;
+      normal[1] = hitInfo.normal.y;
+      normal[2] = hitInfo.normal.z;
+      distance = hitInfo.distance;
+      objectId = actor != nullptr ? (unsigned int)actor->userData : 0;
+      faceIndex = hitInfo.faceIndex;
+    }
+  } else {
+
+  }
+}
+
 float *PScene::getPath(float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   
   PathFinder pathFinder(actors, _hy, _heightTolerance, _maxIterdetect, _maxIterStep, _numIgnorePhysicsIds, _ignorePhysicsIds);
