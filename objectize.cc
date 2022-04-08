@@ -51,6 +51,35 @@ EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *sce
   }
 }
 
+EMSCRIPTEN_KEEPALIVE void sweepBox(
+  PScene *scene,
+  float *origin,
+  float *quaternion,
+  float *halfExtents,
+  float *direction,
+  float sweepDistance,
+  unsigned int *hit,
+  float *position,
+  float *normal,
+  float *distance,
+  unsigned int *objectId,
+  unsigned int *faceIndex
+) {
+  scene->sweepBox(
+    origin,
+    quaternion,
+    halfExtents,
+    direction,
+    sweepDistance,
+    *hit,
+    position,
+    normal,
+    *distance,
+    *objectId,
+    *faceIndex
+  );
+}
+
 EMSCRIPTEN_KEEPALIVE float *getPathPhysics(PScene *scene, float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   return scene->getPath(_start, _dest, _isWalk, _hy, _heightTolerance, _maxIterdetect, _maxIterStep, _numIgnorePhysicsIds, _ignorePhysicsIds);
 }
