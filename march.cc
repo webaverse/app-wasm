@@ -1,5 +1,7 @@
 #include <vector>
+#include <map>
 #include "march.h"
+#include "vector.h"
 
 int edgeTable[256]={
 0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -322,7 +324,9 @@ float* marchingCubes(int dims[3], float *potential, float shift[3], float scale[
   uint32_t faceIndex = 0;
 
   std::vector<float> positions;
+  std::vector<float> normals;
   std::vector<uint32_t> faces;
+  std::map<int, int> vertexDic;
 
   int n = 0;
   float grid[8] = {0};
@@ -353,36 +357,83 @@ float* marchingCubes(int dims[3], float *potential, float shift[3], float scale[
       if((edge_mask & (1<<i)) == 0) {
         continue;
       }
-      edges[i] = positionIndex / 3;
+      // edges[i] = positionIndex / 3;
       int *e = edgeIndex[i];
       int *p0 = cubeVerts[e[0]];
       int *p1 = cubeVerts[e[1]];
-      float a = grid[e[0]];
-      float b = grid[e[1]];
-      float d = a - b;
-      float t = a / d;
-      for(int j=0; j<3; ++j) {
-        positions.push_back((((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j]) * scale[j]);
-      }
+      int vIndex0 = p0[0] + x[0] + (p0[1] + x[1]) * dims[0] + (p0[2] + x[2]) * dims[0] * dims[1];
+      int vIndex1 = p1[0] + x[0] + (p1[1] + x[1]) * dims[0] + (p1[2] + x[2]) * dims[0] * dims[1];
+      int vertexKey = std::min(vIndex0, vIndex1) * dims[0] * dims[1] * dims[2] + std::max(vIndex0, vIndex1);
 
-      positionIndex += 3;
+      int vertexIndex;
+      float vertexPos[3];
+
+      if (vertexDic.find(vertexKey) != vertexDic.end()) {
+        vertexIndex = vertexDic[vertexKey];
+        vertexPos[0] = positions[vertexIndex * 3];
+        vertexPos[1] = positions[vertexIndex * 3 + 1];
+        vertexPos[2] = positions[vertexIndex * 3 + 2];
+      } else {
+        float a = grid[e[0]];
+        float b = grid[e[1]];
+        float d = a - b;
+        float t = a / d;
+        for(int j=0; j<3; ++j) {
+          positions.push_back((((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j]) * scale[j]);
+          normals.push_back(0.0);
+        }
+        vertexIndex = positionIndex / 3;
+        vertexDic[vertexKey] = vertexIndex;
+        positionIndex += 3;
+      }
+      edges[i] = vertexIndex;
     }
     //Add faces
     int *f = triTable[cube_index];
     for(int i=0;f[i]!=-1;i+=3) {
-	  	faces.push_back(edges[f[i]]);
+      int vOffset0 = 3 * edges[f[i]];
+      int vOffset1 = 3 * edges[f[i+1]];
+      int vOffset2 = 3 * edges[f[i+2]];
+
+      Vec v0 = Vec(positions[vOffset0], positions[vOffset0 + 1], positions[vOffset0 + 2]);
+      Vec v1 = Vec(positions[vOffset1], positions[vOffset1 + 1], positions[vOffset1 + 2]);
+      Vec v2 = Vec(positions[vOffset2], positions[vOffset2 + 1], positions[vOffset2 + 2]);
+
+      Vec normal = (v1 - v0) ^ (v2 - v1);
+      if (normal.magnitude() < 1e-7) {
+        normal.x = 0.0;
+        normal.y = 0.0;
+        normal.z = 0.0;
+      } else {
+        normal.normalize();
+      }
+
+      normals[vOffset0] += normal.x;
+      normals[vOffset0 + 1] += normal.y;
+      normals[vOffset0 + 2] += normal.z;
+
+      normals[vOffset1] += normal.x;
+      normals[vOffset1 + 1] += normal.y;
+      normals[vOffset1 + 2] += normal.z;
+
+      normals[vOffset2] += normal.x;
+      normals[vOffset2 + 1] += normal.y;
+      normals[vOffset2 + 2] += normal.z;
+
+      faces.push_back(edges[f[i]]);
       faces.push_back(edges[f[i+1]]);
       faces.push_back(edges[f[i+2]]);
       faceIndex += 3;
     }
   }
 
-  float *outputBuffer = (float*)malloc((2 + positions.size() + faces.size()) * 4);
+  float *outputBuffer = (float*)malloc((2 + positions.size() + faces.size()) * 5);
 
   memcpy(outputBuffer, &positionIndex, 4);
   memcpy(outputBuffer + 1, &faceIndex, 4);
   memcpy(outputBuffer + 2, &positions.front(), positions.size() * 4);
-  memcpy(outputBuffer + 2 + positions.size(), &faces.front(), faces.size() * 4);
+  memcpy(outputBuffer + 2 + positions.size(), &normals.front(), normals.size() * 4);
+  memcpy(outputBuffer + 2 + positions.size() + normals.size(), &faces.front(), faces.size() * 4);
 
   return outputBuffer;
 }
