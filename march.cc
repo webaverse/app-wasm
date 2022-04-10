@@ -316,10 +316,9 @@ int edgeIndex[12][2] = {
   {3,7}
 };
 
-float* marchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
+uint8_t* marchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   uint32_t positionIndex = 0;
   // colorIndex = 0;
-  uint32_t faceIndex = 0;
 
   std::vector<float> positions;
   std::vector<uint32_t> faces;
@@ -373,16 +372,15 @@ float* marchingCubes(int dims[3], float *potential, float shift[3], float scale[
 	  	faces.push_back(edges[f[i]]);
       faces.push_back(edges[f[i+1]]);
       faces.push_back(edges[f[i+2]]);
-      faceIndex += 3;
     }
   }
 
-  float *outputBuffer = (float*)malloc((2 + positions.size() + faces.size()) * 4);
+  uint8_t *outputBuffer = (uint8_t*)malloc((2 + positions.size() + faces.size()) * 4);
 
-  memcpy(outputBuffer, &positionIndex, 4);
-  memcpy(outputBuffer + 1, &faceIndex, 4);
-  memcpy(outputBuffer + 2, &positions.front(), positions.size() * 4);
-  memcpy(outputBuffer + 2 + positions.size(), &faces.front(), faces.size() * 4);
+  ((float *)outputBuffer)[0] = positions.size();
+  ((float *)outputBuffer)[1] = faces.size();
+  memcpy(((float *)outputBuffer) + 2, &positions.front(), positions.size() * 4);
+  memcpy(((float *)outputBuffer) + 2 + positions.size(), &faces.front(), faces.size() * 4);
 
   return outputBuffer;
 }
