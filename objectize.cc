@@ -241,7 +241,7 @@ EMSCRIPTEN_KEEPALIVE void deallocateChunk(
   );
 }
 
-EMSCRIPTEN_KEEPALIVE int* generateChunk(
+EMSCRIPTEN_KEEPALIVE int* generateAndAllocateChunk(
   float *vertexBuffer, float *normalBuffer, float *biomeBuffer, int *indexBuffer,
   int *chunkVertexRangeBuffer,
   int *vertexFreeRangeBuffer,
@@ -258,6 +258,10 @@ EMSCRIPTEN_KEEPALIVE int* generateChunk(
     indexFreeRangeBuffer,
     x, y, z, chunkSize, segment, totalChunkCount
   );
+}
+
+EMSCRIPTEN_KEEPALIVE int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
+  return Terrain::generateChunk(x, y, z, chunkSize, segment);
 }
 
 } // extern "C"
