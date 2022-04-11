@@ -133,181 +133,6 @@ float* generateTerrain(
     return (float*)outputBuffer;
 }
 
-bool compareOffset(Range a, Range b) {
-    return a.offset < b.offset;
-}
-
-
-void freeRangeBuffer(int *buffer, int offset, int size, int count) {
-
-    std::vector<Range> freeRanges = {};
-
-    for (int i = 0; i < count; i++) {
-        if (buffer[i * 2 + 1] > 0) {
-            freeRanges.push_back({ buffer[2 * i], buffer[2 * i + 1] });
-        }
-    }
-
-    freeRanges.push_back({ offset, size });
-
-    std::sort(freeRanges.begin(), freeRanges.end(), compareOffset);
-
-    // merge adjacent free ranges
-
-    for (int i = 0; i < freeRanges.size() - 1; i++) {
-        if (freeRanges[i].size == 0) {
-            continue;
-        }
-
-        for (int j = i + 1; j < freeRanges.size(); j++) {
-            if (freeRanges[j].size == 0) {
-                continue;
-            }
-
-            if (freeRanges[i].offset + freeRanges[i].size == freeRanges[j].offset) {
-                freeRanges[i].size += freeRanges[j].size;
-                freeRanges[j].size = 0;
-            }
-        }
-    }
-
-    for (int i = 0; i < count * 2; i++) {
-        buffer[i] = 0;
-    }
-
-    for (int i = 0; i < freeRanges.size(); i++) {
-        buffer[2 * i] = freeRanges[i].offset;
-        buffer[2 * i + 1] = freeRanges[i].size;
-    }
-}
-
-void deallocateChunk(
-    int vertexSlot, int indexSlot, int totalChunkCount,
-    int *chunkVertexRangeBuffer,
-    int *vertexFreeRangeBuffer,
-    int *chunkIndexRangeBuffer,
-    int *indexFreeRangeBuffer
-) {
-
-    freeRangeBuffer(
-        vertexFreeRangeBuffer,
-        chunkVertexRangeBuffer[2 * vertexSlot],
-        chunkVertexRangeBuffer[2 * vertexSlot + 1],
-        totalChunkCount
-    );
-
-    freeRangeBuffer(
-        indexFreeRangeBuffer,
-        chunkIndexRangeBuffer[2 * indexSlot],
-        chunkIndexRangeBuffer[2 * indexSlot + 1],
-        totalChunkCount
-    );
-
-    chunkVertexRangeBuffer[vertexSlot * 2 + 1] = -1;
-    chunkIndexRangeBuffer[indexSlot * 2 + 1] = -1;
-}
-
-int* generateAndAllocateChunk(
-    float *vertexBuffer, float *normalBuffer, float *biomeBuffer, int *indexBuffer,
-    int *chunkVertexRangeBuffer,
-    int *vertexFreeRangeBuffer,
-    int *chunkIndexRangeBuffer,
-    int *indexFreeRangeBuffer,
-    float x, float y, float z, float chunkSize, int segment, int totalChunkCount
-) {
-
-    std::vector<Vector3> vertices{};
-    std::vector<Vector3> normals{};
-    std::vector<VertexBiome> biomes{};
-    std::vector<int> indices{};
-
-    float origin[3] = {x, y, z};
-
-    createChunk(
-        origin,
-        chunkSize,
-        segment,
-        vertices,
-        normals,
-        biomes,
-        indices
-    );
-
-    // search free range in vertex buffer
-
-    int vertexFreeRangeIndex = -1;
-
-    for (int i = 0; i < totalChunkCount; i++) {
-        if (vertexFreeRangeBuffer[2 * i + 1] >= vertices.size()) {
-            vertexFreeRangeIndex = i;
-            break;
-        }
-    }
-
-    int vertexOffset = vertexFreeRangeBuffer[2 * vertexFreeRangeIndex];
-
-    int vertexSlot = -1;
-
-    for (int i = 0; i < totalChunkCount; i++) {
-        if (chunkVertexRangeBuffer[2 * i + 1] == -1) {
-            vertexSlot = i;
-            break;
-        }
-    }
-
-    chunkVertexRangeBuffer[2 * vertexSlot] = vertexOffset;
-    chunkVertexRangeBuffer[2 * vertexSlot + 1] = vertices.size();
-
-    memcpy(vertexBuffer + vertexOffset * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
-    memcpy(normalBuffer + vertexOffset * 3, &(normals.front()), normals.size() * sizeof(Vector3));
-    memcpy(biomeBuffer + vertexOffset * 8, &(biomes.front()), biomes.size() * sizeof(VertexBiome));
-
-    vertexFreeRangeBuffer[2 * vertexFreeRangeIndex] = vertexOffset + vertices.size();
-    vertexFreeRangeBuffer[2 * vertexFreeRangeIndex + 1] -= vertices.size();
-
-    // shift vertex indices
-
-    for (int i = 0; i < indices.size(); i++) {
-        indices[i] += vertexOffset;
-    }
-
-    // search free range in index buffer
-
-    int indexFreeRangeIndex = -1;
-
-    for (int i = 0; i < totalChunkCount; i++) {
-        if (indexFreeRangeBuffer[2 * i + 1] >= indices.size()) {
-            indexFreeRangeIndex = i;
-            break;
-        }
-    }
-
-    int indexOffset = indexFreeRangeBuffer[2 * indexFreeRangeIndex];
-
-    int indexSlot = -1;
-
-    for (int i = 0; i < totalChunkCount; i++) {
-        if (chunkIndexRangeBuffer[2 * i + 1] == -1) {
-            indexSlot = i;
-            break;
-        }
-    }
-
-    chunkIndexRangeBuffer[2 * indexSlot] = indexOffset;
-    chunkIndexRangeBuffer[2 * indexSlot + 1] = indices.size();
-
-    memcpy(indexBuffer + indexOffset, &(indices.front()), indices.size() * sizeof(int));
-
-    indexFreeRangeBuffer[2 * indexFreeRangeIndex] = indexOffset + indices.size();
-    indexFreeRangeBuffer[2 * indexFreeRangeIndex + 1] -= indices.size();
-
-    int* result = (int*)malloc(2 * sizeof(int));
-    result[0] = vertexSlot;
-    result[1] = indexSlot;
-
-    return result;
-}
-
 int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
     std::vector<Vector3> vertices{};
     std::vector<Vector3> normals{};
@@ -326,7 +151,7 @@ int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
         indices
     );
 
-    int outputBufferCount = 4;
+    int outputBufferCount = 6;
 
     int *result = (int*)malloc(outputBufferCount * sizeof(int));
     float *chunkPositionBuffer = (float*)malloc(vertices.size() * sizeof(Vector3));
@@ -339,10 +164,13 @@ int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
     memcpy(chunkBiomeBuffer, &(biomes.front()), biomes.size() * sizeof(VertexBiome));
     memcpy(chunkIndexBuffer, &(indices.front()), indices.size() * sizeof(int));
 
-    result[0] = (int)chunkPositionBuffer;
-    result[1] = (int)chunkNormalBuffer;
-    result[2] = (int)chunkBiomeBuffer;
-    result[3] = (int)chunkIndexBuffer;
+
+    result[0] = vertices.size();
+    result[1] = indices.size();
+    result[2] = (int)chunkPositionBuffer;
+    result[3] = (int)chunkNormalBuffer;
+    result[4] = (int)chunkBiomeBuffer;
+    result[5] = (int)chunkIndexBuffer;
 
     return result;
 }

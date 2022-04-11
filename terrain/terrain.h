@@ -23,23 +23,6 @@ namespace Terrain {
 		float size, int levelCount, int maxSegment, int vertexBufferSizeParam, int indexBufferSizeParam
 	);
 
-	void deallocateChunk(
-	  int vetexSlot, int indexSlot, int totalChunkCount,
-	  int *chunkVertexRangeBuffer,
-	  int *vertexFreeRangeBuffer,
-	  int *chunkIndexRangeBuffer,
-	  int *indexFreeRangeBuffer
-	);
-
-	int* generateAndAllocateChunk(
-	  float *vertexBuffer, float *normalBuffer, float *biomeBuffer, int *indexBuffer,
-	  int *chunkVertexRangeBuffer,
-	  int *vertexFreeRangeBuffer,
-	  int *chunkIndexRangeBuffer,
-	  int *indexFreeRangeBuffer,
-	  float x, float y, float z, float chunkSize, int segment, int totalChunkCount
-	);
-
 	int* generateChunk(float x, float y, float z, float chunkSize, int segment);
 
 	void createChunk(
