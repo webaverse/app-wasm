@@ -624,6 +624,100 @@ void PScene::getVelocity(unsigned int id, float *velocities) {
     velocities[2] = 0;
   }
 }
+void PScene::addForceAtPos(unsigned int id, float *velocity, float *position, bool autoWake) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      PxRigidBodyExt::addForceAtPos(*body, PxVec3(velocity[0], velocity[1], velocity[2]), 
+           PxVec3(position[0], position[1], position[2]), PxForceMode::eFORCE, autoWake);
+    }
+  } else {
+    std::cerr << "addForceAtPos unknown actor id " << id << std::endl;
+  }
+}
+void PScene::addForceAtLocalPos(unsigned int id, float *velocity, float *position, bool autoWake) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      PxRigidBodyExt::addForceAtLocalPos(*body, PxVec3(velocity[0], velocity[1], velocity[2]), 
+           PxVec3(position[0], position[1], position[2]), PxForceMode::eFORCE, autoWake);
+    }
+  } else {
+    std::cerr << "addForceAtLocalPos unknown actor id " << id << std::endl;
+  }
+}
+void PScene::addLocalForceAtPos(unsigned int id, float *velocity, float *position, bool autoWake) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      PxRigidBodyExt::addLocalForceAtPos(*body, PxVec3(velocity[0], velocity[1], velocity[2]), 
+           PxVec3(position[0], position[1], position[2]), PxForceMode::eFORCE, autoWake);
+    }
+  } else {
+    std::cerr << "addLocalForceAtPos unknown actor id " << id << std::endl;
+  }
+}
+void PScene::addLocalForceAtLocalPos(unsigned int id, float *velocity, float *position, bool autoWake) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      PxRigidBodyExt::addLocalForceAtLocalPos(*body, PxVec3(velocity[0], velocity[1], velocity[2]), 
+           PxVec3(position[0], position[1], position[2]), PxForceMode::eFORCE, autoWake);
+    }
+  } else {
+    std::cerr << "addLocalForceAtLocalPos unknown actor id " << id << std::endl;
+  }
+}
+void PScene::addForce(unsigned int id, float *velocity, bool autoWake) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      body->addForce(PxVec3(velocity[0], velocity[1], velocity[2]), PxForceMode::eFORCE, autoWake);
+    }
+  } else {
+    std::cerr << "addForce unknown actor id " << id << std::endl;
+  }
+}
+void PScene::addTorque(unsigned int id, float *velocity, bool autoWake) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxRigidBody *body = dynamic_cast<PxRigidBody *>(actor);
+    if (body) {
+      body->addTorque(PxVec3(velocity[0], velocity[1], velocity[2]), PxForceMode::eFORCE, autoWake);
+    }
+  } else {
+    std::cerr << "addTorque unknown actor id " << id << std::endl;
+  }
+}
 void PScene::setVelocity(unsigned int id, float *velocities, bool autoWake) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
