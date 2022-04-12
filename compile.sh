@@ -321,7 +321,7 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALL
   -IRectBinPack/include \
   -Iconcaveman \
   objectize.cc vector.cc physics.cc PathFinder.cc \
-  FastNoise.cpp noise.cc cachedNoise.cc noiser.cc util.cc terrain/perlin.cc terrain/terrain.cc \
+  FastNoise.cpp noise.cc cachedNoise.cc noiser.cc util.cc terrain/terrain.cc \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
