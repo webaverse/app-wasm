@@ -10,18 +10,9 @@ namespace Terrain {
 		float x; float y; float z; float w;
 	};
 
-	struct Range {
-        int offset;
-        int size;
-    };
-
     struct VertexBiome {
 	   float data[8];
     };
-
-	float* generateTerrain(
-		float size, int levelCount, int maxSegment, int vertexBufferSizeParam, int indexBufferSizeParam
-	);
 
 	int* generateChunk(float x, float y, float z, float chunkSize, int segment);
 

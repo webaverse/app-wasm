@@ -5,7 +5,6 @@
 #include <algorithm>
 
 #include "terrain.h"
-#include "perlin.h"
 #include "mc.h"
 #include "../vector.h"
 #include "../noiser.h"
@@ -14,124 +13,7 @@ namespace Terrain {
 
 float isoLevel = 0.0;
 
-float noiseScale = 3.0;
-int octaves = 8;
-float persistence = 1.15;
-float lacunarity = 1.6;
-float floorOffset = 20.0;
-float hardFloor = 2.0;
-float hardFloorWeight = 3.06;
-float noiseWeight = 6.09;
-
-int NUM_BUFFER = 8;
-
-float* generateTerrain(
-    float chunkSize, int chunkCount, int segment, int vertexBufferSizeParam, int faceBufferSizeParam
-) {
-
-    // std::vector<Vector3> vertices = {};
-    // std::vector<int> indices = {};
-
-    int totalChunkCount = pow(chunkCount, 3);
-
-    int cellCount = totalChunkCount * segment * segment;
-
-    int maxVertexCount = cellCount * vertexBufferSizeParam;
-    int maxIndexCount = cellCount * faceBufferSizeParam;
-
-
-    float *vertexBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
-    float *normalBuffer = (float*)malloc(maxVertexCount * 3 * sizeof(float));
-    float *biomeBuffer = (float*)malloc(maxVertexCount * 8 * sizeof(float));
-    int *indexBuffer = (int*)malloc(maxIndexCount * sizeof(int));
-    int *chunkVertexRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
-    int *vertexFreeRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
-    int *chunkIndexRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
-    int *indexFreeRangeBuffer = (int*)malloc(totalChunkCount * 2 * sizeof(int));
-
-    // std::vector<int> chunkGroup = {};
-
-    int totalVertexCount = 0;
-    int totalIndexCount = 0;
-
-    for (int i = 0; i < chunkCount; i++) {
-        for (int j = 0; j < chunkCount; j++) {
-            for (int k = 0; k < chunkCount; k++) {
-                float origin[3] = {
-                    (float)(i - chunkCount / 2) * chunkSize,
-                    (float)(j - chunkCount / 2) * chunkSize,
-                    (float)(k - chunkCount / 2) * chunkSize
-                };
-
-                // chunkGroup.push_back(groupStart);
-                int chunkIndex = i * chunkCount * chunkCount + j * chunkCount + k;
-
-                std::vector<Vector3> vertices = {};
-                std::vector<Vector3> normals = {};
-                std::vector<VertexBiome> biomes = {};
-                std::vector<int> indices = {};
-
-                // int groupStart = totalIndexCount;
-
-                createChunk(
-                    origin,
-                    chunkSize,
-                    segment,
-                    vertices,
-                    normals,
-                    biomes,
-                    indices
-                );
-
-                for (int l = 0; l < indices.size(); l++) {
-                    indices[l] += totalVertexCount;
-                }
-
-                memcpy(vertexBuffer + totalVertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
-                memcpy(normalBuffer + totalVertexCount * 3, &(normals.front()), normals.size() * sizeof(Vector3));
-                memcpy(biomeBuffer + totalVertexCount * 8, &(biomes.front()), biomes.size() * sizeof(VertexBiome));
-                memcpy(indexBuffer + totalIndexCount, &(indices.front()), indices.size() * sizeof(int));
-
-                chunkVertexRangeBuffer[chunkIndex * 2] = totalVertexCount;
-                chunkVertexRangeBuffer[chunkIndex * 2 + 1] = vertices.size();
-
-                chunkIndexRangeBuffer[chunkIndex * 2] = totalIndexCount;
-                chunkIndexRangeBuffer[chunkIndex * 2 + 1] = indices.size();
-
-                totalVertexCount += vertices.size();
-                totalIndexCount += indices.size();
-
-                // chunkGroup.push_back(indices.size() - groupStart);
-            }
-        }
-    }
-
-    vertexFreeRangeBuffer[0] = totalVertexCount;
-    vertexFreeRangeBuffer[1] = maxVertexCount - totalVertexCount;
-
-    indexFreeRangeBuffer[0] = totalIndexCount;
-    indexFreeRangeBuffer[1] = maxIndexCount - totalIndexCount;
-
-    for (int i = 1; i < totalChunkCount; i++) {
-        vertexFreeRangeBuffer[2 * i] = 0;
-        vertexFreeRangeBuffer[2 * i + 1] = 0;
-        indexFreeRangeBuffer[2 * i] = 0;
-        indexFreeRangeBuffer[2 * i + 1] = 0;
-    }
-
-    int *outputBuffer = (int*)malloc(NUM_BUFFER * sizeof(int));
-
-    outputBuffer[0] = (int)vertexBuffer;
-    outputBuffer[1] = (int)normalBuffer;
-    outputBuffer[7] = (int)biomeBuffer;
-    outputBuffer[2] = (int)indexBuffer;
-    outputBuffer[3] = (int)chunkVertexRangeBuffer;
-    outputBuffer[4] = (int)vertexFreeRangeBuffer;
-    outputBuffer[5] = (int)chunkIndexRangeBuffer;
-    outputBuffer[6] = (int)indexFreeRangeBuffer;
-
-    return (float*)outputBuffer;
-}
+int NUM_BUFFER = 6;
 
 int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
     std::vector<Vector3> vertices{};
@@ -151,9 +33,7 @@ int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
         indices
     );
 
-    int outputBufferCount = 6;
-
-    int *result = (int*)malloc(outputBufferCount * sizeof(int));
+    int *result = (int*)malloc(NUM_BUFFER * sizeof(int));
     float *chunkPositionBuffer = (float*)malloc(vertices.size() * sizeof(Vector3));
     float *chunkNormalBuffer = (float*)malloc(normals.size() * sizeof(Vector3));
     float *chunkBiomeBuffer = (float*)malloc(biomes.size() * sizeof(VertexBiome));
@@ -195,52 +75,6 @@ Vector3 interpolateVerts(Vector4 v1, Vector4 v2) {
 		_v1.z + (_v2.z - v1.z) * t,
 	};
 }
-
-// void density(
-//     int x, int y, int z, Vector3 origin, float unitSize, int segment, std::vector<Vector4> & points
-// ) {
-
-//     Vector3 v1{(float)x * unitSize, (float)y * unitSize, (float)z * unitSize};
-//     Vector3 curPos{origin.x + v1.x, origin.y + v1.y, origin.z + v1.z};
-//     Vector3 offsetNoise{0.0, 0.0, 0.0};
-//     float noise = 0.0;
-//     float frequency = noiseScale / 2000.0;
-//     float amplitude = 1.0;
-//     float weight = 1.05;
-//     float weightMultiplier = 1.05;
-//     float paramX = 1.0;
-//     float paramY = 0.1;
-
-//     for (int j = 0; j < octaves; j++) {
-//     	Vector3 v2{curPos.x, curPos.y, curPos.z};
-//     	v2.x = (v2.x + offsetNoise.x) * frequency;
-//     	v2.y = (v2.y + offsetNoise.y) * frequency;
-//     	v2.z = (v2.z + offsetNoise.z) * frequency;
-
-//     	float n = (float)Perlin::noise(v2.x, v2.y, v2.z) / 2;
-//     	float v = 1.0 - abs(n);
-//     	v = v * v;
-//     	v *= weight;
-//     	weight = fmax(fmin(v * weightMultiplier, 1.0), 0.0);
-//     	noise += v * amplitude;
-//     	amplitude *= persistence;
-//     	frequency *= lacunarity;
-//     }
-
-//     float finalVal = -(curPos.y * 0.8 + floorOffset) + noise * noiseWeight +
-//     	(curPos.y - floor(curPos.y / paramX) * paramX) * paramY;
-
-//     if (curPos.y < hardFloor) {
-//         finalVal += hardFloorWeight;
-//     }
-
-//     if (y == 0) {
-//     	finalVal = 0.1;
-//     }
-
-//     int index = indexFromCoord(x, y, z, segment);
-//     points[index] = Vector4{curPos.x, curPos.y, curPos.z, finalVal};
-// }
 
 void march(
 	int x, int y, int z, int segment, Vector3 chunkMin, Vector3 chunkMax,
