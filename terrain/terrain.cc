@@ -16,10 +16,10 @@ float isoLevel = 0.0;
 int NUM_BUFFER = 6;
 
 int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
-    std::vector<Vector3> vertices{};
-    std::vector<Vector3> normals{};
-    std::vector<VertexBiome> biomes{};
-    std::vector<int> indices{};
+    std::vector<Vector3> *vertices = new std::vector<Vector3>();
+    std::vector<Vector3> *normals = new std::vector<Vector3>();
+    std::vector<VertexBiome> *biomes = new std::vector<VertexBiome>();
+    std::vector<int> *indices = new std::vector<int>();
 
     float origin[3] = {x, y, z};
 
@@ -34,23 +34,23 @@ int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
     );
 
     int *result = (int*)malloc(NUM_BUFFER * sizeof(int));
-    float *chunkPositionBuffer = (float*)malloc(vertices.size() * sizeof(Vector3));
-    float *chunkNormalBuffer = (float*)malloc(normals.size() * sizeof(Vector3));
-    float *chunkBiomeBuffer = (float*)malloc(biomes.size() * sizeof(VertexBiome));
-    int *chunkIndexBuffer = (int*)malloc(indices.size() * sizeof(int));
+    // float *chunkPositionBuffer = (float*)malloc(vertices.size() * sizeof(Vector3));
+    // float *chunkNormalBuffer = (float*)malloc(normals.size() * sizeof(Vector3));
+    // float *chunkBiomeBuffer = (float*)malloc(biomes.size() * sizeof(VertexBiome));
+    // int *chunkIndexBuffer = (int*)malloc(indices.size() * sizeof(int));
 
-    memcpy(chunkPositionBuffer, &(vertices.front()), vertices.size() * sizeof(Vector3));
-    memcpy(chunkNormalBuffer, &(normals.front()), normals.size() * sizeof(Vector3));
-    memcpy(chunkBiomeBuffer, &(biomes.front()), biomes.size() * sizeof(VertexBiome));
-    memcpy(chunkIndexBuffer, &(indices.front()), indices.size() * sizeof(int));
+    // memcpy(chunkPositionBuffer, &(vertices.front()), vertices.size() * sizeof(Vector3));
+    // memcpy(chunkNormalBuffer, &(normals.front()), normals.size() * sizeof(Vector3));
+    // memcpy(chunkBiomeBuffer, &(biomes.front()), biomes.size() * sizeof(VertexBiome));
+    // memcpy(chunkIndexBuffer, &(indices.front()), indices.size() * sizeof(int));
 
 
-    result[0] = vertices.size();
-    result[1] = indices.size();
-    result[2] = (int)chunkPositionBuffer;
-    result[3] = (int)chunkNormalBuffer;
-    result[4] = (int)chunkBiomeBuffer;
-    result[5] = (int)chunkIndexBuffer;
+    result[0] = vertices->size();
+    result[1] = indices->size();
+    result[2] = (int)&(vertices->front()); //(int)chunkPositionBuffer;
+    result[3] = (int)&(normals->front()); //(int)chunkNormalBuffer;
+    result[4] = (int)&(biomes->front()); //(int)chunkBiomeBuffer;
+    result[5] = (int)&(indices->front()); //(int)chunkIndexBuffer;
 
     return result;
 }
@@ -79,7 +79,7 @@ Vector3 interpolateVerts(Vector4 v1, Vector4 v2) {
 void march(
 	int x, int y, int z, int segment, Vector3 chunkMin, Vector3 chunkMax,
 	const std::vector<Vector4> & points,
-    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<VertexBiome> & biomes, std::vector<int> & indices,
+    std::vector<Vector3> *vertices, std::vector<Vector3> *normals, std::vector<VertexBiome> *biomes, std::vector<int> *indices,
 	std::map<std::string, int> & vertexDic, int & index, float biome[8]
 ) {
 
@@ -153,7 +153,7 @@ void march(
 
         	if (vertexDic.find(vInx) != vertexDic.end()) {
         		vertexIndex = vertexDic[vInx];
-                vP = vertices[vertexIndex];
+                vP = vertices->at(vertexIndex);
         	} else {
         		vP = interpolateVerts(cubeCorners[v[0]], cubeCorners[v[1]]);
 
@@ -164,9 +164,9 @@ void march(
                 ) {
                     vertexIndex = index;
                     vertexDic[vInx] = vertexIndex;
-                    vertices.push_back(vP);
-                    normals.push_back({0.0, 0.0, 0.0});
-                    biomes.push_back({
+                    vertices->push_back(vP);
+                    normals->push_back({0.0, 0.0, 0.0});
+                    biomes->push_back({
                         biome[0], biome[1], biome[2], biome[3], biome[4], biome[5], biome[6], biome[7]
                     });
 
@@ -186,14 +186,14 @@ void march(
             triangleVertexInices[1] != -1 &&
             triangleVertexInices[2] != -1
         ) {
-            indices.push_back(triangleVertexInices[0]);
-            indices.push_back(triangleVertexInices[1]);
-            indices.push_back(triangleVertexInices[2]);
+            indices->push_back(triangleVertexInices[0]);
+            indices->push_back(triangleVertexInices[1]);
+            indices->push_back(triangleVertexInices[2]);
         }
 
         // calculate normals
 
-        normals.resize(vertices.size());
+        normals->resize(vertices->size());
 
         // Vec v[3];
 
@@ -211,9 +211,9 @@ void march(
 
         for (int i = 0; i < 3; i++) {
             if (triangleVertexInices[i] != -1) {
-                normals[triangleVertexInices[i]].x += normal.x;
-                normals[triangleVertexInices[i]].y += normal.y;
-                normals[triangleVertexInices[i]].z += normal.z;
+                normals->at(triangleVertexInices[i]).x += normal.x;
+                normals->at(triangleVertexInices[i]).y += normal.y;
+                normals->at(triangleVertexInices[i]).z += normal.z;
             }
         }
     }
@@ -221,7 +221,7 @@ void march(
 
 void createChunk(
     float origin[3], float chunkSize, int segment,
-    std::vector<Vector3> & vertices, std::vector<Vector3> & normals, std::vector<VertexBiome> & vertexBiomes, std::vector<int> & indices
+    std::vector<Vector3> *vertices, std::vector<Vector3> *normals, std::vector<VertexBiome> *vertexBiomes, std::vector<int> *indices
 ) {
     Noiser *noiser = new Noiser(0);
 
@@ -319,11 +319,11 @@ void createChunk(
 
     // normalize summed vertex normals
 
-    for (int i = 0; i < normals.size(); i++) {
-        Vector3 n = normals[i];
+    for (int i = 0; i < normals->size(); i++) {
+        Vector3 n = normals->at(i);
         float length = sqrt(n.x * n.x + n.y * n.y + n.z * n.z);
-        normals[i] = {n.x / length, n.y / length, n.z / length};
+        normals->at(i) = {n.x / length, n.y / length, n.z / length};
     }
 }
 
-}  // Terrain namespace
+} // Terrain namespace
