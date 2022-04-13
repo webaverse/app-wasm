@@ -16,6 +16,7 @@ float isoLevel = 0.0;
 int NUM_BUFFER = 6;
 
 int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
+    // buffers in heap will be deleted at the JS side
     std::vector<Vector3> *vertices = new std::vector<Vector3>();
     std::vector<Vector3> *normals = new std::vector<Vector3>();
     std::vector<VertexBiome> *biomes = new std::vector<VertexBiome>();
@@ -23,34 +24,16 @@ int* generateChunk(float x, float y, float z, float chunkSize, int segment) {
 
     float origin[3] = {x, y, z};
 
-    createChunk(
-        origin,
-        chunkSize,
-        segment,
-        vertices,
-        normals,
-        biomes,
-        indices
-    );
+    createChunk(origin, chunkSize, segment, vertices, normals, biomes, indices);
 
     int *result = (int*)malloc(NUM_BUFFER * sizeof(int));
-    // float *chunkPositionBuffer = (float*)malloc(vertices.size() * sizeof(Vector3));
-    // float *chunkNormalBuffer = (float*)malloc(normals.size() * sizeof(Vector3));
-    // float *chunkBiomeBuffer = (float*)malloc(biomes.size() * sizeof(VertexBiome));
-    // int *chunkIndexBuffer = (int*)malloc(indices.size() * sizeof(int));
-
-    // memcpy(chunkPositionBuffer, &(vertices.front()), vertices.size() * sizeof(Vector3));
-    // memcpy(chunkNormalBuffer, &(normals.front()), normals.size() * sizeof(Vector3));
-    // memcpy(chunkBiomeBuffer, &(biomes.front()), biomes.size() * sizeof(VertexBiome));
-    // memcpy(chunkIndexBuffer, &(indices.front()), indices.size() * sizeof(int));
-
 
     result[0] = vertices->size();
     result[1] = indices->size();
-    result[2] = (int)&(vertices->front()); //(int)chunkPositionBuffer;
-    result[3] = (int)&(normals->front()); //(int)chunkNormalBuffer;
-    result[4] = (int)&(biomes->front()); //(int)chunkBiomeBuffer;
-    result[5] = (int)&(indices->front()); //(int)chunkIndexBuffer;
+    result[2] = (int)&(vertices->front());
+    result[3] = (int)&(normals->front());
+    result[4] = (int)&(biomes->front());
+    result[5] = (int)&(indices->front());
 
     return result;
 }
@@ -82,7 +65,6 @@ void march(
     std::vector<Vector3> *vertices, std::vector<Vector3> *normals, std::vector<VertexBiome> *biomes, std::vector<int> *indices,
 	std::map<std::string, int> & vertexDic, int & index, float biome[8]
 ) {
-
 	// 8 corners of the current cube
     Vector4 cubeCorners[8] = {
         points[indexFromCoord(x, y, z, segment)],
@@ -194,17 +176,6 @@ void march(
         // calculate normals
 
         normals->resize(vertices->size());
-
-        // Vec v[3];
-
-        // for (int i = 0; i < 3; i++) {
-        //     v[i] = Vec(
-        //         vertices[triangleVertexInices[i]].x,
-        //         vertices[triangleVertexInices[i]].y,
-        //         vertices[triangleVertexInices[i]].z
-        //     );
-        // }
-
         Vec normal = (triangleVertices[1] - triangleVertices[0]) ^ (triangleVertices[2] - triangleVertices[1]);
 
         normal.normalize();
@@ -225,9 +196,6 @@ void createChunk(
 ) {
     Noiser *noiser = new Noiser(0);
 
-    // int pointCount = (segment + 3) * (segment + 3);
-
-    // unsigned char biomes[(segment + 3) * (segment + 3)];
     unsigned char temperature;
     unsigned char humidity;
     float elevations[(segment + 3) * (segment + 3)];
@@ -238,8 +206,6 @@ void createChunk(
     int ox = (int)round(origin[0] / chunkSize);
     int oy = (int)round(origin[1] / chunkSize);
     int oz = (int)round(origin[2] / chunkSize);
-
-    // noiser->fillBiomes(ox, oz, segment, biomes, &temperature, &humidity);
 
     float biomes[8 * (segment + 3) * (segment + 3)];
 
@@ -261,12 +227,9 @@ void createChunk(
     int initialPotential = 0;
 
 	// density
-
 	for (int i = 0; i <= segment + 2; i++) {
 		for (int j = 0; j <= segment + 2; j++) {
 			for (int k = 0; k <= segment + 2; k++) {
-				// density(i, j, k, originPos, unitSize, segment, points);
-
                 Vector3 curPos{
                     originPos.x + (i - 1) * unitSize, originPos.y + (j - 1) * unitSize, originPos.z + (k - 1) * unitSize
                 };
@@ -312,13 +275,11 @@ void createChunk(
                     points, vertices, normals, vertexBiomes, indices, vertexDic, index,
                     biome
                 );
-                    // biomes[k * (segment + 1) + i]);
 			}
 		}
 	}
 
     // normalize summed vertex normals
-
     for (int i = 0; i < normals->size(); i++) {
         Vector3 n = normals->at(i);
         float length = sqrt(n.x * n.x + n.y * n.y + n.z * n.z);
