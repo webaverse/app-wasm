@@ -50,28 +50,52 @@ EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *i
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
 }
 
-EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
-  scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
+EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float maxDist, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex) {
+  scene->raycast(origin, direction, maxDist, *hit, position, normal, *distance, *objectId, *faceIndex);
 }
 
-EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *scene, float *origin, float *direction, float *meshPosition, float *meshQuaternion, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex, Vec *outPosition, Quat *outQuaternion) {
+EMSCRIPTEN_KEEPALIVE void raycastPhysicsArray(unsigned int rayCount, PScene *scene, float *origin, float *direction, float maxDist, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex) {
   for (unsigned int i = 0; i < rayCount; i++) {
-    
-    scene->raycast(origin, direction, meshPosition, meshQuaternion, *hit, position, normal, *distance, *objectId, *faceIndex, *outPosition, *outQuaternion);
+    scene->raycast(origin, direction, maxDist, *hit, position, normal, *distance, *objectId, *faceIndex);
 
     origin += 3;
     direction += 3;
-    meshPosition += 3;
-    meshQuaternion += 4;
     hit += 1;
     position += 3;
     normal += 3;
     distance += 1;
     objectId += 1;
     faceIndex += 1;
-    outPosition += 1;
-    outQuaternion += 1;
   }
+}
+
+EMSCRIPTEN_KEEPALIVE void sweepBox(
+  PScene *scene,
+  float *origin,
+  float *quaternion,
+  float *halfExtents,
+  float *direction,
+  float sweepDistance,
+  unsigned int *hit,
+  float *position,
+  float *normal,
+  float *distance,
+  unsigned int *objectId,
+  unsigned int *faceIndex
+) {
+  scene->sweepBox(
+    origin,
+    quaternion,
+    halfExtents,
+    direction,
+    sweepDistance,
+    *hit,
+    position,
+    normal,
+    *distance,
+    *objectId,
+    *faceIndex
+  );
 }
 
 EMSCRIPTEN_KEEPALIVE float *getPathPhysics(PScene *scene, float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
@@ -229,7 +253,7 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 //   marchingCubes(dims, potential, brush, shift, scale, positions, colors, faces, *positionIndex, *colorIndex, *faceIndex);
 // }
 
-EMSCRIPTEN_KEEPALIVE float* doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
+EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
 }
 
