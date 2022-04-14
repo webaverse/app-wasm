@@ -26,12 +26,12 @@ namespace Terrain
         }
 
         // int *vertexBuffer = (int *)malloc(vertexCount * 3 * sizeof(float));
-        memcpy(vertexBuffer + vertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
+        // memcpy(vertexBuffer + vertexCount * 3, &(vertices.front()), vertices.size() * sizeof(Vector3));
 
-        int *outputBuffer = (int *)malloc(4 * sizeof(int));
-        outputBuffer[0] = &vertices;
+        // int *outputBuffer = (int *)malloc(4 * sizeof(int));
+        // outputBuffer[0] = &vertices;
 
-        return outputBuffer;
+        // return outputBuffer;
     }
 }
 
