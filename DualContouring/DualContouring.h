@@ -16,6 +16,6 @@ namespace DualContouring
         float z;
         float w;
     };
-    
-    int *generateVertices(int segment);
+
+    int *generateVertices(int width, int height, int depth);
 }
