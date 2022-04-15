@@ -1,8 +1,7 @@
 #include <vector>
-
-namespace Terrain
+#include "../FastNoise.h"
+namespace DualContouring
 {
-
     struct Vector3
     {
         float x;
@@ -17,6 +16,6 @@ namespace Terrain
         float z;
         float w;
     };
-
-    int *generateRandomVertices(int vertexCount);
+    
+    int *generateVertices(int segment);
 }

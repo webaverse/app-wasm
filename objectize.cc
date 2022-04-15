@@ -9,7 +9,7 @@
 // #include "earcut.h"
 // #include <iostream>
 #include "cut.h"
-#include "terrain/terrain.h"
+#include "DualContouring/DualContouring.h"
 
 #include <deque>
 #include <map>
@@ -276,11 +276,10 @@ extern "C"
   //   marchingCubes(dims, potential, brush, shift, scale, positions, colors, faces, *positionIndex, *colorIndex, *faceIndex);
   // }
 
-  EMSCRIPTEN_KEEPALIVE int *generateRandomVertices(
-      int vertexCount)
+  EMSCRIPTEN_KEEPALIVE int *generateVertices(
+      int segment)
   {
-    return Terrain::generateRandomVertices(
-        vertexCount);
+    return DualContouring::generateVertices(segment);
   }
 
   EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3])
