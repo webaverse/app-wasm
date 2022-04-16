@@ -1,15 +1,20 @@
 #include <vector>
+#include <cstdint>
+#include <ctime>
+#include <string.h>
 #include "../FastNoise.h"
+
+using namespace std;
 namespace DualContouring
 {
-    struct Vector3
+    struct vec3
     {
         float x;
         float y;
         float z;
     };
 
-    struct Vector4
+    struct vec4
     {
         float x;
         float y;
@@ -17,5 +22,5 @@ namespace DualContouring
         float w;
     };
 
-    int *generateVertices(int width, int height, int depth);
+    vector<vec3> generateVertices(int width, int height, int depth);
 }
