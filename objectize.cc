@@ -276,10 +276,9 @@ extern "C"
   //   marchingCubes(dims, potential, brush, shift, scale, positions, colors, faces, *positionIndex, *colorIndex, *faceIndex);
   // }
 
-  EMSCRIPTEN_KEEPALIVE int *dualContouringSphere(
-      int width, int height, int depth)
+  EMSCRIPTEN_KEEPALIVE int *createChunk()
   {
-    return dualContouringSphere(width, height, depth);
+    return DualContouring::createChunk();
   }
 
   EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3])

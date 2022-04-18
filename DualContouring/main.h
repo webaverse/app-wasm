@@ -1,7 +1,18 @@
+#ifndef MAIN_H
+#define MAIN_H
 #include <iostream>
-#include "dualContouring.h"
+#include <vector>
+#include <cstdint>
+#include <ctime>
+#include <string.h>
+#include "include/glm/glm.hpp"
 
 using namespace std;
-using namespace DualContouring;
+using namespace glm;
 
-int *dualContouringSphere(int width, int height, int depth);
+namespace DualContouring
+{
+    int *createChunk();
+};
+
+#endif // MAIN_H
