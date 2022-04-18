@@ -1,11 +1,13 @@
 #include "main.h"
+#include "octree.h"
 
-class BufferController
+class BufferManager
 {
 private:
-    // we store the pointers to each data that we want in this arraybuffer 
+    // we store the pointers to each data that we want in  arraybuffer
     vector<int> outputBuffer;
-    int *copyVectorToMemory(const vector<vec3> vector)
+    template <typename T>
+    int *copyVectorToMemory(const vector<T> vector)
     {
         unsigned int size = vector.size() * sizeof(vector[0]);
         int *buffer = (int *)malloc(size);
@@ -14,7 +16,8 @@ private:
     }
 
 public:
-    void appendVector(const vector<vec3> vector)
+    template <typename T>
+    void appendVector(const vector<T> vector)
     {
         outputBuffer.push_back(vector.size());
         outputBuffer.push_back((intptr_t)copyVectorToMemory(vector));
@@ -31,23 +34,54 @@ public:
         return output;
     }
 };
-
-int *dualContouringSphere(int width, int height, int depth)
+namespace DualContouring
 {
-    vector<vec3> positions = DualContouring::generateVertices(10, 10, 10);
+    int *createChunk()
+    {
 
-    // the order of appending data to the buffer is important,
-    // we will read the data by the same order in javascript
-    BufferController bufferController;
-    bufferController.appendVector(positions);
+        const int MAX_THRESHOLDS = 5;
+        const float THRESHOLDS[MAX_THRESHOLDS] = {-1.f, 0.1f, 1.f, 10.f, 50.f};
+        int thresholdIndex = -1;
 
-    return bufferController.getOutputBuffer();
+        OctreeNode *root = nullptr;
+
+        // octreeSize must be a power of two!
+        const int octreeSize = 64;
+
+        float rotateX = -60.f, rotateY = 0.f;
+        float distance = 100.f;
+        bool drawWireframe = false;
+        bool refreshMesh = true;
+
+        thresholdIndex = (thresholdIndex + 1) % MAX_THRESHOLDS;
+
+        PositionBuffer positions;
+        NormalBuffer normals;
+        IndexBuffer indices;
+
+        root = BuildOctree(glm::ivec3(-octreeSize / 2), octreeSize, THRESHOLDS[thresholdIndex]);
+        GenerateMeshFromOctree(root, positions, normals, indices);
+
+        // vector<vec3> vertexBuffer = DualContouring::generateVertices(10, 10, 10);
+
+        // the order of appending data to the buffer is important,
+        // we will read the data by the same order in javascript
+        BufferManager bufferController;
+        bufferController.appendVector(positions);
+        bufferController.appendVector(normals);
+        bufferController.appendVector(indices);
+
+        return bufferController.getOutputBuffer();
+        // return positions.size();
+    }
 }
-int main()
-{
 
-    cout << "\n"
-         << dualContouringSphere(10, 10, 10) << "\n"
-         << endl;
-    return 0;
-}
+// int main()
+// {
+
+//     cout << "\n"
+//          << DualContouring::createChunk() << "\n"
+//          << endl;
+
+//     return 0;
+// }
