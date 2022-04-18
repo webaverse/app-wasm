@@ -269,6 +269,8 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/physxcharacterkinematic/src/CctSweptBox.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctSweptCapsule.cpp \
   PhysX/physx/source/physxcharacterkinematic/src/CctSweptVolume.cpp \
+  PhysX/physx/source/physxextensions/src/ExtD6Joint.cpp \
+  PhysX/physx/source/physxextensions/src/ExtD6JointCreate.cpp \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c \
   && touch physx-timestamp

@@ -4,6 +4,8 @@
 #include "foundation/PxTransform.h"
  */
 #include "physics.h"
+#include <string>
+#include <iostream>
 
 using namespace physx;
 
@@ -50,6 +52,35 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
 void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
 
+/*
+  CharacterControllerFilterCallback
+  This filters collisions for the character capsule and character skeletons
+*/
+CharacterControllerFilterCallback::CharacterControllerFilterCallback() {}
+CharacterControllerFilterCallback::~CharacterControllerFilterCallback() {}
+PxQueryHitType::Enum CharacterControllerFilterCallback::preFilter(
+  const PxFilterData &filterData,
+  const PxShape *shape,
+  const PxRigidActor *actor,
+  PxHitFlags &queryFlags
+) {
+  const PxFilterData &filterDataShape = shape->getSimulationFilterData();
+  if (
+    (filterDataShape.word2 == 2) || // this is an avatar capsule
+    (filterDataShape.word3 == 3) // this is a skeleton bone
+  ) {
+    return PxQueryHitType::eNONE; // do not collide
+  } else {
+    return PxQueryHitType::eBLOCK; // maybe collide
+  }
+}
+PxQueryHitType::Enum CharacterControllerFilterCallback::postFilter(const PxFilterData &filterData, const PxQueryHit &hit) {
+  // should never hit this since we are not using the postFilter flag
+  std::cerr << "CharacterControllerFilterCallback::postFilter not implemented!" << std::endl;
+  abort();
+  return PxQueryHitType::eNONE;
+}
+
 PxFilterFlags ccdFilterShader(
   PxFilterObjectAttributes attributes0,
   PxFilterData filterData0,
@@ -68,9 +99,22 @@ PxFilterFlags ccdFilterShader(
     constantBlock,
     constantBlockSize
   );
-  pairFlags |= PxPairFlag::eSOLVE_CONTACT;
-  pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
-  pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  if (
+    (filterData0.word2 == 2 || filterData1.word2 == 2) && // one of the objects is an avatar capsule
+    (filterData0.word3 == 3 || filterData1.word3 == 3) // one of the objects is a skeleton bone
+  ) {
+    // do not colide
+    pairFlags &= ~PxPairFlag::eSOLVE_CONTACT;
+    pairFlags &= ~PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    pairFlags &= ~PxPairFlag::eDETECT_DISCRETE_CONTACT;
+    pairFlags &= ~PxPairFlag::eDETECT_CCD_CONTACT;
+  } else {
+    // maybe colide
+    pairFlags |= PxPairFlag::eSOLVE_CONTACT;
+    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    pairFlags |= PxPairFlag::eDETECT_DISCRETE_CONTACT;
+    pairFlags |= PxPairFlag::eDETECT_CCD_CONTACT;
+  }
   /* if (filterData0.word1 == TYPE::TYPE_CAPSULE || filterData1.word1 == TYPE::TYPE_CAPSULE) {
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
     pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
@@ -162,6 +206,83 @@ PScene::PScene() {
 PScene::~PScene() {
   std::cout << "scene destructor" << std::endl;
   abort();
+}
+
+PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1 = false) {
+  PxRigidActor *actor1;
+  PxRigidActor *actor2;
+  PxRigidDynamic *body1;
+  PxRigidDynamic *body2;
+
+  auto actorIter1 = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id1;
+  });
+  if (actorIter1 != actors.end()) {
+    actor1 = *actorIter1;
+    body1 = dynamic_cast<PxRigidDynamic *>(actor1);
+    // std::cout << "add joint got id a" << id1 << std::endl;
+  } else {
+    std::cerr << "add joint unknown actor id a" << id1 << std::endl;
+  }
+
+  auto actorIter2 = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id2;
+  });
+  if (actorIter2 != actors.end()) {
+    actor2 = *actorIter2;
+    body2 = dynamic_cast<PxRigidDynamic *>(actor2);
+    // std::cout << "add joint got id b" << id2 << std::endl;
+  } else {
+    std::cerr << "add joint unknown actor id b" << id2 << std::endl;
+  }
+
+  if (fixBody1) {
+    body1->setRigidDynamicLockFlags(
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
+      PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
+      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+    );
+  }
+
+  PxTransform transform1(
+    PxVec3{position1[0], position1[1], position1[2]},
+    PxQuat{quaternion1[0], quaternion1[1], quaternion1[2], quaternion1[3]}
+  );
+  PxTransform transform2(
+    PxVec3{position2[0], position2[1], position2[2]},
+    PxQuat{quaternion2[0], quaternion2[1], quaternion2[2], quaternion2[3]}
+  );
+
+  PxD6Joint *joint = PxD6JointCreate(
+    *physics,
+    body1, transform1,
+    body2, transform2
+  );
+
+  return joint;
+}
+
+void PScene::setJointMotion(PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion) {
+  joint->setMotion(axis, motion);
+}
+
+void PScene::setJointTwistLimit(PxD6Joint *joint, float lowerLimit, float upperLimit, float contactDist) {
+  joint->setTwistLimit(physx::PxJointAngularLimitPair(lowerLimit, upperLimit, contactDist));
+}
+
+void PScene::setJointSwingLimit(PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist) {
+  joint->setSwingLimit(physx::PxJointLimitCone(yLimitAngle, zLimitAngle, contactDist));
+}
+
+bool PScene::updateMassAndInertia(PxRigidBody *body, float shapeDensities) {
+  return PxRigidBodyExt::updateMassAndInertia(*body, shapeDensities);
+}
+
+float PScene::getBodyMass(PxRigidBody *body) {
+  return body->getMass();
 }
 
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
@@ -304,7 +425,7 @@ void PScene::addCapsuleGeometry(
   actors.push_back(actor);
 }
 
-void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic) {
+PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
   PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxBoxGeometry geometry(size[0], size[1], size[2]);
@@ -314,6 +435,22 @@ void PScene::addBoxGeometry(float *position, float *quaternion, float *size, uns
     PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
     PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
     actor = box;
+    if (groupId != -1) {
+      // collision filter
+      unsigned int numShapes = box->getNbShapes();
+      if (numShapes == 1) {
+        PxShape *shapes[1];
+        box->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+        PxShape *shape = shapes[0];
+        PxFilterData filterData{};
+        filterData.word0 = groupId; // character id
+        filterData.word1 = groupId; // the unique bone id in the character
+        filterData.word3 = 3; // signal this is a character skeleton bone; used during filtering
+        shape->setSimulationFilterData(filterData); 
+      } else {
+        std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
+      }
+    }
   } else {
     PxRigidStatic *box = PxCreateStatic(*physics, transform, geometry, *material);
     actor = box;
@@ -322,6 +459,8 @@ void PScene::addBoxGeometry(float *position, float *quaternion, float *size, uns
   actor->userData = (void *)id;
   scene->addActor(*actor);
   actors.push_back(actor);
+
+  return actor;
 }
 
 void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
@@ -775,6 +914,20 @@ PxController *PScene::createCharacterController(float radius, float height, floa
   characterController->setPosition(PxExtendedVec3{position[0], position[1], position[2]});
 
   PxRigidDynamic *actor = characterController->getActor();
+  
+  unsigned int numShapes = actor->getNbShapes();
+  if (numShapes == 1) {
+    PxShape *shapes[1];
+    actor->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+    PxShape *shape = shapes[0];
+    PxFilterData filterData{};
+    filterData.word0 = id; // character id
+    filterData.word2 = 2; // signal this is a character capsule; used during filtering
+    shape->setSimulationFilterData(filterData); 
+  } else {
+    std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
+  }
+
   // if (id != 0) {
     actor->userData = (void *)id;
     actors.push_back(actor);
@@ -813,9 +966,11 @@ unsigned int PScene::moveCharacterController(PxController *characterController, 
     displacement[1],
     displacement[2]
   };
-  // PxF32 minDist = 0;
-  // PxF32 elapsedTime = 0;
-  PxControllerFilters controllerFilters{};
+  PxFilterData filterData{};
+  CharacterControllerFilterCallback cb;
+
+  PxControllerFilters controllerFilters(&filterData, &cb);
+  controllerFilters.mFilterFlags |= PxQueryFlag::ePREFILTER;
   PxObstacleContext *obstacles = nullptr;
   PxControllerCollisionFlags collisionFlags = characterController->move(
     disp,
