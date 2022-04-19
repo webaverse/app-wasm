@@ -276,14 +276,14 @@ extern "C"
   //   marchingCubes(dims, potential, brush, shift, scale, positions, colors, faces, *positionIndex, *colorIndex, *faceIndex);
   // }
 
-  EMSCRIPTEN_KEEPALIVE int *doDualContouring()
-  {
-    return DualContouring::createChunk();
-  }
-
   EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3])
   {
     return marchingCubes(dims, potential, shift, scale);
+  }
+
+  EMSCRIPTEN_KEEPALIVE int *doDualContouring()
+  {
+    return DualContouring::createChunk();
   }
 
 } // extern "C"
