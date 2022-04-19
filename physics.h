@@ -83,7 +83,7 @@ public:
   void setJointSwingLimit(PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist = -1.0f);
   bool updateMassAndInertia(PxRigidBody *body, float shapeDensities);
   float getBodyMass(PxRigidBody *body);
-  unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
+  unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *linearVelocities, float *angularVelocities);
   void raycast(float *origin, float *direction, float maxDist, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex);
   void sweepBox(
     float *origin,
@@ -126,6 +126,12 @@ public:
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale, bool autoWake);
   void getGlobalPosition(unsigned int id, float *position);
   void getVelocity(unsigned int id, float *velocity);
+  void addForceAtPos(unsigned int id, float *velocity, float *position, bool autoWake);
+  void addForceAtLocalPos(unsigned int id, float *velocity, float *position, bool autoWake);
+  void addLocalForceAtLocalPos(unsigned int id, float *velocity, float *position, bool autoWake);
+  void addLocalForceAtPos(unsigned int id, float *velocity, float *position, bool autoWake);
+  void addForce(unsigned int id, float *velocity, bool autoWake);
+  void addTorque(unsigned int id, float *velocity, bool autoWake);
   void setVelocity(unsigned int id, float *velocity, bool autoWake);
   void setAngularVel(unsigned int id, float *velocity, bool autoWake);
   void setLinearLockFlags(unsigned int id, bool x, bool y, bool z);

@@ -46,8 +46,8 @@ EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhyscis(PScene *scene, PxRigidBody
 EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, PxRigidBody *body) {
   return scene->getBodyMass(body);
 }
-EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
-  return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
+EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *linearVelocities, float *angularVelocities) {
+  return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, linearVelocities, angularVelocities);
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float maxDist, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex) {
@@ -181,6 +181,24 @@ EMSCRIPTEN_KEEPALIVE void getGlobalPositionPhysics(PScene *scene, unsigned int i
 }
 EMSCRIPTEN_KEEPALIVE void getVelocityPhysics(PScene *scene, unsigned int id, float *velocity) {
   scene->getVelocity(id, velocity);
+}
+EMSCRIPTEN_KEEPALIVE void addForceAtPosPhysics(PScene *scene, unsigned int id, float *velocity, float *position, bool autoWake) {
+  scene->addForceAtPos(id, velocity, position, autoWake);
+}
+EMSCRIPTEN_KEEPALIVE void addForceAtLocalPosPhysics(PScene *scene, unsigned int id, float *velocity, float *position, bool autoWake) {
+  scene->addForceAtLocalPos(id, velocity, position, autoWake);
+}
+EMSCRIPTEN_KEEPALIVE void addLocalForceAtPosPhysics(PScene *scene, unsigned int id, float *velocity, float *position, bool autoWake) {
+  scene->addLocalForceAtPos(id, velocity, position, autoWake);
+}
+EMSCRIPTEN_KEEPALIVE void addLocalForceAtLocalPosPhysics(PScene *scene, unsigned int id, float *velocity, float *position, bool autoWake) {
+  scene->addLocalForceAtLocalPos(id, velocity, position, autoWake);
+}
+EMSCRIPTEN_KEEPALIVE void addForcePhysics(PScene *scene, unsigned int id, float *velocity, bool autoWake) {
+  scene->addForce(id, velocity, autoWake);
+}
+EMSCRIPTEN_KEEPALIVE void addTorquePhysics(PScene *scene, unsigned int id, float *velocity, bool autoWake) {
+  scene->addTorque(id, velocity, autoWake);
 }
 EMSCRIPTEN_KEEPALIVE void setVelocityPhysics(PScene *scene, unsigned int id, float *velocity, bool autoWake) {
   scene->setVelocity(id, velocity, autoWake);
