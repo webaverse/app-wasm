@@ -4,7 +4,7 @@
 #include "qef.h"
 #include "mesh.h"
 
-#include "include/glm/glm.hpp"
+#include "../glm/glm.hpp"
 using namespace glm;
 
 enum OctreeNodeType

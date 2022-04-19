@@ -276,7 +276,7 @@ extern "C"
   //   marchingCubes(dims, potential, brush, shift, scale, positions, colors, faces, *positionIndex, *colorIndex, *faceIndex);
   // }
 
-  EMSCRIPTEN_KEEPALIVE int *createChunk()
+  EMSCRIPTEN_KEEPALIVE int *doDualContouring()
   {
     return DualContouring::createChunk();
   }

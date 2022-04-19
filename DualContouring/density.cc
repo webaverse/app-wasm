@@ -1,5 +1,5 @@
 #include "density.h"
-#include "./include/glm/ext.hpp"
+#include "../glm/ext.hpp"
 using namespace glm;
 
 float Sphere(const vec3& worldPosition, const vec3& origin, float radius)
@@ -45,7 +45,7 @@ float FractalNoise(
 float Density_Func(const vec3& worldPosition)
 {
 	const float MAX_HEIGHT = 20.f;
-	const float noise = FractalNoise(4, 0.54f, 2.24f, 0.68f, vec2(worldPosition.x, worldPosition.z));
+	const float noise = FractalNoise(6, 0.54f, 2.24f, 0.68f, vec2(worldPosition.x, worldPosition.z));
 	const float terrain = worldPosition.y - (MAX_HEIGHT * noise);
 
 	const float cube = Cuboid(worldPosition, vec3(-4., 10.f, -4.f), vec3(12.f));
