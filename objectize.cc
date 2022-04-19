@@ -9,7 +9,7 @@
 // #include "earcut.h"
 // #include <iostream>
 #include "cut.h"
-#include "dualContouring/main.h"
+#include "DualContouring/main.h"
 
 #include <deque>
 #include <map>
@@ -281,7 +281,7 @@ extern "C"
     return marchingCubes(dims, potential, shift, scale);
   }
 
-  EMSCRIPTEN_KEEPALIVE int *doDualContouring()
+    EMSCRIPTEN_KEEPALIVE int *doDualContouring()
   {
     return DualContouring::createChunk();
   }
