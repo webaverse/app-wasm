@@ -3,13 +3,13 @@
 // #include "compose.h"
 // #include "noise.h"
 #include "march.h"
+#include "DualContouring/main.h"
 // #include "collide.h"
 #include "physics.h"
 // #include "convex.h"
 // #include "earcut.h"
 // #include <iostream>
 #include "cut.h"
-
 #include <deque>
 #include <map>
 
@@ -255,6 +255,10 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 
 EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
+}
+
+EMSCRIPTEN_KEEPALIVE int *doDualContouring(){
+    return DualContouring::createChunk();
 }
 
 } // extern "C"
