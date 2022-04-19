@@ -257,8 +257,8 @@ EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, flo
   return marchingCubes(dims, potential, shift, scale);
 }
 
-// EMSCRIPTEN_KEEPALIVE int *doDualContouring(){
-//     return DualContouring::createChunk();
-// }
+EMSCRIPTEN_KEEPALIVE int *doDualContouring(){
+    return DualContouring::createChunk();
+}
 
 } // extern "C"
