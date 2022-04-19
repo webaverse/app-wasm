@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <ctime>
 #include <string.h>
-#include "include/glm/glm.hpp"
+#include "../glm/glm.hpp"
 
 using namespace std;
 using namespace glm;

@@ -4,7 +4,7 @@
 class BufferManager
 {
 private:
-    // we store the pointers to each data that we want in  arraybuffer
+    // we store the pointers to each data that we want in outputBuffer
     vector<int> outputBuffer;
     template <typename T>
     int *copyVectorToMemory(const vector<T> vector)
@@ -19,8 +19,13 @@ public:
     template <typename T>
     void appendVector(const vector<T> vector)
     {
-        outputBuffer.push_back(vector.size());
         outputBuffer.push_back((intptr_t)copyVectorToMemory(vector));
+    }
+
+    template <typename T>
+    void appendVectorSize(const vector<T> vector)
+    {
+        outputBuffer.push_back(vector.size());
     }
     // exporting the output buffer
     int *getOutputBuffer()
@@ -62,26 +67,29 @@ namespace DualContouring
         root = BuildOctree(glm::ivec3(-octreeSize / 2), octreeSize, THRESHOLDS[thresholdIndex]);
         GenerateMeshFromOctree(root, positions, normals, indices);
 
-        // vector<vec3> vertexBuffer = DualContouring::generateVertices(10, 10, 10);
-
         // the order of appending data to the buffer is important,
         // we will read the data by the same order in javascript
         BufferManager bufferController;
+
+        bufferController.appendVectorSize(positions);
         bufferController.appendVector(positions);
+
+        bufferController.appendVectorSize(normals);
         bufferController.appendVector(normals);
+
+        bufferController.appendVectorSize(indices);
         bufferController.appendVector(indices);
 
         return bufferController.getOutputBuffer();
-        // return positions.size();
     }
 }
 
-// int main()
-// {
+int main()
+{
 
-//     cout << "\n"
-//          << DualContouring::createChunk() << "\n"
-//          << endl;
+    cout << "\n"
+         << DualContouring::createChunk() << "\n"
+         << endl;
 
-//     return 0;
-// }
+    return 0;
+}
