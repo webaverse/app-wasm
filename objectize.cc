@@ -40,7 +40,7 @@ EMSCRIPTEN_KEEPALIVE void setJointTwistLimitPhysics(PScene *scene, PxD6Joint *jo
 EMSCRIPTEN_KEEPALIVE void setJointSwingLimitPhysics(PScene *scene, PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist = -1.0f) {
   return scene->setJointSwingLimit(joint, yLimitAngle, zLimitAngle, contactDist);
 }
-EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhyscis(PScene *scene, unsigned int id, float shapeDensities) {
+EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhysics(PScene *scene, unsigned int id, float shapeDensities) {
   return scene->updateMassAndInertia(id, shapeDensities);
 }
 EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
