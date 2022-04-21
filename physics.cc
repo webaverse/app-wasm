@@ -277,12 +277,30 @@ void PScene::setJointSwingLimit(PxD6Joint *joint, float yLimitAngle, float zLimi
   joint->setSwingLimit(physx::PxJointLimitCone(yLimitAngle, zLimitAngle, contactDist));
 }
 
-bool PScene::updateMassAndInertia(PxRigidBody *body, float shapeDensities) {
-  return PxRigidBodyExt::updateMassAndInertia(*body, shapeDensities);
+bool PScene::updateMassAndInertia(unsigned int id, float shapeDensities) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    return PxRigidBodyExt::updateMassAndInertia(*(dynamic_cast<PxRigidBody *>(actor)), shapeDensities);
+  } else {
+    std::cerr << "updateMassAndInertia unknown actor id " << id << std::endl;
+    return false;
+  }
 }
 
-float PScene::getBodyMass(PxRigidBody *body) {
-  return body->getMass();
+float PScene::getBodyMass(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    return (dynamic_cast<PxRigidBody *>(actor))->getMass();
+  } else {
+    std::cerr << "updateMassAndInertia unknown actor id " << id << std::endl;
+    return -1;
+  }
 }
 
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
@@ -425,7 +443,7 @@ void PScene::addCapsuleGeometry(
   actors.push_back(actor);
 }
 
-PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
+void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
   PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxBoxGeometry geometry(size[0], size[1], size[2]);
@@ -459,8 +477,6 @@ PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *
   actor->userData = (void *)id;
   scene->addActor(*actor);
   actors.push_back(actor);
-
-  return actor;
 }
 
 void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
