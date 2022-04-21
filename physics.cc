@@ -208,7 +208,7 @@ PScene::~PScene() {
   abort();
 }
 
-PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1 = false) {
+PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
   PxRigidActor *actor1;
   PxRigidActor *actor2;
   PxRigidDynamic *body1;
@@ -236,16 +236,16 @@ PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1
     std::cerr << "add joint unknown actor id b" << id2 << std::endl;
   }
 
-  if (fixBody1) {
-    body1->setRigidDynamicLockFlags(
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
-    );
-  }
+  // if (fixBody1) {
+  //   body1->setRigidDynamicLockFlags(
+  //     PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
+  //     PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
+  //     PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
+  //     PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
+  //     PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
+  //     PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+  //   );
+  // }
 
   PxTransform transform1(
     PxVec3{position1[0], position1[1], position1[2]},
