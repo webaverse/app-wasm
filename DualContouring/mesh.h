@@ -3,9 +3,11 @@
 
 #include <vector>
 #include "../glm/glm.hpp"
+using namespace glm;
+using namespace std;
 
-typedef std::vector<glm::vec3> PositionBuffer;
-typedef std::vector<glm::vec3> NormalBuffer;
-typedef std::vector<int> IndexBuffer;
+typedef vector<vec3> PositionBuffer;
+typedef vector<vec3> NormalBuffer;
+typedef vector<int> IndexBuffer;
 
 #endif // MESH_H
