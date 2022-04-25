@@ -394,12 +394,11 @@ void PScene::addCapsuleGeometry(
   float *quaternion,
   float radius,
   float halfHeight,
-  float *mat,
   unsigned int id,
+  PxMaterial *material,
   unsigned int dynamic,
   unsigned int flags
 ) {
-  PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]);
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxTransform relativePose(PxQuat(PxHalfPi, PxVec3(0,0,1)));
   PxCapsuleGeometry geometry(radius, halfHeight);
@@ -425,8 +424,7 @@ void PScene::addCapsuleGeometry(
   actors.push_back(actor);
 }
 
-PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxBoxGeometry geometry(size[0], size[1], size[2]);
   
@@ -520,12 +518,42 @@ void PScene::cookConvexGeometry(float *positions, unsigned int *indices, unsigne
   *length = (*writeStream)->getSize();
 }
 
-void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, float *mat, PxDefaultMemoryOutputStream *writeStream) {
+PxTriangleMesh *PScene::createShape(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
   PxTriangleMesh *triangleMesh = physics->createTriangleMesh(readBuffer);
 
-  // PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  if (releaseWriteStream) {
+    delete releaseWriteStream;
+  }
+
+  return triangleMesh;
+}
+void PScene::destroyShape(PxTriangleMesh *triangleMesh) {
+  triangleMesh->release();
+}
+PxConvexMesh *PScene::createConvexShape(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
+  PxDefaultMemoryInputData readBuffer(data, length);
+  PxConvexMesh *convexMesh = physics->createConvexMesh(readBuffer);
+
+  if (releaseWriteStream) {
+    delete releaseWriteStream;
+  }
+
+  return convexMesh;
+}
+void PScene::destroyConvexShape(PxConvexMesh *convexMesh) {
+  convexMesh->release();
+}
+
+PxMaterial *PScene::createMaterial(float *mat) {
   PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]);
+  return material;
+}
+void PScene::destroyMaterial(PxMaterial *material) {
+  material->release();
+}
+
+void PScene::addGeometry(PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxTriangleMesh *relaseTriangleMesh) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
   PxTriangleMeshGeometry geometry(triangleMesh, scaleObject);
@@ -533,16 +561,12 @@ void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, fl
   mesh->userData = (void *)id;
   scene->addActor(*mesh);
   actors.push_back(mesh);
-
-  if (writeStream) {
-    delete writeStream;
+ 
+  if (relaseTriangleMesh != nullptr) {
+    relaseTriangleMesh->release();
   }
 }
-void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
-  PxDefaultMemoryInputData readBuffer(data, length);
-  PxConvexMesh *convexMesh = physics->createConvexMesh(readBuffer);
-
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxConvexMesh *releaseConvexMesh) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
   PxConvexMeshGeometry geometry(convexMesh, scaleObject);
@@ -551,8 +575,8 @@ void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *positi
   scene->addActor(*mesh);
   actors.push_back(mesh);
 
-  if (writeStream) {
-    delete writeStream;
+  if (releaseConvexMesh != nullptr) {
+    releaseConvexMesh->release();
   }
 }
 void PScene::enableActor(unsigned int id) {
