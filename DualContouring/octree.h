@@ -3,9 +3,16 @@
 
 #include "qef.h"
 #include "mesh.h"
-
+#include <iostream>
+#include <vector>
+#include <functional>
+#include <algorithm>
+#include <stdint.h>
+#include <unordered_map>
 #include "../glm/glm.hpp"
+
 using namespace glm;
+using namespace std;
 
 enum OctreeNodeType
 {
@@ -13,6 +20,7 @@ enum OctreeNodeType
     Node_Internal,
     Node_Psuedo,
     Node_Leaf,
+    Node_Lod
 };
 
 struct OctreeDrawInfo
@@ -57,8 +65,15 @@ public:
     OctreeDrawInfo *drawInfo;
 };
 
-OctreeNode *BuildOctree(const ivec3 &min, const int size, const float threshold);
-void DestroyOctree(OctreeNode *node);
-void GenerateMeshFromOctree(OctreeNode *node, PositionBuffer &positionBuffer,NormalBuffer &normalBuffer, IndexBuffer &indexBuffer);
+OctreeNode *constructOctreeUpwards(
+    OctreeNode *octree,
+    const std::vector<OctreeNode *> &inputNodes,
+    const glm::ivec3 &rootMin,
+    const int rootNodeSize);
+vector<OctreeNode *> findSeamNodes(OctreeNode *root, OctreeNode *(*getOctreeRoot)(ivec3));
+
+OctreeNode *buildOctree(const ivec3 &min, const int size, const float threshold);
+void destroyOctree(OctreeNode *node);
+void generateMeshFromOctree(OctreeNode *node, PositionBuffer &positionBuffer, NormalBuffer &normalBuffer, IndexBuffer &indexBuffer);
 
 #endif // OCTREE_H

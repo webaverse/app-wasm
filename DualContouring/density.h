@@ -2,7 +2,8 @@
 #define DENSITY_H
 
 #include "../glm/glm.hpp"
+using namespace glm;
 
-float Density_Func(const glm::vec3 &worldPosition);
+float Density_Func(const vec3 &worldPosition);
 
 #endif //	DENSITY_H
