@@ -257,11 +257,11 @@ EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, flo
   return marchingCubes(dims, potential, shift, scale);
 }
 
-EMSCRIPTEN_KEEPALIVE int *createChunk(float x, float y, float z){
+EMSCRIPTEN_KEEPALIVE int *createChunkWithDualContouring(float x, float y, float z){
     return DualContouring::createChunk(x,y,z);
 }
 
-EMSCRIPTEN_KEEPALIVE int *createSeams(float x, float y, float z){
+EMSCRIPTEN_KEEPALIVE int *createSeamsWithDualContouring(float x, float y, float z){
     return DualContouring::createSeam(x,y,z);
 }
 
