@@ -554,6 +554,7 @@ void PScene::addGeometry(uint8_t *data, unsigned int length, float *position, fl
     delete writeStream;
   }
 }
+
 void PScene::addConvexGeometry(uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   PxDefaultMemoryInputData readBuffer(data, length);
   PxConvexMesh *convexMesh = physics->createConvexMesh(readBuffer);
@@ -735,6 +736,63 @@ void PScene::setTransform(unsigned int id, float *positions, float *quaternions,
     actor->setGlobalPose(transform, autoWake);
   } else {
     std::cerr << "set transform unknown actor id " << id << std::endl;
+  }
+}
+void PScene::setGeometryScale(unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    PxShape *shape;
+    actor->getShapes(&shape, 1);
+
+    if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+
+      PxGeometryHolder geometryHolder = shape->getGeometry();
+      PxGeometryType::Enum geometryType = geometryHolder.getType();
+      switch (geometryType) {
+        case PxGeometryType::Enum::eBOX: {
+          PxBoxGeometry &geometry = geometryHolder.box();
+          geometry.halfExtents = PxVec3( scale[0], scale[1], scale[2] ) / 2;
+          shape->setGeometry( geometryHolder.any() );
+          break;
+        }
+        case PxGeometryType::Enum::eCAPSULE: {
+          PxCapsuleGeometry &geometry = geometryHolder.capsule();
+          geometry.radius = (std::max)( (std::max)( scale[0], scale[1] ), scale[2] ) / 2;
+          shape->setGeometry( geometryHolder.any() );
+          break;
+        }
+        case PxGeometryType::Enum::eCONVEXMESH: {
+          PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
+          geometry.scale.scale = PxVec3( scale[0], scale[1], scale[2] );
+          shape->setGeometry( geometryHolder.any() );
+          break;
+        }
+        case PxGeometryType::Enum::eTRIANGLEMESH: {
+          geometryHolder.triangleMesh().triangleMesh->acquireReference();
+          geometryHolder.triangleMesh().scale.scale = PxVec3( scale[0], scale[1], scale[2] );
+          shape->setGeometry( geometryHolder.any() );
+          geometryHolder.triangleMesh().triangleMesh->release();
+          break;
+        }
+        case PxGeometryType::Enum::eINVALID:
+        case PxGeometryType::Enum::eSPHERE:
+        case PxGeometryType::Enum::ePLANE:
+        case PxGeometryType::Enum::eHEIGHTFIELD:
+        case PxGeometryType::Enum::eGEOMETRY_COUNT: {
+          break;
+        }
+      }
+
+    }
+
+  }
+
+  if (writeStream) {
+    delete writeStream;
   }
 }
 void PScene::getGlobalPosition(unsigned int id, float *positions) {

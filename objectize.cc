@@ -135,6 +135,9 @@ EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positi
 EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, float *mat, PxDefaultMemoryOutputStream *writeStream) {
   scene->addGeometry(data, length, position, quaternion, scale, id, mat, writeStream);
 }
+EMSCRIPTEN_KEEPALIVE void setGeometryScalePhysics(PScene *scene, unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream) {
+  scene->setGeometryScale(id, scale, writeStream);
+}
 EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, uint8_t *data, unsigned int length, float *position, float *quaternion, float *scale, unsigned int id, PxDefaultMemoryOutputStream *writeStream) {
   scene->addConvexGeometry(data, length, position, quaternion, scale, id, writeStream);
 }
