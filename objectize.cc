@@ -28,8 +28,8 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
-EMSCRIPTEN_KEEPALIVE PxD6Joint *addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1) {
-  return scene->addJoint(id1, id2, position1, position2, quaternion1, quaternion2, fixBody1);
+EMSCRIPTEN_KEEPALIVE PxD6Joint *addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
+  return scene->addJoint(id1, id2, position1, position2, quaternion1, quaternion2);
 }
 EMSCRIPTEN_KEEPALIVE void setJointMotionPhysics(PScene *scene, PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion) {
   return scene->setJointMotion(joint, axis, motion);
@@ -40,11 +40,11 @@ EMSCRIPTEN_KEEPALIVE void setJointTwistLimitPhysics(PScene *scene, PxD6Joint *jo
 EMSCRIPTEN_KEEPALIVE void setJointSwingLimitPhysics(PScene *scene, PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist = -1.0f) {
   return scene->setJointSwingLimit(joint, yLimitAngle, zLimitAngle, contactDist);
 }
-EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhyscis(PScene *scene, PxRigidBody *body, float shapeDensities) {
-  return scene->updateMassAndInertia(body, shapeDensities);
+EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhysics(PScene *scene, unsigned int id, float shapeDensities) {
+  return scene->updateMassAndInertia(id, shapeDensities);
 }
-EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, PxRigidBody *body) {
-  return scene->getBodyMass(body);
+EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
+  return scene->getBodyMass(id);
 }
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
@@ -121,7 +121,7 @@ EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *positi
   scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, mat, id, dynamic, flags);
 }
 
-EMSCRIPTEN_KEEPALIVE PxRigidActor *addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
+EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, unsigned int dynamic, int groupId) {
   return scene->addBoxGeometry(position, quaternion, size, id, dynamic, groupId);
 }
 
