@@ -77,12 +77,12 @@ public:
   PScene();
   ~PScene();
 
-  PxD6Joint *addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1);
+  PxD6Joint *addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2);
   void setJointMotion(PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion);
   void setJointTwistLimit(PxD6Joint *joint, float lowerLimit, float upperLimit, float contactDist = -1.0f);
   void setJointSwingLimit(PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist = -1.0f);
-  bool updateMassAndInertia(PxRigidBody *body, float shapeDensities);
-  float getBodyMass(PxRigidBody *body);
+  bool updateMassAndInertia(unsigned int id, float shapeDensities);
+  float getBodyMass(unsigned int id);
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
   void raycast(float *origin, float *direction, float maxDist, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex);
   void sweepBox(
@@ -108,8 +108,8 @@ public:
   void getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id);
   
   void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int flags);
-  PxRigidActor *addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId);
-  
+  void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId);
+
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   
@@ -137,13 +137,14 @@ public:
   void disableGeometryQueries(unsigned int id);
   void enableGeometryQueries(unsigned int id);
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale, bool autoWake);
+  void setGeometryScale(unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream);
   void getGlobalPosition(unsigned int id, float *position);
   void getVelocity(unsigned int id, float *velocity);
   void setVelocity(unsigned int id, float *velocity, bool autoWake);
   void setAngularVel(unsigned int id, float *velocity, bool autoWake);
   void setLinearLockFlags(unsigned int id, bool x, bool y, bool z);
   void setAngularLockFlags(unsigned int id, bool x, bool y, bool z);
-  PxController *createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat, unsigned int id);
+  PxController *createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, PxMaterial *material, unsigned int id);
   void destroyCharacterController(PxController *characterController);
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);

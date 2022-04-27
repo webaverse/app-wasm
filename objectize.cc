@@ -28,8 +28,8 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
-EMSCRIPTEN_KEEPALIVE PxD6Joint *addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1) {
-  return scene->addJoint(id1, id2, position1, position2, quaternion1, quaternion2, fixBody1);
+EMSCRIPTEN_KEEPALIVE PxD6Joint *addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
+  return scene->addJoint(id1, id2, position1, position2, quaternion1, quaternion2);
 }
 EMSCRIPTEN_KEEPALIVE void setJointMotionPhysics(PScene *scene, PxD6Joint *joint, PxD6Axis::Enum axis, PxD6Motion::Enum motion) {
   return scene->setJointMotion(joint, axis, motion);
@@ -40,11 +40,11 @@ EMSCRIPTEN_KEEPALIVE void setJointTwistLimitPhysics(PScene *scene, PxD6Joint *jo
 EMSCRIPTEN_KEEPALIVE void setJointSwingLimitPhysics(PScene *scene, PxD6Joint *joint, float yLimitAngle, float zLimitAngle, float contactDist = -1.0f) {
   return scene->setJointSwingLimit(joint, yLimitAngle, zLimitAngle, contactDist);
 }
-EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhyscis(PScene *scene, PxRigidBody *body, float shapeDensities) {
-  return scene->updateMassAndInertia(body, shapeDensities);
+EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhysics(PScene *scene, unsigned int id, float shapeDensities) {
+  return scene->updateMassAndInertia(id, shapeDensities);
 }
-EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, PxRigidBody *body) {
-  return scene->getBodyMass(body);
+EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
+  return scene->getBodyMass(id);
 }
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
@@ -117,12 +117,12 @@ EMSCRIPTEN_KEEPALIVE void collideCapsulePhysics(PScene *scene, float radius, flo
 EMSCRIPTEN_KEEPALIVE void getCollisionObjectPhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int *hit, unsigned int *id) {
   scene->getCollisionObject(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, *hit, *id);
 }
-EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, PxMaterial *material, unsigned int id, unsigned int dynamic, unsigned int flags) {
+EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int flags) {
   scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, id, material, dynamic, flags);
 }
 
-EMSCRIPTEN_KEEPALIVE PxRigidActor *addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
-  return scene->addBoxGeometry(position, quaternion, size, id, material, dynamic, groupId);
+EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
+  scene->addBoxGeometry(position, quaternion, size, id, material, dynamic, groupId);
 }
 
 EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
@@ -132,28 +132,36 @@ EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positi
   scene->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
 
-EMSCRIPTEN_KEEPALIVE PxTriangleMesh *createShape(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
+EMSCRIPTEN_KEEPALIVE PxTriangleMesh *createShapePhysics(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
   return scene->createShape(data, length, releaseWriteStream);
 }
-EMSCRIPTEN_KEEPALIVE void destroyShape(PScene *scene, PxTriangleMesh *triangleMesh) {
+EMSCRIPTEN_KEEPALIVE void destroyShapePhysics(PScene *scene, PxTriangleMesh *triangleMesh) {
   scene->destroyShape(triangleMesh);
 }
 
-EMSCRIPTEN_KEEPALIVE PxConvexMesh *createConvexShape(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
+EMSCRIPTEN_KEEPALIVE PxConvexMesh *createConvexShapePhysics(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
   return scene->createConvexShape(data, length, releaseWriteStream);
 }
-EMSCRIPTEN_KEEPALIVE void destroyConvexShape(PScene *scene, PxConvexMesh *convexMesh) {
+EMSCRIPTEN_KEEPALIVE void destroyConvexShapePhysics(PScene *scene, PxConvexMesh *convexMesh) {
   scene->destroyConvexShape(convexMesh);
 }
 
-EMSCRIPTEN_KEEPALIVE PxMaterial *createMaterial(PScene *scene, float *mat);
-EMSCRIPTEN_KEEPALIVE void destroyMaterial(PScene *scene, PxMaterial *material);
+EMSCRIPTEN_KEEPALIVE PxMaterial *createMaterialPhysics(PScene *scene, float *mat) {
+  return scene->createMaterial(mat);
+}
+EMSCRIPTEN_KEEPALIVE void destroyMaterialPhysics(PScene *scene, PxMaterial *material) {
+  scene->destroyMaterial(material);
+}
 
 EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxTriangleMesh *releaseTriangleMesh) {
   scene->addGeometry(triangleMesh, position, quaternion, scale, id, material, releaseTriangleMesh);
 }
 EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxConvexMesh *releaseConvexMesh) {
   scene->addConvexGeometry(convexMesh, position, quaternion, scale, id, material, releaseConvexMesh);
+}
+
+EMSCRIPTEN_KEEPALIVE void setGeometryScalePhysics(PScene *scene, unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream) {
+  scene->setGeometryScale(id, scale, writeStream);
 }
 
 EMSCRIPTEN_KEEPALIVE bool getGeometryPhysics(PScene *scene, unsigned int id, float *positions, unsigned int *numPositions, unsigned int *indices, unsigned int *numIndices, float *bounds) {
@@ -211,8 +219,8 @@ EMSCRIPTEN_KEEPALIVE void setLinearLockFlagsPhysics(PScene *scene, unsigned int 
 EMSCRIPTEN_KEEPALIVE void setAngularLockFlagsPhysics(PScene *scene, unsigned int id, bool x, bool y, bool z) {
   scene->setAngularLockFlags(id, x, y, z);
 }
-EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float stepOffset, float *position, float *mat, unsigned int id) {
-  return scene->createCharacterController(radius, height, contactOffset, stepOffset, position, mat, id);
+EMSCRIPTEN_KEEPALIVE PxController *createCharacterControllerPhysics(PScene *scene, float radius, float height, float contactOffset, float stepOffset, float *position, PxMaterial *material, unsigned int id) {
+  return scene->createCharacterController(radius, height, contactOffset, stepOffset, position, material, id);
 }
 EMSCRIPTEN_KEEPALIVE void destroyCharacterControllerPhysics(PScene *scene, PxController *characterController) {
   scene->destroyCharacterController(characterController);
@@ -274,8 +282,12 @@ EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, flo
   return marchingCubes(dims, potential, shift, scale);
 }
 
-EMSCRIPTEN_KEEPALIVE int *doDualContouring(){
-    return DualContouring::createChunk();
+EMSCRIPTEN_KEEPALIVE int *createChunkWithDualContouring(float x, float y, float z){
+    return DualContouring::createChunk(x,y,z);
+}
+
+EMSCRIPTEN_KEEPALIVE int *createSeamsWithDualContouring(float x, float y, float z){
+    return DualContouring::createSeam(x,y,z);
 }
 
 } // extern "C"

@@ -208,7 +208,7 @@ PScene::~PScene() {
   abort();
 }
 
-PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2, bool fixBody1 = false) {
+PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
   PxRigidActor *actor1;
   PxRigidActor *actor2;
   PxRigidDynamic *body1;
@@ -236,16 +236,16 @@ PxD6Joint *PScene::addJoint(unsigned int id1, unsigned int id2, float *position1
     std::cerr << "add joint unknown actor id b" << id2 << std::endl;
   }
 
-  if (fixBody1) {
-    body1->setRigidDynamicLockFlags(
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
-      PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
-      PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
-    );
-  }
+  // if (fixBody1) {
+  //   body1->setRigidDynamicLockFlags(
+  //     PxRigidDynamicLockFlag::eLOCK_LINEAR_X | 
+  //     PxRigidDynamicLockFlag::eLOCK_LINEAR_Y | 
+  //     PxRigidDynamicLockFlag::eLOCK_LINEAR_Z | 
+  //     PxRigidDynamicLockFlag::eLOCK_ANGULAR_X | 
+  //     PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y |
+  //     PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z
+  //   );
+  // }
 
   PxTransform transform1(
     PxVec3{position1[0], position1[1], position1[2]},
@@ -277,12 +277,30 @@ void PScene::setJointSwingLimit(PxD6Joint *joint, float yLimitAngle, float zLimi
   joint->setSwingLimit(physx::PxJointLimitCone(yLimitAngle, zLimitAngle, contactDist));
 }
 
-bool PScene::updateMassAndInertia(PxRigidBody *body, float shapeDensities) {
-  return PxRigidBodyExt::updateMassAndInertia(*body, shapeDensities);
+bool PScene::updateMassAndInertia(unsigned int id, float shapeDensities) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    return PxRigidBodyExt::updateMassAndInertia(*(dynamic_cast<PxRigidBody *>(actor)), shapeDensities);
+  } else {
+    std::cerr << "updateMassAndInertia unknown actor id " << id << std::endl;
+    return false;
+  }
 }
 
-float PScene::getBodyMass(PxRigidBody *body) {
-  return body->getMass();
+float PScene::getBodyMass(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    return (dynamic_cast<PxRigidBody *>(actor))->getMass();
+  } else {
+    std::cerr << "updateMassAndInertia unknown actor id " << id << std::endl;
+    return -1;
+  }
 }
 
 unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *stateBitfields, unsigned int numIds, float elapsedTime, float *velocities) {
@@ -424,7 +442,7 @@ void PScene::addCapsuleGeometry(
   actors.push_back(actor);
 }
 
-PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
+void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxBoxGeometry geometry(size[0], size[1], size[2]);
   
@@ -457,8 +475,6 @@ PxRigidActor *PScene::addBoxGeometry(float *position, float *quaternion, float *
   actor->userData = (void *)id;
   scene->addActor(*actor);
   actors.push_back(actor);
-
-  return actor;
 }
 
 void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
@@ -745,6 +761,63 @@ void PScene::setTransform(unsigned int id, float *positions, float *quaternions,
     std::cerr << "set transform unknown actor id " << id << std::endl;
   }
 }
+void PScene::setGeometryScale(unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+    PxShape *shape;
+    actor->getShapes(&shape, 1);
+
+    if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+
+      PxGeometryHolder geometryHolder = shape->getGeometry();
+      PxGeometryType::Enum geometryType = geometryHolder.getType();
+      switch (geometryType) {
+        case PxGeometryType::Enum::eBOX: {
+          PxBoxGeometry &geometry = geometryHolder.box();
+          geometry.halfExtents = PxVec3( scale[0], scale[1], scale[2] ) / 2;
+          shape->setGeometry( geometryHolder.any() );
+          break;
+        }
+        case PxGeometryType::Enum::eCAPSULE: {
+          PxCapsuleGeometry &geometry = geometryHolder.capsule();
+          geometry.radius = (std::max)( (std::max)( scale[0], scale[1] ), scale[2] ) / 2;
+          shape->setGeometry( geometryHolder.any() );
+          break;
+        }
+        case PxGeometryType::Enum::eCONVEXMESH: {
+          PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
+          geometry.scale.scale = PxVec3( scale[0], scale[1], scale[2] );
+          shape->setGeometry( geometryHolder.any() );
+          break;
+        }
+        case PxGeometryType::Enum::eTRIANGLEMESH: {
+          geometryHolder.triangleMesh().triangleMesh->acquireReference();
+          geometryHolder.triangleMesh().scale.scale = PxVec3( scale[0], scale[1], scale[2] );
+          shape->setGeometry( geometryHolder.any() );
+          geometryHolder.triangleMesh().triangleMesh->release();
+          break;
+        }
+        case PxGeometryType::Enum::eINVALID:
+        case PxGeometryType::Enum::eSPHERE:
+        case PxGeometryType::Enum::ePLANE:
+        case PxGeometryType::Enum::eHEIGHTFIELD:
+        case PxGeometryType::Enum::eGEOMETRY_COUNT: {
+          break;
+        }
+      }
+
+    }
+
+  }
+
+  if (writeStream) {
+    delete writeStream;
+  }
+}
 void PScene::getGlobalPosition(unsigned int id, float *positions) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;
@@ -925,7 +998,7 @@ void PScene::removeGeometry(unsigned int id) {
     std::cerr << "remove unknown actor id " << id << std::endl;
   }
 }
-PxController *PScene::createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, float *mat, unsigned int id) {
+PxController *PScene::createCharacterController(float radius, float height, float contactOffset, float stepOffset, float *position, PxMaterial *material, unsigned int id) {
   PxCapsuleControllerDesc desc{};
   desc.radius = radius;
   desc.height = height;
@@ -933,7 +1006,7 @@ PxController *PScene::createCharacterController(float radius, float height, floa
   desc.contactOffset = contactOffset;
   desc.stepOffset = stepOffset;
   // desc.climbingMode = PxCapsuleClimbingMode::eCONSTRAINED;
-  desc.material = physics->createMaterial(mat[0], mat[1], mat[2]);
+  desc.material = material;
   PxController *characterController = controllerManager->createController(desc);
   characterController->setPosition(PxExtendedVec3{position[0], position[1], position[2]});
 
