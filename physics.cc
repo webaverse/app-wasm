@@ -1553,13 +1553,7 @@ void PScene::sweepBox(
   unsigned int *objectId,
   unsigned int *faceIndex
 ) {
-  std::cout << "sweep box 1 " <<
-    origin[0] << " " << origin[1] << " " << origin[2] << ", " <<
-    quaternion[0] << " " << quaternion[1] << " " << quaternion[2] << " " << quaternion[3] << ", " <<
-    halfExtents[0] << " " << halfExtents[1] << " " << halfExtents[2] << ", " <<
-    direction[0] << " " << direction[1] << " " << direction[2] << ", " <<
-    sweepDistance << ", " <<
-    maxHits << std::endl;
+  numHits = 0;
 
   PxSweepBufferN<16> hitBuffer;              // [out] Sweep results
   // PxSweepCallback hitCallback;
@@ -1572,11 +1566,7 @@ void PScene::sweepBox(
   PxHitFlags hitFlags = PxHitFlag::ePOSITION|PxHitFlag::eNORMAL;
   // PxQueryFilterData filterData; // (PxQueryFlag::eSTATIC);
   bool status = scene->sweep(sweepShape, initialPose, sweepDirection, sweepDistance, hitBuffer, hitFlags);
-
   if (status) {
-    std::cout << "sweep box 2 " <<
-      hitBuffer.getNbAnyHits() << std::endl;
-
     numHits = std::min(hitBuffer.getNbAnyHits(), maxHits);
     for (unsigned int i = 0; i < numHits; i++) {
       const PxSweepHit &hitInfo = hitBuffer.getAnyHit(i);
@@ -1592,8 +1582,6 @@ void PScene::sweepBox(
       objectId[i] = actor != nullptr ? (unsigned int)actor->userData : 0;
       faceIndex[i] = hitInfo.faceIndex;
     }
-  } else {
-    numHits = 0;
   }
 }
 
