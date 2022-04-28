@@ -76,25 +76,35 @@ EMSCRIPTEN_KEEPALIVE void sweepBox(
   float *halfExtents,
   float *direction,
   float sweepDistance,
-  unsigned int *hit,
+  unsigned int maxHits,
+  unsigned int *numHits,
   float *position,
   float *normal,
   float *distance,
   unsigned int *objectId,
   unsigned int *faceIndex
 ) {
+  std::cout << "objectize sweep box 1 " <<
+    origin[0] << " " << origin[1] << " " << origin[2] << ", " <<
+    quaternion[0] << " " << quaternion[1] << " " << quaternion[2] << " " << quaternion[3] << ", " <<
+    halfExtents[0] << " " << halfExtents[1] << " " << halfExtents[2] << ", " <<
+    direction[0] << " " << direction[1] << " " << direction[2] << ", " <<
+    sweepDistance << ", " <<
+    maxHits << std::endl;
+    
   scene->sweepBox(
     origin,
     quaternion,
     halfExtents,
     direction,
     sweepDistance,
-    *hit,
+    maxHits,
+    *numHits,
     position,
     normal,
-    *distance,
-    *objectId,
-    *faceIndex
+    distance,
+    objectId,
+    faceIndex
   );
 }
 
