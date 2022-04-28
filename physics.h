@@ -91,12 +91,13 @@ public:
     float *halfExtents,
     float *direction,
     float sweepDistance,
-    unsigned int &hit,
+    unsigned int maxHits,
+    unsigned int &numHits,
     float *position,
     float *normal,
-    float &distance,
-    unsigned int &objectId,
-    unsigned int &faceIndex
+    float *distance,
+    unsigned int *objectId,
+    unsigned int *faceIndex
   );
   float *getPath(float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
   float *overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);

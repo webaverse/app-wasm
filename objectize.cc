@@ -76,7 +76,8 @@ EMSCRIPTEN_KEEPALIVE void sweepBox(
   float *halfExtents,
   float *direction,
   float sweepDistance,
-  unsigned int *hit,
+  unsigned int maxHits,
+  unsigned int *numHits,
   float *position,
   float *normal,
   float *distance,
@@ -89,12 +90,13 @@ EMSCRIPTEN_KEEPALIVE void sweepBox(
     halfExtents,
     direction,
     sweepDistance,
-    *hit,
+    maxHits,
+    *numHits,
     position,
     normal,
-    *distance,
-    *objectId,
-    *faceIndex
+    distance,
+    objectId,
+    faceIndex
   );
 }
 
