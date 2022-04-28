@@ -126,7 +126,14 @@ public:
   void setTransform(unsigned int id, float *position, float *quaternion, float *scale, bool autoWake);
   void setGeometryScale(unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream);
   void getGlobalPosition(unsigned int id, float *position);
-  void getVelocity(unsigned int id, float *velocity);
+  void getLinearVelocity(unsigned int id, float *velocity);
+  void getAngularVelocity(unsigned int id, float *velocity);
+  void addForceAtPos(unsigned int id, float *velocity, float *position, bool autoWake);
+  void addForceAtLocalPos(unsigned int id, float *velocity, float *position, bool autoWake);
+  void addLocalForceAtLocalPos(unsigned int id, float *velocity, float *position, bool autoWake);
+  void addLocalForceAtPos(unsigned int id, float *velocity, float *position, bool autoWake);
+  void addForce(unsigned int id, float *velocity, bool autoWake);
+  void addTorque(unsigned int id, float *velocity, bool autoWake);
   void setVelocity(unsigned int id, float *velocity, bool autoWake);
   void setAngularVel(unsigned int id, float *velocity, bool autoWake);
   void setLinearLockFlags(unsigned int id, bool x, bool y, bool z);
