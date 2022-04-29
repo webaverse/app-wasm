@@ -1539,6 +1539,7 @@ void PScene::raycast(
   }
 }
 
+constexpr size_t hitBufferSize = 256;
 void PScene::sweepBox(
   float *origin,
   float *quaternion,
@@ -1555,7 +1556,7 @@ void PScene::sweepBox(
 ) {
   numHits = 0;
 
-  PxSweepBufferN<16> hitBuffer;              // [out] Sweep results
+  PxSweepBufferN<hitBufferSize> hitBuffer;              // [out] Sweep results
   // PxSweepCallback hitCallback;
   PxBoxGeometry sweepShape(halfExtents[0], halfExtents[1], halfExtents[2]); // [in] swept shape
   PxTransform initialPose(
