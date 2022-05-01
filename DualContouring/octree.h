@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <stdint.h>
 #include <unordered_map>
+#include <unordered_set>
 #include "../glm/glm.hpp"
 
 using namespace glm;
@@ -19,8 +20,15 @@ enum OctreeNodeType
     Node_None,
     Node_Internal,
     Node_Psuedo,
-    Node_Leaf,
-    Node_Lod
+    Node_Leaf
+};
+
+enum LodLevel
+{
+    Lod0 = 1,
+    Lod1 = 2,
+    Lod2 = 4,
+    Lod3 = 8
 };
 
 struct OctreeDrawInfo
@@ -65,14 +73,18 @@ public:
     OctreeDrawInfo *drawInfo;
 };
 
+OctreeNode *getOctreeRootFromHashMap(ivec3 octreeMin, unordered_map<uint64_t, OctreeNode *> &hashMap);
+void addOctreeRootToHashMap(OctreeNode *root, unordered_map<uint64_t, OctreeNode *> &hashMap);
+uint64_t hashOctreeMin(const ivec3 &min);
+
+vector<OctreeNode *> findSeamNodes(OctreeNode *root, unordered_map<uint64_t, OctreeNode *> hashMap, OctreeNode *(*getOctreeRootFromHashMap)(ivec3, unordered_map<uint64_t, OctreeNode *> &));
 OctreeNode *constructOctreeUpwards(
     OctreeNode *octree,
     const std::vector<OctreeNode *> &inputNodes,
     const glm::ivec3 &rootMin,
     const int rootNodeSize);
-vector<OctreeNode *> findSeamNodes(OctreeNode *root, OctreeNode *(*getOctreeRoot)(ivec3));
 
-OctreeNode *buildOctree(const ivec3 &min, const int size, const float threshold);
+OctreeNode *constructOctreeDownwards(const vec3 &min, LodLevel lod, const int size);
 void destroyOctree(OctreeNode *node);
 void generateMeshFromOctree(OctreeNode *node, PositionBuffer &positionBuffer, NormalBuffer &normalBuffer, IndexBuffer &indexBuffer);
 

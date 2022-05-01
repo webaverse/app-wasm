@@ -18,8 +18,7 @@ namespace DualContouring
     // public:
     //     vec3 getMin();
     // };
-    OctreeNode *createOctree(vec3 origin, int octreeSize = 64);
-    int *createChunk(float x, float y, float z);
+    int *createChunk(float x, float y, float z, const float lod, int octreeSize = 64);
     int *createSeam(float x, float y, float z);
 };
 

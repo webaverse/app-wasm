@@ -69,7 +69,7 @@ const int edgeProcEdgeMask[3][2][5] = {
 
 const int processEdgeMask[3][4] = {{3, 2, 1, 0}, {7, 5, 6, 4}, {11, 10, 9, 8}};
 
-OctreeNode *SimplifyOctree(OctreeNode *node, float threshold)
+OctreeNode *setLod(OctreeNode *node, LodLevel lod)
 {
 	if (!node)
 	{
@@ -90,7 +90,7 @@ OctreeNode *SimplifyOctree(OctreeNode *node, float threshold)
 
 	for (int i = 0; i < 8; i++)
 	{
-		node->children[i] = SimplifyOctree(node->children[i], threshold);
+		node->children[i] = setLod(node->children[i], lod);
 		if (node->children[i])
 		{
 			OctreeNode *child = node->children[i];
@@ -124,9 +124,8 @@ OctreeNode *SimplifyOctree(OctreeNode *node, float threshold)
 	vec3 position(qefPosition.x, qefPosition.y, qefPosition.z);
 
 	// at this point the masspoint will actually be a sum, so divide to make it the average
-	if (error > threshold)
+	if (node->size > lod)
 	{
-		// this collapse breaches the threshold
 		return node;
 	}
 
@@ -178,96 +177,119 @@ OctreeNode *SimplifyOctree(OctreeNode *node, float threshold)
 		node->children[i] = nullptr;
 	}
 
-	node->type = Node_Psuedo;
+	node->type = Node_Leaf;
 	node->drawInfo = drawInfo;
+
+	// cout << node << endl;
 
 	return node;
 }
 
-uint64_t HashOctreeMin(const ivec3& min)
+const ivec3 chunkMinForPosition(const ivec3 &p)
+{
+	const unsigned int mask = ~((1 << 2) * 64 - 1);
+	return ivec3(p.x & mask, p.y & mask, p.z & mask);
+}
+
+OctreeNode *getOctreeRootFromHashMap(ivec3 octreeMin, unordered_map<uint64_t, OctreeNode *> &hashMap)
+{
+	const uint64_t rootIndex = hashOctreeMin(octreeMin);
+	auto iter = hashMap.find(rootIndex);
+	if (iter == end(hashMap))
+	{
+		// Did not found the octree
+		return nullptr;
+	}
+	else
+	{
+		// Found the octree
+		return iter->second;
+	}
+}
+
+void addOctreeRootToHashMap(OctreeNode *root, unordered_map<uint64_t, OctreeNode *> &hashMap)
+{
+	const uint64_t rootIndex = hashOctreeMin(root->min);
+	hashMap.insert(pair<uint64_t, OctreeNode *>(rootIndex, root));
+}
+
+uint64_t hashOctreeMin(const ivec3 &min)
 {
 	return min.x | ((uint64_t)min.y << 20) | ((uint64_t)min.z << 40);
 }
 
-std::vector<OctreeNode*> ConstructParents(
-	OctreeNode* octree,
-	const std::vector<OctreeNode*>& nodes, 
-	const int parentSize, 
-	const ivec3& rootMin
-	)
+vector<OctreeNode *> constructParents(
+	OctreeNode *octree,
+	const vector<OctreeNode *> &nodes,
+	const int parentSize,
+	const ivec3 &rootMin)
 {
-	std::unordered_map<uint64_t, OctreeNode*> parentsHashmap;
+	unordered_map<uint64_t, OctreeNode *> parentsHashmap;
 
-	std::for_each(begin(nodes), end(nodes), [&](OctreeNode* node)
-	{
-		// because the octree is regular we can calculate the parent min
-		const ivec3 localPos = (node->min - rootMin);
-		const ivec3 parentPos = node->min - (localPos % parentSize);
-		
-		const uint64_t parentIndex = HashOctreeMin(parentPos - rootMin);
-		OctreeNode* parentNode = nullptr;
+	for_each(begin(nodes), end(nodes), [&](OctreeNode *node)
+			 {
+				 // because the octree is regular we can calculate the parent min
+				 const ivec3 localPos = (node->min - rootMin);
+				 const ivec3 parentPos = node->min - (localPos % parentSize);
 
-		auto iter =  parentsHashmap.find(parentIndex);
-		if (iter == end(parentsHashmap))
-		{
-			parentNode = new OctreeNode;
-			parentNode->type = Node_Internal;
-			parentNode->min = parentPos;
-			parentNode->size = parentSize;
+				 const uint64_t parentIndex = hashOctreeMin(parentPos - rootMin);
+				 OctreeNode *parentNode = nullptr;
 
-			parentsHashmap.insert(std::pair<uint64_t, OctreeNode*>(parentIndex, parentNode));
-		}
-		else
-		{
-			parentNode = iter->second;
-		}
+				 auto iter = parentsHashmap.find(parentIndex);
+				 if (iter == end(parentsHashmap))
+				 {
+					 parentNode = new OctreeNode;
+					 parentNode->type = Node_Internal;
+					 parentNode->min = parentPos;
+					 parentNode->size = parentSize;
 
-		bool foundParentNode = false;
-		for (int i = 0; i < 8; i++)
-		{
-			const ivec3 childPos = parentPos + ((parentSize / 2) * CHILD_MIN_OFFSETS[i]);
-			if (childPos == node->min)
-			{
-//				LVN_ALWAYS_ASSERT("Duplicate node", parentNode->children[i] == nullptr);
-				parentNode->children[i] = node;
-				foundParentNode = true;
-				break;
-			}
-		}
+					 parentsHashmap.insert(pair<uint64_t, OctreeNode *>(parentIndex, parentNode));
+				 }
+				 else
+				 {
+					 parentNode = iter->second;
+				 }
 
-	});
+				 bool foundParentNode = false;
+				 for (int i = 0; i < 8; i++)
+				 {
+					 const ivec3 childPos = parentPos + ((parentSize / 2) * CHILD_MIN_OFFSETS[i]);
+					 if (childPos == node->min)
+					 {
+						 parentNode->children[i] = node;
+						 foundParentNode = true;
+						 break;
+					 }
+				 } });
 
-	std::vector<OctreeNode*> parents;
-	std::for_each(begin(parentsHashmap), end(parentsHashmap), [&](std::pair<uint64_t, OctreeNode*> pair)
-	{
-		parents.push_back(pair.second);
-	});
+	vector<OctreeNode *> parents;
+	for_each(begin(parentsHashmap), end(parentsHashmap), [&](pair<uint64_t, OctreeNode *> pair)
+			 { parents.push_back(pair.second); });
 
 	return parents;
 }
 
-OctreeNode* constructOctreeUpwards(
-	OctreeNode* octree,
-	const std::vector<OctreeNode*>& inputNodes, 
-	const ivec3& rootMin,
-	const int rootNodeSize
-	)
+OctreeNode *constructOctreeUpwards(
+	OctreeNode *octree,
+	const vector<OctreeNode *> &inputNodes,
+	const ivec3 &rootMin,
+	const int rootNodeSize)
 {
 	if (inputNodes.empty())
 	{
 		return nullptr;
 	}
 
-	std::vector<OctreeNode*> nodes(begin(inputNodes), end(inputNodes));
-	std::sort(begin(nodes), end(nodes), 
-		[](OctreeNode*& lhs, OctreeNode*& rhs)
-		{
-			return lhs->size < rhs->size;
-		});
+	vector<OctreeNode *> nodes(begin(inputNodes), end(inputNodes));
+	sort(begin(nodes), end(nodes),
+		 [](OctreeNode *&lhs, OctreeNode *&rhs)
+		 {
+			 return lhs->size < rhs->size;
+		 });
 
 	// the input nodes may be different sizes if a seam octree is being constructed
 	// in that case we need to process the input nodes in stages along with the newly
-	// constructed parent nodes until the all the nodes have the same size
+	// constructed parent nodes until all the nodes have the same size
 	while (nodes.front()->size != nodes.back()->size)
 	{
 		// find the end of this run
@@ -279,48 +301,48 @@ OctreeNode* constructOctreeUpwards(
 		} while ((*iter)->size == size);
 
 		// construct the new parent nodes for this run
-		std::vector<OctreeNode*> newNodes(begin(nodes), iter);
-		newNodes = ConstructParents(octree, newNodes, size * 2, rootMin);
+		vector<OctreeNode *> newNodes(begin(nodes), iter);
+		newNodes = constructParents(octree, newNodes, size * 2, rootMin);
 
 		// set up for the next iteration: the parents produced plus any remaining input nodes
 		newNodes.insert(end(newNodes), iter, end(nodes));
-		std::swap(nodes, newNodes);
+		swap(nodes, newNodes);
 	}
 
 	int parentSize = nodes.front()->size * 2;
 	while (parentSize <= rootNodeSize)
 	{
-		nodes = ConstructParents(octree, nodes, parentSize, rootMin);
+		nodes = constructParents(octree, nodes, parentSize, rootMin);
 		parentSize *= 2;
 	}
-	OctreeNode* root = nodes.front();
+	OctreeNode *root = nodes.front();
 
 	return root;
 }
 
-
-void GenerateVertexIndices(OctreeNode *node, PositionBuffer &positionBuffer, NormalBuffer &normalBuffer)
+void generateVertexIndices(OctreeNode *node, PositionBuffer &positionBuffer, NormalBuffer &normalBuffer)
 {
 	if (!node)
 	{
 		return;
 	}
 
-	if (node->type != Node_Leaf)
+	if (node->type == Node_Internal)
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			GenerateVertexIndices(node->children[i], positionBuffer, normalBuffer);
+			generateVertexIndices(node->children[i], positionBuffer, normalBuffer);
 		}
 	}
-
-	if (node->type != Node_Internal)
+	else
 	{
 		OctreeDrawInfo *d = node->drawInfo;
+		// cout << node->size << endl;
 		if (!d)
 		{
 			printf("Error! Could not add vertex!\n");
-			exit(EXIT_FAILURE);
+			// exit(EXIT_FAILURE);
+			return;
 		}
 
 		d->index = positionBuffer.size();
@@ -329,7 +351,7 @@ void GenerateVertexIndices(OctreeNode *node, PositionBuffer &positionBuffer, Nor
 	}
 }
 
-void ContourProcessEdge(OctreeNode *node[4], int dir, IndexBuffer &indexBuffer)
+void contourProcessEdge(OctreeNode *node[4], int dir, IndexBuffer &indexBuffer)
 {
 	int minSize = 1000000; // arbitrary big number
 	int minIndex = 0;
@@ -385,19 +407,36 @@ void ContourProcessEdge(OctreeNode *node[4], int dir, IndexBuffer &indexBuffer)
 	}
 }
 
-void ContourEdgeProc(OctreeNode *node[4], int dir, IndexBuffer &indexBuffer)
+void contourEdgeProc(OctreeNode *node[4], int dir, IndexBuffer &indexBuffer)
 {
 	if (!node[0] || !node[1] || !node[2] || !node[3])
 	{
 		return;
 	}
 
-	if (node[0]->type != Node_Internal &&
-		node[1]->type != Node_Internal &&
-		node[2]->type != Node_Internal &&
-		node[3]->type != Node_Internal)
+	// unordered_map<uint64_t, ivec3> chunks;
+	// for (int i = 0; i < 4; i++)
+	// {
+	// 	const uint64_t chunkIndex = hashOctreeMin(chunkMinForPosition(node[i]->min));
+	// 	chunks.insert(pair<uint64_t, ivec3>(chunkIndex, chunkMinForPosition(node[i]->min)));
+	// }
+
+	// if (chunks.size() == 1)
+	// {
+	// 	return;
+	// }
+
+	const bool isBranch[4] =
+		{
+			node[0]->type == Node_Internal,
+			node[1]->type == Node_Internal,
+			node[2]->type == Node_Internal,
+			node[3]->type == Node_Internal,
+		};
+
+	if (!isBranch[0] && !isBranch[1] && !isBranch[2] && !isBranch[3])
 	{
-		ContourProcessEdge(node, dir, indexBuffer);
+		contourProcessEdge(node, dir, indexBuffer);
 	}
 	else
 	{
@@ -414,7 +453,7 @@ void ContourEdgeProc(OctreeNode *node[4], int dir, IndexBuffer &indexBuffer)
 
 			for (int j = 0; j < 4; j++)
 			{
-				if (node[j]->type == Node_Leaf || node[j]->type == Node_Psuedo)
+				if (!isBranch[j])
 				{
 					edgeNodes[j] = node[j];
 				}
@@ -424,20 +463,30 @@ void ContourEdgeProc(OctreeNode *node[4], int dir, IndexBuffer &indexBuffer)
 				}
 			}
 
-			ContourEdgeProc(edgeNodes, edgeProcEdgeMask[dir][i][4], indexBuffer);
+			contourEdgeProc(edgeNodes, edgeProcEdgeMask[dir][i][4], indexBuffer);
 		}
 	}
 }
 
-void ContourFaceProc(OctreeNode *node[2], int dir, IndexBuffer &indexBuffer)
+void contourFaceProc(OctreeNode *node[2], int dir, IndexBuffer &indexBuffer)
 {
 	if (!node[0] || !node[1])
 	{
 		return;
 	}
 
-	if (node[0]->type == Node_Internal ||
-		node[1]->type == Node_Internal)
+	// if (chunkMinForPosition(node[0]->min) == chunkMinForPosition(node[1]->min))
+	// {
+	// 	return;
+	// }
+
+	const bool isBranch[2] =
+		{
+			node[0]->type == Node_Internal,
+			node[1]->type == Node_Internal,
+		};
+
+	if (isBranch[0] || isBranch[1])
 	{
 		for (int i = 0; i < 4; i++)
 		{
@@ -450,7 +499,7 @@ void ContourFaceProc(OctreeNode *node[2], int dir, IndexBuffer &indexBuffer)
 
 			for (int j = 0; j < 2; j++)
 			{
-				if (node[j]->type != Node_Internal)
+				if (!isBranch[j])
 				{
 					faceNodes[j] = node[j];
 				}
@@ -460,7 +509,7 @@ void ContourFaceProc(OctreeNode *node[2], int dir, IndexBuffer &indexBuffer)
 				}
 			}
 
-			ContourFaceProc(faceNodes, faceProcFaceMask[dir][i][2], indexBuffer);
+			contourFaceProc(faceNodes, faceProcFaceMask[dir][i][2], indexBuffer);
 		}
 
 		const int orders[2][4] =
@@ -482,8 +531,7 @@ void ContourFaceProc(OctreeNode *node[2], int dir, IndexBuffer &indexBuffer)
 			const int *order = orders[faceProcEdgeMask[dir][i][0]];
 			for (int j = 0; j < 4; j++)
 			{
-				if (node[order[j]]->type == Node_Leaf ||
-					node[order[j]]->type == Node_Psuedo)
+				if (!isBranch[order[j]])
 				{
 					edgeNodes[j] = node[order[j]];
 				}
@@ -493,58 +541,55 @@ void ContourFaceProc(OctreeNode *node[2], int dir, IndexBuffer &indexBuffer)
 				}
 			}
 
-			ContourEdgeProc(edgeNodes, faceProcEdgeMask[dir][i][5], indexBuffer);
+			contourEdgeProc(edgeNodes, faceProcEdgeMask[dir][i][5], indexBuffer);
 		}
 	}
 }
 
-void ContourCellProc(OctreeNode *node, IndexBuffer &indexBuffer)
+void contourCellProc(OctreeNode *node, IndexBuffer &indexBuffer)
 {
-	if (node == NULL)
+	if (node == NULL || node->type == Node_Leaf)
 	{
 		return;
 	}
 
-	if (node->type == Node_Internal)
+	for (int i = 0; i < 8; i++)
 	{
-		for (int i = 0; i < 8; i++)
-		{
-			ContourCellProc(node->children[i], indexBuffer);
-		}
+		contourCellProc(node->children[i], indexBuffer);
+	}
 
-		for (int i = 0; i < 12; i++)
-		{
-			OctreeNode *faceNodes[2];
-			const int c[2] = {cellProcFaceMask[i][0], cellProcFaceMask[i][1]};
+	for (int i = 0; i < 12; i++)
+	{
+		OctreeNode *faceNodes[2];
+		const int c[2] = {cellProcFaceMask[i][0], cellProcFaceMask[i][1]};
 
-			faceNodes[0] = node->children[c[0]];
-			faceNodes[1] = node->children[c[1]];
+		faceNodes[0] = node->children[c[0]];
+		faceNodes[1] = node->children[c[1]];
 
-			ContourFaceProc(faceNodes, cellProcFaceMask[i][2], indexBuffer);
-		}
+		contourFaceProc(faceNodes, cellProcFaceMask[i][2], indexBuffer);
+	}
 
-		for (int i = 0; i < 6; i++)
-		{
-			OctreeNode *edgeNodes[4];
-			const int c[4] =
-				{
-					cellProcEdgeMask[i][0],
-					cellProcEdgeMask[i][1],
-					cellProcEdgeMask[i][2],
-					cellProcEdgeMask[i][3],
-				};
-
-			for (int j = 0; j < 4; j++)
+	for (int i = 0; i < 6; i++)
+	{
+		OctreeNode *edgeNodes[4];
+		const int c[4] =
 			{
-				edgeNodes[j] = node->children[c[j]];
-			}
+				cellProcEdgeMask[i][0],
+				cellProcEdgeMask[i][1],
+				cellProcEdgeMask[i][2],
+				cellProcEdgeMask[i][3],
+			};
 
-			ContourEdgeProc(edgeNodes, cellProcEdgeMask[i][4], indexBuffer);
+		for (int j = 0; j < 4; j++)
+		{
+			edgeNodes[j] = node->children[c[j]];
 		}
+
+		contourEdgeProc(edgeNodes, cellProcEdgeMask[i][4], indexBuffer);
 	}
 }
 
-vec3 ApproximateZeroCrossingPosition(const vec3 &p0, const vec3 &p1)
+vec3 approximateZeroCrossingPosition(const vec3 &p0, const vec3 &p1)
 {
 	// approximate the zero crossing by finding the min value along the edge
 	float minValue = 100000.f;
@@ -568,7 +613,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3 &p0, const vec3 &p1)
 	return p0 + ((p1 - p0) * t);
 }
 
-vec3 CalculateSurfaceNormal(const vec3 &p)
+vec3 calculateSurfaceNormal(const vec3 &p)
 {
 	const float H = 0.001f;
 	const float dx = Density_Func(p + vec3(H, 0.f, 0.f)) - Density_Func(p - vec3(H, 0.f, 0.f));
@@ -578,9 +623,9 @@ vec3 CalculateSurfaceNormal(const vec3 &p)
 	return normalize(vec3(dx, dy, dz));
 }
 
-OctreeNode *ConstructLeaf(OctreeNode *leaf)
+OctreeNode *constructLeaf(OctreeNode *leaf)
 {
-	if (!leaf || leaf->size != 1)
+	if (!leaf)
 	{
 		return nullptr;
 	}
@@ -624,8 +669,8 @@ OctreeNode *ConstructLeaf(OctreeNode *leaf)
 
 		const vec3 p1 = vec3(leaf->min + CHILD_MIN_OFFSETS[c1]);
 		const vec3 p2 = vec3(leaf->min + CHILD_MIN_OFFSETS[c2]);
-		const vec3 p = ApproximateZeroCrossingPosition(p1, p2);
-		const vec3 n = CalculateSurfaceNormal(p);
+		const vec3 p = approximateZeroCrossingPosition(p1, p2);
+		const vec3 n = calculateSurfaceNormal(p);
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 
 		averageNormal += n;
@@ -659,7 +704,7 @@ OctreeNode *ConstructLeaf(OctreeNode *leaf)
 	return leaf;
 }
 
-typedef std::function<bool(const ivec3 &, const ivec3 &)> FilterNodesFunc;
+typedef function<bool(const ivec3 &, const ivec3 &)> FilterNodesFunc;
 
 void findOctreeNodes(OctreeNode *node, FilterNodesFunc &func, vector<OctreeNode *> &nodes)
 {
@@ -691,7 +736,7 @@ vector<OctreeNode *> findNodes(OctreeNode *root, FilterNodesFunc filterFunc)
 	findOctreeNodes(root, filterFunc, nodes);
 	return nodes;
 }
-vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, OctreeNode* (*getOctreeRoot)(ivec3))
+vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, unordered_map<uint64_t, OctreeNode *> hashMap, OctreeNode* (*getOctreeRootFromHashMap)(ivec3, unordered_map<uint64_t, OctreeNode *>&))
 {
 	const ivec3 baseChunkMin = ivec3(targetRoot->min);
 	const ivec3 seamValues = baseChunkMin + ivec3(targetRoot->size);
@@ -741,7 +786,7 @@ vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, OctreeNode* (*getOctr
 	{
 		const ivec3 offsetMin = OFFSETS[i] * targetRoot->size;
 		const ivec3 chunkMin = baseChunkMin + offsetMin;
-		if (OctreeNode *c = getOctreeRoot(chunkMin))
+		if (OctreeNode *c = getOctreeRootFromHashMap(chunkMin, hashMap))
 		{
 			vector<OctreeNode *> chunkNodes = findNodes(c, selectionFuncs[i]);
 			seamNodes.insert(end(seamNodes), begin(chunkNodes), end(chunkNodes));
@@ -751,7 +796,7 @@ vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, OctreeNode* (*getOctr
 	return seamNodes;
 }
 
-OctreeNode *ConstructOctreeNodes(OctreeNode *node)
+OctreeNode *constructOctreeNodes(OctreeNode *node)
 {
 	if (!node)
 	{
@@ -760,7 +805,7 @@ OctreeNode *ConstructOctreeNodes(OctreeNode *node)
 
 	if (node->size == 1)
 	{
-		return ConstructLeaf(node);
+		return constructLeaf(node);
 	}
 
 	const int childSize = node->size / 2;
@@ -773,7 +818,7 @@ OctreeNode *ConstructOctreeNodes(OctreeNode *node)
 		child->min = node->min + (CHILD_MIN_OFFSETS[i] * childSize);
 		child->type = Node_Internal;
 
-		node->children[i] = ConstructOctreeNodes(child);
+		node->children[i] = constructOctreeNodes(child);
 		hasChildren |= (node->children[i] != nullptr);
 	}
 
@@ -786,15 +831,15 @@ OctreeNode *ConstructOctreeNodes(OctreeNode *node)
 	return node;
 }
 
-OctreeNode *buildOctree(const ivec3 &min, const int size, const float threshold)
+OctreeNode *constructOctreeDownwards(const vec3 &min, LodLevel lod, const int size)
 {
 	OctreeNode *root = new OctreeNode;
 	root->min = min;
 	root->size = size;
 	root->type = Node_Internal;
 
-	ConstructOctreeNodes(root);
-	root = SimplifyOctree(root, threshold);
+	constructOctreeNodes(root);
+	root = setLod(root, lod);
 
 	return root;
 }
@@ -810,8 +855,8 @@ void generateMeshFromOctree(OctreeNode *node, PositionBuffer &positionBuffer, No
 	normalBuffer.clear();
 	indexBuffer.clear();
 
-	GenerateVertexIndices(node, positionBuffer, normalBuffer);
-	ContourCellProc(node, indexBuffer);
+	generateVertexIndices(node, positionBuffer, normalBuffer);
+	contourCellProc(node, indexBuffer);
 }
 
 void destroyOctree(OctreeNode *node)
