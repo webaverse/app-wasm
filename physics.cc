@@ -1557,15 +1557,61 @@ void PScene::sweepBox(
   numHits = 0;
 
   PxSweepBufferN<hitBufferSize> hitBuffer;              // [out] Sweep results
-  // PxSweepCallback hitCallback;
   PxBoxGeometry sweepShape(halfExtents[0], halfExtents[1], halfExtents[2]); // [in] swept shape
   PxTransform initialPose(
     PxVec3{origin[0], origin[1], origin[2]},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
   );
   PxVec3 sweepDirection{direction[0], direction[1], direction[2]}; // [in] normalized sweep direction
-  PxHitFlags hitFlags = PxHitFlag::ePOSITION|PxHitFlag::eNORMAL;
+  PxHitFlags hitFlags; // = PxHitFlag::ePOSITION|PxHitFlag::eNORMAL;
   PxQueryFilterData filterData; // (PxQueryFlag::eSTATIC);
+  bool status = scene->sweep(sweepShape, initialPose, sweepDirection, sweepDistance, hitBuffer, hitFlags, filterData);
+  if (status) {
+    numHits = std::min(hitBuffer.getNbAnyHits(), maxHits);
+    for (unsigned int i = 0; i < numHits; i++) {
+      const PxSweepHit &hitInfo = hitBuffer.getAnyHit(i);
+      PxRigidActor *actor = hitInfo.actor;
+
+      position[i*3 + 0] = hitInfo.position.x;
+      position[i*3 + 1] = hitInfo.position.y;
+      position[i*3 + 2] = hitInfo.position.z;
+      normal[i*3 + 0] = hitInfo.normal.x;
+      normal[i*3 + 1] = hitInfo.normal.y;
+      normal[i*3 + 2] = hitInfo.normal.z;
+      distance[i] = hitInfo.distance;
+      objectId[i] = actor != nullptr ? (unsigned int)actor->userData : 0;
+      faceIndex[i] = hitInfo.faceIndex;
+    }
+  }
+}
+
+void PScene::sweepConvexShape(
+  PxConvexMesh *convexMesh,
+  float *origin,
+  float *quaternion,
+  float *direction,
+  float sweepDistance,
+  unsigned int maxHits,
+  unsigned int &numHits,
+  float *position,
+  float *normal,
+  float *distance,
+  unsigned int *objectId,
+  unsigned int *faceIndex
+) {
+  numHits = 0;
+
+  PxSweepBufferN<hitBufferSize> hitBuffer;              // [out] Sweep results
+  PxMeshScale scaleObject;
+  PxConvexMeshGeometry sweepShape(convexMesh, scaleObject); // [in] swept shape
+  PxTransform initialPose(
+    PxVec3{origin[0], origin[1], origin[2]},
+    PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
+  );
+  PxVec3 sweepDirection{direction[0], direction[1], direction[2]}; // [in] normalized sweep direction
+  PxHitFlags hitFlags; // = PxHitFlag::ePOSITION|PxHitFlag::eNORMAL;
+  PxQueryFilterData filterData; // (PxQueryFlag::eSTATIC);
+  filterData.flags |= PxQueryFlag::eNO_BLOCK;
   bool status = scene->sweep(sweepShape, initialPose, sweepDirection, sweepDistance, hitBuffer, hitFlags, filterData);
   if (status) {
     numHits = std::min(hitBuffer.getNbAnyHits(), maxHits);
