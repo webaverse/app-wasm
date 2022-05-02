@@ -1611,7 +1611,7 @@ void PScene::sweepConvexShape(
   PxVec3 sweepDirection{direction[0], direction[1], direction[2]}; // [in] normalized sweep direction
   PxHitFlags hitFlags; // = PxHitFlag::ePOSITION|PxHitFlag::eNORMAL;
   PxQueryFilterData filterData; // (PxQueryFlag::eSTATIC);
-  filterData.flags |= PxQueryFlag::eNO_BLOCK;
+  // filterData.flags |= PxQueryFlag::eNO_BLOCK;
   bool status = scene->sweep(sweepShape, initialPose, sweepDirection, sweepDistance, hitBuffer, hitFlags, filterData);
   if (status) {
     numHits = std::min(hitBuffer.getNbAnyHits(), maxHits);
