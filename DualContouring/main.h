@@ -19,7 +19,7 @@ namespace DualContouring
     //     vec3 getMin();
     // };
     int *createChunk(float x, float y, float z, const float lod, int octreeSize = 64);
-    int *createSeam(float x, float y, float z);
+    int *createSeam(float x, float y, float z, int octreeSize = 64);
 };
 
 #endif // MAIN_H

@@ -215,7 +215,10 @@ void addOctreeRootToHashMap(OctreeNode *root, unordered_map<uint64_t, OctreeNode
 
 uint64_t hashOctreeMin(const ivec3 &min)
 {
-	return min.x | ((uint64_t)min.y << 20) | ((uint64_t)min.z << 40);
+	uint64_t result = uint16_t(min.x);
+	result = (result << 16) + uint16_t(min.y);
+	result = (result << 16) + uint16_t(min.z);
+	return result;
 }
 
 vector<OctreeNode *> constructParents(
@@ -736,7 +739,7 @@ vector<OctreeNode *> findNodes(OctreeNode *root, FilterNodesFunc filterFunc)
 	findOctreeNodes(root, filterFunc, nodes);
 	return nodes;
 }
-vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, unordered_map<uint64_t, OctreeNode *> hashMap, OctreeNode* (*getOctreeRootFromHashMap)(ivec3, unordered_map<uint64_t, OctreeNode *>&))
+vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, unordered_map<uint64_t, OctreeNode *> hashMap, OctreeNode *(*getOctreeRootFromHashMap)(ivec3, unordered_map<uint64_t, OctreeNode *> &))
 {
 	const ivec3 baseChunkMin = ivec3(targetRoot->min);
 	const ivec3 seamValues = baseChunkMin + ivec3(targetRoot->size);

@@ -79,13 +79,17 @@ namespace DualContouring
         return getOutputBuffer(positions, normals, indices);
     }
 
-    int *createSeam(float x, float y, float z)
+    int *createSeam(float x, float y, float z, int octreeSize)
     {
         PositionBuffer positions;
         NormalBuffer normals;
         IndexBuffer indices;
 
-        OctreeNode *root = getOctreeRootFromHashMap(-64 / 2 + ivec3(x, y, z), rootsListHashMap);
+        OctreeNode *root = getOctreeRootFromHashMap(ivec3(-octreeSize / 2) + ivec3(x, y, z), rootsListHashMap);
+        if (root == nullptr)
+        {
+            return getOutputBuffer(positions, normals, indices);
+        }
 
         vector<OctreeNode *> seamNodes = findSeamNodes(root, rootsListHashMap, getOctreeRootFromHashMap);
 
