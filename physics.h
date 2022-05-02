@@ -99,6 +99,20 @@ public:
     unsigned int *objectId,
     unsigned int *faceIndex
   );
+  void sweepConvexShape(
+    PxConvexMesh *convexMesh,
+    float *origin,
+    float *quaternion,
+    float *direction,
+    float sweepDistance,
+    unsigned int maxHits,
+    unsigned int &numHits,
+    float *position,
+    float *normal,
+    float *distance,
+    unsigned int *objectId,
+    unsigned int *faceIndex
+  );
   float *getPath(float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
   float *overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
   float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
