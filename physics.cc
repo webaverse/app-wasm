@@ -1799,6 +1799,8 @@ void PScene::collideCapsule(float radius, float halfHeight, float *position, flo
 }
 
 void PScene::getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
+  hit = 0;
+  
   PxCapsuleGeometry geom(radius, halfHeight);
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
