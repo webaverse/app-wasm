@@ -582,11 +582,17 @@ void PScene::addGeometry(PxTriangleMesh *triangleMesh, float *position, float *q
     relaseTriangleMesh->release();
   }
 }
-void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxConvexMesh *releaseConvexMesh) {
+void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, PxConvexMesh *releaseConvexMesh) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
   PxConvexMeshGeometry geometry(convexMesh, scaleObject);
-  PxRigidDynamic *mesh = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+
+  PxRigidActor *mesh;
+  if (dynamic) {
+    mesh = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  } else {
+    mesh = PxCreateStatic(*physics, transform, geometry, *material);
+  }
   mesh->userData = (void *)id;
   scene->addActor(*mesh);
   actors.push_back(mesh);
