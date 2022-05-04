@@ -1287,60 +1287,45 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
 
           return true;
         }
+        // extract the PhysX geometry out of a (PxConvexMesh *) and return it in the positions/index buffer
         case PxGeometryType::Enum::eCONVEXMESH: {
-          // std::cout << "physics type 2" << std::endl;
-
           PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
           PxConvexMesh *convexMesh = geometry.convexMesh;
-          const PxVec3 *convexVerts = convexMesh->getVertices();
-          // unsigned int numVertices = convexMesh->getNbVertices();
-          unsigned int nbPolygons = convexMesh->getNbPolygons();
-          const unsigned char *indexBuffer = convexMesh->getIndexBuffer();
 
-          PxU32 totalNbTris = 0;
-          PxU32 totalNbVerts = 0;
-          for(PxU32 i = 0; i < nbPolygons; i++) {
-            PxHullPolygon data;
-            convexMesh->getPolygonData(i, data);
-            totalNbVerts += data.mNbVerts;
-            totalNbTris += data.mNbVerts - 2;
-          }
+          PxU32 nbVerts = convexMesh->getNbVertices();
+          const PxVec3* convexVerts = convexMesh->getVertices();
+          const PxU8* indexBuffer = convexMesh->getIndexBuffer();
 
           PxVec3 *vertices = (PxVec3 *)positions;
-          PxU32 *triangles = indices;
+          unsigned int *triangles = (unsigned int *)indices;
 
           PxU32 offset = 0;
-          for (unsigned int i = 0; i < nbPolygons; i++) {
-            PxHullPolygon face;
-            convexMesh->getPolygonData(i, face);
-
-            const PxU8 *faceIndices = indexBuffer + face.mIndexBase;
-            for (PxU32 j = 0; j < face.mNbVerts; j++) {
-              vertices[offset+j] = convexVerts[faceIndices[j]];
-            }
-
-            for (PxU32 j = 2; j < face.mNbVerts; j++) {
-              triangles[numIndices++] = PxU32(offset);
-              triangles[numIndices++] = PxU32(offset+j);
-              triangles[numIndices++] = PxU32(offset+j-1);
-            }
-
-            offset += face.mNbVerts;
-          }
-          numPositions = offset;
-
+          PxU32 nbPolygons = convexMesh->getNbPolygons();
+          for(PxU32 i=0;i<nbPolygons;i++)
           {
-            PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
-            PxTransform actorPose = actor->getGlobalPose();
-            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
-            bounds[0] = actorBounds.minimum.x;
-            bounds[1] = actorBounds.minimum.y;
-            bounds[2] = actorBounds.minimum.z;
-            bounds[3] = actorBounds.maximum.x;
-            bounds[4] = actorBounds.maximum.y;
-            bounds[5] = actorBounds.maximum.z;
-          }
+              PxHullPolygon face;
+              bool status = convexMesh->getPolygonData(i, face);
+              PX_ASSERT(status);
 
+              const PxU8* faceIndices = indexBuffer + face.mIndexBase;
+              for(PxU32 j=0;j<face.mNbVerts;j++)
+              {
+                  vertices[offset+j] = convexVerts[faceIndices[j]];
+                  numPositions += 3;
+                  // normals[offset+j] = PxVec3(face.mPlane[0], face.mPlane[1], face.mPlane[2]);
+              }
+
+              for(PxU32 j=2;j<face.mNbVerts;j++)
+              {
+                  *triangles++ = PxU16(offset);
+                  *triangles++ = PxU16(offset+j);
+                  *triangles++ = PxU16(offset+j-1);
+                  numIndices += 3;
+              }
+
+              offset += face.mNbVerts;
+          }
+          
           return true;
         }
         case PxGeometryType::Enum::eTRIANGLEMESH: {
