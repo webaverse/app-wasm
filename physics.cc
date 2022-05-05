@@ -1311,7 +1311,7 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
           {
               PxHullPolygon face;
               bool status = convexMesh->getPolygonData(i, face);
-              PX_ASSERT(status);
+              // PX_ASSERT(status);
 
               const PxU8* faceIndices = indexBuffer + face.mIndexBase;
               for(PxU32 j=0;j<face.mNbVerts;j++)
