@@ -1324,8 +1324,8 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
               for(PxU32 j=2;j<face.mNbVerts;j++)
               {
                   *triangles++ = PxU16(offset);
-                  *triangles++ = PxU16(offset+j);
                   *triangles++ = PxU16(offset+j-1);
+                  *triangles++ = PxU16(offset+j);
                   numIndices += 3;
               }
 
