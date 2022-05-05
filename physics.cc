@@ -1331,6 +1331,16 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
 
               offset += face.mNbVerts;
           }
+
+          {
+            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actor->getGlobalPose(), 1.0f);
+            bounds[0] = actorBounds.minimum.x;
+            bounds[1] = actorBounds.minimum.y;
+            bounds[2] = actorBounds.minimum.z;
+            bounds[3] = actorBounds.maximum.x;
+            bounds[4] = actorBounds.maximum.y;
+            bounds[5] = actorBounds.maximum.z;
+          }
           
           return true;
         }
