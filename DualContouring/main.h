@@ -18,8 +18,10 @@ namespace DualContouring
     // public:
     //     vec3 getMin();
     // };
-    int *createChunk(float x, float y, float z, const float lod, int octreeSize = 64);
-    int *createSeam(float x, float y, float z, int octreeSize = 64);
+    void destroyUselessOctrees();
+    void generateChunkData(float x, float y, float z);
+    void setChunkLod(float x, float y, float z, const float lod);
+    int *generateChunkMesh(float x, float y, float z);
 };
 
 #endif // MAIN_H

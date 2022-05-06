@@ -305,12 +305,20 @@ EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, flo
   return marchingCubes(dims, potential, shift, scale);
 }
 
-EMSCRIPTEN_KEEPALIVE int *createChunkWithDualContouring(float x, float y, float z, int lod){
-    return DualContouring::createChunk(x, y, z, lod);
+EMSCRIPTEN_KEEPALIVE void generateChunkDataWithDualContouring(float x, float y, float z){
+    return DualContouring::generateChunkData(x, y, z);
 }
 
-EMSCRIPTEN_KEEPALIVE int *createSeamsWithDualContouring(float x, float y, float z){
-    return DualContouring::createSeam(x, y, z);
+EMSCRIPTEN_KEEPALIVE void setChunkLodWithDualContouring(float x, float y, float z, float lod){
+    return DualContouring::setChunkLod(x, y, z, lod);
+}
+
+EMSCRIPTEN_KEEPALIVE int *generateChunkMeshWithDualContouring(float x, float y, float z){
+    return DualContouring::generateChunkMesh(x, y, z);
+}
+
+EMSCRIPTEN_KEEPALIVE void destroyUselessOctreesDualContouring(){
+    return DualContouring::destroyUselessOctrees();
 }
 
 } // extern "C"

@@ -1,6 +1,18 @@
 {
     "files.associations": {
         "iostream": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "ostream": "cpp",
+        "utility": "cpp",
+        "regex": "cpp",
+        "array": "cpp",
+        "xmemory": "cpp",
+        "algorithm": "cpp",
+        "xutility": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "random": "cpp"
     }
 }
