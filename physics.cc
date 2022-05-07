@@ -569,9 +569,15 @@ void PScene::destroyMaterial(PxMaterial *material) {
   material->release();
 }
 
-void PScene::addGeometry(PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxTriangleMesh *relaseTriangleMesh) {
+void PScene::addGeometry(PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int external, PxTriangleMesh *relaseTriangleMesh) {
+  // have acquire and unacquire arg here to avoid the memory leak
+  // the argument can be called "external" because it is not owned by the scene
+  
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
+  if (external != 0) {
+    triangleMesh->acquireReference();
+  }
   PxTriangleMeshGeometry geometry(triangleMesh, scaleObject);
   PxRigidStatic *mesh = PxCreateStatic(*physics, transform, geometry, *material);
   mesh->userData = (void *)id;
@@ -582,9 +588,12 @@ void PScene::addGeometry(PxTriangleMesh *triangleMesh, float *position, float *q
     relaseTriangleMesh->release();
   }
 }
-void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, PxConvexMesh *releaseConvexMesh) {
+void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxConvexMesh *releaseConvexMesh) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
+  if (external != 0) {
+    convexMesh->acquireReference();
+  }
   PxConvexMeshGeometry geometry(convexMesh, scaleObject);
 
   PxRigidActor *mesh;
