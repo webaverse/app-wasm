@@ -144,10 +144,14 @@ float *cut(
   unsigned int *faces,
   unsigned int numFaces,
 
-  float *position,
-  float *quaternion,
-  float *scale
+  float *planeNormal,
+  float planeDistance
 ) {
+
+  planeNormalX = planeNormal[0];
+  planeNormalY = planeNormal[1];
+  planeNormalZ = planeNormal[2];
+  planeConstant = planeDistance;
 
   unsigned int *indices = faces;
 
