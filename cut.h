@@ -15,5 +15,7 @@ float *cut(
   unsigned int numFaces,
 
   float *planeNormal,
-  float planeDistance
+  float planeDistance,
+  
+  bool isIndexed
 );
