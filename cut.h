@@ -14,7 +14,8 @@ float *cut(
   unsigned int *faces,
   unsigned int numFaces,
 
-  float *position,
-  float *quaternion,
-  float *scale
+  float *planeNormal,
+  float planeDistance,
+  
+  bool isIndexed
 );

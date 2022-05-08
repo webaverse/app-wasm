@@ -294,9 +294,10 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
   unsigned int *faces,
   unsigned int numFaces,
 
-  float *position,
-  float *quaternion,
-  float *scale
+  float *planeNormal,
+  float planeDistance,
+
+  bool isIndexed
 ) {
   return cut(
     positions,
@@ -308,9 +309,10 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
     faces,
     numFaces,
 
-    position,
-    quaternion,
-    scale
+    planeNormal,
+    planeDistance,
+
+    isIndexed
   );
 }
 
