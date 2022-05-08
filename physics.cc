@@ -569,9 +569,15 @@ void PScene::destroyMaterial(PxMaterial *material) {
   material->release();
 }
 
-void PScene::addGeometry(PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxTriangleMesh *relaseTriangleMesh) {
+void PScene::addGeometry(PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int external, PxTriangleMesh *relaseTriangleMesh) {
+  // have acquire and unacquire arg here to avoid the memory leak
+  // the argument can be called "external" because it is not owned by the scene
+  
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
+  if (external != 0) {
+    triangleMesh->acquireReference();
+  }
   PxTriangleMeshGeometry geometry(triangleMesh, scaleObject);
   PxRigidStatic *mesh = PxCreateStatic(*physics, transform, geometry, *material);
   mesh->userData = (void *)id;
@@ -582,11 +588,20 @@ void PScene::addGeometry(PxTriangleMesh *triangleMesh, float *position, float *q
     relaseTriangleMesh->release();
   }
 }
-void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxConvexMesh *releaseConvexMesh) {
+void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxConvexMesh *releaseConvexMesh) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxMeshScale scaleObject(PxVec3(scale[0], scale[1], scale[2]));
+  if (external != 0) {
+    convexMesh->acquireReference();
+  }
   PxConvexMeshGeometry geometry(convexMesh, scaleObject);
-  PxRigidDynamic *mesh = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+
+  PxRigidActor *mesh;
+  if (dynamic) {
+    mesh = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  } else {
+    mesh = PxCreateStatic(*physics, transform, geometry, *material);
+  }
   mesh->userData = (void *)id;
   scene->addActor(*mesh);
   actors.push_back(mesh);
@@ -1287,52 +1302,47 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
 
           return true;
         }
+        // extract the PhysX geometry out of a (PxConvexMesh *) and return it in the positions/index buffer
         case PxGeometryType::Enum::eCONVEXMESH: {
-          // std::cout << "physics type 2" << std::endl;
-
           PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
           PxConvexMesh *convexMesh = geometry.convexMesh;
-          const PxVec3 *convexVerts = convexMesh->getVertices();
-          // unsigned int numVertices = convexMesh->getNbVertices();
-          unsigned int nbPolygons = convexMesh->getNbPolygons();
-          const unsigned char *indexBuffer = convexMesh->getIndexBuffer();
 
-          PxU32 totalNbTris = 0;
-          PxU32 totalNbVerts = 0;
-          for(PxU32 i = 0; i < nbPolygons; i++) {
-            PxHullPolygon data;
-            convexMesh->getPolygonData(i, data);
-            totalNbVerts += data.mNbVerts;
-            totalNbTris += data.mNbVerts - 2;
-          }
+          PxU32 nbVerts = convexMesh->getNbVertices();
+          const PxVec3* convexVerts = convexMesh->getVertices();
+          const PxU8* indexBuffer = convexMesh->getIndexBuffer();
 
           PxVec3 *vertices = (PxVec3 *)positions;
-          PxU32 *triangles = indices;
+          unsigned int *triangles = (unsigned int *)indices;
 
           PxU32 offset = 0;
-          for (unsigned int i = 0; i < nbPolygons; i++) {
-            PxHullPolygon face;
-            convexMesh->getPolygonData(i, face);
+          PxU32 nbPolygons = convexMesh->getNbPolygons();
+          for(PxU32 i=0;i<nbPolygons;i++)
+          {
+              PxHullPolygon face;
+              bool status = convexMesh->getPolygonData(i, face);
+              // PX_ASSERT(status);
 
-            const PxU8 *faceIndices = indexBuffer + face.mIndexBase;
-            for (PxU32 j = 0; j < face.mNbVerts; j++) {
-              vertices[offset+j] = convexVerts[faceIndices[j]];
-            }
+              const PxU8* faceIndices = indexBuffer + face.mIndexBase;
+              for(PxU32 j=0;j<face.mNbVerts;j++)
+              {
+                  vertices[offset+j] = convexVerts[faceIndices[j]];
+                  numPositions += 3;
+                  // normals[offset+j] = PxVec3(face.mPlane[0], face.mPlane[1], face.mPlane[2]);
+              }
 
-            for (PxU32 j = 2; j < face.mNbVerts; j++) {
-              triangles[numIndices++] = PxU32(offset);
-              triangles[numIndices++] = PxU32(offset+j);
-              triangles[numIndices++] = PxU32(offset+j-1);
-            }
+              for(PxU32 j=2;j<face.mNbVerts;j++)
+              {
+                  *triangles++ = PxU16(offset);
+                  *triangles++ = PxU16(offset+j-1);
+                  *triangles++ = PxU16(offset+j);
+                  numIndices += 3;
+              }
 
-            offset += face.mNbVerts;
+              offset += face.mNbVerts;
           }
-          numPositions = offset;
 
           {
-            PxConvexMeshGeometry &geometry = geometryHolder.convexMesh();
-            PxTransform actorPose = actor->getGlobalPose();
-            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actorPose, 1.0f);
+            PxBounds3 actorBounds = PxGeometryQuery::getWorldBounds(geometry, actor->getGlobalPose(), 1.0f);
             bounds[0] = actorBounds.minimum.x;
             bounds[1] = actorBounds.minimum.y;
             bounds[2] = actorBounds.minimum.z;
@@ -1340,7 +1350,7 @@ bool PScene::getGeometry(unsigned int id, float *positions, unsigned int &numPos
             bounds[4] = actorBounds.maximum.y;
             bounds[5] = actorBounds.maximum.z;
           }
-
+          
           return true;
         }
         case PxGeometryType::Enum::eTRIANGLEMESH: {
@@ -1611,7 +1621,7 @@ void PScene::sweepConvexShape(
   PxVec3 sweepDirection{direction[0], direction[1], direction[2]}; // [in] normalized sweep direction
   PxHitFlags hitFlags; // = PxHitFlag::ePOSITION|PxHitFlag::eNORMAL;
   PxQueryFilterData filterData; // (PxQueryFlag::eSTATIC);
-  filterData.flags |= PxQueryFlag::eNO_BLOCK;
+  // filterData.flags |= PxQueryFlag::eNO_BLOCK;
   bool status = scene->sweep(sweepShape, initialPose, sweepDirection, sweepDistance, hitBuffer, hitFlags, filterData);
   if (status) {
     numHits = std::min(hitBuffer.getNbAnyHits(), maxHits);
@@ -1799,6 +1809,8 @@ void PScene::collideCapsule(float radius, float halfHeight, float *position, flo
 }
 
 void PScene::getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
+  hit = 0;
+  
   PxCapsuleGeometry geom(radius, halfHeight);
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
