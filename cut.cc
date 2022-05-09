@@ -145,9 +145,7 @@ float *cut(
   unsigned int numFaces,
 
   float *planeNormal,
-  float planeDistance,
-  
-  bool isIndexed
+  float planeDistance
 ) {
 
   planeNormalX = planeNormal[0];
@@ -160,7 +158,7 @@ float *cut(
   float *coords = positions;
   unsigned int pointsCount = numPositions / 3;
   unsigned int facesCount;
-  if (isIndexed) {
+  if (faces != nullptr) {
     facesCount = numFaces / 3;
   } else {
     facesCount = numPositions / 3 / 3;
@@ -179,7 +177,7 @@ float *cut(
       unsigned int va;
       unsigned int vb;
       unsigned int vc;
-    if (isIndexed) {
+    if (faces != nullptr) {
       va = getVertexIndex(i, 0, indices);
       vb = getVertexIndex(i, 1, indices);
       vc = getVertexIndex(i, 2, indices);
