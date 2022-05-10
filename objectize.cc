@@ -295,9 +295,7 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
   unsigned int numFaces,
 
   float *planeNormal,
-  float planeDistance,
-
-  bool isIndexed
+  float planeDistance
 ) {
   return cut(
     positions,
@@ -310,9 +308,7 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
     numFaces,
 
     planeNormal,
-    planeDistance,
-
-    isIndexed
+    planeDistance
   );
 }
 
