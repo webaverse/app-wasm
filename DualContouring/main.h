@@ -8,9 +8,6 @@
 #include "../glm/glm.hpp"
 #include "octree.h"
 
-using namespace std;
-using namespace glm;
-
 namespace DualContouring
 {
     // class Chunk

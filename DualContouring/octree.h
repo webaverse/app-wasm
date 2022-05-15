@@ -8,12 +8,11 @@
 #include <functional>
 #include <algorithm>
 #include <stdint.h>
+#include <cstdlib>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include "../glm/glm.hpp"
-
-using namespace glm;
-using namespace std;
 
 enum OctreeNodeType
 {
@@ -40,8 +39,10 @@ struct OctreeDrawInfo
 
     int index;
     int corners;
-    vec3 position;
-    vec3 averageNormal;
+    glm::vec4 biome;
+    glm::vec4 biomeWeights;
+    glm::vec3 position;
+    glm::vec3 averageNormal;
     svd::QefData qef;
 };
 
@@ -67,28 +68,30 @@ public:
     }
 
     OctreeNodeType type;
-    ivec3 min;
+    glm::ivec3 min;
     int size;
     LodLevel lod;
     OctreeNode *children[8];
     OctreeDrawInfo *drawInfo;
 };
 
-OctreeNode *getChunkWithLod(OctreeNode *chunkRoot);
-OctreeNode *getChunkRootFromHashMap(ivec3 octreeMin, unordered_map<uint64_t, OctreeNode *> &hashMap);
-void addChunkRootToHashMap(OctreeNode *root, unordered_map<uint64_t, OctreeNode *> &hashMap);
-uint64_t hashOctreeMin(const ivec3 &min);
+OctreeNode *createChunkWithLod(OctreeNode *chunkRoot);
+OctreeNode *getChunkRootFromHashMap(glm::ivec3 octreeMin, std::unordered_map<uint64_t, OctreeNode *> &hashMap);
+void addChunkRootToHashMap(OctreeNode *root, std::unordered_map<uint64_t, OctreeNode *> &hashMap);
+uint64_t hashOctreeMin(const glm::ivec3 &min);
 
-vector<OctreeNode *> findSeamNodes(OctreeNode *root, vector<OctreeNode *> (&neighbouringChunks), unordered_map<uint64_t, OctreeNode *> hashMap, OctreeNode *(*getChunkRootFromHashMap)(ivec3, unordered_map<uint64_t, OctreeNode *> &));
+std::vector<OctreeNode *> findSeamNodes(OctreeNode *root, std::vector<OctreeNode *>(&neighbouringChunks), std::unordered_map<uint64_t, OctreeNode *> hashMap, OctreeNode *(*getChunkRootFromHashMap)(glm::ivec3, std::unordered_map<uint64_t, OctreeNode *> &));
 OctreeNode *constructOctreeUpwards(
     OctreeNode *octree,
     const std::vector<OctreeNode *> &inputNodes,
     const glm::ivec3 &rootMin,
     const int rootNodeSize);
 
-OctreeNode *constructOctreeDownwards(const ivec3 &min, const int size);
+OctreeNode *constructOctreeDownwards(const glm::ivec3 &min, const int size);
 OctreeNode *applyLodToChunk(OctreeNode *node, LodLevel lod);
 void destroyOctree(OctreeNode *node);
-void generateMeshFromOctree(OctreeNode *node, bool isSeam, PositionBuffer &positionBuffer, NormalBuffer &normalBuffer, IndexBuffer &indexBuffer);
+void generateMeshFromOctree(OctreeNode *node, bool isSeam, VertexBuffer &vertexBuffer);
+
+void addNodesToVector(OctreeNode *node, std::vector<OctreeNode *> &vector);
 
 #endif // OCTREE_H

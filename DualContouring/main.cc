@@ -5,9 +5,9 @@ class BufferManager
 {
 private:
     // we store the pointers to each data that we want in outputBuffer
-    vector<int> outputBuffer;
+    std::vector<int> outputBuffer;
     template <typename T>
-    int *copyVectorToMemory(const vector<T> vector)
+    int *copyVectorToMemory(const std::vector<T> vector)
     {
         unsigned int size = vector.size() * sizeof(vector[0]);
         int *buffer = (int *)malloc(size);
@@ -17,13 +17,13 @@ private:
 
 public:
     template <typename T>
-    void appendVector(const vector<T> vector)
+    void appendVector(const std::vector<T> vector)
     {
         outputBuffer.push_back((intptr_t)copyVectorToMemory(vector));
     }
 
     template <typename T>
-    void appendVectorSize(const vector<T> vector)
+    void appendVectorSize(const std::vector<T> vector)
     {
         outputBuffer.push_back(vector.size());
     }
@@ -42,21 +42,27 @@ public:
 
 namespace DualContouring
 {
-    int *getOutputBuffer(PositionBuffer &positions, NormalBuffer &normals, IndexBuffer &indices)
+    int *getOutputBuffer(VertexBuffer &vertexBuffer)
     {
 
         // the order of appending data to the buffer is important,
         // we will read the data by the same order in javascript
         BufferManager bufferController;
 
-        bufferController.appendVectorSize(positions);
-        bufferController.appendVector(positions);
+        bufferController.appendVectorSize(vertexBuffer.positions);
+        bufferController.appendVector(vertexBuffer.positions);
 
-        bufferController.appendVectorSize(normals);
-        bufferController.appendVector(normals);
+        bufferController.appendVectorSize(vertexBuffer.normals);
+        bufferController.appendVector(vertexBuffer.normals);
 
-        bufferController.appendVectorSize(indices);
-        bufferController.appendVector(indices);
+        bufferController.appendVectorSize(vertexBuffer.indices);
+        bufferController.appendVector(vertexBuffer.indices);
+
+        bufferController.appendVectorSize(vertexBuffer.biomes);
+        bufferController.appendVector(vertexBuffer.biomes);
+
+        bufferController.appendVectorSize(vertexBuffer.biomesWeights);
+        bufferController.appendVector(vertexBuffer.biomesWeights);
 
         return bufferController.getOutputBuffer();
     }
@@ -65,53 +71,46 @@ namespace DualContouring
     int chunkSize = 64;
 
     // storing the octrees that we would delete after mesh construction
-    vector<OctreeNode *> destroyableNodesList;
+    std::vector<OctreeNode *> destroyableNodesList;
 
     // storing the octree roots here for search
-    unordered_map<uint64_t, OctreeNode *> chunksListHashMap;
+    std::unordered_map<uint64_t, OctreeNode *> chunksListHashMap;
 
     void generateChunkData(float x, float y, float z)
     {
-        OctreeNode *chunk = constructOctreeDownwards(ivec3(-chunkSize / 2) + ivec3(x, y, z), chunkSize);
+        const glm::ivec3 octreeMin = glm::ivec3(-chunkSize / 2) + glm::ivec3(x, y, z);
+        OctreeNode *chunk = constructOctreeDownwards(octreeMin, chunkSize);
+        if (!chunk)
+        {
+            return;
+        }
         addChunkRootToHashMap(chunk, chunksListHashMap);
     }
 
     void setChunkLod(float x, float y, float z, const float lod)
     {
-        OctreeNode *chunkRoot = getChunkRootFromHashMap(ivec3(-chunkSize / 2) + ivec3(x, y, z), chunksListHashMap);
+        const glm::ivec3 octreeMin = glm::ivec3(-chunkSize / 2) + glm::ivec3(x, y, z);
+        OctreeNode *chunkRoot = getChunkRootFromHashMap(octreeMin, chunksListHashMap);
         if (chunkRoot == nullptr)
         {
-            // cout << "NULL :/ for no reason" << endl;
+            // std::cout << "NULL :/ for no reason" << std::endl;
             return;
         }
         chunkRoot->lod = LodLevel(lod);
     }
 
-    void addNodesToVector(OctreeNode *node, vector<OctreeNode *> &vector)
-    {
-        if (!node)
-        {
-            return;
-        }
-        for (int i = 0; i < 8; i++)
-        {
-            addNodesToVector(node->children[i], vector);
-        }
-        vector.push_back(node);
-    }
-
     void destroyUselessOctrees()
     {
-        vector<OctreeNode *> nodesList;
+        std::vector<OctreeNode *> nodesList;
         // nodesList.reserve(50000);
         for (int i = 0; i < destroyableNodesList.size(); i++)
         {
             addNodesToVector(destroyableNodesList[i], nodesList);
         }
         // sort and remove duplicates
-        sort(nodesList.begin(), nodesList.end());
-        nodesList.erase(unique(nodesList.begin(), nodesList.end()), nodesList.end());
-        // cout << nodesList.size() << endl;
+        std::sort(nodesList.begin(), nodesList.end());
+        nodesList.erase(std::unique(nodesList.begin(), nodesList.end()), nodesList.end());
+        // std::cout << nodesList.size() << std::endl;
         for (int i = 0; i < nodesList.size(); i++)
         {
             const OctreeNode *node = nodesList[i];
@@ -119,8 +118,6 @@ namespace DualContouring
             {
                 delete node->drawInfo;
             }
-
-            // cout << "DELETE NODE :" << node << endl;
             delete node;
         }
         destroyableNodesList.clear();
@@ -128,28 +125,22 @@ namespace DualContouring
 
     int *generateChunkMesh(float x, float y, float z)
     {
-        PositionBuffer positions;
-        NormalBuffer normals;
-        IndexBuffer indices;
+        VertexBuffer vertexBuffer;
 
-        OctreeNode *chunkRoot = getChunkRootFromHashMap(ivec3(-chunkSize / 2) + ivec3(x, y, z), chunksListHashMap);
+        const glm::ivec3 octreeMin = glm::ivec3(-chunkSize / 2) + glm::ivec3(x, y, z);
 
-        if (chunkRoot == nullptr)
+        OctreeNode *chunkRoot = getChunkRootFromHashMap(octreeMin, chunksListHashMap);
+        if (!chunkRoot)
         {
             return nullptr;
         }
+        OctreeNode *chunkWithLod = createChunkWithLod(chunkRoot);
+        generateMeshFromOctree(chunkWithLod, false, vertexBuffer);
 
-        OctreeNode *chunkWithLod = getChunkWithLod(chunkRoot);
-
-        generateMeshFromOctree(chunkWithLod, false, positions, normals, indices);
-
-        vector<OctreeNode *> neighbouringChunks;
-
-        vector<OctreeNode *> seamNodes = findSeamNodes(chunkWithLod, neighbouringChunks, chunksListHashMap, getChunkRootFromHashMap);
-
+        std::vector<OctreeNode *> neighbouringChunks;
+        std::vector<OctreeNode *> seamNodes = findSeamNodes(chunkWithLod, neighbouringChunks, chunksListHashMap, getChunkRootFromHashMap);
         OctreeNode *seamRoot = constructOctreeUpwards(seamRoot, seamNodes, chunkWithLod->min, chunkWithLod->size * 2);
-
-        generateMeshFromOctree(seamRoot, true, positions, normals, indices);
+        generateMeshFromOctree(seamRoot, true, vertexBuffer);
 
         // deleting the chunk clone + neighbouring chunk clones
         for (int i = 0; i < neighbouringChunks.size(); i++)
@@ -161,40 +152,69 @@ namespace DualContouring
         // delete the seam octree
         destroyableNodesList.push_back(seamRoot);
 
-        return getOutputBuffer(positions, normals, indices);
+        return getOutputBuffer(vertexBuffer);
     }
 }
 
 // int main()
 // {
-//     const ivec3 OFFSETS[8] =
+//     const glm::ivec3 OFFSETS[8] =
 //         {
-//             ivec3(0, 0, 0), ivec3(1, 0, 0), ivec3(0, 0, 1), ivec3(1, 0, 1),
-//             ivec3(0, 1, 0), ivec3(1, 1, 0), ivec3(0, 1, 1), ivec3(1, 1, 1)};
+//             glm::ivec3(0, 0, 0), glm::ivec3(1, 0, 0), glm::ivec3(0, 0, 1), glm::ivec3(1, 0, 1),
+//             glm::ivec3(0, 1, 0), glm::ivec3(1, 1, 0), glm::ivec3(0, 1, 1), glm::ivec3(1, 1, 1)};
 
-//     DualContouring::generateChunkData(0, 0, 0);
-//     DualContouring::generateChunkData(0, 0, -64);
-//     // DualContouring::generateChunkData(64, 0, 0);
-//     // DualContouring::generateChunkData(-64, 0, 0);
-//     // DualContouring::generateChunkData(64, 0, -64);
+//     const int min = -((64 * 1) / 2);
+//     const int max = (64 * 1) / 2;
 
-//     DualContouring::setChunkLod(0, 0, 0, 1);
-//     DualContouring::setChunkLod(0, 0, -64, 1);
-//     // DualContouring::setChunkLod(64, 0, 0, 1);
-//     // DualContouring::setChunkLod(-64, 0, 0, 1);
-//     // DualContouring::setChunkLod(64, 0, -64, 1);
+//     for (int x = min; x < max; x += 64)
+//     {
+//         for (int y = min; y < max; y += 64)
+//         {
+//             for (int z = min; z < max; z += 64)
+//             {
+//                 std::cout << "Generating" << std::endl;
+//                 DualContouring::generateChunkData(x + 32, y + 32, z + 32);
+//             }
+//         }
+//     }
 
-//     cout << "GENERATING IS DONE\n"
-//          << endl;
+//     for (int x = min; x < max; x += 64)
+//     {
+//         for (int y = min; y < max; y += 64)
+//         {
+//             for (int z = min; z < max; z += 64)
+//             {
+//                 const int lod = abs(glm::max(glm::max(x, y), z)) / 64;
+//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, lod);
+//             }
+//         }
+//     }
 
-//     cout << "\n"
-//          << DualContouring::generateChunkMesh(0, 0, -64) << "\n\n"
-//          << endl;
+//     for (int x = min; x < max; x += 64)
+//     {
+//         for (int y = min; y < max; y += 64)
+//         {
+//             for (int z = min; z < max; z += 64)
+//             {
+//                 std::cout << "\n"
+//                           << DualContouring::generateChunkMesh(x + 32, y + 32, z + 32)
+//                           << std::endl;
+//                 DualContouring::destroyUselessOctrees();
+//             }
+//         }
+//     }
 
-//     cout << "CHUNK IS CREATED\n\n"
-//          << endl;
+//     // std::cout << "GENERATING IS DONE\n"
+//     //      << std::endl;
 
-//     DualContouring::destroyUselessOctrees();
+//     // std::cout << "\n"
+//     //      << DualContouring::generateChunkMesh(0, 0, -64) << "\n\n"
+//     //      << std::endl;
+
+//     // std::cout << "CHUNK IS CREATED\n\n"
+//     //      << std::endl;
+
+//     // DualContouring::destroyUselessOctrees();
 
 //     return 0;
 // }
