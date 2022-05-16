@@ -15,10 +15,11 @@ namespace DualContouring
     // public:
     //     vec3 getMin();
     // };
-    void destroyUselessOctrees();
+    void clearTemporaryChunkData();
+    void clearChunkRoot(float x, float y, float z);
     void generateChunkData(float x, float y, float z);
-    void setChunkLod(float x, float y, float z, const float lod);
-    int *generateChunkMesh(float x, float y, float z);
+    void setChunkLod(float x, float y, float z, const int lod);
+    int *createChunkMesh(float x, float y, float z);
 };
 
 #endif // MAIN_H

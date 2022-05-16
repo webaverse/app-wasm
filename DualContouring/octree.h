@@ -88,7 +88,7 @@ OctreeNode *constructOctreeUpwards(
     const int rootNodeSize);
 
 OctreeNode *constructOctreeDownwards(const glm::ivec3 &min, const int size);
-OctreeNode *applyLodToChunk(OctreeNode *node, LodLevel lod);
+OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod);
 void destroyOctree(OctreeNode *node);
 void generateMeshFromOctree(OctreeNode *node, bool isSeam, VertexBuffer &vertexBuffer);
 

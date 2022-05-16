@@ -102,7 +102,7 @@ glm::vec4 getBiomesWeight(glm::vec4 biome)
 	return biomesWeights;
 }
 
-OctreeNode *applyLodToChunk(OctreeNode *node, LodLevel lod)
+OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 {
 	if (!node)
 	{
@@ -123,7 +123,7 @@ OctreeNode *applyLodToChunk(OctreeNode *node, LodLevel lod)
 
 	for (int i = 0; i < 8; i++)
 	{
-		node->children[i] = applyLodToChunk(node->children[i], lod);
+		node->children[i] = switchChunkLod(node->children[i], lod);
 		if (node->children[i])
 		{
 			OctreeNode *child = node->children[i];
@@ -262,7 +262,7 @@ OctreeNode *createChunkWithLod(OctreeNode *chunkRoot)
 	// clone chunk root data
 	cloneNode(chunkRoot, chunk);
 	// apply lod to chunk clone
-	chunk = applyLodToChunk(chunk, chunkRoot->lod);
+	chunk = switchChunkLod(chunk, chunkRoot->lod);
 
 	return chunk;
 }
