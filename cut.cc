@@ -144,16 +144,25 @@ float *cut(
   unsigned int *faces,
   unsigned int numFaces,
 
-  float *position,
-  float *quaternion,
-  float *scale
+  float *planeNormal,
+  float planeDistance
 ) {
+
+  planeNormalX = planeNormal[0];
+  planeNormalY = planeNormal[1];
+  planeNormalZ = planeNormal[2];
+  planeConstant = planeDistance;
 
   unsigned int *indices = faces;
 
   float *coords = positions;
   unsigned int pointsCount = numPositions / 3;
-  unsigned int facesCount = numFaces / 3;
+  unsigned int facesCount;
+  if (faces != nullptr) {
+    facesCount = numFaces / 3;
+  } else {
+    facesCount = numPositions / 3 / 3;
+  }
 
   std::vector<float> points1;
   std::vector<float> points2;
@@ -165,9 +174,18 @@ float *cut(
   std::vector<float> uvs2;
 
   for(int i=0;i<facesCount;i++){
-    unsigned int va = getVertexIndex(i, 0, indices);
-    unsigned int vb = getVertexIndex(i, 1, indices);
-    unsigned int vc = getVertexIndex(i, 2, indices);
+      unsigned int va;
+      unsigned int vb;
+      unsigned int vc;
+    if (faces != nullptr) {
+      va = getVertexIndex(i, 0, indices);
+      vb = getVertexIndex(i, 1, indices);
+      vc = getVertexIndex(i, 2, indices);
+    } else {
+      va = 3 * i + 0;
+      vb = 3 * i + 1;
+      vc = 3 * i + 2;
+    }
 
     float v0X = coords[3 * va];
     float v1X = coords[3 * vb];

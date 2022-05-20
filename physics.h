@@ -99,6 +99,20 @@ public:
     unsigned int *objectId,
     unsigned int *faceIndex
   );
+  void sweepConvexShape(
+    PxConvexMesh *convexMesh,
+    float *origin,
+    float *quaternion,
+    float *direction,
+    float sweepDistance,
+    unsigned int maxHits,
+    unsigned int &numHits,
+    float *position,
+    float *normal,
+    float *distance,
+    unsigned int *objectId,
+    unsigned int *faceIndex
+  );
   float *getPath(float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
   float *overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
   float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
@@ -123,8 +137,8 @@ public:
   PxMaterial *createMaterial(float *mat);
   void destroyMaterial(PxMaterial *material);
 
-  void addGeometry(PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxTriangleMesh *releaseTriangleMesh);
-  void addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxConvexMesh *releaseConvexMesh);
+  void addGeometry(PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int external, PxTriangleMesh *releaseTriangleMesh);
+  void addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxConvexMesh *releaseConvexMesh);
   
   void setMassAndInertia(unsigned int id, float mass, float *inertia);
   void setGravityEnabled(unsigned int id, bool enabled);

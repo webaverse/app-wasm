@@ -99,7 +99,36 @@ EMSCRIPTEN_KEEPALIVE void sweepBox(
     faceIndex
   );
 }
-
+EMSCRIPTEN_KEEPALIVE void sweepConvexShape(
+  PScene *scene,
+  PxConvexMesh *convexMesh,
+  float *origin,
+  float *quaternion,
+  float *direction,
+  float sweepDistance,
+  unsigned int maxHits,
+  unsigned int *numHits,
+  float *position,
+  float *normal,
+  float *distance,
+  unsigned int *objectId,
+  unsigned int *faceIndex
+) {
+  scene->sweepConvexShape(
+    convexMesh,
+    origin,
+    quaternion,
+    direction,
+    sweepDistance,
+    maxHits,
+    *numHits,
+    position,
+    normal,
+    distance,
+    objectId,
+    faceIndex
+  );
+}
 EMSCRIPTEN_KEEPALIVE float *getPathPhysics(PScene *scene, float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds) {
   return scene->getPath(_start, _dest, _isWalk, _hy, _heightTolerance, _maxIterdetect, _maxIterStep, _numIgnorePhysicsIds, _ignorePhysicsIds);
 }
@@ -155,11 +184,11 @@ EMSCRIPTEN_KEEPALIVE void destroyMaterialPhysics(PScene *scene, PxMaterial *mate
   scene->destroyMaterial(material);
 }
 
-EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxTriangleMesh *releaseTriangleMesh) {
-  scene->addGeometry(triangleMesh, position, quaternion, scale, id, material, releaseTriangleMesh);
+EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int external, PxTriangleMesh *releaseTriangleMesh) {
+  scene->addGeometry(triangleMesh, position, quaternion, scale, id, material, external, releaseTriangleMesh);
 }
-EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, PxConvexMesh *releaseConvexMesh) {
-  scene->addConvexGeometry(convexMesh, position, quaternion, scale, id, material, releaseConvexMesh);
+EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxConvexMesh *releaseConvexMesh) {
+  scene->addConvexGeometry(convexMesh, position, quaternion, scale, id, material, dynamic, external, releaseConvexMesh);
 }
 
 EMSCRIPTEN_KEEPALIVE void setGeometryScalePhysics(PScene *scene, unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream) {
@@ -265,9 +294,8 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
   unsigned int *faces,
   unsigned int numFaces,
 
-  float *position,
-  float *quaternion,
-  float *scale
+  float *planeNormal,
+  float planeDistance
 ) {
   return cut(
     positions,
@@ -279,9 +307,8 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
     faces,
     numFaces,
 
-    position,
-    quaternion,
-    scale
+    planeNormal,
+    planeDistance
   );
 }
 
