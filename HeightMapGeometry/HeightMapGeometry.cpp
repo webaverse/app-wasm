@@ -51,6 +51,7 @@ public:
     void setData(emscripten::val jsdata)
     {
         data = to_vector<uint8_t>(jsdata);
+        printf("Data Set. central pixel is: %i", data[75 * 700 + 350]);
     }
 
     emscripten::val getData() const
@@ -82,29 +83,32 @@ public:
     using pointerType = int;
     HeightMapMeshGenerator(const HeightMap& heightMap) : map(heightMap)
     {
+
         heightFunc = [this](float x, float y)
         {
-            int xpix = map.width/2 + x / map.metersPerPixel;
-            int ypix = map.height/2 + y / map.metersPerPixel;
+            float xpix = map.width/2 + x / map.metersPerPixel;
+            float ypix = map.height/2 + y / map.metersPerPixel;
             if(xpix > 0 && xpix < map.width && ypix > 0 && ypix < map.height)
-                return map.getValueAt(x / map.metersPerPixel, y / map.metersPerPixel) * (map.depth / 256.0 );
+            {
+                return map.getValueAt(xpix, ypix) * (map.depth / 256.0 );
+            }
             return 0.0;
         };
         
     }
 
-    pointerType generateChunk(float x, float y, float z) const
+    pointerType generateChunk(float x, float y, float z, float lod) const
     {
         DensityData::GetInstance().SetHeightFunction(heightFunc);
-        auto buffPtr = (pointerType)DualContouring::createChunk(x, y, z);
+        auto buffPtr = (pointerType)DualContouring::createChunk(x, y, z, lod);
         DensityData::GetInstance().SetHeightFunction(nullptr);
         return buffPtr;
     }
 
-    pointerType generateSeam(float x, float y, float z) const
+    pointerType generateSeam(float x, float y, float z, float lod) const
     {
         DensityData::GetInstance().SetHeightFunction(heightFunc);
-        auto buffPtr = (pointerType)DualContouring::createSeam(x, y, z);
+        auto buffPtr = (pointerType)DualContouring::createSeam(x, y, z, lod);
         DensityData::GetInstance().SetHeightFunction(nullptr);
         return buffPtr;
     }
