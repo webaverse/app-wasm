@@ -25,7 +25,7 @@ public:
         init();
     };
 
-    double simplex(const float &x, const float &z)
+    float simplex(const float &x, const float &z)
     {
         // const int index = (x - min.x + 1) + (z - min.z + 1) * size;
         // return cachedNoiseField[index];
@@ -56,56 +56,56 @@ private:
                 }
             }
     }
-    double lerp(const double &a, const double &b, const double &f)
+    float lerp(const float &a, const float &b, const float &f)
     {
         return a + f * (b - a);
     }
-    double interpolate(const float &x, const float &y)
+    float interpolate(const float &x, const float &y)
     {
         const int xf = std::floor(x);
         const float dx = x - xf;
         const int indexF = xf + y * size;
 
-        // if (indexF < 0 || indexF > (64 + 1) * (64 + 1))
-        // {
-        //     std::cout << "X : " << x << ", Z: " << y << std::endl;
-        //     return 0.5;
-        // }
-
-        if (dx == 0)
+        if (indexF < 0 || indexF > (64 + 1) * (64 + 1))
         {
-            return cachedNoiseField[indexF];
+            // std::cout << "X : " << x << ", Z: " << y << std::endl;
+            return 0.5;
         }
+
+        // if (dx == 0)
+        // {
+        //     return cachedNoiseField[indexF];
+        // }
 
         const int xc = std::ceil(x);
         const int indexC = xc + y * size;
 
-        // if (indexC < 0 || indexC > (64 + 1) * (64 + 1))
-        // {
-        //     std::cout << "X : " << x << ", Z: " << y << std::endl;
-        //     return 0.5;
-        // }
-
-        if (dx == 1)
+        if (indexC < 0 || indexC > (64 + 1) * (64 + 1))
         {
-            return cachedNoiseField[indexC];
+            // std::cout << "X : " << x << ", Z: " << y << std::endl;
+            return 0.5;
         }
 
-        const double r1 = cachedNoiseField[indexF];
-        const double r2 = cachedNoiseField[indexC];
+        // if (dx == 1)
+        // {
+        //     return cachedNoiseField[indexC];
+        // }
+
+        const float r1 = cachedNoiseField[indexF];
+        const float r2 = cachedNoiseField[indexC];
 
         return lerp(r1, r2, dx);
     }
-    double interpolate2D(const float &x, const float &z)
+    float interpolate2D(const float &x, const float &z)
     {
         float x1 = x - min.x;
         float z1 = z - min.z;
-        // if(x1 < 0){
-        //     x1 = 0;
-        // }
-        // if(z1 < 0){
-        //     z1 = 0;
-        // }
+        if(x1 < 0){
+            x1 = 0;
+        }
+        if(z1 < 0){
+            z1 = 0;
+        }
         // const float x1 = vm::clamp(x - min.x , 0.0 , 65.0);
         // const float z1 = vm::clamp(z - min.z , 0.0 , 65.0);
 
@@ -113,22 +113,22 @@ private:
 
         const float dz = z - zf;
 
-        if (dz == 0)
-        {
-            const int indexF = x1 + zf * size;
-            return cachedNoiseField[indexF];
-        }
+        // if (dz == 0)
+        // {
+        //     const int indexF = x1 + zf * size;
+        //     return cachedNoiseField[indexF];
+        // }
 
         const int zc = std::ceil(z1);
 
-        if (dz == 1)
-        {
-            const int indexC = x1 + zc * size;
-            return cachedNoiseField[indexC];
-        }
+        // if (dz == 1)
+        // {
+        //     const int indexC = x1 + zc * size;
+        //     return cachedNoiseField[indexC];
+        // }
 
-        const double yf = interpolate(x1, zf);
-        const double yc = interpolate(x1, zc);
+        const float yf = interpolate(x1, zf);
+        const float yc = interpolate(x1, zc);
         // std::cout << interpolate(y1, y2) << std::endl;
         return lerp(yf, yc, dz);
     }

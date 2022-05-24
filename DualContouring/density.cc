@@ -89,7 +89,7 @@ float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise)
 	// const vm::vec2 q = vm::vec2(fbmNoise * 50.0, FBM(p + vm::vec2(50.2, 1.3)) * 60.0);
 	// noise += glm::clamp((1.0 - mask) * FBM(p + q) * 2.0, -100.0, 10.0);
 	// noise += mask * fbmNoise / 2.0;
-	const double noise = chunkNoise.simplex(p.x, p.y);
+	const float noise = chunkNoise.simplex(p.x, p.y);
 	// std::cout << noise << std::endl;
 
 	const float terrain = position.y + (MAX_HEIGHT * noise);
