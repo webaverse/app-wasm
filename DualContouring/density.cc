@@ -14,7 +14,7 @@ float cuboid(const vm::vec3 &worldPosition, const vm::vec3 &origin, const vm::ve
 
 	const vm::vec3 &d = vm::abs(pos) - halfDimensions;
 	const float m = std::max(d.x, std::max(d.y, d.z));
-	return std::min(m, vm::length(vm::max(d, 0.f)));
+	return std::min(m, vm::length(vm::max(d, 0.0)));
 }
 
 float falloffMap(const vm::vec2 &position)
@@ -83,7 +83,7 @@ float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise)
 {
 	const float MAX_HEIGHT = 20.f;
 	// float noise = 0.0;
-	const vm::vec2 p = vm::vec2(std::floor(position.x), std::floor(position.z));
+	const vm::vec2 p = vm::vec2(position.x, position.z);
 	// const float mask = glm::clamp(glm::simplex(glm::vec2(p.x, p.y) / (float)200) * 5.0, 0.0, 1.0);
 	// const float fbmNoise = FBM(p);
 	// const vm::vec2 q = vm::vec2(fbmNoise * 50.0, FBM(p + vm::vec2(50.2, 1.3)) * 60.0);
@@ -92,16 +92,16 @@ float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise)
 	const double noise = chunkNoise.simplex(p.x, p.y);
 	// std::cout << noise << std::endl;
 
-	const float terrain = position.y + (MAX_HEIGHT * (float)noise);
+	const float terrain = position.y + (MAX_HEIGHT * noise);
 	// std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
 
 	// const float mountainsNoise = fractalNoise(2, 0.2f, 2.1f, 0.21f, p);
 
-	// const float cube = cuboid(position, vm::vec3(-4., 10.f, -4.f), vm::vec3(12.f));
+	const float cube = cuboid(position, vm::vec3(-4., 10.f, -4.f), vm::vec3(12.f));
 	// const float orb = sphere(position, vm::vec3(15.f, 2.5f, 1.f), 16.f);
 
 	// return orb;
 	// return cube;
-	return terrain;
-	// return std::max(-cube, terrain);
+	// return terrain;
+	return std::max(-cube, terrain);
 }

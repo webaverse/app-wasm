@@ -1,5 +1,13 @@
 #include "main.h"
 
+// namespace ChunkMesh
+// {
+//     OctreeNode *chunkRoot;
+//     OctreeNode *chunkWithLod;
+//     std::vector<OctreeNode *> neighbouringChunks;
+//     OctreeNode *seamRoot;
+// };
+
 namespace DualContouring
 {
     int *constructOutputBuffer(VertexBuffer &vertexBuffer)
@@ -9,19 +17,19 @@ namespace DualContouring
         BufferManager bm;
 
         bm.appendVectorSize(vertexBuffer.positions); // 0 positions vector size
-        bm.appendVector(vertexBuffer.positions); // 1 positions vector
+        bm.appendVector(vertexBuffer.positions);     // 1 positions vector
 
         bm.appendVectorSize(vertexBuffer.normals); // 2 normals vector size
-        bm.appendVector(vertexBuffer.normals); // 3 normals vector
+        bm.appendVector(vertexBuffer.normals);     // 3 normals vector
 
         bm.appendVectorSize(vertexBuffer.indices); // 4 indices vector size
-        bm.appendVector(vertexBuffer.indices); // 5 indices vector
+        bm.appendVector(vertexBuffer.indices);     // 5 indices vector
 
         bm.appendVectorSize(vertexBuffer.biomes); // 6 biomes vector size
-        bm.appendVector(vertexBuffer.biomes); // 7 biomes vector
+        bm.appendVector(vertexBuffer.biomes);     // 7 biomes vector
 
         bm.appendVectorSize(vertexBuffer.biomesWeights); // 8 biomesWeight vector size
-        bm.appendVector(vertexBuffer.biomesWeights); // 9 biomesWeight vector
+        bm.appendVector(vertexBuffer.biomesWeights);     // 9 biomesWeight vector
 
         return bm.getOutput();
     }
@@ -39,9 +47,9 @@ namespace DualContouring
     void generateChunkData(float x, float y, float z)
     {
         const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
-        CachedNoise chunkNoise(octreeMin , chunkSize);
+        CachedNoise chunkNoise(octreeMin, chunkSize);
         // std::cout << "NOISE IS GENERATED" << std::endl;
-        OctreeNode *chunk = constructOctreeDownwards(octreeMin, chunkSize,chunkNoise);
+        OctreeNode *chunk = constructOctreeDownwards(octreeMin, chunkSize, chunkNoise);
         if (!chunk)
         {
             return;
@@ -127,59 +135,3 @@ namespace DualContouring
         return constructOutputBuffer(vertexBuffer);
     }
 }
-
-// int main()
-// {
-//     // CachedNoise sampleNoise;
-//     // const double noise = sampleNoise.simplex(30,500);
-//     // std::cout << noise << std::endl;
-
-//     const vm::ivec3 OFFSETS[8] =
-//         {
-//             vm::ivec3(0, 0, 0), vm::ivec3(1, 0, 0), vm::ivec3(0, 0, 1), vm::ivec3(1, 0, 1),
-//             vm::ivec3(0, 1, 0), vm::ivec3(1, 1, 0), vm::ivec3(0, 1, 1), vm::ivec3(1, 1, 1)};
-
-//     const int min = -((64 * 1) / 2);
-//     const int max = (64 * 1) / 2;
-
-//     for (int x = min; x < max; x += 64)
-//     {
-//         for (int y = min; y < max; y += 64)
-//         {
-//             for (int z = min; z < max; z += 64)
-//             {
-//                 std::cout << "Generating" << std::endl;
-//                 DualContouring::generateChunkData(x + 32, y + 32, z + 32);
-//             }
-//         }
-//     }
-
-//     for (int x = min; x < max; x += 64)
-//     {
-//         for (int y = min; y < max; y += 64)
-//         {
-//             for (int z = min; z < max; z += 64)
-//             {
-//                 const int lod = abs(std::max(std::max(x, y), z)) / 64;
-//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, lod);
-//             }
-//         }
-//     }
-
-//     for (int x = min; x < max; x += 64)
-//     {
-//         for (int y = min; y < max; y += 64)
-//         {
-//             for (int z = min; z < max; z += 64)
-//             {
-//                 std::cout << "\n"
-//                           << DualContouring::createChunkMesh(x + 32, y + 32, z + 32)
-//                           << std::endl;
-//                 DualContouring::clearTemporaryChunkData();
-//                 DualContouring::clearChunkRoot(x + 32, y + 32, z + 32);
-//             }
-//         }
-//     }
-
-//     return 0;
-// }
