@@ -5,8 +5,10 @@
 #include <cstdint>
 #include <ctime>
 #include <string.h>
-#include "../glm/glm.hpp"
 #include "octree.h"
+#include "bufferManager.h"
+#include "cachedNoise.h"
+#include "vectorMath.h"
 
 namespace DualContouring
 {

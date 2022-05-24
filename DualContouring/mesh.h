@@ -1,12 +1,13 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include <vector>
-#include "../glm/glm.hpp"
+#include "vectorMath.h"
 
-typedef std::vector<glm::vec3> PositionBuffer;
-typedef std::vector<glm::vec3> NormalBuffer;
-typedef std::vector<glm::vec4> BiomeBuffer;
+#include <vector>
+
+typedef std::vector<vm::vec3> PositionBuffer;
+typedef std::vector<vm::vec3> NormalBuffer;
+typedef std::vector<vm::vec4> BiomeBuffer;
 typedef std::vector<int> IndexBuffer;
 
 struct VertexBuffer

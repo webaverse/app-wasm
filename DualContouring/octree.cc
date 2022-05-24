@@ -1,23 +1,25 @@
 #include "octree.h"
 #include "density.h"
 
+#define PI 3.14159265358979323846
+
 const int MATERIAL_AIR = 0;
 const int MATERIAL_SOLID = 1;
 
 const float QEF_ERROR = 1e-6f;
 const int QEF_SWEEPS = 4;
 
-const glm::ivec3 CHILD_MIN_OFFSETS[] =
+const vm::ivec3 CHILD_MIN_OFFSETS[] =
 	{
 		// needs to match the vertMap from Dual Contouring impl
-		glm::ivec3(0, 0, 0),
-		glm::ivec3(0, 0, 1),
-		glm::ivec3(0, 1, 0),
-		glm::ivec3(0, 1, 1),
-		glm::ivec3(1, 0, 0),
-		glm::ivec3(1, 0, 1),
-		glm::ivec3(1, 1, 0),
-		glm::ivec3(1, 1, 1),
+		vm::ivec3(0, 0, 0),
+		vm::ivec3(0, 0, 1),
+		vm::ivec3(0, 1, 0),
+		vm::ivec3(0, 1, 1),
+		vm::ivec3(1, 0, 0),
+		vm::ivec3(1, 0, 1),
+		vm::ivec3(1, 1, 0),
+		vm::ivec3(1, 1, 1),
 };
 // data from the original DC impl, drives the contouring process
 
@@ -69,36 +71,95 @@ const int edgeProcEdgeMask[3][2][5] = {
 
 const int processEdgeMask[3][4] = {{3, 2, 1, 0}, {7, 5, 6, 4}, {11, 10, 9, 8}};
 
-glm::vec4 getBiomesData(glm::vec3 &position)
+vm::vec4 selectFourMostCommonMembers(unsigned char biomeSamples[], const int &n)
 {
-	glm::vec4 biome;
-	biome.x = getBiome(glm::vec3(position.x + 1, position.y, position.z));
-	biome.y = getBiome(glm::vec3(position.x, position.y, position.z + 1));
-	biome.z = getBiome(glm::vec3(position.x - 1, position.y, position.z));
-	biome.w = getBiome(glm::vec3(position.x, position.y, position.z - 1));
+	vm::vec4 selection;
+	std::vector<unsigned char> sortedSamples;
+	sortedSamples.reserve(n);
+	for (int i = 0; i < n; ++i)
+	{
+		sortedSamples.emplace_back(biomeSamples[i]);
+	}
+
+	std::unordered_map<unsigned char, size_t> count;
+
+	for (unsigned char i : sortedSamples)
+	{
+		count[i]++;
+	}
+
+	std::sort(
+		sortedSamples.begin(),
+		sortedSamples.end(),
+		[&count](unsigned char const &a, unsigned char const &b)
+		{
+			if (a == b)
+			{
+				return false;
+			}
+			if (count[a] > count[b])
+			{
+				return true;
+			}
+			else if (count[a] < count[b])
+			{
+				return false;
+			}
+			return a < b;
+		});
+
+	selection.x = sortedSamples[0];
+	selection.y = sortedSamples[1];
+	selection.z = sortedSamples[2];
+	selection.w = sortedSamples[3];
+
+	return selection;
+}
+
+vm::vec4 getBiomesData(const vm::vec3 &position)
+{
+	const int numberOfSamples = 9;
+	unsigned char samples[numberOfSamples];
+
+	// sample points on a circle
+	float angle = 0.0;
+	for (int i = 0; i < numberOfSamples; i++)
+	{
+		angle = (2 * PI / numberOfSamples) * i;
+		const vm::vec3 samplePosition = position + vm::vec3(std::cos(angle), 0.0, std::sin(angle));
+		samples[i] = getBiome(position);
+	}
+
+	vm::vec4 biome = selectFourMostCommonMembers(samples, numberOfSamples);
+
 	return biome;
 }
 
-float getPercentageInArray(float arr[], float x, int n)
+vm::vec4 getBiomesWeight(const vm::vec3 &position, const vm::vec4 &biome)
 {
-	int result = 0;
-	for (int i = 0; i < n; i++)
-		if (x == arr[i])
-			result++;
+	vm::vec4 biomesWeights;
+	// float biomesValues[4] = {biome.x, biome.y, biome.z, biome.w};
+	unsigned char pointBiome = getBiome(position);
+	const float rightDistance = std::abs(+pointBiome - biome.x);
+	const float upDistance = std::abs(+pointBiome - biome.y);
+	const float leftDistance = std::abs(+pointBiome - biome.z);
+	const float downDistance = std::abs(+pointBiome - biome.w);
 
-	return result / float(n);
-}
+	const float rightDownWeight = std::sqrt(std::pow(rightDistance, 2) + std::pow(downDistance, 2));
+	const float rightUpWeight = std::sqrt(std::pow(rightDistance, 2) + std::pow(upDistance, 2));
+	const float leftDownWeight = std::sqrt(std::pow(leftDistance, 2) + std::pow(downDistance, 2));
+	const float leftUpWeight = std::sqrt(std::pow(leftDistance, 2) + std::pow(upDistance, 2));
 
-glm::vec4 getBiomesWeight(glm::vec4 biome)
-{
-	glm::vec4 biomesWeights;
-	float biomesValues[4] = {biome.x, biome.y, biome.z, biome.w};
-	int n = 4;
-	biomesWeights.x = getPercentageInArray(biomesValues, biomesValues[0], n);
-	biomesWeights.y = getPercentageInArray(biomesValues, biomesValues[1], n);
-	biomesWeights.z = getPercentageInArray(biomesValues, biomesValues[2], n);
-	biomesWeights.w = getPercentageInArray(biomesValues, biomesValues[3], n);
-	// std::cout << biomesWeights.z << std::endl;
+	biomesWeights.x = rightDownWeight;
+	biomesWeights.y = rightUpWeight;
+	biomesWeights.z = leftDownWeight;
+	biomesWeights.w = leftUpWeight;
+	// int n = 4;
+	// biomesWeights.x = getPercentageInArray(biomesValues, biomesValues[0], n);
+	// biomesWeights.y = getPercentageInArray(biomesValues, biomesValues[1], n);
+	// biomesWeights.z = getPercentageInArray(biomesValues, biomesValues[2], n);
+	// biomesWeights.w = getPercentageInArray(biomesValues, biomesValues[3], n);
+	// std::cout << rightDownWeight << std::endl;
 	return biomesWeights;
 }
 
@@ -154,7 +215,7 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 	float error = qef.getError();
 
 	// convert to glm vec3 for ease of use
-	glm::vec3 position(qefPosition.x, qefPosition.y, qefPosition.z);
+	vm::vec3 position(qefPosition.x, qefPosition.y, qefPosition.z);
 
 	// at this point the masspoint will actually be a sum, so divide to make it the average
 	if (node->size > lod)
@@ -167,7 +228,7 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 		position.z < node->min.z || position.z > (node->min.z + node->size))
 	{
 		const auto &mp = qef.getMassPoint();
-		position = glm::vec3(mp.x, mp.y, mp.z);
+		position = vm::vec3(mp.x, mp.y, mp.z);
 	}
 
 	// change the node from an internal node to a 'psuedo leaf' node
@@ -186,7 +247,7 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 		}
 	}
 
-	drawInfo->averageNormal = glm::vec3(0.f);
+	drawInfo->averageNormal = vm::vec3(0.f);
 	for (int i = 0; i < 8; i++)
 	{
 		if (OctreeNode *child = node->children[i])
@@ -199,11 +260,11 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 		}
 	}
 
-	drawInfo->averageNormal = glm::normalize(drawInfo->averageNormal);
+	drawInfo->averageNormal = vm::normalize(drawInfo->averageNormal);
 	drawInfo->position = position;
 	drawInfo->qef = qef.getData();
 	drawInfo->biome = getBiomesData(drawInfo->position);
-	drawInfo->biomeWeights = getBiomesWeight(drawInfo->biome);
+	drawInfo->biomeWeights = getBiomesWeight(drawInfo->position, drawInfo->biome);
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -267,13 +328,13 @@ OctreeNode *createChunkWithLod(OctreeNode *chunkRoot)
 	return chunk;
 }
 
-const glm::ivec3 chunkMinForPosition(const glm::ivec3 &p)
+const vm::ivec3 chunkMinForPosition(const vm::ivec3 &p)
 {
 	const unsigned int mask = ~(64 - 1);
-	return glm::ivec3(p.x & mask, p.y & mask, p.z & mask);
+	return vm::ivec3(p.x & mask, p.y & mask, p.z & mask);
 }
 
-uint64_t hashOctreeMin(const glm::ivec3 &min)
+uint64_t hashOctreeMin(const vm::ivec3 &min)
 {
 	uint64_t result = uint16_t(min.x);
 	result = (result << 16) + uint16_t(min.y);
@@ -281,7 +342,7 @@ uint64_t hashOctreeMin(const glm::ivec3 &min)
 	return result;
 }
 
-OctreeNode *getChunkRootFromHashMap(glm::ivec3 octreeMin, std::unordered_map<uint64_t, OctreeNode *> &hashMap)
+OctreeNode *getChunkRootFromHashMap(vm::ivec3 octreeMin, std::unordered_map<uint64_t, OctreeNode *> &hashMap)
 {
 	const uint64_t rootIndex = hashOctreeMin(octreeMin);
 	auto iter = hashMap.find(rootIndex);
@@ -308,15 +369,15 @@ std::vector<OctreeNode *> constructParents(
 	OctreeNode *octree,
 	const std::vector<OctreeNode *> &nodes,
 	const int parentSize,
-	const glm::ivec3 &rootMin)
+	const vm::ivec3 &rootMin)
 {
 	std::unordered_map<uint64_t, OctreeNode *> parentsHashmap;
 
 	for_each(begin(nodes), end(nodes), [&](OctreeNode *node)
 			 {
 				 // because the octree is regular we can calculate the parent min
-				 const glm::ivec3 localPos = (node->min - rootMin);
-				 const glm::ivec3 parentPos = node->min - (localPos % parentSize);
+				 const vm::ivec3 localPos = (node->min - rootMin);
+				 const vm::ivec3 parentPos = node->min - (localPos % parentSize);
 
 				 const uint64_t parentIndex = hashOctreeMin(parentPos - rootMin);
 				 OctreeNode *parentNode = nullptr;
@@ -339,7 +400,7 @@ std::vector<OctreeNode *> constructParents(
 				 bool foundParentNode = false;
 				 for (int i = 0; i < 8; i++)
 				 {
-					 const glm::ivec3 childPos = parentPos + ((parentSize / 2) * CHILD_MIN_OFFSETS[i]);
+					 const vm::ivec3 childPos = parentPos + ((parentSize / 2) * CHILD_MIN_OFFSETS[i]);
 					 if (childPos == node->min)
 					 {
 						 parentNode->children[i] = node;
@@ -358,7 +419,7 @@ std::vector<OctreeNode *> constructParents(
 OctreeNode *constructOctreeUpwards(
 	OctreeNode *octree,
 	const std::vector<OctreeNode *> &inputNodes,
-	const glm::ivec3 &rootMin,
+	const vm::ivec3 &rootMin,
 	const int rootNodeSize)
 {
 	if (inputNodes.empty())
@@ -504,7 +565,7 @@ void contourEdgeProc(OctreeNode *node[4], int dir, IndexBuffer &indexBuffer, boo
 
 	if (isSeam)
 	{
-		std::vector<glm::ivec3> chunkRoots;
+		std::vector<vm::ivec3> chunkRoots;
 		for (int i = 0; i < 4; i++)
 		{
 			const uint64_t chunkIndex = hashOctreeMin(chunkMinForPosition(node[i]->min));
@@ -682,7 +743,7 @@ void contourCellProc(OctreeNode *node, IndexBuffer &indexBuffer, bool isSeam)
 	}
 }
 
-glm::vec3 approximateZeroCrossingPosition(const glm::vec3 &p0, const glm::vec3 &p1)
+vm::vec3 approximateZeroCrossingPosition(const vm::vec3 &p0, const vm::vec3 &p1, CachedNoise &chunkNoise)
 {
 	// approximate the zero crossing by finding the min value along the edge
 	float minValue = 100000.f;
@@ -692,8 +753,8 @@ glm::vec3 approximateZeroCrossingPosition(const glm::vec3 &p0, const glm::vec3 &
 	const float increment = 1.f / (float)steps;
 	while (currentT <= 1.f)
 	{
-		const glm::vec3 p = p0 + ((p1 - p0) * currentT);
-		const float density = abs(Density_Func(p));
+		const vm::vec3 p = p0 + ((p1 - p0) * currentT);
+		const float density = abs(Density_Func(p, chunkNoise));
 		if (density < minValue)
 		{
 			minValue = density;
@@ -706,17 +767,17 @@ glm::vec3 approximateZeroCrossingPosition(const glm::vec3 &p0, const glm::vec3 &
 	return p0 + ((p1 - p0) * t);
 }
 
-glm::vec3 calculateSurfaceNormal(const glm::vec3 &p)
+vm::vec3 calculateSurfaceNormal(const vm::vec3 &p, CachedNoise &chunkNoise)
 {
 	const float H = 0.001f;
-	const float dx = Density_Func(p + glm::vec3(H, 0.f, 0.f)) - Density_Func(p - glm::vec3(H, 0.f, 0.f));
-	const float dy = Density_Func(p + glm::vec3(0.f, H, 0.f)) - Density_Func(p - glm::vec3(0.f, H, 0.f));
-	const float dz = Density_Func(p + glm::vec3(0.f, 0.f, H)) - Density_Func(p - glm::vec3(0.f, 0.f, H));
+	const float dx = Density_Func(p + vm::vec3(H, 0.f, 0.f), chunkNoise) - Density_Func(p - vm::vec3(H, 0.f, 0.f), chunkNoise);
+	const float dy = Density_Func(p + vm::vec3(0.f, H, 0.f), chunkNoise) - Density_Func(p - vm::vec3(0.f, H, 0.f), chunkNoise);
+	const float dz = Density_Func(p + vm::vec3(0.f, 0.f, H), chunkNoise) - Density_Func(p - vm::vec3(0.f, 0.f, H), chunkNoise);
 
-	return glm::normalize(glm::vec3(dx, dy, dz));
+	return vm::normalize(vm::vec3(dx, dy, dz));
 }
 
-OctreeNode *constructLeaf(OctreeNode *leaf)
+OctreeNode *constructLeaf(OctreeNode *leaf, CachedNoise &chunkNoise)
 {
 	if (!leaf)
 	{
@@ -726,8 +787,8 @@ OctreeNode *constructLeaf(OctreeNode *leaf)
 	int corners = 0;
 	for (int i = 0; i < 8; i++)
 	{
-		const glm::ivec3 cornerPos = leaf->min + CHILD_MIN_OFFSETS[i];
-		const float density = Density_Func(glm::vec3(cornerPos));
+		const vm::ivec3 cornerPos = leaf->min + CHILD_MIN_OFFSETS[i];
+		const float density = Density_Func(vm::vec3(cornerPos.x, cornerPos.y, cornerPos.z), chunkNoise);
 		const int material = density < 0.f ? MATERIAL_SOLID : MATERIAL_AIR;
 		corners |= (material << i);
 	}
@@ -742,7 +803,7 @@ OctreeNode *constructLeaf(OctreeNode *leaf)
 	// otherwise the voxel contains the surface, so find the edge intersections
 	const int MAX_CROSSINGS = 6;
 	int edgeCount = 0;
-	glm::vec3 averageNormal(0.f);
+	vm::vec3 averageNormal(0.f);
 	svd::QefSolver qef;
 
 	for (int i = 0; i < 12 && edgeCount < MAX_CROSSINGS; i++)
@@ -760,10 +821,10 @@ OctreeNode *constructLeaf(OctreeNode *leaf)
 			continue;
 		}
 
-		const glm::vec3 p1 = glm::vec3(leaf->min + CHILD_MIN_OFFSETS[c1]);
-		const glm::vec3 p2 = glm::vec3(leaf->min + CHILD_MIN_OFFSETS[c2]);
-		const glm::vec3 p = approximateZeroCrossingPosition(p1, p2);
-		const glm::vec3 n = calculateSurfaceNormal(p);
+		const vm::vec3 p1 = vm::vec3(leaf->min.x + CHILD_MIN_OFFSETS[c1].x, leaf->min.y + CHILD_MIN_OFFSETS[c1].y, leaf->min.z + CHILD_MIN_OFFSETS[c1].z);
+		const vm::vec3 p2 = vm::vec3(leaf->min.x + CHILD_MIN_OFFSETS[c2].x, leaf->min.y + CHILD_MIN_OFFSETS[c2].y, leaf->min.z + CHILD_MIN_OFFSETS[c2].z);
+		const vm::vec3 p = approximateZeroCrossingPosition(p1, p2, chunkNoise);
+		const vm::vec3 n = calculateSurfaceNormal(p, chunkNoise);
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 
 		averageNormal += n;
@@ -775,24 +836,24 @@ OctreeNode *constructLeaf(OctreeNode *leaf)
 	qef.solve(qefPosition, QEF_ERROR, QEF_SWEEPS, QEF_ERROR);
 
 	OctreeDrawInfo *drawInfo = new OctreeDrawInfo;
-	drawInfo->position = glm::vec3(qefPosition.x, qefPosition.y, qefPosition.z);
+	drawInfo->position = vm::vec3(qefPosition.x, qefPosition.y, qefPosition.z);
 	drawInfo->qef = qef.getData();
 
-	const glm::vec3 min = glm::vec3(leaf->min);
-	const glm::vec3 max = glm::vec3(leaf->min + glm::ivec3(leaf->size));
+	const vm::vec3 min = vm::vec3(leaf->min.x, leaf->min.y, leaf->min.z);
+	const vm::vec3 max = vm::vec3(leaf->min.x + vm::ivec3(leaf->size).x, leaf->min.y + vm::ivec3(leaf->size).y, leaf->min.z + vm::ivec3(leaf->size).z);
 	if (drawInfo->position.x < min.x || drawInfo->position.x > max.x ||
 		drawInfo->position.y < min.y || drawInfo->position.y > max.y ||
 		drawInfo->position.z < min.z || drawInfo->position.z > max.z)
 	{
 		const auto &mp = qef.getMassPoint();
-		drawInfo->position = glm::vec3(mp.x, mp.y, mp.z);
+		drawInfo->position = vm::vec3(mp.x, mp.y, mp.z);
 	}
 
 	drawInfo->averageNormal = normalize(averageNormal / (float)edgeCount);
 	drawInfo->corners = corners;
 
 	drawInfo->biome = getBiomesData(drawInfo->position);
-	drawInfo->biomeWeights = getBiomesWeight(drawInfo->biome);
+	drawInfo->biomeWeights = getBiomesWeight(drawInfo->position, drawInfo->biome);
 
 	leaf->type = Node_Leaf;
 	leaf->drawInfo = drawInfo;
@@ -800,7 +861,7 @@ OctreeNode *constructLeaf(OctreeNode *leaf)
 	return leaf;
 }
 
-typedef std::function<bool(const glm::ivec3 &, const glm::ivec3 &)> FilterNodesFunc;
+typedef std::function<bool(const vm::ivec3 &, const vm::ivec3 &)> FilterNodesFunc;
 
 void findOctreeNodes(OctreeNode *node, FilterNodesFunc &func, std::vector<OctreeNode *> &nodes)
 {
@@ -809,7 +870,7 @@ void findOctreeNodes(OctreeNode *node, FilterNodesFunc &func, std::vector<Octree
 		return;
 	}
 
-	const glm::ivec3 max = node->min + glm::ivec3(node->size);
+	const vm::ivec3 max = node->min + vm::ivec3(node->size);
 	if (!func(node->min, max))
 	{
 		return;
@@ -832,47 +893,47 @@ std::vector<OctreeNode *> findNodes(OctreeNode *root, FilterNodesFunc filterFunc
 	findOctreeNodes(root, filterFunc, nodes);
 	return nodes;
 }
-std::vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, std::vector<OctreeNode *>(&neighbouringChunks), std::unordered_map<uint64_t, OctreeNode *> hashMap, OctreeNode *(*getChunkRootFromHashMap)(glm::ivec3, std::unordered_map<uint64_t, OctreeNode *> &))
+std::vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, std::vector<OctreeNode *>(&neighbouringChunks), std::unordered_map<uint64_t, OctreeNode *> hashMap, OctreeNode *(*getChunkRootFromHashMap)(vm::ivec3, std::unordered_map<uint64_t, OctreeNode *> &))
 {
-	const glm::ivec3 baseChunkMin = glm::ivec3(targetRoot->min);
-	const glm::ivec3 seamValues = baseChunkMin + glm::ivec3(targetRoot->size);
+	const vm::ivec3 baseChunkMin = vm::ivec3(targetRoot->min);
+	const vm::ivec3 seamValues = baseChunkMin + vm::ivec3(targetRoot->size);
 
-	const glm::ivec3 OFFSETS[8] =
+	const vm::ivec3 OFFSETS[8] =
 		{
-			glm::ivec3(0, 0, 0), glm::ivec3(1, 0, 0), glm::ivec3(0, 0, 1), glm::ivec3(1, 0, 1),
-			glm::ivec3(0, 1, 0), glm::ivec3(1, 1, 0), glm::ivec3(0, 1, 1), glm::ivec3(1, 1, 1)};
+			vm::ivec3(0, 0, 0), vm::ivec3(1, 0, 0), vm::ivec3(0, 0, 1), vm::ivec3(1, 0, 1),
+			vm::ivec3(0, 1, 0), vm::ivec3(1, 1, 0), vm::ivec3(0, 1, 1), vm::ivec3(1, 1, 1)};
 
 	FilterNodesFunc selectionFuncs[8] =
 		{
-			[&](const glm::ivec3 &min, const glm::ivec3 &max)
+			[&](const vm::ivec3 &min, const vm::ivec3 &max)
 			{
 				return max.x == seamValues.x || max.y == seamValues.y || max.z == seamValues.z;
 			},
-			[&](const glm::ivec3 &min, const glm::ivec3 &max)
+			[&](const vm::ivec3 &min, const vm::ivec3 &max)
 			{
 				return min.x == seamValues.x;
 			},
-			[&](const glm::ivec3 &min, const glm::ivec3 &max)
+			[&](const vm::ivec3 &min, const vm::ivec3 &max)
 			{
 				return min.z == seamValues.z;
 			},
-			[&](const glm::ivec3 &min, const glm::ivec3 &max)
+			[&](const vm::ivec3 &min, const vm::ivec3 &max)
 			{
 				return min.x == seamValues.x && min.z == seamValues.z;
 			},
-			[&](const glm::ivec3 &min, const glm::ivec3 &max)
+			[&](const vm::ivec3 &min, const vm::ivec3 &max)
 			{
 				return min.y == seamValues.y;
 			},
-			[&](const glm::ivec3 &min, const glm::ivec3 &max)
+			[&](const vm::ivec3 &min, const vm::ivec3 &max)
 			{
 				return min.x == seamValues.x && min.y == seamValues.y;
 			},
-			[&](const glm::ivec3 &min, const glm::ivec3 &max)
+			[&](const vm::ivec3 &min, const vm::ivec3 &max)
 			{
 				return min.y == seamValues.y && min.z == seamValues.z;
 			},
-			[&](const glm::ivec3 &min, const glm::ivec3 &max)
+			[&](const vm::ivec3 &min, const vm::ivec3 &max)
 			{
 				return min.x == seamValues.x && min.y == seamValues.y && min.z == seamValues.z;
 			}};
@@ -880,8 +941,8 @@ std::vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, std::vector<Octr
 	std::vector<OctreeNode *> seamNodes;
 	for (int i = 0; i < 8; i++)
 	{
-		const glm::ivec3 offsetMin = OFFSETS[i] * targetRoot->size;
-		const glm::ivec3 chunkMin = baseChunkMin + offsetMin;
+		const vm::ivec3 offsetMin = OFFSETS[i] * targetRoot->size;
+		const vm::ivec3 chunkMin = baseChunkMin + offsetMin;
 		if (OctreeNode *chunkRoot = getChunkRootFromHashMap(chunkMin, hashMap))
 		{
 			if (OctreeNode *chunkWithLod = createChunkWithLod(chunkRoot))
@@ -896,7 +957,7 @@ std::vector<OctreeNode *> findSeamNodes(OctreeNode *targetRoot, std::vector<Octr
 	return seamNodes;
 }
 
-OctreeNode *constructOctreeNodes(OctreeNode *node)
+OctreeNode *constructOctreeNodes(OctreeNode *node, CachedNoise &chunkNoise)
 {
 	if (!node)
 	{
@@ -905,7 +966,7 @@ OctreeNode *constructOctreeNodes(OctreeNode *node)
 
 	if (node->size == 1)
 	{
-		return constructLeaf(node);
+		return constructLeaf(node, chunkNoise);
 	}
 
 	const int childSize = node->size / 2;
@@ -918,7 +979,7 @@ OctreeNode *constructOctreeNodes(OctreeNode *node)
 		child->min = node->min + (CHILD_MIN_OFFSETS[i] * childSize);
 		child->type = Node_Internal;
 
-		node->children[i] = constructOctreeNodes(child);
+		node->children[i] = constructOctreeNodes(child, chunkNoise);
 		hasChildren |= (node->children[i] != nullptr);
 	}
 
@@ -931,14 +992,14 @@ OctreeNode *constructOctreeNodes(OctreeNode *node)
 	return node;
 }
 
-OctreeNode *constructOctreeDownwards(const glm::ivec3 &min, const int size)
+OctreeNode *constructOctreeDownwards(const vm::ivec3 &min, const int size, CachedNoise &chunkNoise)
 {
 	OctreeNode *root = new OctreeNode;
 	root->min = min;
 	root->size = size;
 	root->type = Node_Internal;
 
-	const OctreeNode *octreeRootNode = constructOctreeNodes(root);
+	const OctreeNode *octreeRootNode = constructOctreeNodes(root, chunkNoise);
 	if (!octreeRootNode)
 	{
 		return nullptr;
