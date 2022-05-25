@@ -116,7 +116,7 @@ vm::vec4 selectFourMostCommonMembers(unsigned char biomeSamples[], const int &n)
 	return selection;
 }
 
-vm::vec4 getBiomesData(const vm::vec3 &position)
+vm::vec4 getBiomesData(const vm::vec3 &position, CachedNoise &chunkNoise)
 {
 	const int numberOfSamples = 9;
 	unsigned char samples[numberOfSamples];
@@ -127,7 +127,7 @@ vm::vec4 getBiomesData(const vm::vec3 &position)
 	{
 		angle = (2 * PI / numberOfSamples) * i;
 		const vm::vec3 samplePosition = position + vm::vec3(std::cos(angle), 0.0, std::sin(angle));
-		samples[i] = getBiome(position);
+		samples[i] = getBiome(position, chunkNoise);
 	}
 
 	vm::vec4 biome = selectFourMostCommonMembers(samples, numberOfSamples);
@@ -135,11 +135,11 @@ vm::vec4 getBiomesData(const vm::vec3 &position)
 	return biome;
 }
 
-vm::vec4 getBiomesWeight(const vm::vec3 &position, const vm::vec4 &biome)
+vm::vec4 getBiomesWeight(const vm::vec3 &position, const vm::vec4 &biome, CachedNoise &chunkNoise)
 {
 	vm::vec4 biomesWeights;
 	// float biomesValues[4] = {biome.x, biome.y, biome.z, biome.w};
-	unsigned char pointBiome = getBiome(position);
+	unsigned char pointBiome = getBiome(position, chunkNoise);
 	const float rightDistance = std::abs(+pointBiome - biome.x);
 	const float upDistance = std::abs(+pointBiome - biome.y);
 	const float leftDistance = std::abs(+pointBiome - biome.z);
@@ -248,6 +248,11 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 	}
 
 	drawInfo->averageNormal = vm::vec3(0.f);
+
+	const int numberOfBiomeSamples = 8 * 4;
+	unsigned char biomeSamples[numberOfBiomeSamples];
+	unsigned char biomeWeightsSamples[numberOfBiomeSamples];
+
 	for (int i = 0; i < 8; i++)
 	{
 		if (OctreeNode *child = node->children[i])
@@ -256,6 +261,15 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 				child->type == Node_Leaf)
 			{
 				drawInfo->averageNormal += child->drawInfo->averageNormal;
+				biomeSamples[i] = child->drawInfo->biome.x;
+				biomeSamples[i + 1] = child->drawInfo->biome.y;
+				biomeSamples[i + 2] = child->drawInfo->biome.z;
+				biomeSamples[i + 3] = child->drawInfo->biome.w;
+
+				biomeWeightsSamples[i] = child->drawInfo->biomeWeights.x;
+				biomeWeightsSamples[i + 1] = child->drawInfo->biomeWeights.y;
+				biomeWeightsSamples[i + 2] = child->drawInfo->biomeWeights.z;
+				biomeWeightsSamples[i + 3] = child->drawInfo->biomeWeights.w;
 			}
 		}
 	}
@@ -263,8 +277,8 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 	drawInfo->averageNormal = vm::normalize(drawInfo->averageNormal);
 	drawInfo->position = position;
 	drawInfo->qef = qef.getData();
-	drawInfo->biome = getBiomesData(drawInfo->position);
-	drawInfo->biomeWeights = getBiomesWeight(drawInfo->position, drawInfo->biome);
+	drawInfo->biome = selectFourMostCommonMembers(biomeSamples, numberOfBiomeSamples);
+	drawInfo->biomeWeights = selectFourMostCommonMembers(biomeWeightsSamples, numberOfBiomeSamples);
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -852,8 +866,8 @@ OctreeNode *constructLeaf(OctreeNode *leaf, CachedNoise &chunkNoise)
 	drawInfo->averageNormal = normalize(averageNormal / (float)edgeCount);
 	drawInfo->corners = corners;
 
-	drawInfo->biome = getBiomesData(drawInfo->position);
-	drawInfo->biomeWeights = getBiomesWeight(drawInfo->position, drawInfo->biome);
+	drawInfo->biome = getBiomesData(drawInfo->position, chunkNoise);
+	drawInfo->biomeWeights = getBiomesWeight(drawInfo->position, drawInfo->biome, chunkNoise);
 
 	leaf->type = Node_Leaf;
 	leaf->drawInfo = drawInfo;

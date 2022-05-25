@@ -25,112 +25,59 @@ public:
         init();
     };
 
-    float simplex(const float &x, const float &z)
+    float getInterpolated(const float &x, const float &z)
     {
-        // const int index = (x - min.x + 1) + (z - min.z + 1) * size;
-        // return cachedNoiseField[index];
-        return interpolate2D(x, z);
+        const float localX = x - min.x + 1;
+        const float localZ = z - min.z + 1;
+        return interpolate2D(localX, localZ);
+        // return (float)fastNoise.GetSimplexFractal(x,z);
+    }
+    float getRaw(const float &x, const float &z)
+    {
+        const int localX = std::round(x) - min.x + 1;
+        const int localZ = std::round(z) - min.z + 1;
+        const int index = localX + localZ * size;
+        return cachedNoiseField.at(index);
     }
 
 private:
     int size;
     vm::ivec3 min;
-    double cachedNoiseField[(64 + 1) * (64 + 1)];
-    FastNoise fastNoise;
+    std::vector<float> cachedNoiseField;
     std::mt19937 rng;
-    double simplexFractal(float x, float y)
-    {
-        return (1.0 + fastNoise.GetSimplexFractal(x, y)) / 2.0;
-    }
+    FastNoise fastNoise;
+
     void init()
     {
         fastNoise.SetFrequency(0.02);
         fastNoise.SetFractalOctaves(4);
 
-        for (int dx = 0; dx < size + 1; dx++)
-            for (int dz = 0; dz < size + 1; dz++)
-            {
-                {
-                    vm::ivec2 pos = vm::ivec2(dx, dz) + vm::ivec2(min.x, min.z);
-                    cachedNoiseField[dx + dz * size] = simplexFractal(pos.x, pos.y);
-                }
-            }
+        cachedNoiseField.resize((size + 3) * (size + 3));
+
+        for (int dz = 0; dz < size + 3; dz++)
+            for (int dx = 0; dx < size + 3; dx++)
+                cachedNoiseField[dx + dz * size] = (float)fastNoise.GetSimplexFractal(dx + min.x - 1, dz + min.z - 1);
     }
     float lerp(const float &a, const float &b, const float &f)
     {
         return a + f * (b - a);
     }
-    float interpolate(const float &x, const float &y)
+    float interpolate(const float &x, const float &z)
     {
         const int xf = std::floor(x);
-        const float dx = x - xf;
-        const int indexF = xf + y * size;
-
-        if (indexF < 0 || indexF > (64 + 1) * (64 + 1))
-        {
-            // std::cout << "X : " << x << ", Z: " << y << std::endl;
-            return 0.5;
-        }
-
-        // if (dx == 0)
-        // {
-        //     return cachedNoiseField[indexF];
-        // }
-
         const int xc = std::ceil(x);
-        const int indexC = xc + y * size;
-
-        if (indexC < 0 || indexC > (64 + 1) * (64 + 1))
-        {
-            // std::cout << "X : " << x << ", Z: " << y << std::endl;
-            return 0.5;
-        }
-
-        // if (dx == 1)
-        // {
-        //     return cachedNoiseField[indexC];
-        // }
-
-        const float r1 = cachedNoiseField[indexF];
-        const float r2 = cachedNoiseField[indexC];
-
-        return lerp(r1, r2, dx);
+        const int indexF = xf + z * size;
+        const int indexC = xc + z * size;
+        const float dx = x - xf;
+        return lerp(cachedNoiseField.at(indexF), cachedNoiseField.at(indexC), dx);
+        // return lerp(cachedNoiseField[indexF], cachedNoiseField[indexC], dx);
     }
     float interpolate2D(const float &x, const float &z)
     {
-        float x1 = x - min.x;
-        float z1 = z - min.z;
-        if(x1 < 0){
-            x1 = 0;
-        }
-        if(z1 < 0){
-            z1 = 0;
-        }
-        // const float x1 = vm::clamp(x - min.x , 0.0 , 65.0);
-        // const float z1 = vm::clamp(z - min.z , 0.0 , 65.0);
-
-        const int zf = std::floor(z1);
-
+        const int zf = std::floor(z);
+        const int zc = std::ceil(z);
         const float dz = z - zf;
-
-        // if (dz == 0)
-        // {
-        //     const int indexF = x1 + zf * size;
-        //     return cachedNoiseField[indexF];
-        // }
-
-        const int zc = std::ceil(z1);
-
-        // if (dz == 1)
-        // {
-        //     const int indexC = x1 + zc * size;
-        //     return cachedNoiseField[indexC];
-        // }
-
-        const float yf = interpolate(x1, zf);
-        const float yc = interpolate(x1, zc);
-        // std::cout << interpolate(y1, y2) << std::endl;
-        return lerp(yf, yc, dz);
+        return lerp(interpolate(z, zf), interpolate(x, zc), dz);
     }
 };
 #endif // CHACHEDNOISE_H
