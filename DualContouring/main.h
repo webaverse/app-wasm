@@ -5,11 +5,10 @@
 #include <cstdint>
 #include <ctime>
 #include <string.h>
-#include "../glm/glm.hpp"
 #include "octree.h"
-
-using namespace std;
-using namespace glm;
+#include "bufferManager.h"
+#include "cachedNoise.h"
+#include "vectorMath.h"
 
 namespace DualContouring
 {
@@ -18,8 +17,11 @@ namespace DualContouring
     // public:
     //     vec3 getMin();
     // };
-    int *createChunk(float x, float y, float z, const float lod, int octreeSize = 64);
-    int *createSeam(float x, float y, float z, int octreeSize = 64);
+    void clearTemporaryChunkData();
+    void clearChunkRoot(float x, float y, float z);
+    void generateChunkData(float x, float y, float z);
+    void setChunkLod(float x, float y, float z, const int lod);
+    int *createChunkMesh(float x, float y, float z);
 };
 
 #endif // MAIN_H
