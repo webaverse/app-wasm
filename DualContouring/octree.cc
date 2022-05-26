@@ -71,100 +71,77 @@ const int edgeProcEdgeMask[3][2][5] = {
 
 const int processEdgeMask[3][4] = {{3, 2, 1, 0}, {7, 5, 6, 4}, {11, 10, 9, 8}};
 
-vm::vec4 selectFourMostCommonMembers(unsigned char biomeSamples[], const int &n)
+template <typename T>
+void selectMostCommonBiomes(vm::ivec4 &biome, vm::vec4 &biomeWeights, const T &samples, const int &n)
 {
-	vm::vec4 selection;
-	std::vector<unsigned char> sortedSamples;
+	std::vector<std::pair<unsigned char, float>> sortedSamples;
 	sortedSamples.reserve(n);
 	for (int i = 0; i < n; ++i)
 	{
-		sortedSamples.emplace_back(biomeSamples[i]);
+		sortedSamples.emplace_back(samples.first[i], samples.second[i]);
 	}
 
 	std::unordered_map<unsigned char, size_t> count;
 
-	for (unsigned char i : sortedSamples)
+	for (std::pair<unsigned char, float> s : sortedSamples)
 	{
-		count[i]++;
+		count[s.first]++;
 	}
 
 	std::sort(
 		sortedSamples.begin(),
 		sortedSamples.end(),
-		[&count](unsigned char const &a, unsigned char const &b)
+		[&count](const std::pair<unsigned char, float> &a, const std::pair<unsigned char, float> &b)
 		{
-			if (a == b)
+			if (a.first == b.first)
 			{
 				return false;
 			}
-			if (count[a] > count[b])
+			if (count[a.first] > count[b.first])
 			{
 				return true;
 			}
-			else if (count[a] < count[b])
+			else if (count[a.first] < count[b.first])
 			{
 				return false;
 			}
-			return a < b;
+			return a.first < b.first;
 		});
 
-	selection.x = sortedSamples[0];
-	selection.y = sortedSamples[1];
-	selection.z = sortedSamples[2];
-	selection.w = sortedSamples[3];
+	biome.x = sortedSamples[0].first;
+	biome.y = sortedSamples[1].first;
+	biome.z = sortedSamples[2].first;
+	biome.w = sortedSamples[3].first;
 
-	return selection;
+	biomeWeights.x = sortedSamples[0].second;
+	biomeWeights.y = sortedSamples[1].second;
+	biomeWeights.z = sortedSamples[2].second;
+	biomeWeights.w = sortedSamples[3].second;
 }
 
-vm::vec4 getBiomesData(const vm::vec3 &position, CachedNoise &chunkNoise)
+void setBiomeData(vm::ivec4 &biome, vm::vec4 &biomeWeights, const vm::vec3 &position, CachedNoise &chunkNoise)
 {
-	const int numberOfSamples = 9;
-	unsigned char samples[numberOfSamples];
+	const int gridSize = 2;
+	// +1 is for fence post error
+	const int gridPoints = gridSize + 1;
+	std::pair<unsigned char[gridPoints * gridPoints], float[gridPoints * gridPoints]> biomeData;
 
-	// sample points on a circle
-	float angle = 0.0;
-	for (int i = 0; i < numberOfSamples; i++)
-	{
-		angle = (2 * PI / numberOfSamples) * i;
-		const vm::vec3 samplePosition = position + vm::vec3(std::cos(angle), 0.0, std::sin(angle));
-		samples[i] = getBiome(position, chunkNoise);
-	}
+	vm::ivec2 minPoint = vm::ivec2(std::floor(position.x), std::floor(position.z)) - 1;
 
-	vm::vec4 biome = selectFourMostCommonMembers(samples, numberOfSamples);
+	for (int y = 0; y < gridPoints; y++)
+		for (int x = 0; x < gridPoints; x++)
+		{
+			const vm::ivec2 pointPosition = minPoint + vm::ivec2(x, y);
+			biomeData.first[x + y * gridPoints] = getBiome(pointPosition, chunkNoise);
+			biomeData.second[x + y * gridPoints] = 1.f / (vm::distance(vm::vec2(position.x, position.z), pointPosition) + 1.f);
+		}
 
-	return biome;
-}
-
-vm::vec4 getBiomesWeight(const vm::vec3 &position, const vm::vec4 &biome, CachedNoise &chunkNoise)
-{
-	vm::vec4 biomesWeights;
-	// float biomesValues[4] = {biome.x, biome.y, biome.z, biome.w};
-	unsigned char pointBiome = getBiome(position, chunkNoise);
-	const float rightDistance = std::abs(+pointBiome - biome.x);
-	const float upDistance = std::abs(+pointBiome - biome.y);
-	const float leftDistance = std::abs(+pointBiome - biome.z);
-	const float downDistance = std::abs(+pointBiome - biome.w);
-
-	const float rightDownWeight = std::sqrt(std::pow(rightDistance, 2) + std::pow(downDistance, 2));
-	const float rightUpWeight = std::sqrt(std::pow(rightDistance, 2) + std::pow(upDistance, 2));
-	const float leftDownWeight = std::sqrt(std::pow(leftDistance, 2) + std::pow(downDistance, 2));
-	const float leftUpWeight = std::sqrt(std::pow(leftDistance, 2) + std::pow(upDistance, 2));
-
-	biomesWeights.x = rightDownWeight;
-	biomesWeights.y = rightUpWeight;
-	biomesWeights.z = leftDownWeight;
-	biomesWeights.w = leftUpWeight;
-	// int n = 4;
-	// biomesWeights.x = getPercentageInArray(biomesValues, biomesValues[0], n);
-	// biomesWeights.y = getPercentageInArray(biomesValues, biomesValues[1], n);
-	// biomesWeights.z = getPercentageInArray(biomesValues, biomesValues[2], n);
-	// biomesWeights.w = getPercentageInArray(biomesValues, biomesValues[3], n);
-	// std::cout << rightDownWeight << std::endl;
-	return biomesWeights;
+	selectMostCommonBiomes(biome, biomeWeights, biomeData, gridPoints * gridPoints);
 }
 
 OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 {
+
 	if (!node)
 	{
 		return NULL;
@@ -214,7 +191,7 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 	qef.solve(qefPosition, QEF_ERROR, QEF_SWEEPS, QEF_ERROR);
 	float error = qef.getError();
 
-	// convert to glm vec3 for ease of use
+	// convert to vm vec3 for ease of use
 	vm::vec3 position(qefPosition.x, qefPosition.y, qefPosition.z);
 
 	// at this point the masspoint will actually be a sum, so divide to make it the average
@@ -234,6 +211,11 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 	// change the node from an internal node to a 'psuedo leaf' node
 	OctreeDrawInfo *drawInfo = new OctreeDrawInfo;
 
+	drawInfo->averageNormal = vm::vec3(0.f);
+
+	const int numberOfBiomeData = 8 * 4;
+	std::pair<unsigned char[numberOfBiomeData], float[numberOfBiomeData]> biomeData;
+
 	for (int i = 0; i < 8; i++)
 	{
 		if (signs[i] == -1)
@@ -245,31 +227,23 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 		{
 			drawInfo->corners |= (signs[i] << i);
 		}
-	}
 
-	drawInfo->averageNormal = vm::vec3(0.f);
-
-	const int numberOfBiomeSamples = 8 * 4;
-	unsigned char biomeSamples[numberOfBiomeSamples];
-	unsigned char biomeWeightsSamples[numberOfBiomeSamples];
-
-	for (int i = 0; i < 8; i++)
-	{
 		if (OctreeNode *child = node->children[i])
 		{
 			if (child->type == Node_Psuedo ||
 				child->type == Node_Leaf)
 			{
 				drawInfo->averageNormal += child->drawInfo->averageNormal;
-				biomeSamples[i] = child->drawInfo->biome.x;
-				biomeSamples[i + 1] = child->drawInfo->biome.y;
-				biomeSamples[i + 2] = child->drawInfo->biome.z;
-				biomeSamples[i + 3] = child->drawInfo->biome.w;
 
-				biomeWeightsSamples[i] = child->drawInfo->biomeWeights.x;
-				biomeWeightsSamples[i + 1] = child->drawInfo->biomeWeights.y;
-				biomeWeightsSamples[i + 2] = child->drawInfo->biomeWeights.z;
-				biomeWeightsSamples[i + 3] = child->drawInfo->biomeWeights.w;
+				biomeData.first[i] = child->drawInfo->biome.x;
+				biomeData.first[i + 1] = child->drawInfo->biome.y;
+				biomeData.first[i + 2] = child->drawInfo->biome.z;
+				biomeData.first[i + 3] = child->drawInfo->biome.w;
+
+				biomeData.second[i] = child->drawInfo->biomeWeights.x;
+				biomeData.second[i + 1] = child->drawInfo->biomeWeights.y;
+				biomeData.second[i + 2] = child->drawInfo->biomeWeights.z;
+				biomeData.second[i + 3] = child->drawInfo->biomeWeights.w;
 			}
 		}
 	}
@@ -277,8 +251,7 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 	drawInfo->averageNormal = vm::normalize(drawInfo->averageNormal);
 	drawInfo->position = position;
 	drawInfo->qef = qef.getData();
-	drawInfo->biome = selectFourMostCommonMembers(biomeSamples, numberOfBiomeSamples);
-	drawInfo->biomeWeights = selectFourMostCommonMembers(biomeWeightsSamples, numberOfBiomeSamples);
+	selectMostCommonBiomes(drawInfo->biome, drawInfo->biomeWeights, biomeData, numberOfBiomeData);
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -866,8 +839,8 @@ OctreeNode *constructLeaf(OctreeNode *leaf, CachedNoise &chunkNoise)
 	drawInfo->averageNormal = normalize(averageNormal / (float)edgeCount);
 	drawInfo->corners = corners;
 
-	drawInfo->biome = getBiomesData(drawInfo->position, chunkNoise);
-	drawInfo->biomeWeights = getBiomesWeight(drawInfo->position, drawInfo->biome, chunkNoise);
+	setBiomeData(drawInfo->biome, drawInfo->biomeWeights, drawInfo->position, chunkNoise);
+	// std::cout << drawInfo->biomeWeights.x << std::endl; 
 
 	leaf->type = Node_Leaf;
 	leaf->drawInfo = drawInfo;

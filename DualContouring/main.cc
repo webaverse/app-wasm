@@ -36,7 +36,6 @@ namespace DualContouring
 
     // chunk settings
     const int chunkSize = 64;
-    const int randomSeed = 1000;
 
     // storing the octrees that we would delete after mesh construction
     std::vector<OctreeNode *> temporaryNodesList;
@@ -48,8 +47,8 @@ namespace DualContouring
     {
         const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
         CachedNoise chunkNoise(octreeMin, chunkSize);
-        // std::cout << "NOISE IS GENERATED" << std::endl;
         OctreeNode *chunk = constructOctreeDownwards(octreeMin, chunkSize, chunkNoise);
+
         if (!chunk)
         {
             return;
@@ -61,9 +60,9 @@ namespace DualContouring
     {
         const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
         OctreeNode *chunkRoot = getChunkRootFromHashMap(octreeMin, chunksListHashMap);
+
         if (chunkRoot == nullptr)
         {
-            // std::cout << "NULL :/ for no reason" << std::endl;
             return;
         }
         chunkRoot->lod = static_cast<LodLevel>(lod);
@@ -169,7 +168,7 @@ namespace DualContouring
 //             for (int z = min; z < max; z += 64)
 //             {
 //                 const int lod = abs(std::max(std::max(x, y), z)) / 64;
-//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, lod);
+//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, 4);
 //             }
 //         }
 //     }
