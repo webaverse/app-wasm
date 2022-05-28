@@ -134,3 +134,110 @@ namespace DualContouring
         return constructOutputBuffer(vertexBuffer);
     }
 }
+
+// int main()
+// {
+//     // CachedNoise sampleNoise;
+//     // const double noise = sampleNoise.simplex(30,500);
+//     // std::cout << noise << std::endl;
+
+//     // std::vector<std::pair<unsigned char, float>> sortedSamples = {
+//     //     std::make_pair(2, 2.f),
+//     //     std::make_pair(3, 3.f),
+//     //     std::make_pair(2, 2.f),
+//     //     std::make_pair(2, 2.f),
+//     //     std::make_pair(4, 4.f),
+//     //     std::make_pair(2, 2.f),
+//     // };
+
+//     // std::unordered_map<unsigned char, size_t> count;
+
+//     // for (std::pair<unsigned char, float> s : sortedSamples)
+//     // {
+//     //     count[s.first]++;
+//     // }
+
+//     // std::sort(
+//     //     sortedSamples.begin(),
+//     //     sortedSamples.end(),
+//     //     [&count](const std::pair<unsigned char, float> &a, const std::pair<unsigned char, float> &b)
+//     //     {
+//     //         if (a.first == b.first)
+//     //         {
+//     //             return false;
+//     //         }
+//     //         if (count[a.first] > count[b.first])
+//     //         {
+//     //             return true;
+//     //         }
+//     //         else if (count[a.first] < count[b.first])
+//     //         {
+//     //             return false;
+//     //         }
+//     //         return a.first < b.first;
+//     //     });
+
+//     // sortedSamples.erase(std::unique(sortedSamples.begin(), sortedSamples.end()), sortedSamples.end());
+
+//     // int selectorCounter = 0;
+//     // for (size_t i = 0; i < sortedSamples.size(); i++)
+//     // {
+//     //     std::cout << +sortedSamples.at(i).first << std::endl;
+//     //     selectorCounter++;
+//     // }
+//     // for (size_t i = 0; i < 4 - selectorCounter; i++)
+//     // {
+//     //     std::cout << +sortedSamples.at(i).first << std::endl;
+//     // }
+    
+    
+
+//     const vm::ivec3 OFFSETS[8] =
+//         {
+//             vm::ivec3(0, 0, 0), vm::ivec3(1, 0, 0), vm::ivec3(0, 0, 1), vm::ivec3(1, 0, 1),
+//             vm::ivec3(0, 1, 0), vm::ivec3(1, 1, 0), vm::ivec3(0, 1, 1), vm::ivec3(1, 1, 1)};
+
+//     const int min = -((64 * 2) / 2);
+//     const int max = (64 * 2) / 2;
+
+//     for (int x = min; x < max; x += 64)
+//     {
+//         for (int y = min; y < max; y += 64)
+//         {
+//             for (int z = min; z < max; z += 64)
+//             {
+//                 // std::cout << "Generating" << std::endl;
+//                 DualContouring::generateChunkData(x + 32, y + 32, z + 32);
+//             }
+//         }
+//     }
+
+//     for (int x = min; x < max; x += 64)
+//     {
+//         for (int y = min; y < max; y += 64)
+//         {
+//             for (int z = min; z < max; z += 64)
+//             {
+//                 const int lod = abs(std::max(std::max(x, y), z)) / 64;
+//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, 4);
+//             }
+//         }
+//     }
+
+//     for (int x = min; x < max; x += 64)
+//     {
+//         for (int y = min; y < max; y += 64)
+//         {
+//             for (int z = min; z < max; z += 64)
+//             {
+//                 std::cout << "\n"
+//                           << DualContouring::createChunkMesh(x + 32, y + 32, z + 32)
+//                           << std::endl;
+//                 DualContouring::clearTemporaryChunkData();
+//                 DualContouring::clearChunkRoot(x + 32, y + 32, z + 32);
+//             }
+//         }
+//     }
+
+//     return 0;
+// }

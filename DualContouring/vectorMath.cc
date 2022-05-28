@@ -197,6 +197,12 @@ float vm::distance(const vm::vec2 &v, const vm::ivec2 &o)
 	const float dy = v.y - o.y;
 	return std::sqrt(dx * dx + dy * dy);
 }
+float vm::distance(const vm::ivec2 &v, const vm::ivec2 &o)
+{
+	const int dx = v.x - o.x;
+	const int dy = v.y - o.y;
+	return std::sqrt(dx * dx + dy * dy);
+}
 
 float vm::clamp(const float v, const float min, const float max)
 {

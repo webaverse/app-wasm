@@ -204,6 +204,7 @@ namespace vm
 
     float distance(const vm::vec2 &v, const vm::vec2 &o);
     float distance(const vm::vec2 &v, const vm::ivec2 &o);
+    float distance(const vm::ivec2 &v, const vm::ivec2 &o);
 
     float clamp(const float v, const float min, const float max);
     int clamp(const int v, const int min, const int max);

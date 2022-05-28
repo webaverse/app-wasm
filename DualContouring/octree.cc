@@ -164,7 +164,7 @@ void setBiomeData(vm::ivec4 &biome, vm::vec4 &biomeWeights, const vm::vec3 &posi
 		{
 			const vm::ivec2 pointPosition = minPoint + vm::ivec2(x, y);
 			biomeData[x + y * gridPoints].first = getBiome(pointPosition, chunkNoise);
-			biomeData[x + y * gridPoints].second = 1.f / (vm::distance(vm::vec2(position.x, position.z), pointPosition) + 1.f);
+			biomeData[x + y * gridPoints].second = 1.f / (vm::distance(minPoint + 1, pointPosition) + 1.f);
 		}
 
 	selectMostCommonBiomes(biome, biomeWeights, biomeData, gridPoints * gridPoints);
