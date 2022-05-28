@@ -71,15 +71,12 @@ const int edgeProcEdgeMask[3][2][5] = {
 
 const int processEdgeMask[3][4] = {{3, 2, 1, 0}, {7, 5, 6, 4}, {11, 10, 9, 8}};
 
-template <typename T>
-void selectMostCommonBiomes(vm::ivec4 &biome, vm::vec4 &biomeWeights, const T &samples, const int &n)
+typedef std::pair<unsigned char, float> BiomePair;
+typedef std::vector<BiomePair> BiomeData;
+
+void selectMostCommonBiomes(vm::ivec4 &biome, vm::vec4 &biomeWeights, const BiomeData &samples, const int &n)
 {
-	std::vector<std::pair<unsigned char, float>> sortedSamples;
-	sortedSamples.reserve(n);
-	for (int i = 0; i < n; ++i)
-	{
-		sortedSamples.emplace_back(samples.first[i], samples.second[i]);
-	}
+	BiomeData sortedSamples = samples;
 
 	std::unordered_map<unsigned char, size_t> count;
 
@@ -88,11 +85,13 @@ void selectMostCommonBiomes(vm::ivec4 &biome, vm::vec4 &biomeWeights, const T &s
 		count[s.first]++;
 	}
 
+	// sorting based on the count of the first element in the pair : which is the biome type
 	std::sort(
 		sortedSamples.begin(),
 		sortedSamples.end(),
-		[&count](const std::pair<unsigned char, float> &a, const std::pair<unsigned char, float> &b)
+		[&count](const BiomePair &a, const BiomePair &b)
 		{
+			// sorting based on the count of the biome type : which is the first element in the pair
 			if (a.first == b.first)
 			{
 				return false;
@@ -108,15 +107,46 @@ void selectMostCommonBiomes(vm::ivec4 &biome, vm::vec4 &biomeWeights, const T &s
 			return a.first < b.first;
 		});
 
-	biome.x = sortedSamples[0].first;
-	biome.y = sortedSamples[1].first;
-	biome.z = sortedSamples[2].first;
-	biome.w = sortedSamples[3].first;
+	std::function<bool(const BiomePair &, const BiomePair &)> duplicateRemoverLambda = [](const BiomePair &a, const BiomePair &b)
+	{
+		// comparing only the biome type which is the first element in the pair
+		return a.first == b.first;
+	};
+	auto duplicateRemoverIterator = std::unique(sortedSamples.begin(), sortedSamples.end(), duplicateRemoverLambda);
+	sortedSamples.erase(duplicateRemoverIterator, sortedSamples.end());
 
-	biomeWeights.x = sortedSamples[0].second;
-	biomeWeights.y = sortedSamples[1].second;
-	biomeWeights.z = sortedSamples[2].second;
-	biomeWeights.w = sortedSamples[3].second;
+	unsigned char selectedBiomes[4];
+	float selectedBiomesWeights[4];
+
+	int selectorCounter = 0;
+	const int nSelection = 4;
+	const int sortedSamplesSize = sortedSamples.size();
+	const int selectCount = sortedSamplesSize < nSelection ? sortedSamplesSize : nSelection;
+
+	// filling top 4 array
+	for (int i = 0; i < selectCount; i++)
+	{
+		selectedBiomes[i] = sortedSamples.at(i).first;
+		selectedBiomesWeights[i] = sortedSamples.at(i).second;
+		selectorCounter++;
+	}
+	// assigning the biome and weight to ZERO if we have less than 4 biome types
+	for (int i = selectorCounter; i < nSelection; i++)
+	{
+		selectedBiomes[i] = 0;
+		selectedBiomesWeights[i] = 0;
+	}
+
+	biome.x = selectedBiomes[0];
+	biome.y = selectedBiomes[1];
+	biome.z = selectedBiomes[2];
+	biome.w = selectedBiomes[3];
+
+	biomeWeights.x = selectedBiomesWeights[0];
+	biomeWeights.y = selectedBiomesWeights[1];
+	biomeWeights.z = selectedBiomesWeights[2];
+	biomeWeights.w = selectedBiomesWeights[3];
+	// std::cout << biome.y << std::endl;
 }
 
 void setBiomeData(vm::ivec4 &biome, vm::vec4 &biomeWeights, const vm::vec3 &position, CachedNoise &chunkNoise)
@@ -124,7 +154,8 @@ void setBiomeData(vm::ivec4 &biome, vm::vec4 &biomeWeights, const vm::vec3 &posi
 	const int gridSize = 2;
 	// +1 is for fence post error
 	const int gridPoints = gridSize + 1;
-	std::pair<unsigned char[gridPoints * gridPoints], float[gridPoints * gridPoints]> biomeData;
+	BiomeData biomeData;
+	biomeData.resize(gridPoints * gridPoints);
 
 	vm::ivec2 minPoint = vm::ivec2(std::floor(position.x), std::floor(position.z)) - 1;
 
@@ -132,8 +163,8 @@ void setBiomeData(vm::ivec4 &biome, vm::vec4 &biomeWeights, const vm::vec3 &posi
 		for (int x = 0; x < gridPoints; x++)
 		{
 			const vm::ivec2 pointPosition = minPoint + vm::ivec2(x, y);
-			biomeData.first[x + y * gridPoints] = getBiome(pointPosition, chunkNoise);
-			biomeData.second[x + y * gridPoints] = 1.f / (vm::distance(vm::vec2(position.x, position.z), pointPosition) + 1.f);
+			biomeData[x + y * gridPoints].first = getBiome(pointPosition, chunkNoise);
+			biomeData[x + y * gridPoints].second = 1.f / (vm::distance(vm::vec2(position.x, position.z), pointPosition) + 1.f);
 		}
 
 	selectMostCommonBiomes(biome, biomeWeights, biomeData, gridPoints * gridPoints);
@@ -214,7 +245,9 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 	drawInfo->averageNormal = vm::vec3(0.f);
 
 	const int numberOfBiomeData = 8 * 4;
-	std::pair<unsigned char[numberOfBiomeData], float[numberOfBiomeData]> biomeData;
+
+	BiomeData biomeData;
+	biomeData.resize(numberOfBiomeData);
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -235,15 +268,15 @@ OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod)
 			{
 				drawInfo->averageNormal += child->drawInfo->averageNormal;
 
-				biomeData.first[i] = child->drawInfo->biome.x;
-				biomeData.first[i + 1] = child->drawInfo->biome.y;
-				biomeData.first[i + 2] = child->drawInfo->biome.z;
-				biomeData.first[i + 3] = child->drawInfo->biome.w;
+				biomeData[i].first = child->drawInfo->biome.x;
+				biomeData[i + 1].first = child->drawInfo->biome.y;
+				biomeData[i + 2].first = child->drawInfo->biome.z;
+				biomeData[i + 3].first = child->drawInfo->biome.w;
 
-				biomeData.second[i] = child->drawInfo->biomeWeights.x;
-				biomeData.second[i + 1] = child->drawInfo->biomeWeights.y;
-				biomeData.second[i + 2] = child->drawInfo->biomeWeights.z;
-				biomeData.second[i + 3] = child->drawInfo->biomeWeights.w;
+				biomeData[i].second = child->drawInfo->biomeWeights.x;
+				biomeData[i + 1].second = child->drawInfo->biomeWeights.y;
+				biomeData[i + 2].second = child->drawInfo->biomeWeights.z;
+				biomeData[i + 3].second = child->drawInfo->biomeWeights.w;
 			}
 		}
 	}
@@ -840,7 +873,7 @@ OctreeNode *constructLeaf(OctreeNode *leaf, CachedNoise &chunkNoise)
 	drawInfo->corners = corners;
 
 	setBiomeData(drawInfo->biome, drawInfo->biomeWeights, drawInfo->position, chunkNoise);
-	// std::cout << drawInfo->biomeWeights.x << std::endl; 
+	// std::cout << drawInfo->biomeWeights.x << std::endl;
 
 	leaf->type = Node_Leaf;
 	leaf->drawInfo = drawInfo;
