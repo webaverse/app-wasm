@@ -378,6 +378,13 @@ OctreeNode *getChunkRootFromHashMap(vm::ivec3 octreeMin, std::unordered_map<uint
 	}
 }
 
+void removeOctreeFromHashMap(vm::ivec3 octreeMin, std::unordered_map<uint64_t, OctreeNode *> &hashMap)
+{
+	const uint64_t rootIndex = hashOctreeMin(octreeMin);
+	auto iter = hashMap.find(rootIndex);
+	hashMap.erase(iter);
+}
+
 void addChunkRootToHashMap(OctreeNode *root, std::unordered_map<uint64_t, OctreeNode *> &hashMap)
 {
 	const uint64_t rootIndex = hashOctreeMin(root->min);

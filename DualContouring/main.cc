@@ -83,6 +83,7 @@ namespace DualContouring
         {
             return;
         }
+        removeOctreeFromHashMap(octreeMin, chunksListHashMap);
         destroyOctree(chunkRoot);
     }
 
@@ -118,20 +119,20 @@ namespace DualContouring
         OctreeNode *chunkWithLod = createChunkWithLod(chunkRoot);
         generateMeshFromOctree(chunkWithLod, false, vertexBuffer);
 
-        std::vector<OctreeNode *> neighbouringChunks;
-        std::vector<OctreeNode *> seamNodes = findSeamNodes(chunkWithLod, neighbouringChunks, chunksListHashMap, getChunkRootFromHashMap);
-        OctreeNode *seamRoot = constructOctreeUpwards(seamRoot, seamNodes, chunkWithLod->min, chunkWithLod->size * 2);
-        generateMeshFromOctree(seamRoot, true, vertexBuffer);
+        // std::vector<OctreeNode *> neighbouringChunks;
+        // std::vector<OctreeNode *> seamNodes = findSeamNodes(chunkWithLod, neighbouringChunks, chunksListHashMap, getChunkRootFromHashMap);
+        // OctreeNode *seamRoot = constructOctreeUpwards(seamRoot, seamNodes, chunkWithLod->min, chunkWithLod->size * 2);
+        // generateMeshFromOctree(seamRoot, true, vertexBuffer);
 
         // adding the chunk clone + neighbouring chunk clones to the destroyable list
-        for (int i = 0; i < neighbouringChunks.size(); i++)
-        {
-            temporaryNodesList.push_back(neighbouringChunks[i]);
-        }
+        // for (int i = 0; i < neighbouringChunks.size(); i++)
+        // {
+        //     temporaryNodesList.push_back(neighbouringChunks[i]);
+        // }
         // add the chunk clone octree to the destroyable list
         temporaryNodesList.push_back(chunkWithLod);
         // add the seam octree to the destroyable list
-        temporaryNodesList.push_back(seamRoot);
+        // temporaryNodesList.push_back(seamRoot);
 
         return constructOutputBuffer(vertexBuffer);
     }
