@@ -323,7 +323,7 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALL
   -IRectBinPack/include \
   -Iconcaveman \
   objectize.cc vector.cc physics.cc PathFinder.cc \
-  FastNoise.cpp DualContouring/main.cc DualContouring/octree.cc DualContouring/vectorMath.cc DualContouring/qef.cc DualContouring/svd.cc DualContouring/density.cc \
+  FastNoise.cpp DualContouring/main.cc DualContouring/octree.cc DualContouring/vectorMath.cc DualContouring/qef.cc DualContouring/svd.cc DualContouring/density.cc DualContouring/chunkDamageBuffer.cc DualContouring/mesh.cc \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
