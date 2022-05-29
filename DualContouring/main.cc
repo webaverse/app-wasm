@@ -10,28 +10,9 @@
 
 namespace DualContouring
 {
-    int *constructOutputBuffer(VertexBuffer &vertexBuffer)
+    uint8_t *constructOutputBuffer(VertexBuffer &vertexBuffer)
     {
-        // the order of appending data to the buffer is important,
-        // we will read the data by the same order in javascript
-        BufferManager bm;
-
-        bm.appendVectorSize(vertexBuffer.positions); // 0 positions vector size
-        bm.appendVector(vertexBuffer.positions);     // 1 positions vector
-
-        bm.appendVectorSize(vertexBuffer.normals); // 2 normals vector size
-        bm.appendVector(vertexBuffer.normals);     // 3 normals vector
-
-        bm.appendVectorSize(vertexBuffer.indices); // 4 indices vector size
-        bm.appendVector(vertexBuffer.indices);     // 5 indices vector
-
-        bm.appendVectorSize(vertexBuffer.biomes); // 6 biomes vector size
-        bm.appendVector(vertexBuffer.biomes);     // 7 biomes vector
-
-        bm.appendVectorSize(vertexBuffer.biomesWeights); // 8 biomesWeight vector size
-        bm.appendVector(vertexBuffer.biomesWeights);     // 9 biomesWeight vector
-
-        return bm.getOutput();
+        return vertexBuffer.getBuffer();
     }
 
     // chunk settings
@@ -42,13 +23,14 @@ namespace DualContouring
 
     // storing the octree roots here for search
     std::unordered_map<uint64_t, OctreeNode *> chunksListHashMap;
+    std::unordered_map<uint64_t, ChunkDamageBuffer> chunksDamageBufferHashMap;
 
     void generateChunkData(float x, float y, float z)
     {
-        const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
+        const vm::ivec3 octreeMin = vm::ivec3(x, y, z);
         CachedNoise chunkNoise(octreeMin, chunkSize);
-        OctreeNode *chunk = constructOctreeDownwards(octreeMin, chunkSize, chunkNoise);
-
+        ChunkDamageBuffer &damageBuffer = getChunkDamageBuffer(octreeMin);
+        OctreeNode *chunk = constructOctreeDownwards(octreeMin, chunkSize, chunkNoise, damageBuffer);
         if (!chunk)
         {
             return;
@@ -58,7 +40,7 @@ namespace DualContouring
 
     void setChunkLod(float x, float y, float z, const int lod)
     {
-        const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
+        const vm::ivec3 octreeMin = vm::ivec3(x, y, z);
         OctreeNode *chunkRoot = getChunkRootFromHashMap(octreeMin, chunksListHashMap);
 
         if (chunkRoot == nullptr)
@@ -93,7 +75,7 @@ namespace DualContouring
     void clearChunkRoot(float x, float y, float z)
     {
         // we destroy the chunk root separately because we might need it for LOD switch if it's already generated
-        const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
+        const vm::ivec3 octreeMin = vm::ivec3(x, y, z);
         OctreeNode *chunkRoot = getChunkRootFromHashMap(octreeMin, chunksListHashMap);
         if (!chunkRoot)
         {
@@ -102,11 +84,29 @@ namespace DualContouring
         destroyOctree(chunkRoot);
     }
 
-    int *createChunkMesh(float x, float y, float z)
+    uint8_t *createChunkMesh(float x, float y, float z)
     {
+        // XXX the below causes a crash
+        /* // filter and delete all temporary octrees for this chunk
+        for (int i = 0; i < temporaryNodesList.size(); i++)
+        {
+            OctreeNode *node = temporaryNodesList[i];
+            if (node->min.x == x && node->min.y == y && node->min.z == z)
+            {
+                if (node->drawInfo)
+                {
+                    delete node->drawInfo;
+                }
+                delete node;
+                
+                temporaryNodesList.erase(temporaryNodesList.begin() + i);
+                i--;
+            }
+        } */
+
         VertexBuffer vertexBuffer;
 
-        const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
+        const vm::ivec3 octreeMin = vm::ivec3(x, y, z);
         OctreeNode *chunkRoot = getChunkRootFromHashMap(octreeMin, chunksListHashMap);
         if (!chunkRoot)
         {
@@ -132,6 +132,43 @@ namespace DualContouring
         temporaryNodesList.push_back(seamRoot);
 
         return constructOutputBuffer(vertexBuffer);
+    }
+
+    ChunkDamageBuffer &getChunkDamageBuffer(vm::ivec3 min) {
+        uint64_t minHash = hashOctreeMin(min);
+
+        const auto &iter = chunksDamageBufferHashMap.find(minHash);
+        if (iter == chunksDamageBufferHashMap.end()) {
+            chunksDamageBufferHashMap.emplace(std::make_pair(minHash, ChunkDamageBuffer(min, chunkSize)));
+        }
+
+        ChunkDamageBuffer &damageBuffer = chunksDamageBufferHashMap.find(minHash)->second;
+        return damageBuffer;
+    }
+
+    bool drawDamage(const float &x, const float &y, const float &z, const float radius, const float value) {
+        bool drew = false;
+        std::set<uint64_t> seenHashes;
+        for (float dx = -1; dx <= 1; dx += 2) { 
+            for (float dz = -1; dz <= 1; dz += 2) { 
+                for (float dy = -1; dy <= 1; dy += 2) {
+                    float ax = x + dx * radius;
+                    float ay = y + dy * radius;
+                    float az = z + dz * radius;
+                    vm::ivec3 min = vm::ivec3(ax, ay, az);
+                    uint64_t minHash = hashOctreeMin(min);
+                    if (seenHashes.find(minHash) != seenHashes.end()) {
+                        seenHashes.insert(minHash);
+
+                        ChunkDamageBuffer &damageBuffer = getChunkDamageBuffer(min);
+                        if (damageBuffer.drawDamage(ax, ay, az, radius, value)) {
+                            drew = true;
+                        }
+                    }
+                }
+            } 
+        }
+        return drew;
     }
 }
 

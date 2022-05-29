@@ -349,8 +349,12 @@ EMSCRIPTEN_KEEPALIVE void clearChunkRootDualContouring(float x, float y, float z
     return DualContouring::clearChunkRoot(x, y, z);
 }
 
-EMSCRIPTEN_KEEPALIVE int *createChunkMeshDualContouring(float x, float y, float z){
+EMSCRIPTEN_KEEPALIVE uint8_t *createChunkMeshDualContouring(float x, float y, float z){
     return DualContouring::createChunkMesh(x, y, z);
 }
+
+/* EMSCRIPTEN_KEEPALIVE bool drawDamage(float x, float y, float z, float radius, float value) {
+    return DualContouring::drawDamage(x, y, z, radius, value);
+} */
 
 } // extern "C"

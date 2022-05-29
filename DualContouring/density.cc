@@ -78,7 +78,7 @@ unsigned char getBiome(const vm::ivec2 &worldPosition, CachedNoise &chunkNoise)
 	return biome;
 }
 
-float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise)
+float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise, ChunkDamageBuffer &damageBuffer)
 {
 	const float MAX_HEIGHT = 20.f;
 	// float noise = 0.0;
@@ -88,10 +88,13 @@ float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise)
 	// const vm::vec2 q = vm::vec2(fbmNoise * 50.0, FBM(p + vm::vec2(50.2, 1.3)) * 60.0);
 	// noise += glm::clamp((1.0 - mask) * FBM(p + q) * 2.0, -100.0, 10.0);
 	// noise += mask * fbmNoise / 2.0;
-	const float noise = chunkNoise.getInterpolated(p.x, p.y) / 2.f;
+	const float noise = chunkNoise.getInterpolated(p.x, p.y);
 	// std::cout << noise << std::endl;
+	// const float damage = damageBuffer.getInterpolated(p.x, p.y);
 
-	const float terrain = position.y + (MAX_HEIGHT * noise);
+	const float terrain = position.y +
+	  (MAX_HEIGHT * noise); // +
+		// damage;
 	// std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
 
 	// const float mountainsNoise = fractalNoise(2, 0.2f, 2.1f, 0.21f, p);

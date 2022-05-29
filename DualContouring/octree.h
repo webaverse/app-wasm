@@ -18,6 +18,7 @@
 #include <set>
 // #include "../vm/glm.hpp"
 #include "cachedNoise.h"
+#include "chunkDamageBuffer.h"
 
 enum OctreeNodeType
 {
@@ -92,7 +93,7 @@ OctreeNode *constructOctreeUpwards(
     const vm::ivec3 &rootMin,
     const int rootNodeSize);
 
-OctreeNode *constructOctreeDownwards(const vm::ivec3 &min, const int size, CachedNoise &chunkNoise);
+OctreeNode *constructOctreeDownwards(const vm::ivec3 &min, const int size, CachedNoise &chunkNoise, ChunkDamageBuffer &damageBuffer);
 OctreeNode *switchChunkLod(OctreeNode *node, LodLevel lod);
 void destroyOctree(OctreeNode *node);
 void generateMeshFromOctree(OctreeNode *node, bool isSeam, VertexBuffer &vertexBuffer);
