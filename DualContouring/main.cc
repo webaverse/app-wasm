@@ -10,28 +10,9 @@
 
 namespace DualContouring
 {
-    int *constructOutputBuffer(VertexBuffer &vertexBuffer)
+    uint8_t *constructOutputBuffer(VertexBuffer &vertexBuffer)
     {
-        // the order of appending data to the buffer is important,
-        // we will read the data by the same order in javascript
-        BufferManager bm;
-
-        bm.appendVectorSize(vertexBuffer.positions); // 0 positions vector size
-        bm.appendVector(vertexBuffer.positions);     // 1 positions vector
-
-        bm.appendVectorSize(vertexBuffer.normals); // 2 normals vector size
-        bm.appendVector(vertexBuffer.normals);     // 3 normals vector
-
-        bm.appendVectorSize(vertexBuffer.indices); // 4 indices vector size
-        bm.appendVector(vertexBuffer.indices);     // 5 indices vector
-
-        bm.appendVectorSize(vertexBuffer.biomes); // 6 biomes vector size
-        bm.appendVector(vertexBuffer.biomes);     // 7 biomes vector
-
-        bm.appendVectorSize(vertexBuffer.biomesWeights); // 8 biomesWeight vector size
-        bm.appendVector(vertexBuffer.biomesWeights);     // 9 biomesWeight vector
-
-        return bm.getOutput();
+        return vertexBuffer.getBuffer();
     }
 
     // chunk settings
