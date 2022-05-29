@@ -82,15 +82,15 @@ float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise, ChunkDamag
 {
 	const float MAX_HEIGHT = 20.f;
 	// float noise = 0.0;
-	const vm::vec2 p = vm::vec2(position.x, position.z);
+	// const vm::vec2 p = vm::vec2(position.x, position.z);
 	// const float mask = glm::clamp(glm::simplex(glm::vec2(p.x, p.y) / (float)200) * 5.0, 0.0, 1.0);
 	// const float fbmNoise = FBM(p);
 	// const vm::vec2 q = vm::vec2(fbmNoise * 50.0, FBM(p + vm::vec2(50.2, 1.3)) * 60.0);
 	// noise += glm::clamp((1.0 - mask) * FBM(p + q) * 2.0, -100.0, 10.0);
 	// noise += mask * fbmNoise / 2.0;
-	const float noise = chunkNoise.getInterpolated(p.x, p.y);
+	const float noise = chunkNoise.getInterpolated(position.x, position.z);
 	// std::cout << noise << std::endl;
-	const float damage = damageBuffer.getInterpolated(p.x, p.y, p.z);
+	const float damage = damageBuffer.getInterpolated(position.x, position.y, position.z);
 
 	const float terrain = position.y +
 	  (MAX_HEIGHT * noise) +

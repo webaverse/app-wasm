@@ -24,7 +24,7 @@ public:
   //
 
   bool drawDamage(const float &x, const float &y, const float &z, const float radius, const float value);
-  float getInterpolated(const float &x, const float &z);
+  float getInterpolated(const float &x, const float &y, const float &z);
   float lerp(const float &a, const float &b, const float &f) {
     return a + f * (b - a);
   }
