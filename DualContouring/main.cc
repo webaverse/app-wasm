@@ -10,13 +10,8 @@
 
 namespace DualContouring
 {
-    uint8_t *constructOutputBuffer(VertexBuffer &vertexBuffer)
-    {
-        return vertexBuffer.getBuffer();
-    }
-
     // chunk settings
-    const int chunkSize = 64;
+    int chunkSize = 64;
 
     // storing the octrees that we would delete after mesh construction
     std::vector<OctreeNode *> temporaryNodesList;
@@ -25,6 +20,13 @@ namespace DualContouring
     std::unordered_map<uint64_t, OctreeNode *> chunksListHashMap;
     std::unordered_map<uint64_t, ChunkDamageBuffer> chunksDamageBufferHashMap;
 
+    void setChunkSize(int newChunkSize) {
+        chunkSize = newChunkSize;
+    }
+    uint8_t *constructOutputBuffer(VertexBuffer &vertexBuffer)
+    {
+        return vertexBuffer.getBuffer();
+    }
     void generateChunkData(float x, float y, float z)
     {
         const vm::ivec3 octreeMin = vm::ivec3(x, y, z);
