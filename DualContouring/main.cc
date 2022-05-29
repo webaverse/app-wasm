@@ -146,7 +146,10 @@ namespace DualContouring
         return damageBuffer;
     }
 
-    bool drawDamage(const float &x, const float &y, const float &z, const float radius, const float value) {
+    bool drawDamage(const float &x, const float &y, const float &z, const float radius, const float value, float *outPositions, unsigned int *outPositionsCount) {
+        unsigned int maxPositionsCount = *outPositionsCount;
+        *outPositionsCount = 0;
+
         bool drew = false;
         std::set<uint64_t> seenHashes;
         for (float dx = -1; dx <= 1; dx += 2) { 
@@ -155,15 +158,28 @@ namespace DualContouring
                     float ax = x + dx * radius;
                     float ay = y + dy * radius;
                     float az = z + dz * radius;
-                    vm::ivec3 min = vm::ivec3(ax, ay, az);
+                    vm::ivec3 min = vm::ivec3(std::floor(ax / (float)chunkSize), std::floor(ay / (float)chunkSize), std::floor(az / (float)chunkSize)) * chunkSize;
                     uint64_t minHash = hashOctreeMin(min);
-                    if (seenHashes.find(minHash) != seenHashes.end()) {
+                    if (seenHashes.find(minHash) == seenHashes.end()) {
                         seenHashes.insert(minHash);
 
                         ChunkDamageBuffer &damageBuffer = getChunkDamageBuffer(min);
+                        // std::cout << "pre draw damage " << ax << " " << ay << " " << az << " - " << min.x << " " << min.y << " " << min.z << std::endl;
                         if (damageBuffer.drawDamage(ax, ay, az, radius, value)) {
+                            // std::cout << "draw damage yes 1" << std::endl;
+                            if (*outPositionsCount < maxPositionsCount) {
+                                // std::cout << "draw damage yes 2" << std::endl;
+                                outPositions[(*outPositionsCount)++] = min.x;
+                                outPositions[(*outPositionsCount)++] = min.y;
+                                outPositions[(*outPositionsCount)++] = min.z;
+                            } /* else {
+                                std::cout << "draw damage no 2" << std::endl;
+                            } */
+
                             drew = true;
-                        }
+                        } /* else {
+                            std::cout << "draw damage no 1" << std::endl;
+                        } */
                     }
                 }
             } 

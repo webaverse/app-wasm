@@ -23,7 +23,7 @@ namespace DualContouring
     void setChunkLod(float x, float y, float z, const int lod);
     uint8_t *createChunkMesh(float x, float y, float z);
     ChunkDamageBuffer &getChunkDamageBuffer(vm::ivec3 min);
-    bool drawDamage(const float &x, const float &y, const float &z, const float radius, const float value);
+    bool drawDamage(const float &x, const float &y, const float &z, const float radius, const float value, float *outPositions, unsigned int *outPositionsCount);
 };
 
 #endif // MAIN_H
