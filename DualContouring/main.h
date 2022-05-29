@@ -17,6 +17,7 @@ namespace DualContouring
     // public:
     //     vec3 getMin();
     // };
+    void setChunkSize(int newChunkSize);
     void clearTemporaryChunkData();
     void clearChunkRoot(float x, float y, float z);
     void generateChunkData(float x, float y, float z);
