@@ -92,10 +92,12 @@ float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise, ChunkDamag
 	// std::cout << noise << std::endl;
 	const float damage = damageBuffer.getInterpolated(position.x, position.y, position.z);
 
-	const float terrain = position.y +
-	  (MAX_HEIGHT * noise) +
-		damage;
-	// std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
+	/* if (damage != 0.) {
+		std::cout << "got damage " << damage << " - " << position.x << " " << position.y << " " << position.z << std::endl;
+	} */
+
+	// const float terrain = std::min(std::max(position.y - (MAX_HEIGHT * noise), -1.f), 1.f) + damage;
+	const float terrain = position.y + (MAX_HEIGHT * noise) + damage;
 
 	// const float mountainsNoise = fractalNoise(2, 0.2f, 2.1f, 0.21f, p);
 
