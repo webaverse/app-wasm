@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-class BufferManager
+/* class BufferManager
 {
 public:
     template <typename T>
@@ -40,6 +40,6 @@ private:
         memcpy(buffer, &vector.front(), size);
         return buffer;
     };
-};
+}; */
 
 #endif // BUFFERMANAGER_H
