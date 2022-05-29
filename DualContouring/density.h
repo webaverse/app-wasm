@@ -10,6 +10,6 @@
 #include "cachedNoise.h"
 
 float Density_Func(const vm::vec3 &worldPosition, CachedNoise &chunkNoise);
-unsigned char getBiome(const vm::vec3 &worldPosition, CachedNoise &chunkNoise);
+unsigned char getBiome(const vm::ivec2 &worldPosition, CachedNoise &chunkNoise);
 
 #endif //	DENSITY_H

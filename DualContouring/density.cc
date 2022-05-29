@@ -67,14 +67,14 @@ float cuboid(const vm::vec3 &worldPosition, const vm::vec3 &origin, const vm::ve
 // 	// return a - falloffMap(vm::vec2(position.x + 100, position.y - 100));
 // }
 
-unsigned char getBiome(const vm::vec3 &worldPosition,CachedNoise &chunkNoise)
+unsigned char getBiome(const vm::ivec2 &worldPosition, CachedNoise &chunkNoise)
 {
 	unsigned char biome = 0xFF;
-	const int t = (int)std::floor(chunkNoise.getInterpolated(worldPosition.x,worldPosition.z) * 16.0);
-	const int h = (int)std::floor(chunkNoise.getInterpolated(worldPosition.x,worldPosition.z) * 16.0);
+	const float noiseValue = chunkNoise.getRaw(worldPosition.x, worldPosition.y);
+	const int t = (int)std::floor(noiseValue * 16.0);
+	const int h = (int)std::floor(noiseValue * 16.0);
 	biome = (unsigned char)BIOMES_TEMPERATURE_HUMIDITY[t + 16 * h];
-	// biome = (unsigned char)BIOMES_TEMPERATURE_HUMIDITY[0 + 16 * 0];
-	// std::cout << +biome << std::endl;
+
 	return biome;
 }
 
@@ -88,7 +88,7 @@ float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise)
 	// const vm::vec2 q = vm::vec2(fbmNoise * 50.0, FBM(p + vm::vec2(50.2, 1.3)) * 60.0);
 	// noise += glm::clamp((1.0 - mask) * FBM(p + q) * 2.0, -100.0, 10.0);
 	// noise += mask * fbmNoise / 2.0;
-	const float noise = chunkNoise.getInterpolated(p.x, p.y)/2.f;
+	const float noise = chunkNoise.getInterpolated(p.x, p.y) / 2.f;
 	// std::cout << noise << std::endl;
 
 	const float terrain = position.y + (MAX_HEIGHT * noise);

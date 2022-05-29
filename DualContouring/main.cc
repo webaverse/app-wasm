@@ -36,7 +36,6 @@ namespace DualContouring
 
     // chunk settings
     const int chunkSize = 64;
-    const int randomSeed = 1000;
 
     // storing the octrees that we would delete after mesh construction
     std::vector<OctreeNode *> temporaryNodesList;
@@ -48,8 +47,8 @@ namespace DualContouring
     {
         const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
         CachedNoise chunkNoise(octreeMin, chunkSize);
-        // std::cout << "NOISE IS GENERATED" << std::endl;
         OctreeNode *chunk = constructOctreeDownwards(octreeMin, chunkSize, chunkNoise);
+
         if (!chunk)
         {
             return;
@@ -61,9 +60,9 @@ namespace DualContouring
     {
         const vm::ivec3 octreeMin = vm::ivec3(-chunkSize / 2) + vm::ivec3(x, y, z);
         OctreeNode *chunkRoot = getChunkRootFromHashMap(octreeMin, chunksListHashMap);
+
         if (chunkRoot == nullptr)
         {
-            // std::cout << "NULL :/ for no reason" << std::endl;
             return;
         }
         chunkRoot->lod = static_cast<LodLevel>(lod);
@@ -142,6 +141,57 @@ namespace DualContouring
 //     // const double noise = sampleNoise.simplex(30,500);
 //     // std::cout << noise << std::endl;
 
+//     // std::vector<std::pair<unsigned char, float>> sortedSamples = {
+//     //     std::make_pair(2, 2.f),
+//     //     std::make_pair(3, 3.f),
+//     //     std::make_pair(2, 2.f),
+//     //     std::make_pair(2, 2.f),
+//     //     std::make_pair(4, 4.f),
+//     //     std::make_pair(2, 2.f),
+//     // };
+
+//     // std::unordered_map<unsigned char, size_t> count;
+
+//     // for (std::pair<unsigned char, float> s : sortedSamples)
+//     // {
+//     //     count[s.first]++;
+//     // }
+
+//     // std::sort(
+//     //     sortedSamples.begin(),
+//     //     sortedSamples.end(),
+//     //     [&count](const std::pair<unsigned char, float> &a, const std::pair<unsigned char, float> &b)
+//     //     {
+//     //         if (a.first == b.first)
+//     //         {
+//     //             return false;
+//     //         }
+//     //         if (count[a.first] > count[b.first])
+//     //         {
+//     //             return true;
+//     //         }
+//     //         else if (count[a.first] < count[b.first])
+//     //         {
+//     //             return false;
+//     //         }
+//     //         return a.first < b.first;
+//     //     });
+
+//     // sortedSamples.erase(std::unique(sortedSamples.begin(), sortedSamples.end()), sortedSamples.end());
+
+//     // int selectorCounter = 0;
+//     // for (size_t i = 0; i < sortedSamples.size(); i++)
+//     // {
+//     //     std::cout << +sortedSamples.at(i).first << std::endl;
+//     //     selectorCounter++;
+//     // }
+//     // for (size_t i = 0; i < 4 - selectorCounter; i++)
+//     // {
+//     //     std::cout << +sortedSamples.at(i).first << std::endl;
+//     // }
+    
+    
+
 //     const vm::ivec3 OFFSETS[8] =
 //         {
 //             vm::ivec3(0, 0, 0), vm::ivec3(1, 0, 0), vm::ivec3(0, 0, 1), vm::ivec3(1, 0, 1),
@@ -169,7 +219,7 @@ namespace DualContouring
 //             for (int z = min; z < max; z += 64)
 //             {
 //                 const int lod = abs(std::max(std::max(x, y), z)) / 64;
-//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, lod);
+//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, 4);
 //             }
 //         }
 //     }
