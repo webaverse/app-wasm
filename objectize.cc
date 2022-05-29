@@ -332,24 +332,29 @@ EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, flo
   return marchingCubes(dims, potential, shift, scale);
 }
 
+//
 
-EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){
+EMSCRIPTEN_KEEPALIVE void setChunkSize(int newChunkSize) {
+    return DualContouring::setChunkSize(newChunkSize);
+}
+
+EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z) {
     return DualContouring::generateChunkData(x, y, z);
 }
 
-EMSCRIPTEN_KEEPALIVE void setChunkLodDualContouring(float x, float y, float z, int lod){
+EMSCRIPTEN_KEEPALIVE void setChunkLodDualContouring(float x, float y, float z, int lod) {
     return DualContouring::setChunkLod(x, y, z, lod);
 }
 
-EMSCRIPTEN_KEEPALIVE void clearTemporaryChunkDataDualContouring(){
+EMSCRIPTEN_KEEPALIVE void clearTemporaryChunkDataDualContouring() {
     return DualContouring::clearTemporaryChunkData();
 }
 
-EMSCRIPTEN_KEEPALIVE void clearChunkRootDualContouring(float x, float y, float z){
+EMSCRIPTEN_KEEPALIVE void clearChunkRootDualContouring(float x, float y, float z) {
     return DualContouring::clearChunkRoot(x, y, z);
 }
 
-EMSCRIPTEN_KEEPALIVE uint8_t *createChunkMeshDualContouring(float x, float y, float z){
+EMSCRIPTEN_KEEPALIVE uint8_t *createChunkMeshDualContouring(float x, float y, float z) {
     return DualContouring::createChunkMesh(x, y, z);
 }
 
