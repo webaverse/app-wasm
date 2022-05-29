@@ -33,17 +33,8 @@ namespace DualContouring
         OctreeNode *chunk = constructOctreeDownwards(octreeMin, chunkSize, chunkNoise, damageBuffer);
         if (!chunk)
         {
-            /* std::cout << "no chunk in generate chunk data " <<
-                x << " : " << y << " : " << z << " - " <<
-                octreeMin.x << " : " << octreeMin.y << " : " << octreeMin.z <<
-                std::endl; */
             return;
-        } /* else {
-            std::cout << "yes chunk in generate chunk data " <<
-                x << " : " << y << " : " << z << " - " <<
-                octreeMin.x << " : " << octreeMin.y << " : " << octreeMin.z <<
-                std::endl;
-        } */
+        }
         addChunkRootToHashMap(chunk, chunksListHashMap);
     }
 
@@ -119,10 +110,6 @@ namespace DualContouring
         OctreeNode *chunkRoot = getChunkRootFromHashMap(octreeMin, chunksListHashMap);
         if (!chunkRoot)
         {
-            /* std::cout << "no chunk root " <<
-                x << " : " << y << " : " << z << " - " <<
-                octreeMin.x << " : " << octreeMin.y << " : " << octreeMin.z <<
-                std::endl; */
             return nullptr;
         }
 
