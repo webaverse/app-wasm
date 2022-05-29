@@ -120,7 +120,7 @@ bool ChunkDamageBuffer::drawDamage(const float &x, const float &y, const float &
 
 float ChunkDamageBuffer::getInterpolated(const float &x, const float &y, const float &z) {
   const float localX = x - min.x + 1;
-  const float localY = z - min.y + 1;
+  const float localY = y - min.y + 1;
   const float localZ = z - min.z + 1;
   return trilinear<float>(
     vm::vec3(localX, localY, localZ),
