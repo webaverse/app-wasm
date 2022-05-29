@@ -14,17 +14,20 @@
 class CachedNoise
 {
 public:
-    CachedNoise() : rng(1000),
-                    fastNoise(rng()), min(vm::ivec3(-32)), size(64), gridPoints(size + 3)
+    /* CachedNoise() : rng(1000),
+                    fastNoise(rng()), min(vm::ivec3(0)), size(64), gridPoints(size + 3)
     {
         init();
-    };
+    }; */
+    CachedNoise() = delete;
+    CachedNoise(const CachedNoise &other) = delete;
     CachedNoise(const vm::ivec3 chunkMin, int chunkSize) : rng(100),
                                                            fastNoise(rng()), min(chunkMin), size(chunkSize), gridPoints(size + 3)
     {
         init();
     };
 
+    // get given world point noise, given cache
     float getInterpolated(const float &x, const float &z)
     {
         const float localX = x - min.x + 1;
@@ -39,7 +42,7 @@ public:
         return (cachedNoiseField.at(index) + 1.f) / 2.f;
     }
 
-private:
+// private:
     int size;
     int gridPoints;
     vm::ivec3 min;
@@ -54,15 +57,17 @@ private:
 
         cachedNoiseField.resize(gridPoints * gridPoints);
 
-        for (int dz = 0; dz < gridPoints; dz++)
-            for (int dx = 0; dx < gridPoints; dx++)
+        for (int dz = 0; dz < gridPoints; dz++) {
+            for (int dx = 0; dx < gridPoints; dx++) {
                 cachedNoiseField[dx + dz * gridPoints] = (float)fastNoise.GetSimplexFractal(dx + min.x - 1, dz + min.z - 1);
+            }
+        }
     }
     float lerp(const float &a, const float &b, const float &f)
     {
         return a + f * (b - a);
     }
-    float interpolate(const float &x, const float &z)
+    float interpolate1D(const float &x, const float &z)
     {
         const int xf = std::floor(x);
         const int xc = std::ceil(x);
@@ -70,14 +75,13 @@ private:
         const int indexC = xc + z * gridPoints;
         const float dx = x - xf;
         return lerp(cachedNoiseField.at(indexF), cachedNoiseField.at(indexC), dx);
-        // return lerp(cachedNoiseField[indexF], cachedNoiseField[indexC], dx);
     }
     float interpolate2D(const float &x, const float &z)
     {
         const int zf = std::floor(z);
         const int zc = std::ceil(z);
         const float dz = z - zf;
-        return lerp(interpolate(x, zf), interpolate(x, zc), dz);
+        return lerp(interpolate1D(x, zf), interpolate1D(x, zc), dz);
     }
 };
 #endif // CHACHEDNOISE_H
