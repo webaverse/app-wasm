@@ -90,7 +90,7 @@ float Density_Func(const vm::vec3 &position, CachedNoise &chunkNoise, ChunkDamag
 	// noise += mask * fbmNoise / 2.0;
 	const float noise = chunkNoise.getInterpolated(p.x, p.y);
 	// std::cout << noise << std::endl;
-	const float damage = damageBuffer.getInterpolated(p.x, p.y, p.z);
+	const float damage = damageBuffer.getInterpolated(p.x, p.y);
 
 	const float terrain = position.y +
 	  (MAX_HEIGHT * noise) +

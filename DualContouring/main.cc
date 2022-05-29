@@ -36,6 +36,7 @@ namespace DualContouring
             return;
         }
         addChunkRootToHashMap(chunk, chunksListHashMap);
+        // std::cout << "CHUNK IS GENERATED" << std::endl;
     }
 
     void setChunkLod(float x, float y, float z, const int lod)
@@ -55,6 +56,7 @@ namespace DualContouring
         std::vector<OctreeNode *> nodesList;
         for (int i = 0; i < temporaryNodesList.size(); i++)
         {
+            printf("DELETE CHUNK DATA\n");
             addNodesToVector(temporaryNodesList[i], nodesList);
         }
         // sort and remove duplicates
@@ -81,6 +83,7 @@ namespace DualContouring
         {
             return;
         }
+        removeOctreeFromHashMap(octreeMin, chunksListHashMap);
         destroyOctree(chunkRoot);
     }
 
@@ -116,20 +119,22 @@ namespace DualContouring
         OctreeNode *chunkWithLod = createChunkWithLod(chunkRoot);
         generateMeshFromOctree(chunkWithLod, false, vertexBuffer);
 
-        std::vector<OctreeNode *> neighbouringChunks;
-        std::vector<OctreeNode *> seamNodes = findSeamNodes(chunkWithLod, neighbouringChunks, chunksListHashMap, getChunkRootFromHashMap);
-        OctreeNode *seamRoot = constructOctreeUpwards(seamRoot, seamNodes, chunkWithLod->min, chunkWithLod->size * 2);
-        generateMeshFromOctree(seamRoot, true, vertexBuffer);
+        // std::vector<OctreeNode *> neighbouringChunks;
+        // std::vector<OctreeNode *> seamNodes = findSeamNodes(chunkWithLod, neighbouringChunks, chunksListHashMap, getChunkRootFromHashMap);
+        // OctreeNode *seamRoot = constructOctreeUpwards(seamRoot, seamNodes, chunkWithLod->min, chunkWithLod->size * 2);
+        // generateMeshFromOctree(seamRoot, true, vertexBuffer);
 
         // adding the chunk clone + neighbouring chunk clones to the destroyable list
-        for (int i = 0; i < neighbouringChunks.size(); i++)
-        {
-            temporaryNodesList.push_back(neighbouringChunks[i]);
-        }
+        // for (int i = 0; i < neighbouringChunks.size(); i++)
+        // {
+        //     temporaryNodesList.push_back(neighbouringChunks[i]);
+        // }
         // add the chunk clone octree to the destroyable list
+
+        // temporaryNodesList.push_back(chunkRoot);
         temporaryNodesList.push_back(chunkWithLod);
         // add the seam octree to the destroyable list
-        temporaryNodesList.push_back(seamRoot);
+        // temporaryNodesList.push_back(seamRoot);
 
         return constructOutputBuffer(vertexBuffer);
     }
@@ -234,8 +239,8 @@ namespace DualContouring
 //             vm::ivec3(0, 0, 0), vm::ivec3(1, 0, 0), vm::ivec3(0, 0, 1), vm::ivec3(1, 0, 1),
 //             vm::ivec3(0, 1, 0), vm::ivec3(1, 1, 0), vm::ivec3(0, 1, 1), vm::ivec3(1, 1, 1)};
 
-//     const int min = -((64 * 2) / 2);
-//     const int max = (64 * 2) / 2;
+//     const int min = -((64 * 30) / 2);
+//     const int max = (64 * 30) / 2;
 
 //     for (int x = min; x < max; x += 64)
 //     {
@@ -243,30 +248,8 @@ namespace DualContouring
 //         {
 //             for (int z = min; z < max; z += 64)
 //             {
-//                 // std::cout << "Generating" << std::endl;
 //                 DualContouring::generateChunkData(x + 32, y + 32, z + 32);
-//             }
-//         }
-//     }
-
-//     for (int x = min; x < max; x += 64)
-//     {
-//         for (int y = min; y < max; y += 64)
-//         {
-//             for (int z = min; z < max; z += 64)
-//             {
-//                 const int lod = abs(std::max(std::max(x, y), z)) / 64;
-//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, 4);
-//             }
-//         }
-//     }
-
-//     for (int x = min; x < max; x += 64)
-//     {
-//         for (int y = min; y < max; y += 64)
-//         {
-//             for (int z = min; z < max; z += 64)
-//             {
+//                 DualContouring::setChunkLod(x + 32, y + 32, z + 32, 1);
 //                 std::cout << "\n"
 //                           << DualContouring::createChunkMesh(x + 32, y + 32, z + 32)
 //                           << std::endl;

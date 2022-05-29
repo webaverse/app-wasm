@@ -344,6 +344,7 @@ OctreeNode *createChunkWithLod(OctreeNode *chunkRoot)
 	cloneNode(chunkRoot, chunk);
 	// apply lod to chunk clone
 	chunk = switchChunkLod(chunk, chunkRoot->lod);
+	// printf("CREATING NEW\n");
 
 	return chunk;
 }
@@ -354,11 +355,16 @@ const vm::ivec3 chunkMinForPosition(const vm::ivec3 &p)
 	return vm::ivec3(p.x & mask, p.y & mask, p.z & mask);
 }
 
+int sign(int n)
+{
+	return n < 0;
+}
+
 uint64_t hashOctreeMin(const vm::ivec3 &min)
 {
-	uint64_t result = uint16_t(min.x);
-	result = (result << 16) + uint16_t(min.y);
-	result = (result << 16) + uint16_t(min.z);
+	uint64_t result = (uint16_t(std::abs(min.x)) | (sign(min.x) ? uint16_t(0xA000) : uint16_t(0x0)));
+	result = (result << 16) + (uint16_t(std::abs(min.y)) | (sign(min.y) ? uint16_t(0xA000) : uint16_t(0x0)));
+	result = (result << 16) + (uint16_t(std::abs(min.z)) | (sign(min.z) ? uint16_t(0xA000) : uint16_t(0x0)));
 	return result;
 }
 
@@ -376,6 +382,12 @@ OctreeNode *getChunkRootFromHashMap(vm::ivec3 octreeMin, std::unordered_map<uint
 		// Found the octree
 		return iter->second;
 	}
+}
+void removeOctreeFromHashMap(vm::ivec3 octreeMin, std::unordered_map<uint64_t, OctreeNode *> &hashMap)
+{
+	const uint64_t rootIndex = hashOctreeMin(octreeMin);
+	auto iter = hashMap.find(rootIndex);
+	hashMap.erase(iter);
 }
 
 void addChunkRootToHashMap(OctreeNode *root, std::unordered_map<uint64_t, OctreeNode *> &hashMap)
@@ -791,11 +803,11 @@ vm::vec3 calculateSurfaceNormal(const vm::vec3 &p, CachedNoise &chunkNoise, Chun
 {
 	const float H = 0.001f;
 	const float dx = Density_Func(p + vm::vec3(H, 0.f, 0.f), chunkNoise, damageBuffer) -
-	  Density_Func(p - vm::vec3(H, 0.f, 0.f), chunkNoise, damageBuffer);
+					 Density_Func(p - vm::vec3(H, 0.f, 0.f), chunkNoise, damageBuffer);
 	const float dy = Density_Func(p + vm::vec3(0.f, H, 0.f), chunkNoise, damageBuffer) -
-	  Density_Func(p - vm::vec3(0.f, H, 0.f), chunkNoise, damageBuffer);
+					 Density_Func(p - vm::vec3(0.f, H, 0.f), chunkNoise, damageBuffer);
 	const float dz = Density_Func(p + vm::vec3(0.f, 0.f, H), chunkNoise, damageBuffer) -
-	  Density_Func(p - vm::vec3(0.f, 0.f, H), chunkNoise, damageBuffer);
+					 Density_Func(p - vm::vec3(0.f, 0.f, H), chunkNoise, damageBuffer);
 
 	return vm::normalize(vm::vec3(dx, dy, dz));
 }
