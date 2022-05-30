@@ -3,7 +3,6 @@
 // #include "compose.h"
 // #include "noise.h"
 #include "march.h"
-#include "DualContouring/main.h"
 // #include "collide.h"
 #include "physics.h"
 // #include "convex.h"
