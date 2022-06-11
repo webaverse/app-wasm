@@ -2,7 +2,7 @@
 mkdir -p bin
 if [ ! -f physx-timestamp ]; then
   echo 'building physx...'
-  emcc -s WASM=1 -O3 \
+  emcc -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -278,21 +278,21 @@ if [ ! -f physx-timestamp ]; then
 fi
 if [ ! -f cut.o ]; then
   echo 'building cut...'
-  emcc -s WASM=1 -O3 \
+  emcc -O3 \
   cut.cc \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c
 fi
 if [ ! -f march.o ]; then
   echo 'building march...'
-  emcc -s WASM=1 -O3 \
+  emcc -O3 \
   march.cc \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c
 fi
 echo 'building main...'
 # m = 64*1024; s = 200 * 1024 * 1024; Math.floor(s/m)*m;
-emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
+emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -324,7 +324,6 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALL
   -Iconcaveman \
   objectize.cc \
   vector.cc physics-base.cc physics.cc PathFinder.cc FastNoise.cpp \
-  DualContouring/main.cc DualContouring/octree.cc DualContouring/vectorMath.cc DualContouring/qef.cc DualContouring/svd.cc DualContouring/density.cc DualContouring/chunkDamageBuffer.cc DualContouring/mesh.cc \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
@@ -335,7 +334,7 @@ echo 'done building main'
 
 echo 'building worker...'
 # m = 64*1024; s = 50 * 1024 * 1024; Math.floor(s/m)*m;
-emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=52428800 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
+emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=52428800 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
