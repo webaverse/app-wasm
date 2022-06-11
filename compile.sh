@@ -204,6 +204,7 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/geomutils/src/GuSweepSharedTests.cpp \
   PhysX/physx/source/geomutils/src/GuCCTSweepTests.cpp \
   PhysX/physx/source/lowlevelaabb/src/BpBroadPhaseSap.cpp \
+  PhysX/physx/source/lowlevelaabb/src/BpSAPTasks.cpp \
   PhysX/physx/source/geomutils/src/GuBounds.cpp \
   PhysX/physx/source/scenequery/src/SqCompoundPruningPool.cpp \
   PhysX/physx/source/foundation/src/unix/PsUnixPrintString.cpp \
