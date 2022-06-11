@@ -329,8 +329,7 @@ emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_
   -I. \
   -o bin/geometry.js
 sed -Ei 's/geometry.wasm/bin\/geometry.wasm/g' bin/geometry.js
-echo -n 'const Module = (() => {' | cat - bin/geometry.js > /tmp/temp.txt && mv /tmp/temp.txt bin/geometry.js
-echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();return Module;})();export default Module;' >> bin/geometry.js
+echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/geometry.js
 echo 'done building main'
 
 echo 'building worker...'
@@ -372,8 +371,7 @@ emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=52428800 -D__linux__ -s ALLOW_MEMORY_G
   -I. \
   -o bin/app-wasm-worker.js
 sed -Ei 's/app-wasm-worker.wasm/bin\/app-wasm-worker.wasm/g' bin/app-wasm-worker.js
-echo -n 'const Module = (() => {' | cat - bin/app-wasm-worker.js > /tmp/temp.txt && mv /tmp/temp.txt bin/app-wasm-worker.js
-echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();return Module;})();export default Module;' >> bin/app-wasm-worker.js
+echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/app-wasm-worker.js
 echo 'done building worker'
 
 # Prevent compile window auto close after error, to see the error details. https://askubuntu.com/a/20353/1012283
