@@ -1853,3 +1853,11 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
     }
   }
 }
+
+void PScene::addAnimation(float *sampleValues) {
+  _sampleValues = sampleValues;
+}
+
+float PScene::evaluateAnimation(float t) {
+  return _sampleValues[(int)t];
+}

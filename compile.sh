@@ -333,4 +333,4 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALL
 echo done
 
 # Prevent compile window auto close after error, to see the error details. https://askubuntu.com/a/20353/1012283
-# exec $SHELL
+exec $SHELL
