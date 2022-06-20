@@ -1854,10 +1854,21 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
-void PScene::addAnimation(float *sampleValues) {
+void PScene::addAnimation(float *parameterPositions, float *sampleValues, float valueSize) {
+  _parameterPositions = parameterPositions;
   _sampleValues = sampleValues;
+  _valueSize = valueSize;
 }
 
-float PScene::evaluateAnimation(float t) {
-  return _sampleValues[(int)t];
+float *PScene::evaluateAnimation(float t) {
+  // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
+  float *outputBuffer = (float *)malloc((
+    3
+  ) * sizeof(float));
+
+  outputBuffer[0] = _parameterPositions[(int)t];
+  outputBuffer[1] = _sampleValues[(int)t];
+  outputBuffer[2] = _valueSize;
+
+  return outputBuffer;
 }

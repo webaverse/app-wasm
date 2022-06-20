@@ -46,10 +46,10 @@ EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhysics(PScene *scene, unsigned in
 EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
   return scene->getBodyMass(id);
 }
-EMSCRIPTEN_KEEPALIVE void addAnimationPhysics(PScene *scene, float *sampleValues) {
-  return scene->addAnimation(sampleValues);
+EMSCRIPTEN_KEEPALIVE void addAnimationPhysics(PScene *scene, float *parameterPositions, float *sampleValues, float valueSize) {
+  return scene->addAnimation(parameterPositions, sampleValues, valueSize);
 }
-EMSCRIPTEN_KEEPALIVE float evaluateAnimationPhysics(PScene *scene, float t) {
+EMSCRIPTEN_KEEPALIVE float *evaluateAnimationPhysics(PScene *scene, float t) {
   return scene->evaluateAnimation(t);
 }
 
