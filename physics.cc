@@ -1854,21 +1854,40 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
-void PScene::addAnimation(float *parameterPositions, float *sampleValues, float valueSize) {
+void PScene::addAnimation(unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  _numParameterPositions = numParameterPositions;
   _parameterPositions = parameterPositions;
+  _numSampleValues = numSampleValues;
   _sampleValues = sampleValues;
   _valueSize = valueSize;
 }
 
 float *PScene::evaluateAnimation(float t) {
   // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
+
+  int index = 0;
+  // std::cout << "_numParameterPositions" << _numParameterPositions << std::endl;
+  for (; index < _numParameterPositions; index++) {
+    // std::cout << "index" << index << std::endl;
+    if (_parameterPositions[index] >= t) {
+      break;
+    }
+  }
+
   float *outputBuffer = (float *)malloc((
-    3
+    3 +
+    1
   ) * sizeof(float));
 
-  outputBuffer[0] = _parameterPositions[(int)t];
-  outputBuffer[1] = _sampleValues[(int)t];
-  outputBuffer[2] = _valueSize;
+  // outputBuffer[0] = _parameterPositions[index];
+  // outputBuffer[1] = _sampleValues[index];
+  // outputBuffer[2] = _valueSize;
+
+  outputBuffer[0] = _sampleValues[index * _valueSize + 0];
+  outputBuffer[1] = _sampleValues[index * _valueSize + 1];
+  outputBuffer[2] = _sampleValues[index * _valueSize + 2];
+
+  outputBuffer[3] = (float)index;
 
   return outputBuffer;
 }

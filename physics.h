@@ -171,7 +171,7 @@ public:
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
 
-  void addAnimation(float *parameterPositions, float *sampleValues, float valueSize);
+  void addAnimation(unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   float *evaluateAnimation(float t);
 
   PxDefaultAllocator *allocator = nullptr;
@@ -184,9 +184,11 @@ public:
   std::vector<PxRigidActor *> actors;
   SimulationEventCallback2 *simulationEventCallback = nullptr;
 
+  unsigned int _numParameterPositions;
   float *_parameterPositions;
+  unsigned int _numSampleValues;
   float *_sampleValues;
-  float _valueSize;
+  unsigned int _valueSize;
 };
 
 #endif
