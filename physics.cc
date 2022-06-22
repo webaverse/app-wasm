@@ -1855,6 +1855,9 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
 }
 
 void PScene::addInterpolant( unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+
+  std::cout << "addInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
+
   Interpolant interpolant;
   interpolant.numParameterPositions = numParameterPositions;
   interpolant.parameterPositions = parameterPositions;
@@ -1865,30 +1868,37 @@ void PScene::addInterpolant( unsigned int numParameterPositions, float *paramete
   // _interpolant = interpolant;
   _interpolants.push_back(interpolant);
 
-  std::cout << "interpolant " << interpolant.numParameterPositions << std::endl;
-  std::cout << "interpolant " << interpolant.numSampleValues << std::endl;
-  std::cout << "interpolant " << interpolant.valueSize << std::endl;
-  std::cout << "interpolant " << _interpolants.size() << std::endl;
+  // std::cout
+  // << "interpolant "
+  // << interpolant.numParameterPositions
+  // << interpolant.numSampleValues
+  // << interpolant.valueSize
+  // << _interpolants.size()
+  // << std::endl;
+
+  std::cout << "interpolants size: " << _interpolants.size() << std::endl;
 }
 
 float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
+  std::cout << "evaluateAnimation: " << interpolantIndex << " " << t << std::endl;
+
   // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
 
   Interpolant interpolant = _interpolants[interpolantIndex];
 
   int index = 0;
-  // std::cout << "_numParameterPositions" << _numParameterPositions << std::endl;
+  std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
   for (; index < interpolant.numParameterPositions; index++) {
-    // std::cout << "index" << index << std::endl;
+    std::cout << "index: " << index << " position: " << interpolant.parameterPositions[index] << std::endl;
     if (interpolant.parameterPositions[index] > t) {
       break;
     }
   }
   index -= 1; // evaluate floor
+  std::cout << "index: " << index << std::endl;
 
   float *outputBuffer = (float *)malloc((
-    3 +
-    1
+    4
   ) * sizeof(float));
 
   // outputBuffer[0] = _parameterPositions[index];
@@ -1898,8 +1908,9 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
   outputBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
   outputBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
   outputBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
+  outputBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
 
-  outputBuffer[3] = (float)index;
+  // outputBuffer[3] = (float)index;
 
   return outputBuffer;
 }

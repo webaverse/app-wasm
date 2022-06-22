@@ -51,10 +51,8 @@ enum STATE_BITFIELD {
 };
 
 struct Interpolant {
-  unsigned int index; // instead of k ( key name )
   unsigned int numParameterPositions;
   float *parameterPositions;
-  float *resultBuffer;
   unsigned int numSampleValues;
   float *sampleValues;
   unsigned int valueSize;
