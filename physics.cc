@@ -1880,10 +1880,11 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
   // std::cout << "_numParameterPositions" << _numParameterPositions << std::endl;
   for (; index < interpolant.numParameterPositions; index++) {
     // std::cout << "index" << index << std::endl;
-    if (interpolant.parameterPositions[index] >= t) {
+    if (interpolant.parameterPositions[index] > t) {
       break;
     }
   }
+  index -= 1; // evaluate floor
 
   float *outputBuffer = (float *)malloc((
     3 +
