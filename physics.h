@@ -50,6 +50,16 @@ enum STATE_BITFIELD {
   STATE_BITFIELD_GROUNDED = 0x2,
 };
 
+struct Interpolant {
+  unsigned int index; // instead of k ( key name )
+  unsigned int numParameterPositions;
+  float *parameterPositions;
+  float *resultBuffer;
+  unsigned int numSampleValues;
+  float *sampleValues;
+  unsigned int valueSize;
+};
+
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
   std::map<unsigned int, unsigned int> stateBitfields;
@@ -171,8 +181,8 @@ public:
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
 
-  void addAnimation(unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  float *evaluateAnimation(float t);
+  void addInterpolant(unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
+  float *evaluateAnimation(unsigned int interpolantIndex, float t);
 
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;
@@ -184,11 +194,9 @@ public:
   std::vector<PxRigidActor *> actors;
   SimulationEventCallback2 *simulationEventCallback = nullptr;
 
-  unsigned int _numParameterPositions;
-  float *_parameterPositions;
-  unsigned int _numSampleValues;
-  float *_sampleValues;
-  unsigned int _valueSize;
+  // std::map<std::string, Interpolant *> interpolants;
+  std::vector<Interpolant> _interpolants;
+  // Interpolant _interpolant;
 };
 
 #endif

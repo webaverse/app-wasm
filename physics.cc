@@ -1854,22 +1854,33 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
-void PScene::addAnimation(unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
-  _numParameterPositions = numParameterPositions;
-  _parameterPositions = parameterPositions;
-  _numSampleValues = numSampleValues;
-  _sampleValues = sampleValues;
-  _valueSize = valueSize;
+void PScene::addInterpolant( unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  Interpolant interpolant;
+  interpolant.numParameterPositions = numParameterPositions;
+  interpolant.parameterPositions = parameterPositions;
+  interpolant.numSampleValues = numSampleValues;
+  interpolant.sampleValues = sampleValues;
+  interpolant.valueSize = valueSize;
+
+  // _interpolant = interpolant;
+  _interpolants.push_back(interpolant);
+
+  std::cout << "interpolant " << interpolant.numParameterPositions << std::endl;
+  std::cout << "interpolant " << interpolant.numSampleValues << std::endl;
+  std::cout << "interpolant " << interpolant.valueSize << std::endl;
+  std::cout << "interpolant " << _interpolants.size() << std::endl;
 }
 
-float *PScene::evaluateAnimation(float t) {
+float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
   // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
+
+  Interpolant interpolant = _interpolants[interpolantIndex];
 
   int index = 0;
   // std::cout << "_numParameterPositions" << _numParameterPositions << std::endl;
-  for (; index < _numParameterPositions; index++) {
+  for (; index < interpolant.numParameterPositions; index++) {
     // std::cout << "index" << index << std::endl;
-    if (_parameterPositions[index] >= t) {
+    if (interpolant.parameterPositions[index] >= t) {
       break;
     }
   }
@@ -1883,9 +1894,9 @@ float *PScene::evaluateAnimation(float t) {
   // outputBuffer[1] = _sampleValues[index];
   // outputBuffer[2] = _valueSize;
 
-  outputBuffer[0] = _sampleValues[index * _valueSize + 0];
-  outputBuffer[1] = _sampleValues[index * _valueSize + 1];
-  outputBuffer[2] = _sampleValues[index * _valueSize + 2];
+  outputBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
+  outputBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
+  outputBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
 
   outputBuffer[3] = (float)index;
 
