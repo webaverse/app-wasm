@@ -1856,7 +1856,7 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
 
 void PScene::addInterpolant( unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
 
-  std::cout << "addInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
+  // std::cout << "addInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
 
   Interpolant interpolant;
   interpolant.numParameterPositions = numParameterPositions;
@@ -1876,26 +1876,26 @@ void PScene::addInterpolant( unsigned int numParameterPositions, float *paramete
   // << _interpolants.size()
   // << std::endl;
 
-  std::cout << "interpolants size: " << _interpolants.size() << std::endl;
+  // std::cout << "interpolants size: " << _interpolants.size() << std::endl;
 }
 
 float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
-  std::cout << "evaluateAnimation: " << interpolantIndex << " " << t << std::endl;
+  // std::cout << "evaluateAnimation: " << interpolantIndex << " " << t << std::endl;
 
   // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
 
   Interpolant interpolant = _interpolants[interpolantIndex];
 
   int index = 0;
-  std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
+  // std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
   for (; index < interpolant.numParameterPositions; index++) {
-    std::cout << "index: " << index << " position: " << interpolant.parameterPositions[index] << std::endl;
+    // std::cout << "index: " << index << " position: " << interpolant.parameterPositions[index] << std::endl;
     if (interpolant.parameterPositions[index] > t) {
       break;
     }
   }
   index -= 1; // evaluate floor
-  std::cout << "index: " << index << std::endl;
+  // std::cout << "index: " << index << std::endl;
 
   float *outputBuffer = (float *)malloc((
     4
