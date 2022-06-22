@@ -1861,6 +1861,7 @@ void PScene::addInterpolant( unsigned int numParameterPositions, float *paramete
   Interpolant interpolant;
   interpolant.numParameterPositions = numParameterPositions;
   interpolant.parameterPositions = parameterPositions;
+  interpolant.resultBuffer = (float *)malloc(valueSize * sizeof(float));
   interpolant.numSampleValues = numSampleValues;
   interpolant.sampleValues = sampleValues;
   interpolant.valueSize = valueSize;
@@ -1897,20 +1898,20 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
   index -= 1; // evaluate floor
   // std::cout << "index: " << index << std::endl;
 
-  float *outputBuffer = (float *)malloc((
-    4
-  ) * sizeof(float));
+  // float *outputBuffer = (float *)malloc((
+  //   4
+  // ) * sizeof(float));
 
   // outputBuffer[0] = _parameterPositions[index];
   // outputBuffer[1] = _sampleValues[index];
   // outputBuffer[2] = _valueSize;
 
-  outputBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
-  outputBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
-  outputBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
-  outputBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
+  interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
+  interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
+  interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
+  interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
 
   // outputBuffer[3] = (float)index;
 
-  return outputBuffer;
+  return interpolant.resultBuffer;
 }
