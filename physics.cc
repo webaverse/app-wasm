@@ -1887,55 +1887,66 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
 
   Interpolant interpolant = _interpolants[interpolantIndex];
 
-  int index = 0;
-  // std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
-  for (; index < interpolant.numParameterPositions; index++) {
-    // std::cout << "index: " << index << " position: " << interpolant.parameterPositions[index] << std::endl;
-    if (interpolant.parameterPositions[index] > t) {
-      break;
+  if (interpolant.numParameterPositions == 1) {
+    interpolant.resultBuffer[0] = interpolant.sampleValues[0];
+    interpolant.resultBuffer[1] = interpolant.sampleValues[1];
+    interpolant.resultBuffer[2] = interpolant.sampleValues[2];
+    interpolant.resultBuffer[3] = interpolant.sampleValues[3];
+  } else {
+    int index = 0;
+    // std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
+    for (; index < interpolant.numParameterPositions; index++) {
+      // std::cout << "index: " << index << " position: " << interpolant.parameterPositions[index] << std::endl;
+      if (interpolant.parameterPositions[index] > t) {
+        break;
+      }
     }
+    // index -= 1; // evaluate floor
+    // if (interpolantIndex == 1) std::cout << "index: " << index << std::endl;
+
+    unsigned int index0 = index -1;
+    unsigned int index1 = index;
+
+    if (interpolantIndex == 33) { // mixamorigRightHandThumb1.quaternion
+      std::cout << "index: " << index << std::endl; // always 1
+    }
+
+    // float *outputBuffer = (float *)malloc((
+    //   4
+    // ) * sizeof(float));
+
+    // outputBuffer[0] = _parameterPositions[index];
+    // outputBuffer[1] = _sampleValues[index];
+    // outputBuffer[2] = _valueSize;
+
+    // float x0 = interpolant.sampleValues[index0 * interpolant.valueSize + 0];
+    // float y0 = interpolant.sampleValues[index0 * interpolant.valueSize + 1];
+    // float z0 = interpolant.sampleValues[index0 * interpolant.valueSize + 2];
+    // float w0 = interpolant.sampleValues[index0 * interpolant.valueSize + 3];
+
+    // float x1 = interpolant.sampleValues[index1 * interpolant.valueSize + 0];
+    // float y1 = interpolant.sampleValues[index1 * interpolant.valueSize + 1];
+    // float z1 = interpolant.sampleValues[index1 * interpolant.valueSize + 2];
+    // float w1 = interpolant.sampleValues[index1 * interpolant.valueSize + 3];
+
+    float time0 = interpolant.parameterPositions[index0];
+    float time1 = interpolant.parameterPositions[index1];
+    float f = (t - time0) / (time1 - time0);
+
+    slerpFlat(
+      interpolant.resultBuffer, 0,
+      interpolant.sampleValues, index0 * interpolant.valueSize,
+      interpolant.sampleValues, index1 * interpolant.valueSize,
+      f
+    );
+
+    // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
+    // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
+    // interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
+    // interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
+
+    // outputBuffer[3] = (float)index;
   }
-  // index -= 1; // evaluate floor
-  // if (interpolantIndex == 1) std::cout << "index: " << index << std::endl;
-
-  unsigned int index0 = index -1;
-  unsigned int index1 = index;
-
-  // float *outputBuffer = (float *)malloc((
-  //   4
-  // ) * sizeof(float));
-
-  // outputBuffer[0] = _parameterPositions[index];
-  // outputBuffer[1] = _sampleValues[index];
-  // outputBuffer[2] = _valueSize;
-
-  // float x0 = interpolant.sampleValues[index0 * interpolant.valueSize + 0];
-  // float y0 = interpolant.sampleValues[index0 * interpolant.valueSize + 1];
-  // float z0 = interpolant.sampleValues[index0 * interpolant.valueSize + 2];
-  // float w0 = interpolant.sampleValues[index0 * interpolant.valueSize + 3];
-
-  // float x1 = interpolant.sampleValues[index1 * interpolant.valueSize + 0];
-  // float y1 = interpolant.sampleValues[index1 * interpolant.valueSize + 1];
-  // float z1 = interpolant.sampleValues[index1 * interpolant.valueSize + 2];
-  // float w1 = interpolant.sampleValues[index1 * interpolant.valueSize + 3];
-
-  float time0 = interpolant.parameterPositions[index0];
-  float time1 = interpolant.parameterPositions[index1];
-  float f = (t - time0) / (time1 - time0);
-
-  slerpFlat(
-    interpolant.resultBuffer, 0,
-    interpolant.sampleValues, index0 * interpolant.valueSize,
-    interpolant.sampleValues, index1 * interpolant.valueSize,
-    f
-  );
-
-  // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
-  // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
-  // interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
-  // interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
-
-  // outputBuffer[3] = (float)index;
 
   return interpolant.resultBuffer;
 }
