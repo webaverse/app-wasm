@@ -59,6 +59,12 @@ struct Interpolant {
   unsigned int valueSize;
 };
 
+struct Animation {
+  float duration;
+  std::vector<Interpolant> interpolants; // todo: pure array?
+  unsigned int currentInterpolantIndex = 0;
+};
+
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
   std::map<unsigned int, unsigned int> stateBitfields;
@@ -180,8 +186,8 @@ public:
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
 
-  void addInterpolant(unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  float *evaluateAnimation(unsigned int interpolantIndex, float t);
+  void addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
+  float *evaluateAnimation(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
 
@@ -196,7 +202,8 @@ public:
   SimulationEventCallback2 *simulationEventCallback = nullptr;
 
   // std::map<std::string, Interpolant *> interpolants;
-  std::vector<Interpolant> _interpolants;
+  // std::vector<Interpolant> _interpolants;
+  std::vector<Animation> _animations;
   // Interpolant _interpolant;
 };
 

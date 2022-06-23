@@ -1854,7 +1854,7 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
-void PScene::addInterpolant(unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+void PScene::addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
 
   // std::cout << "addInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
 
@@ -1867,7 +1867,7 @@ void PScene::addInterpolant(unsigned int numParameterPositions, float *parameter
   interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
   // _interpolant = interpolant;
-  _interpolants.push_back(interpolant);
+  _animations[animationIndex].interpolants.push_back(interpolant);
 
   // std::cout
   // << "interpolant "
@@ -1880,12 +1880,12 @@ void PScene::addInterpolant(unsigned int numParameterPositions, float *parameter
   // std::cout << "interpolants size: " << _interpolants.size() << std::endl;
 }
 
-float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
+float *PScene::evaluateAnimation(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
   // std::cout << "evaluateAnimation: " << interpolantIndex << " " << t << std::endl;
 
   // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
 
-  Interpolant interpolant = _interpolants[interpolantIndex];
+  Interpolant interpolant = _animations[animationIndex].interpolants[interpolantIndex];
 
   if (interpolant.numParameterPositions == 1) {
     interpolant.resultBuffer[0] = interpolant.valueSize;
@@ -1910,9 +1910,9 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
     unsigned int index0 = index -1;
     unsigned int index1 = index;
 
-    if (interpolantIndex == 33) { // mixamorigRightHandThumb1.quaternion
-      std::cout << "index: " << index << std::endl; // always 1
-    }
+    // if (interpolantIndex == 33) { // mixamorigRightHandThumb1.quaternion
+    //   std::cout << "index: " << index << std::endl; // always 1
+    // }
 
     // float *outputBuffer = (float *)malloc((
     //   4
