@@ -1861,10 +1861,10 @@ void PScene::addInterpolant(unsigned int numParameterPositions, float *parameter
   Interpolant interpolant;
   interpolant.numParameterPositions = numParameterPositions;
   interpolant.parameterPositions = parameterPositions;
-  interpolant.resultBuffer = (float *)malloc(valueSize * sizeof(float));
+  interpolant.resultBuffer = (float *)malloc((1 + valueSize) * sizeof(float)); // 1 len for valueSize self ( 3 or 4 ). 3 len or 4 len for values. 
   interpolant.numSampleValues = numSampleValues;
   interpolant.sampleValues = sampleValues;
-  interpolant.valueSize = valueSize;
+  interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
   // _interpolant = interpolant;
   _interpolants.push_back(interpolant);
@@ -1888,10 +1888,13 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
   Interpolant interpolant = _interpolants[interpolantIndex];
 
   if (interpolant.numParameterPositions == 1) {
-    interpolant.resultBuffer[0] = interpolant.sampleValues[0];
-    interpolant.resultBuffer[1] = interpolant.sampleValues[1];
-    interpolant.resultBuffer[2] = interpolant.sampleValues[2];
-    interpolant.resultBuffer[3] = interpolant.sampleValues[3];
+    interpolant.resultBuffer[0] = interpolant.valueSize;
+    interpolant.resultBuffer[1] = interpolant.sampleValues[0];
+    interpolant.resultBuffer[2] = interpolant.sampleValues[1];
+    interpolant.resultBuffer[3] = interpolant.sampleValues[2];
+    if (interpolant.valueSize == 4) {
+      interpolant.resultBuffer[4] = interpolant.sampleValues[3];
+    }
   } else {
     int index = 0;
     // std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
@@ -1933,12 +1936,23 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
     float time1 = interpolant.parameterPositions[index1];
     float f = (t - time0) / (time1 - time0);
 
-    slerpFlat(
-      interpolant.resultBuffer, 0,
-      interpolant.sampleValues, index0 * interpolant.valueSize,
-      interpolant.sampleValues, index1 * interpolant.valueSize,
-      f
-    );
+    if (interpolant.valueSize == 3) {
+      interpolant.resultBuffer[0] = 3;
+      lerpFlat(
+        interpolant.resultBuffer, 1,
+        interpolant.sampleValues, index0 * interpolant.valueSize,
+        interpolant.sampleValues, index1 * interpolant.valueSize,
+        f
+      );
+    } else {
+      interpolant.resultBuffer[0] = 4;
+      slerpFlat(
+        interpolant.resultBuffer, 1,
+        interpolant.sampleValues, index0 * interpolant.valueSize,
+        interpolant.sampleValues, index1 * interpolant.valueSize,
+        f
+      );
+    }
 
     // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
     // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
@@ -1950,6 +1964,20 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
 
   return interpolant.resultBuffer;
 }
+
+void PScene::lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
+  float x0 = src0[srcOffset0 + 0];
+  float y0 = src0[srcOffset0 + 1];
+  float z0 = src0[srcOffset0 + 2];
+
+  float x1 = src1[srcOffset1 + 0];
+  float y1 = src1[srcOffset1 + 1];
+  float z1 = src1[srcOffset1 + 2];
+
+  dst[dstOffset + 0] = x0 + (x1 - x0) * t;
+  dst[dstOffset + 1] = y0 + (y1 - y0) * t;
+  dst[dstOffset + 2] = z0 + (z1 - z0) * t;
+};
 
 void PScene::slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
 
