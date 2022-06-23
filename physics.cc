@@ -1854,7 +1854,7 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
-void PScene::addInterpolant( unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+void PScene::addInterpolant(unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
 
   // std::cout << "addInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
 
@@ -1895,8 +1895,11 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
       break;
     }
   }
-  index -= 1; // evaluate floor
-  // std::cout << "index: " << index << std::endl;
+  // index -= 1; // evaluate floor
+  // if (interpolantIndex == 1) std::cout << "index: " << index << std::endl;
+
+  unsigned int index0 = index -1;
+  unsigned int index1 = index;
 
   // float *outputBuffer = (float *)malloc((
   //   4
@@ -1906,12 +1909,114 @@ float *PScene::evaluateAnimation(unsigned int interpolantIndex, float t) {
   // outputBuffer[1] = _sampleValues[index];
   // outputBuffer[2] = _valueSize;
 
-  interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
-  interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
-  interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
-  interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
+  // float x0 = interpolant.sampleValues[index0 * interpolant.valueSize + 0];
+  // float y0 = interpolant.sampleValues[index0 * interpolant.valueSize + 1];
+  // float z0 = interpolant.sampleValues[index0 * interpolant.valueSize + 2];
+  // float w0 = interpolant.sampleValues[index0 * interpolant.valueSize + 3];
+
+  // float x1 = interpolant.sampleValues[index1 * interpolant.valueSize + 0];
+  // float y1 = interpolant.sampleValues[index1 * interpolant.valueSize + 1];
+  // float z1 = interpolant.sampleValues[index1 * interpolant.valueSize + 2];
+  // float w1 = interpolant.sampleValues[index1 * interpolant.valueSize + 3];
+
+  float time0 = interpolant.parameterPositions[index0];
+  float time1 = interpolant.parameterPositions[index1];
+  float f = (t - time0) / (time1 - time0);
+
+  slerpFlat(
+    interpolant.resultBuffer, 0,
+    interpolant.sampleValues, index0 * interpolant.valueSize,
+    interpolant.sampleValues, index1 * interpolant.valueSize,
+    f
+  );
+
+  // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
+  // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
+  // interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
+  // interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
 
   // outputBuffer[3] = (float)index;
 
   return interpolant.resultBuffer;
+}
+
+void PScene::slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
+
+  // fuzz-free, array-based Quaternion SLERP operation
+
+  float x0 = src0[ srcOffset0 + 0 ],
+    y0 = src0[ srcOffset0 + 1 ],
+    z0 = src0[ srcOffset0 + 2 ],
+    w0 = src0[ srcOffset0 + 3 ];
+
+  float x1 = src1[ srcOffset1 + 0 ],
+    y1 = src1[ srcOffset1 + 1 ],
+    z1 = src1[ srcOffset1 + 2 ],
+    w1 = src1[ srcOffset1 + 3 ];
+
+  if ( t == 0 ) {
+
+    dst[ dstOffset + 0 ] = x0;
+    dst[ dstOffset + 1 ] = y0;
+    dst[ dstOffset + 2 ] = z0;
+    dst[ dstOffset + 3 ] = w0;
+    return;
+
+  }
+
+  if ( t == 1 ) {
+
+    dst[ dstOffset + 0 ] = x1;
+    dst[ dstOffset + 1 ] = y1;
+    dst[ dstOffset + 2 ] = z1;
+    dst[ dstOffset + 3 ] = w1;
+    return;
+
+  }
+
+  if ( w0 != w1 || x0 != x1 || y0 != y1 || z0 != z1 ) {
+
+    float s = 1 - t;
+    float cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
+      dir = ( cos >= 0 ? 1 : - 1 ),
+      sqrSin = 1 - cos * cos;
+
+    // Skip the Slerp for tiny steps to avoid numeric problems:
+    float EPSILON = 2.220446049250313e-16;
+    if ( sqrSin > EPSILON ) {
+
+      float sinVal = sqrt( sqrSin ),
+        len = atan2( sinVal, cos * dir );
+
+      s = sin( s * len ) / sinVal;
+      t = sin( t * len ) / sinVal;
+
+    }
+
+    float tDir = t * dir;
+
+    x0 = x0 * s + x1 * tDir;
+    y0 = y0 * s + y1 * tDir;
+    z0 = z0 * s + z1 * tDir;
+    w0 = w0 * s + w1 * tDir;
+
+    // Normalize in case we just did a lerp:
+    if ( s == 1 - t ) {
+
+      float f = 1 / sqrt( x0 * x0 + y0 * y0 + z0 * z0 + w0 * w0 );
+
+      x0 *= f;
+      y0 *= f;
+      z0 *= f;
+      w0 *= f;
+
+    }
+
+  }
+
+  dst[ dstOffset ] = x0;
+  dst[ dstOffset + 1 ] = y0;
+  dst[ dstOffset + 2 ] = z0;
+  dst[ dstOffset + 3 ] = w0;
+
 }
