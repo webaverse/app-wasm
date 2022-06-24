@@ -1913,13 +1913,22 @@ float *PScene::evaluateAnimation(unsigned int animationIndex, unsigned int inter
     // if (interpolantIndex == 1) std::cout << "index: " << index << std::endl;
     // std::cout << "index: " << index << std::endl;
 
-    if (index == 0) { // Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0]
+    if (index == 0) { // Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0].
       interpolant.resultBuffer[0] = interpolant.valueSize;
       interpolant.resultBuffer[1] = interpolant.sampleValues[0];
       interpolant.resultBuffer[2] = interpolant.sampleValues[1];
       interpolant.resultBuffer[3] = interpolant.sampleValues[2];
       if (interpolant.valueSize == 4) {
         interpolant.resultBuffer[4] = interpolant.sampleValues[3];
+      }
+    } else if (index > interpolant.numParameterPositions - 1) { // Handle situation that, t > max parameterPosition.
+      unsigned int maxIndex = interpolant.numParameterPositions - 1;
+      interpolant.resultBuffer[0] = interpolant.valueSize;
+      interpolant.resultBuffer[1] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 0];
+      interpolant.resultBuffer[2] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 1];
+      interpolant.resultBuffer[3] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 2];
+      if (interpolant.valueSize == 4) {
+        interpolant.resultBuffer[4] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 3];
       }
     } else {
       unsigned int index0 = index -1;
