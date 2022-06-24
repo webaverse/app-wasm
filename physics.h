@@ -58,12 +58,20 @@ struct Interpolant {
   float *sampleValues;
   unsigned int valueSize;
 };
-
 struct Animation {
   float duration;
   std::vector<Interpolant> interpolants; // todo: pure array?
   unsigned int currentInterpolantIndex = 0;
 };
+struct AnimationMapping {
+  bool isPosition;
+  unsigned int index;
+  bool isFirstBone;
+  bool isLastBone;
+};
+// class createAnimationMixer {
+// public:
+// }
 
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
@@ -186,6 +194,9 @@ public:
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
 
+
+  void addAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
+  // float addAnimation();
   void addAnimation();
   void addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   float *evaluateAnimation(unsigned int animationIndex, unsigned int interpolantIndex, float t);
@@ -204,6 +215,7 @@ public:
 
   // std::map<std::string, Interpolant *> interpolants;
   // std::vector<Interpolant> _interpolants;
+  std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation> _animations;
   // Interpolant _interpolant;
 };

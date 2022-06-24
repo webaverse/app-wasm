@@ -1854,11 +1854,23 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
+void PScene::addAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
+  AnimationMapping animationMapping;
+  animationMapping.isPosition = isPosition;
+  animationMapping.index = index;
+  animationMapping.isFirstBone = isFirstBone;
+  animationMapping.isLastBone = isLastBone;
+  _animationMappings.push_back(animationMapping);
+  std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
+}
+// void PScene::createAnimationMixer() {
+//   Animation animation;
+//   _animations.push_back(animation);
+// }
 void PScene::addAnimation() {
   Animation animation;
   _animations.push_back(animation);
 }
-
 void PScene::addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
 
   // std::cout << "addInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
@@ -1884,7 +1896,6 @@ void PScene::addInterpolant(unsigned int animationIndex, unsigned int numParamet
 
   // std::cout << "interpolants size: " << _interpolants.size() << std::endl;
 }
-
 float *PScene::evaluateAnimation(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
   // std::cout << "evaluateAnimation: " << interpolantIndex << " " << t << std::endl;
 
@@ -1989,7 +2000,6 @@ float *PScene::evaluateAnimation(unsigned int animationIndex, unsigned int inter
 
   return interpolant.resultBuffer;
 }
-
 void PScene::lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
   float x0 = src0[srcOffset0 + 0];
   float y0 = src0[srcOffset0 + 1];
@@ -2003,7 +2013,6 @@ void PScene::lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned 
   dst[dstOffset + 1] = y0 + (y1 - y0) * t;
   dst[dstOffset + 2] = z0 + (z1 - z0) * t;
 };
-
 void PScene::slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
 
   // fuzz-free, array-based Quaternion SLERP operation
