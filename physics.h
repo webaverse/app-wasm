@@ -186,6 +186,7 @@ public:
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
 
+  void addAnimation();
   void addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   float *evaluateAnimation(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);

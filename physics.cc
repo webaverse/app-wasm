@@ -1854,6 +1854,11 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
+void PScene::addAnimation() {
+  Animation animation;
+  _animations.push_back(animation);
+}
+
 void PScene::addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
 
   // std::cout << "addInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
@@ -1906,60 +1911,71 @@ float *PScene::evaluateAnimation(unsigned int animationIndex, unsigned int inter
     }
     // index -= 1; // evaluate floor
     // if (interpolantIndex == 1) std::cout << "index: " << index << std::endl;
+    // std::cout << "index: " << index << std::endl;
 
-    unsigned int index0 = index -1;
-    unsigned int index1 = index;
-
-    // if (interpolantIndex == 33) { // mixamorigRightHandThumb1.quaternion
-    //   std::cout << "index: " << index << std::endl; // always 1
-    // }
-
-    // float *outputBuffer = (float *)malloc((
-    //   4
-    // ) * sizeof(float));
-
-    // outputBuffer[0] = _parameterPositions[index];
-    // outputBuffer[1] = _sampleValues[index];
-    // outputBuffer[2] = _valueSize;
-
-    // float x0 = interpolant.sampleValues[index0 * interpolant.valueSize + 0];
-    // float y0 = interpolant.sampleValues[index0 * interpolant.valueSize + 1];
-    // float z0 = interpolant.sampleValues[index0 * interpolant.valueSize + 2];
-    // float w0 = interpolant.sampleValues[index0 * interpolant.valueSize + 3];
-
-    // float x1 = interpolant.sampleValues[index1 * interpolant.valueSize + 0];
-    // float y1 = interpolant.sampleValues[index1 * interpolant.valueSize + 1];
-    // float z1 = interpolant.sampleValues[index1 * interpolant.valueSize + 2];
-    // float w1 = interpolant.sampleValues[index1 * interpolant.valueSize + 3];
-
-    float time0 = interpolant.parameterPositions[index0];
-    float time1 = interpolant.parameterPositions[index1];
-    float f = (t - time0) / (time1 - time0);
-
-    if (interpolant.valueSize == 3) {
-      interpolant.resultBuffer[0] = 3;
-      lerpFlat(
-        interpolant.resultBuffer, 1,
-        interpolant.sampleValues, index0 * interpolant.valueSize,
-        interpolant.sampleValues, index1 * interpolant.valueSize,
-        f
-      );
+    if (index == 0) { // Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0]
+      interpolant.resultBuffer[0] = interpolant.valueSize;
+      interpolant.resultBuffer[1] = interpolant.sampleValues[0];
+      interpolant.resultBuffer[2] = interpolant.sampleValues[1];
+      interpolant.resultBuffer[3] = interpolant.sampleValues[2];
+      if (interpolant.valueSize == 4) {
+        interpolant.resultBuffer[4] = interpolant.sampleValues[3];
+      }
     } else {
-      interpolant.resultBuffer[0] = 4;
-      slerpFlat(
-        interpolant.resultBuffer, 1,
-        interpolant.sampleValues, index0 * interpolant.valueSize,
-        interpolant.sampleValues, index1 * interpolant.valueSize,
-        f
-      );
+      unsigned int index0 = index -1;
+      unsigned int index1 = index;
+
+      // if (interpolantIndex == 33) { // mixamorigRightHandThumb1.quaternion
+      //   std::cout << "index: " << index << std::endl; // always 1
+      // }
+
+      // float *outputBuffer = (float *)malloc((
+      //   4
+      // ) * sizeof(float));
+
+      // outputBuffer[0] = _parameterPositions[index];
+      // outputBuffer[1] = _sampleValues[index];
+      // outputBuffer[2] = _valueSize;
+
+      // float x0 = interpolant.sampleValues[index0 * interpolant.valueSize + 0];
+      // float y0 = interpolant.sampleValues[index0 * interpolant.valueSize + 1];
+      // float z0 = interpolant.sampleValues[index0 * interpolant.valueSize + 2];
+      // float w0 = interpolant.sampleValues[index0 * interpolant.valueSize + 3];
+
+      // float x1 = interpolant.sampleValues[index1 * interpolant.valueSize + 0];
+      // float y1 = interpolant.sampleValues[index1 * interpolant.valueSize + 1];
+      // float z1 = interpolant.sampleValues[index1 * interpolant.valueSize + 2];
+      // float w1 = interpolant.sampleValues[index1 * interpolant.valueSize + 3];
+
+      float time0 = interpolant.parameterPositions[index0];
+      float time1 = interpolant.parameterPositions[index1];
+      float f = (t - time0) / (time1 - time0);
+
+      if (interpolant.valueSize == 3) {
+        interpolant.resultBuffer[0] = 3;
+        lerpFlat(
+          interpolant.resultBuffer, 1,
+          interpolant.sampleValues, index0 * interpolant.valueSize,
+          interpolant.sampleValues, index1 * interpolant.valueSize,
+          f
+        );
+      } else {
+        interpolant.resultBuffer[0] = 4;
+        slerpFlat(
+          interpolant.resultBuffer, 1,
+          interpolant.sampleValues, index0 * interpolant.valueSize,
+          interpolant.sampleValues, index1 * interpolant.valueSize,
+          f
+        );
+      }
+
+      // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
+      // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
+      // interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
+      // interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
+
+      // outputBuffer[3] = (float)index;
     }
-
-    // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
-    // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
-    // interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
-    // interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
-
-    // outputBuffer[3] = (float)index;
   }
 
   return interpolant.resultBuffer;

@@ -47,6 +47,9 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
   return scene->getBodyMass(id);
 }
 
+EMSCRIPTEN_KEEPALIVE void addAnimationPhysics(PScene *scene) {
+  return scene->addAnimation();
+}
 EMSCRIPTEN_KEEPALIVE void addInterpolantPhysics(PScene *scene, unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return scene->addInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
