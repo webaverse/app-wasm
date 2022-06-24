@@ -218,7 +218,8 @@ public:
   // std::vector<Interpolant> _interpolants;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation> _animations;
-  float **_animationValues = (float **)malloc(53 * sizeof(float));
+  float *_animationValues [53];
+  // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
 };
 
