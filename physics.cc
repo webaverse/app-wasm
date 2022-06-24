@@ -1896,8 +1896,8 @@ void PScene::addInterpolant(unsigned int animationIndex, unsigned int numParamet
 
   // std::cout << "interpolants size: " << _interpolants.size() << std::endl;
 }
-float *PScene::evaluateAnimation(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
-  // std::cout << "evaluateAnimation: " << interpolantIndex << " " << t << std::endl;
+float *PScene::evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
+  // std::cout << "evaluateInterpolant: " << interpolantIndex << " " << t << std::endl;
 
   // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
 
@@ -1999,6 +1999,13 @@ float *PScene::evaluateAnimation(unsigned int animationIndex, unsigned int inter
   }
 
   return interpolant.resultBuffer;
+}
+float **PScene::getAnimationValues(unsigned int animationIndex, float t) {
+  for (int i = 0; i < 53; i++) {
+    AnimationMapping spec = _animationMappings[i];
+    _animationValues[i] = evaluateInterpolant(animationIndex, i, t);
+  }
+  return _animationValues;
 }
 void PScene::lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
   float x0 = src0[srcOffset0 + 0];

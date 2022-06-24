@@ -59,8 +59,11 @@ EMSCRIPTEN_KEEPALIVE void addAnimationPhysics(PScene *scene) {
 EMSCRIPTEN_KEEPALIVE void addInterpolantPhysics(PScene *scene, unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return scene->addInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
-EMSCRIPTEN_KEEPALIVE float *evaluateAnimationPhysics(PScene *scene, unsigned int animationIndex, unsigned int interpolantIndex, float t) {
-  return scene->evaluateAnimation(animationIndex, interpolantIndex, t);
+EMSCRIPTEN_KEEPALIVE float *evaluateInterpolantPhysics(PScene *scene, unsigned int animationIndex, unsigned int interpolantIndex, float t) {
+  return scene->evaluateInterpolant(animationIndex, interpolantIndex, t);
+}
+EMSCRIPTEN_KEEPALIVE float **getAnimationValuesPhysics(PScene *scene, unsigned int animationIndex, float t) {
+  return scene->getAnimationValues(animationIndex, t);
 }
 
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {

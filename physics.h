@@ -199,7 +199,8 @@ public:
   // float addAnimation();
   void addAnimation();
   void addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  float *evaluateAnimation(unsigned int animationIndex, unsigned int interpolantIndex, float t);
+  float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
+  float **getAnimationValues(unsigned int animationIndex, float t);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
 
@@ -217,6 +218,7 @@ public:
   // std::vector<Interpolant> _interpolants;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation> _animations;
+  float **_animationValues = (float **)malloc(53 * sizeof(float));
   // Interpolant _interpolant;
 };
 
