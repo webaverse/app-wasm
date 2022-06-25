@@ -54,8 +54,8 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 EMSCRIPTEN_KEEPALIVE void createAnimationMixer(unsigned int avatarId) {
   return AnimationSystem::createAnimationMixer(avatarId);
 }
-EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(float timeS) {
-  return AnimationSystem::updateAnimationMixer(timeS);
+EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(float timeS, float f) {
+  return AnimationSystem::updateAnimationMixer(timeS, f);
 }
 EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
   return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone);

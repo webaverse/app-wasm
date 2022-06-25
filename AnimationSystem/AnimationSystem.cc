@@ -6,10 +6,13 @@ namespace AnimationSystem
   // std::vector<Interpolant> _interpolants;
   std::vector<AnimationMixer> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
+  Animation _animation;
   std::vector<Animation> _animations;
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
+
+  // functions:
 
   // AnimationMixer *createAnimationMixer(unsigned int avatarId) {
   void createAnimationMixer(unsigned int avatarId)
@@ -18,9 +21,9 @@ namespace AnimationSystem
     _animationMixers.push_back(animationMixer);
     // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
   }
-  float **updateAnimationMixer(float timeS)
+  float **updateAnimationMixer(float timeS, float f)
   {
-    return _animationMixers[0].update(timeS);
+    return _animationMixers[0].update(timeS, f);
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone)
   {
@@ -287,8 +290,23 @@ namespace AnimationSystem
     dst[dstOffset + 2] = z0;
     dst[dstOffset + 3] = w0;
   }
-  float **AnimationMixer::update(float timeS)
+  float **AnimationMixer::update(float timeS, float f/*test*/)
   {
-    return getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
+    // return getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
+
+    for (int i = 0; i < 53; i++)
+    {
+      AnimationMapping spec = _animationMappings[i];
+      float *v0 = evaluateInterpolant(92, i, timeS); // 92 fly
+      float *v1 = evaluateInterpolant(96, i, timeS); // 96 walk
+      // _animationValues[i] = evaluateInterpolant(_animation.index, i, timeS);
+      if (spec.isPosition) {
+        lerpFlat(v0, 1, v0, 1, v1, 1, f);
+      } else {
+        slerpFlat(v0, 1, v0, 1, v1, 1, f);
+      }
+      _animationValues[i] = v0;
+    }
+    return _animationValues;
   }
 }

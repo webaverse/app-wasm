@@ -45,12 +45,12 @@ namespace AnimationSystem
     // createMotion(Animation animation) {
 
     // }
-    float **update(float timeS);
+    float **update(float timeS, float f);
   };
 
   // AnimationMixer *createAnimationMixer(unsigned int avatarId);
   void createAnimationMixer(unsigned int avatarId);
-  float **updateAnimationMixer(float timeS);
+  float **updateAnimationMixer(float timeS, float f);
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
   // float createAnimation();
   void createAnimation();
