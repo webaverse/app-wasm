@@ -22,7 +22,7 @@ namespace AnimationSystem
   {
     return _animationMixers[0].update(timeS);
   }
-  void addAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone)
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone)
   {
     AnimationMapping animationMapping;
     animationMapping.isPosition = isPosition;
@@ -32,17 +32,17 @@ namespace AnimationSystem
     _animationMappings.push_back(animationMapping);
     std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
   }
-  void addAnimation()
+  void createAnimation()
   {
     Animation animation;
     animation.index = _animations.size();
     _animations.push_back(animation);
     std::cout << "_animations size: " << _animations.size() << std::endl;
   }
-  void addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
+  void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
   {
 
-    // std::cout << "addInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
+    // std::cout << "createInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
 
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;

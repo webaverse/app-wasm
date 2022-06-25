@@ -51,10 +51,10 @@ namespace AnimationSystem
   // AnimationMixer *createAnimationMixer(unsigned int avatarId);
   void createAnimationMixer(unsigned int avatarId);
   float **updateAnimationMixer(float timeS);
-  void addAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
-  // float addAnimation();
-  void addAnimation();
-  void addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
+  // float createAnimation();
+  void createAnimation();
+  void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   float **getAnimationValues(unsigned int animationIndex, float t);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);

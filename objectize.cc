@@ -50,26 +50,26 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 
 // AnimationSystem
 
-// EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixerPhysics(PScene *scene, unsigned int avatarId) {
-EMSCRIPTEN_KEEPALIVE void createAnimationMixerPhysics(PScene *scene, unsigned int avatarId) {
+// EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixer(unsigned int avatarId) {
+EMSCRIPTEN_KEEPALIVE void createAnimationMixer(unsigned int avatarId) {
   return AnimationSystem::createAnimationMixer(avatarId);
 }
-EMSCRIPTEN_KEEPALIVE float **updateAnimationMixerPhysics(PScene *scene, float timeS) {
+EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(float timeS) {
   return AnimationSystem::updateAnimationMixer(timeS);
 }
-EMSCRIPTEN_KEEPALIVE void addAnimationMappingPhysics(PScene *scene, bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
-  return AnimationSystem::addAnimationMapping(isPosition, index, isFirstBone, isLastBone);
+EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
+  return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone);
 }
-EMSCRIPTEN_KEEPALIVE void addAnimationPhysics(PScene *scene) {
-  return AnimationSystem::addAnimation();
+EMSCRIPTEN_KEEPALIVE void createAnimation() {
+  return AnimationSystem::createAnimation();
 }
-EMSCRIPTEN_KEEPALIVE void addInterpolantPhysics(PScene *scene, unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
-  return AnimationSystem::addInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
+EMSCRIPTEN_KEEPALIVE void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  return AnimationSystem::createInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
-EMSCRIPTEN_KEEPALIVE float *evaluateInterpolantPhysics(PScene *scene, unsigned int animationIndex, unsigned int interpolantIndex, float t) {
+EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
   return AnimationSystem::evaluateInterpolant(animationIndex, interpolantIndex, t);
 }
-EMSCRIPTEN_KEEPALIVE float **getAnimationValuesPhysics(PScene *scene, unsigned int animationIndex, float t) {
+EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
   return AnimationSystem::getAnimationValues(animationIndex, t);
 }
 
