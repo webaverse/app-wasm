@@ -1854,6 +1854,15 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
   }
 }
 
+// AnimationMixer *PScene::createAnimationMixer(PScene *scene, unsigned int avatarId) {
+void PScene::createAnimationMixer(PScene *scene, unsigned int avatarId) {
+  AnimationMixer animationMixer (scene, avatarId, _animations[92]); // 92: flyMotion.
+  _animationMixers.push_back(animationMixer);
+  // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
+}
+float **PScene::updateAnimationMixer(float timeS) {
+  return _animationMixers[0].update(timeS);
+}
 void PScene::addAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
   AnimationMapping animationMapping;
   animationMapping.isPosition = isPosition;
@@ -1861,14 +1870,11 @@ void PScene::addAnimationMapping(bool isPosition, unsigned int index, bool isFir
   animationMapping.isFirstBone = isFirstBone;
   animationMapping.isLastBone = isLastBone;
   _animationMappings.push_back(animationMapping);
-  std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
+  // std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
 }
-// void PScene::createAnimationMixer() {
-//   Animation animation;
-//   _animations.push_back(animation);
-// }
 void PScene::addAnimation() {
   Animation animation;
+  animation.index = _animations.size();
   _animations.push_back(animation);
 }
 void PScene::addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
@@ -2099,4 +2105,7 @@ void PScene::slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned
   dst[ dstOffset + 2 ] = z0;
   dst[ dstOffset + 3 ] = w0;
 
+}
+float **AnimationMixer::update(float timeS) {
+  return _scene->getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
 }

@@ -47,12 +47,16 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
   return scene->getBodyMass(id);
 }
 
+// EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixerPhysics(PScene *scene, unsigned int avatarId) {
+EMSCRIPTEN_KEEPALIVE void createAnimationMixerPhysics(PScene *scene, unsigned int avatarId) {
+  return scene->createAnimationMixer(scene, avatarId);
+}
+EMSCRIPTEN_KEEPALIVE float **updateAnimationMixerPhysics(PScene *scene, float timeS) {
+  return scene->updateAnimationMixer(timeS);
+}
 EMSCRIPTEN_KEEPALIVE void addAnimationMappingPhysics(PScene *scene, bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
   return scene->addAnimationMapping(isPosition, index, isFirstBone, isLastBone);
 }
-// EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixerPhysics(PScene *scene) {
-//   return scene->createAnimationMixer();
-// }
 EMSCRIPTEN_KEEPALIVE void addAnimationPhysics(PScene *scene) {
   return scene->addAnimation();
 }
