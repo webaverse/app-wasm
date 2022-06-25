@@ -4,6 +4,7 @@
 // #include "noise.h"
 #include "march.h"
 #include "DualContouring/main.h"
+#include "AnimationSystem/AnimationSystem.h"
 // #include "collide.h"
 #include "physics.h"
 // #include "convex.h"
@@ -47,28 +48,32 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
   return scene->getBodyMass(id);
 }
 
+// AnimationSystem
+
 // EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixerPhysics(PScene *scene, unsigned int avatarId) {
 EMSCRIPTEN_KEEPALIVE void createAnimationMixerPhysics(PScene *scene, unsigned int avatarId) {
-  return scene->createAnimationMixer(scene, avatarId);
+  return AnimationSystem::createAnimationMixer(avatarId);
 }
 EMSCRIPTEN_KEEPALIVE float **updateAnimationMixerPhysics(PScene *scene, float timeS) {
-  return scene->updateAnimationMixer(timeS);
+  return AnimationSystem::updateAnimationMixer(timeS);
 }
 EMSCRIPTEN_KEEPALIVE void addAnimationMappingPhysics(PScene *scene, bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
-  return scene->addAnimationMapping(isPosition, index, isFirstBone, isLastBone);
+  return AnimationSystem::addAnimationMapping(isPosition, index, isFirstBone, isLastBone);
 }
 EMSCRIPTEN_KEEPALIVE void addAnimationPhysics(PScene *scene) {
-  return scene->addAnimation();
+  return AnimationSystem::addAnimation();
 }
 EMSCRIPTEN_KEEPALIVE void addInterpolantPhysics(PScene *scene, unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
-  return scene->addInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
+  return AnimationSystem::addInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
 EMSCRIPTEN_KEEPALIVE float *evaluateInterpolantPhysics(PScene *scene, unsigned int animationIndex, unsigned int interpolantIndex, float t) {
-  return scene->evaluateInterpolant(animationIndex, interpolantIndex, t);
+  return AnimationSystem::evaluateInterpolant(animationIndex, interpolantIndex, t);
 }
 EMSCRIPTEN_KEEPALIVE float **getAnimationValuesPhysics(PScene *scene, unsigned int animationIndex, float t) {
-  return scene->getAnimationValues(animationIndex, t);
+  return AnimationSystem::getAnimationValues(animationIndex, t);
 }
+
+// End AnimationSystem
 
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);

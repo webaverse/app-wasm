@@ -50,47 +50,6 @@ enum STATE_BITFIELD {
   STATE_BITFIELD_GROUNDED = 0x2,
 };
 
-struct Interpolant {
-  unsigned int numParameterPositions;
-  float *parameterPositions;
-  float *resultBuffer;
-  unsigned int numSampleValues;
-  float *sampleValues;
-  unsigned int valueSize;
-};
-struct Animation {
-  float duration;
-  std::vector<Interpolant> interpolants; // todo: pure array?
-  unsigned int currentInterpolantIndex = 0;
-  unsigned int index;
-};
-struct AnimationMapping {
-  bool isPosition;
-  unsigned int index;
-  bool isFirstBone;
-  bool isLastBone;
-};
-// class AnimationMotion {
-// public:
-
-// }
-class PScene; // forward declaration // https://stackoverflow.com/a/3735350/3596736
-class AnimationMixer {
-public:
-  Animation _animation; // todo: animationTree
-  unsigned int _avatarId;
-  PScene *_scene;
-  AnimationMixer(PScene *scene, unsigned int avatarId, Animation animation) {
-    _animation = animation;
-    _avatarId = avatarId;
-    _scene = scene;
-  };
-  // createMotion(Animation animation) {
-
-  // }
-  float **update(float timeS);
-};
-
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
   std::map<unsigned int, unsigned int> stateBitfields;
@@ -212,18 +171,6 @@ public:
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
 
-  // AnimationMixer *createAnimationMixer(PScene *scene, unsigned int avatarId);
-  void createAnimationMixer(PScene *scene, unsigned int avatarId);
-  float **updateAnimationMixer(float timeS);
-  void addAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
-  // float addAnimation();
-  void addAnimation();
-  void addInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
-  float **getAnimationValues(unsigned int animationIndex, float t);
-  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
-  void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
-
   PxDefaultAllocator *allocator = nullptr;
   PxDefaultErrorCallback *errorCallback = nullptr;
   PxFoundation *foundation = nullptr;
@@ -233,15 +180,6 @@ public:
   PxControllerManager *controllerManager = nullptr;
   std::vector<PxRigidActor *> actors;
   SimulationEventCallback2 *simulationEventCallback = nullptr;
-
-  // std::map<std::string, Interpolant *> interpolants;
-  // std::vector<Interpolant> _interpolants;
-  std::vector<AnimationMixer> _animationMixers;
-  std::vector<AnimationMapping> _animationMappings;
-  std::vector<Animation> _animations;
-  float *_animationValues [53];
-  // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
-  // Interpolant _interpolant;
 };
 
 #endif
