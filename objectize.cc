@@ -60,8 +60,8 @@ EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(float timeS, float f) {
 EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
   return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone);
 }
-EMSCRIPTEN_KEEPALIVE void createAnimation() {
-  return AnimationSystem::createAnimation();
+EMSCRIPTEN_KEEPALIVE void createAnimation(float duration) {
+  return AnimationSystem::createAnimation(duration);
 }
 EMSCRIPTEN_KEEPALIVE void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return AnimationSystem::createInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);

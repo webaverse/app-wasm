@@ -35,10 +35,11 @@ namespace AnimationSystem
     _animationMappings.push_back(animationMapping);
     std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
   }
-  void createAnimation()
+  void createAnimation(float duration)
   {
     Animation animation;
     animation.index = _animations.size();
+    animation.duration = duration;
     _animations.push_back(animation);
     std::cout << "_animations size: " << _animations.size() << std::endl;
   }
@@ -297,8 +298,11 @@ namespace AnimationSystem
     for (int i = 0; i < 53; i++)
     {
       AnimationMapping spec = _animationMappings[i];
-      float *v0 = evaluateInterpolant(92, i, timeS); // 92 fly
-      float *v1 = evaluateInterpolant(96, i, timeS); // 96 walk
+      float t0 = fmod(timeS, _animations[92].duration);
+      float t1 = fmod(timeS, _animations[96].duration);
+      float *v0 = evaluateInterpolant(92, i, t0); // 92 fly
+      float *v1 = evaluateInterpolant(96, i, t1); // 96 walk
+      // if (i == 1) std::cout << timeS << " " << _animations[92].duration << " " << t0 << " " << t1 << " " << v0[0] << " " << v1[0] << std::endl;
       // _animationValues[i] = evaluateInterpolant(_animation.index, i, timeS);
       if (spec.isPosition) {
         lerpFlat(v0, 1, v0, 1, v1, 1, f);

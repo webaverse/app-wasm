@@ -53,7 +53,7 @@ namespace AnimationSystem
   float **updateAnimationMixer(float timeS, float f);
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
   // float createAnimation();
-  void createAnimation();
+  void createAnimation(float duration);
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   float **getAnimationValues(unsigned int animationIndex, float t);
