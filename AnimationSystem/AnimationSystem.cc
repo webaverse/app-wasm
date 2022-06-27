@@ -15,6 +15,18 @@ namespace AnimationSystem
 
   // functions:
 
+  void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition)
+  {
+    if (isPosition)
+    {
+      lerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
+    }
+    else
+    {
+      slerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
+    }
+  }
+
   // AnimationMixer *createAnimationMixer(unsigned int avatarId) {
   void createAnimationMixer(unsigned int avatarId)
   {
@@ -25,6 +37,8 @@ namespace AnimationSystem
     // init
     AnimationNode node;
     _animTree = node;
+    _animTree.children.push_back(_animations[92]); // 92 fly
+    _animTree.children.push_back(_animations[96]); // 96 walk
   }
   float **updateAnimationMixer(float timeS, float f)
   {
@@ -313,22 +327,49 @@ namespace AnimationSystem
     return _animationValues;
   }
 
-  float *AnimationNode::update(AnimationMapping spec)
+  float *AnimationNode::update(AnimationMapping spec) // todo: &spec
   {
-    float t0 = fmod(AnimationMixer::timeS, _animations[92].duration);
-    float t1 = fmod(AnimationMixer::timeS, _animations[96].duration);
-    float *v0 = evaluateInterpolant(92, spec.index, t0); // 92 fly
-    float *v1 = evaluateInterpolant(96, spec.index, t1); // 96 walk
+    // float t0 = fmod(AnimationMixer::timeS, _animTree.children[0].duration);
+    // float t1 = fmod(AnimationMixer::timeS, _animTree.children[1].duration);
+    // float *v0 = evaluateInterpolant(_animTree.children[0].index, spec.index, t0);
+    // float *v1 = evaluateInterpolant(_animTree.children[1].index, spec.index, t1);
+
     // if (i == 1) std::cout << AnimationMixer::timeS << " " << _animations[92].duration << " " << t0 << " " << t1 << " " << v0[0] << " " << v1[0] << std::endl;
     // _animationValues[i] = evaluateInterpolant(_animation.index, i, AnimationMixer::timeS);
-    if (spec.isPosition)
-    {
-      lerpFlat(v0, 1, v0, 1, v1, 1, 0.5);
+
+    // if (spec.isPosition)
+    // {
+    //   lerpFlat(v0, 1, v0, 1, v1, 1, 0.5);
+    // }
+    // else
+    // {
+    //   slerpFlat(v0, 1, v0, 1, v1, 1, 0.5);
+    // }
+    // return v0;
+
+    // doBlendList ---
+    float *result;
+    unsigned int nodeIndex = 0;
+    unsigned int currentWeight = 0;
+    for (int i = 0; i < this->children.size(); i++) {
+      Animation childNode = this->children[i];
+      if (childNode.weight > 0) {
+        float evaluateTimeS = fmod(AnimationMixer::timeS, childNode.duration);
+        float *value = evaluateInterpolant(childNode.index, spec.index, evaluateTimeS);
+        if (nodeIndex == 0) {
+          result = value;
+
+          nodeIndex++;
+          currentWeight = childNode.weight;
+        } else {
+          float t = childNode.weight / (currentWeight + childNode.weight);
+          interpolateFlat(result, 1, result, 1, value, 1, t, spec.isPosition);
+
+          nodeIndex++;
+          currentWeight += childNode.weight;
+        }
+      }
     }
-    else
-    {
-      slerpFlat(v0, 1, v0, 1, v1, 1, 0.5);
-    }
-    return v0;
+    return result;
   }
 }

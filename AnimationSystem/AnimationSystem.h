@@ -20,6 +20,7 @@ namespace AnimationSystem
     std::vector<Interpolant> interpolants; // todo: pure array?
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
+    float weight = 1; // todo: move to AnimationMotion
   };
   struct AnimationMapping
   {
