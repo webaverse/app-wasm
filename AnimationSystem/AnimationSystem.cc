@@ -12,8 +12,37 @@ namespace AnimationSystem
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
   AnimationNode _animTree;
+  float *test;
 
   // functions:
+
+  float setTest(float num) {
+    float a = num;
+    test = &a;
+    return *test;
+  }
+
+  float setTest2(float num) {
+    *test = num;
+    return *test;
+  }
+
+  float setTestNew(float num) {
+    test = new float(num);
+    return *test;
+  }
+
+  float setTestAlloc(float num) {
+    test = (float *)malloc(1 * sizeof(float));
+    *test = num;
+    return *test;
+  }
+
+  float getTest() {
+    return *test;
+  }
+
+  // ------
 
   float changeWeight(unsigned int animationIndex, float weight)
   {

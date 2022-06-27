@@ -58,6 +58,12 @@ namespace AnimationSystem
     float **update(float timeS, float f);
   };
 
+  float setTest(float num);
+  float setTest2(float num);
+  float setTestNew(float num);
+  float setTestAlloc(float num);
+  float getTest();
+  // ------
   // AnimationMixer *createAnimationMixer(unsigned int avatarId);
   void createAnimationMixer(unsigned int avatarId);
   float **updateAnimationMixer(float timeS, float f);

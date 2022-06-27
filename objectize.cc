@@ -50,6 +50,22 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 
 // AnimationSystem
 
+EMSCRIPTEN_KEEPALIVE float setTest(float num) {
+  return AnimationSystem::setTest(num);
+}
+EMSCRIPTEN_KEEPALIVE float setTest2(float num) {
+  return AnimationSystem::setTest2(num);
+}
+EMSCRIPTEN_KEEPALIVE float setTestNew(float num) {
+  return AnimationSystem::setTestNew(num);
+}
+EMSCRIPTEN_KEEPALIVE float setTestAlloc(float num) {
+  return AnimationSystem::setTestAlloc(num);
+}
+EMSCRIPTEN_KEEPALIVE float getTest() {
+  return AnimationSystem::getTest();
+}
+// ------
 // EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixer(unsigned int avatarId) {
 EMSCRIPTEN_KEEPALIVE void createAnimationMixer(unsigned int avatarId) {
   return AnimationSystem::createAnimationMixer(avatarId);
