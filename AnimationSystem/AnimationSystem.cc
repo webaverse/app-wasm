@@ -8,21 +8,47 @@ namespace AnimationSystem
   std::vector<AnimationMapping> _animationMappings;
   Animation _animation;
   std::vector<Animation> _animations;
+  std::vector<AnimationMotion> _motions;
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
+  AnimationNode animTree;
 
   // functions:
+
+  void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition)
+  {
+    if (isPosition)
+    {
+      lerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
+    }
+    else
+    {
+      slerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
+    }
+  }
 
   // AnimationMixer *createAnimationMixer(unsigned int avatarId) {
   void createAnimationMixer(unsigned int avatarId)
   {
-    AnimationMixer animationMixer(avatarId, _animations[92]); // 92: flyMotion.
+    AnimationMixer animationMixer(avatarId);
     _animationMixers.push_back(animationMixer);
     // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
+
+    // init
+    AnimationNode node;
+    node.index = 7;
+    node.children.push_back(_motions[92]);
+    node.children.push_back(_motions[96]);
+    std::cout << "node.children.size(): " << node.children.size() << std::endl;
+    std::cout << "node.index: " << node.index << std::endl;
+    // animationMixer.animTree = node;
+    animTree = node;
+    // std::cout << "animTree pointer 1: " << animationMixer.animTree << std::endl;
   }
   float **updateAnimationMixer(float timeS, float f)
   {
+    std::cout << "updateAnimationMixer" << std::endl;
     return _animationMixers[0].update(timeS, f);
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone)
@@ -42,6 +68,11 @@ namespace AnimationSystem
     animation.duration = duration;
     _animations.push_back(animation);
     std::cout << "_animations size: " << _animations.size() << std::endl;
+
+    // todo: move to seperate function
+    AnimationMotion motion;
+    motion.animation = animation;
+    _motions.push_back(motion);
   }
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
   {
@@ -291,26 +322,106 @@ namespace AnimationSystem
     dst[dstOffset + 2] = z0;
     dst[dstOffset + 3] = w0;
   }
-  float **AnimationMixer::update(float timeS, float f/*test*/)
+  float **AnimationMixer::update(float timeS, float f /*test*/)
   {
+    std::cout << "AnimationMixer::update" << std::endl;
+    AnimationMixer::timeS = timeS;
+
     // return getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
 
     for (int i = 0; i < 53; i++)
     {
       AnimationMapping spec = _animationMappings[i];
-      float t0 = fmod(timeS, _animations[92].duration);
-      float t1 = fmod(timeS, _animations[96].duration);
-      float *v0 = evaluateInterpolant(92, i, t0); // 92 fly
-      float *v1 = evaluateInterpolant(96, i, t1); // 96 walk
-      // if (i == 1) std::cout << timeS << " " << _animations[92].duration << " " << t0 << " " << t1 << " " << v0[0] << " " << v1[0] << std::endl;
-      // _animationValues[i] = evaluateInterpolant(_animation.index, i, timeS);
-      if (spec.isPosition) {
-        lerpFlat(v0, 1, v0, 1, v1, 1, f);
-      } else {
-        slerpFlat(v0, 1, v0, 1, v1, 1, f);
-      }
-      _animationValues[i] = v0;
+      // float t0 = fmod(timeS, _animations[92].duration);
+      // float t1 = fmod(timeS, _animations[96].duration);
+      // float *v0 = evaluateInterpolant(92, i, t0); // 92 fly
+      // float *v1 = evaluateInterpolant(96, i, t1); // 96 walk
+      // // if (i == 1) std::cout << timeS << " " << _animations[92].duration << " " << t0 << " " << t1 << " " << v0[0] << " " << v1[0] << std::endl;
+      // // _animationValues[i] = evaluateInterpolant(_animation.index, i, timeS);
+      // if (spec.isPosition)
+      // {
+      //   lerpFlat(v0, 1, v0, 1, v1, 1, f);
+      // }
+      // else
+      // {
+      //   slerpFlat(v0, 1, v0, 1, v1, 1, f);
+      // }
+      // _animationValues[i] = v0;
+
+      // float *result = doBlend(this->animTree, spec);
+      // std::cout << "animTree pointer 2: " << this->animTree << std::endl;
+      // float *result = this->animTree.update(spec); // todo: referrence transfer ( not pointer );
+      std::cout << "size: " << animTree.children.size() << std::endl;
+      std::cout << "node.index: " << animTree.index << std::endl;
+      float *result = animTree.update(spec);
     }
     return _animationValues;
+  }
+  // float *AnimationMixer::doBlend(AnimationNode *node, AnimationMapping *spec)
+  // {
+  //   AnimationNode *node = node;
+  //   float *value = node->update(spec);
+  //   return value;
+  // }
+
+  float *AnimationMotion::update(AnimationMapping spec)
+  {
+    std::cout << "AnimationMotion::update" << std::endl;
+    float time;
+    if (spec.isFirstBone)
+    {
+      time = AnimationMixer::timeS - this->startTime;
+    }
+
+    float *value;
+    float evaluateTimeS = std::fmod(AnimationMixer::timeS / this->speed + this->timeBias, this->animation.duration);
+    value = evaluateInterpolant(this->animation.index, spec.index, evaluateTimeS);
+
+    return value;
+  }
+
+  float *AnimationNode::update(AnimationMapping spec)
+  {
+    std::cout << "AnimationNode::update" << std::endl;
+    float *result = doBlendList(spec);
+    return result;
+  }
+
+  float *AnimationNode::doBlendList(AnimationMapping spec)
+  {
+    std::cout << "AnimationNode::doBlendList" << std::endl;
+    float *result;
+    unsigned int nodeIndex = 0;
+    float currentWeight = 0;
+    std::cout << (this == &animTree) << std::endl;
+    std::cout << "node.children.size(): " << this->children.size() << std::endl;
+    std::cout << "node.index: " << this->index << std::endl;
+    for (int i = 0; i < this->children.size(); i++)
+    {
+      std::cout << "i: " << i << std::endl;
+      AnimationMotion childNode = this->children[i];
+      if (childNode.weight > 0)
+      {
+        // float *value = this->mixer.doBlend(childNode, spec);
+        float *value = childNode.update(spec);
+
+        if (nodeIndex == 0)
+        {
+          result = value;
+
+          nodeIndex++;
+          currentWeight = childNode.weight;
+        }
+        else
+        {
+          float t = childNode.weight / (currentWeight + childNode.weight);
+          interpolateFlat(result, 1, result, 1, value, 1, t, spec.isPosition);
+
+          nodeIndex++;
+          currentWeight += childNode.weight;
+        }
+      }
+    }
+    return result;
   }
 }

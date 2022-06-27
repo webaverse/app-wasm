@@ -2,9 +2,17 @@
 #define _ANIMATIONSYSTEM_H
 #include <iostream>
 #include "vector.h"
+#include <optional>
 
 namespace AnimationSystem
 {
+  struct AnimationMapping
+  {
+    bool isPosition;
+    unsigned int index;
+    bool isFirstBone;
+    bool isLastBone;
+  };
   struct Interpolant
   {
     unsigned int numParameterPositions;
@@ -21,30 +29,45 @@ namespace AnimationSystem
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
   };
-  struct AnimationMapping
+  class AnimationMotion
   {
-    bool isPosition;
-    unsigned int index;
-    bool isFirstBone;
-    bool isLastBone;
-  };
-  // class AnimationMotion {
-  // public:
+  public:
+    Animation animation;
+    float timeBias = 0;
+    float speed = 1;
+    float weight = 1;
+    float startTime = 0; // todo: rename playStartTime
 
-  // }
+    float *update(AnimationMapping spec);
+  };
+  class AnimationNode
+  {
+  public:
+    // AnimationMixer mixer;
+    std::vector<AnimationMotion> children;
+    float fadeStartTime;
+    unsigned int index;
+
+    float *doBlendList(AnimationMapping spec);
+    float *update(AnimationMapping spec);
+  };
   class AnimationMixer
   {
   public:
-    Animation _animation; // todo: animationTree
+    static float timeS;
+
     unsigned int _avatarId;
-    AnimationMixer(unsigned int avatarId, Animation animation)
+    // AnimationNode animTree;
+
+    AnimationMixer(unsigned int avatarId)
     {
-      _animation = animation;
       _avatarId = avatarId;
     };
+
     // createMotion(Animation animation) {
 
     // }
+    float *doBlend(AnimationNode node, AnimationMapping spec);
     float **update(float timeS, float f);
   };
 
