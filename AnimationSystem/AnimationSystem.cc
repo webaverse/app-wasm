@@ -6,11 +6,12 @@ namespace AnimationSystem
   // std::vector<Interpolant> _interpolants;
   std::vector<AnimationMixer> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
-  Animation _animation;
+  // Animation _animation;
   std::vector<Animation> _animations;
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
+  AnimationNode _animTree;
 
   // functions:
 
@@ -20,6 +21,10 @@ namespace AnimationSystem
     AnimationMixer animationMixer(avatarId, _animations[92]); // 92: flyMotion.
     _animationMixers.push_back(animationMixer);
     // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
+
+    // init
+    AnimationNode node;
+    _animTree = node;
   }
   float **updateAnimationMixer(float timeS, float f)
   {
@@ -291,26 +296,39 @@ namespace AnimationSystem
     dst[dstOffset + 2] = z0;
     dst[dstOffset + 3] = w0;
   }
-  float **AnimationMixer::update(float timeS, float f/*test*/)
+
+  float **AnimationMixer::update(float timeS, float f /*test*/)
   {
+    AnimationMixer::timeS = timeS;
+
     // return getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
 
     for (int i = 0; i < 53; i++)
     {
       AnimationMapping spec = _animationMappings[i];
-      float t0 = fmod(timeS, _animations[92].duration);
-      float t1 = fmod(timeS, _animations[96].duration);
-      float *v0 = evaluateInterpolant(92, i, t0); // 92 fly
-      float *v1 = evaluateInterpolant(96, i, t1); // 96 walk
-      // if (i == 1) std::cout << timeS << " " << _animations[92].duration << " " << t0 << " " << t1 << " " << v0[0] << " " << v1[0] << std::endl;
-      // _animationValues[i] = evaluateInterpolant(_animation.index, i, timeS);
-      if (spec.isPosition) {
-        lerpFlat(v0, 1, v0, 1, v1, 1, f);
-      } else {
-        slerpFlat(v0, 1, v0, 1, v1, 1, f);
-      }
-      _animationValues[i] = v0;
+
+      // float * aaa = _animTree.update(spec);
+      _animationValues[i] = _animTree.update(spec);
     }
     return _animationValues;
+  }
+
+  float *AnimationNode::update(AnimationMapping spec)
+  {
+    float t0 = fmod(AnimationMixer::timeS, _animations[92].duration);
+    float t1 = fmod(AnimationMixer::timeS, _animations[96].duration);
+    float *v0 = evaluateInterpolant(92, spec.index, t0); // 92 fly
+    float *v1 = evaluateInterpolant(96, spec.index, t1); // 96 walk
+    // if (i == 1) std::cout << AnimationMixer::timeS << " " << _animations[92].duration << " " << t0 << " " << t1 << " " << v0[0] << " " << v1[0] << std::endl;
+    // _animationValues[i] = evaluateInterpolant(_animation.index, i, AnimationMixer::timeS);
+    if (spec.isPosition)
+    {
+      lerpFlat(v0, 1, v0, 1, v1, 1, 0.5);
+    }
+    else
+    {
+      slerpFlat(v0, 1, v0, 1, v1, 1, 0.5);
+    }
+    return v0;
   }
 }
