@@ -69,6 +69,7 @@ namespace AnimationSystem
   float **getAnimationValues(unsigned int animationIndex, float t);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
+  float changeWeight(unsigned int animationIndex, float weight);
 
 };
 

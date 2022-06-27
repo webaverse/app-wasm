@@ -15,6 +15,17 @@ namespace AnimationSystem
 
   // functions:
 
+  float changeWeight(unsigned int animationIndex, float weight)
+  {
+    // // no effect if _animations not store pointer.
+    // Animation animation = _animations[animationIndex];
+    // Animation animation = _animTree.children[animationIndex];
+    // animation.weight = weight;
+
+    _animTree.children[animationIndex].weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
+    return weight;
+  }
+
   void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition)
   {
     if (isPosition)
@@ -352,7 +363,7 @@ namespace AnimationSystem
     unsigned int nodeIndex = 0;
     unsigned int currentWeight = 0;
     for (int i = 0; i < this->children.size(); i++) {
-      Animation childNode = this->children[i];
+      Animation childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
       if (childNode.weight > 0) {
         float evaluateTimeS = fmod(AnimationMixer::timeS, childNode.duration);
         float *value = evaluateInterpolant(childNode.index, spec.index, evaluateTimeS);

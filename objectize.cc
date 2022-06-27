@@ -72,6 +72,9 @@ EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, uns
 EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
   return AnimationSystem::getAnimationValues(animationIndex, t);
 }
+EMSCRIPTEN_KEEPALIVE float changeWeight(unsigned int animationIndex, float weight) {
+  return AnimationSystem::changeWeight(animationIndex, weight);
+}
 
 // End AnimationSystem
 
