@@ -38,7 +38,7 @@ namespace AnimationSystem
   public:
     std::vector<Animation> children;
 
-    float *update(AnimationMapping spec);
+    float *update(AnimationMapping &spec);
   };
   class AnimationMixer
   {

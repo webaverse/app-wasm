@@ -338,7 +338,7 @@ namespace AnimationSystem
     return _animationValues;
   }
 
-  float *AnimationNode::update(AnimationMapping spec) // todo: &spec
+  float *AnimationNode::update(AnimationMapping &spec) // todo: &spec
   {
     // float t0 = fmod(AnimationMixer::timeS, _animTree.children[0].duration);
     // float t1 = fmod(AnimationMixer::timeS, _animTree.children[1].duration);
