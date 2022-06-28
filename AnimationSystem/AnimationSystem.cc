@@ -7,7 +7,7 @@ namespace AnimationSystem
   std::vector<AnimationMixer> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation *> _animations;
-  std::vector<AnimationNode *> _motions;
+  // std::vector<AnimationNode *> _motions;
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
@@ -96,20 +96,20 @@ namespace AnimationSystem
 
     // _animTree = crouchNode;
 
-    // init
-    AnimationNode *walkMotion = createMotion(_animations[96]);
-    AnimationNode *flyMotion = createMotion(_animations[92]);
-    AnimationNode *crouchMotion = createMotion(_animations[9]);
+    // // init
+    // AnimationNode *walkMotion = createMotion(_animations[96]);
+    // AnimationNode *flyMotion = createMotion(_animations[92]);
+    // AnimationNode *crouchMotion = createMotion(_animations[9]);
 
-    AnimationNode *walkFlyNode = createNode();
-    addChild(walkFlyNode, walkMotion);
-    addChild(walkFlyNode, flyMotion);
+    // AnimationNode *walkFlyNode = createNode();
+    // addChild(walkFlyNode, walkMotion);
+    // addChild(walkFlyNode, flyMotion);
 
-    AnimationNode *crouchNode = createNode();
-    addChild(crouchNode, walkFlyNode);
-    addChild(crouchNode, crouchMotion);
+    // AnimationNode *crouchNode = createNode();
+    // addChild(crouchNode, walkFlyNode);
+    // addChild(crouchNode, crouchMotion);
 
-    setAnimTree(crouchNode);
+    // setAnimTree(crouchNode);
   }
   AnimationNode *createNode()
   {
@@ -152,7 +152,7 @@ namespace AnimationSystem
   {
     AnimationNode *motion = new AnimationNode();
     motion->animation = animation;
-    _motions.push_back(motion);
+    // _motions.push_back(motion);
 
     return motion;
   }
