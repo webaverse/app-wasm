@@ -7,7 +7,7 @@ namespace AnimationSystem
   std::vector<AnimationMixer> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   // Animation _animation;
-  std::vector<Animation> _animations;
+  std::vector<Animation *> _animations;
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
@@ -51,7 +51,7 @@ namespace AnimationSystem
     // Animation animation = _animTree.children[animationIndex];
     // animation.weight = weight;
 
-    _animTree.children[animationIndex].weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
+    _animTree.children[animationIndex]->weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
     return weight;
   }
 
@@ -96,9 +96,9 @@ namespace AnimationSystem
   }
   void createAnimation(float duration)
   {
-    Animation animation;
-    animation.index = _animations.size();
-    animation.duration = duration;
+    Animation *animation = new Animation();
+    animation->index = _animations.size();
+    animation->duration = duration;
     _animations.push_back(animation);
     std::cout << "_animations size: " << _animations.size() << std::endl;
   }
@@ -116,7 +116,7 @@ namespace AnimationSystem
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
     // _interpolant = interpolant;
-    _animations[animationIndex].interpolants.push_back(interpolant);
+    _animations[animationIndex]->interpolants.push_back(interpolant);
 
     // std::cout
     // << "interpolant "
@@ -134,7 +134,7 @@ namespace AnimationSystem
 
     // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
 
-    Interpolant interpolant = _animations[animationIndex].interpolants[interpolantIndex];
+    Interpolant interpolant = _animations[animationIndex]->interpolants[interpolantIndex];
 
     if (interpolant.numParameterPositions == 1)
     {
@@ -392,21 +392,21 @@ namespace AnimationSystem
     unsigned int nodeIndex = 0;
     unsigned int currentWeight = 0;
     for (int i = 0; i < this->children.size(); i++) {
-      Animation childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
-      if (childNode.weight > 0) {
-        float evaluateTimeS = fmod(AnimationMixer::timeS, childNode.duration);
-        float *value = evaluateInterpolant(childNode.index, spec.index, evaluateTimeS);
+      Animation *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+      if (childNode->weight > 0) {
+        float evaluateTimeS = fmod(AnimationMixer::timeS, childNode->duration);
+        float *value = evaluateInterpolant(childNode->index, spec.index, evaluateTimeS);
         if (nodeIndex == 0) {
           result = value;
 
           nodeIndex++;
-          currentWeight = childNode.weight;
+          currentWeight = childNode->weight;
         } else {
-          float t = childNode.weight / (currentWeight + childNode.weight);
+          float t = childNode->weight / (currentWeight + childNode->weight);
           interpolateFlat(result, 1, result, 1, value, 1, t, spec.isPosition);
 
           nodeIndex++;
-          currentWeight += childNode.weight;
+          currentWeight += childNode->weight;
         }
       }
     }

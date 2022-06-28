@@ -36,7 +36,7 @@ namespace AnimationSystem
   class AnimationNode
   {
   public:
-    std::vector<Animation> children;
+    std::vector<Animation *> children;
 
     float *update(AnimationMapping &spec);
   };
@@ -47,7 +47,7 @@ namespace AnimationSystem
 
     AnimationNode _animationNode; // todo: rename: animationTree
     unsigned int _avatarId;
-    AnimationMixer(unsigned int avatarId, Animation animation)
+    AnimationMixer(unsigned int avatarId, Animation *animation)
     {
       // _animation = animation;
       _avatarId = avatarId;
