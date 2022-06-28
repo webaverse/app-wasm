@@ -16,29 +16,34 @@ namespace AnimationSystem
 
   // functions:
 
-  float setTest(float num) {
+  float setTest(float num)
+  {
     float a = num;
     test = &a;
     return *test;
   }
 
-  float setTest2(float num) {
+  float setTest2(float num)
+  {
     *test = num;
     return *test;
   }
 
-  float setTestNew(float num) {
+  float setTestNew(float num)
+  {
     test = new float(num);
     return *test;
   }
 
-  float setTestAlloc(float num) {
+  float setTestAlloc(float num)
+  {
     test = (float *)malloc(1 * sizeof(float));
     *test = num;
     return *test;
   }
 
-  float getTest() {
+  float getTest()
+  {
     return *test;
   }
 
@@ -396,17 +401,22 @@ namespace AnimationSystem
     float *result;
     unsigned int nodeIndex = 0;
     unsigned int currentWeight = 0;
-    for (int i = 0; i < this->children.size(); i++) {
+    for (int i = 0; i < this->children.size(); i++)
+    {
       AnimationMotion *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
-      if (childNode->weight > 0) {
+      if (childNode->weight > 0)
+      {
         float evaluateTimeS = fmod(AnimationMixer::timeS, childNode->animation->duration);
         float *value = evaluateInterpolant(childNode->animation->index, spec.index, evaluateTimeS);
-        if (nodeIndex == 0) {
+        if (nodeIndex == 0)
+        {
           result = value;
 
           nodeIndex++;
           currentWeight = childNode->weight;
-        } else {
+        }
+        else
+        {
           float t = childNode->weight / (currentWeight + childNode->weight);
           interpolateFlat(result, 1, result, 1, value, 1, t, spec.isPosition);
 
