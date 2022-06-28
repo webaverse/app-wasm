@@ -67,13 +67,17 @@ namespace AnimationSystem
   float **updateAnimationMixer(float timeS, float f);
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
   // float createAnimation();
-  void createAnimation(float duration);
+  Animation *createAnimation(float duration);
+  AnimationNode *createMotion(Animation *animation);
+  AnimationNode *createNode();
+  void addChild(AnimationNode *parent, AnimationNode *child);
+  void setAnimTree(AnimationNode *node);
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   float **getAnimationValues(unsigned int animationIndex, float t);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
-  float changeWeight(unsigned int animationIndex, float weight);
+  float changeWeight(AnimationNode *node, float weight);
 
 };
 

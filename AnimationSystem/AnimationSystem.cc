@@ -11,7 +11,7 @@ namespace AnimationSystem
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
-  AnimationNode _animTree;
+  AnimationNode *_animTree;
   float *test;
 
   // functions:
@@ -49,14 +49,20 @@ namespace AnimationSystem
 
   // ------
 
-  float changeWeight(unsigned int animationIndex, float weight)
-  {
-    // // no effect if _animations not store pointer.
-    // Animation animation = _animations[animationIndex];
-    // Animation animation = _animTree.children[animationIndex];
-    // animation.weight = weight;
+  // float changeWeight(unsigned int animationIndex, float weight)
+  // {
+  //   // // no effect if _animations not store pointer.
+  //   // Animation animation = _animations[animationIndex];
+  //   // Animation animation = _animTree.children[animationIndex];
+  //   // animation.weight = weight;
 
-    _animTree.children[animationIndex]->weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
+  //   _animTree->children[animationIndex]->weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
+  //   return weight;
+  // }
+
+  float changeWeight(AnimationNode *node, float weight)
+  {
+    node->weight = weight;
     return weight;
   }
 
@@ -75,15 +81,48 @@ namespace AnimationSystem
   // AnimationMixer *createAnimationMixer(unsigned int avatarId) {
   void createAnimationMixer(unsigned int avatarId)
   {
-    AnimationMixer animationMixer(avatarId); // 92: flyMotion.
+    AnimationMixer animationMixer(avatarId);
     _animationMixers.push_back(animationMixer);
     // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
 
+    // // init old
+    // AnimationNode *walkFlyNode = new AnimationNode();
+    // walkFlyNode->children.push_back(_motions[96]); // 96 walk
+    // walkFlyNode->children.push_back(_motions[92]); // 92 fly
+
+    // AnimationNode *crouchNode = new AnimationNode();
+    // crouchNode->children.push_back(walkFlyNode);
+    // crouchNode->children.push_back(_motions[9]); // 9 Crouch Idle.fbx
+
+    // _animTree = crouchNode;
+
     // init
-    AnimationNode node;
+    AnimationNode *walkMotion = createMotion(_animations[96]);
+    AnimationNode *flyMotion = createMotion(_animations[92]);
+    AnimationNode *crouchMotion = createMotion(_animations[9]);
+
+    AnimationNode *walkFlyNode = createNode();
+    addChild(walkFlyNode, walkMotion);
+    addChild(walkFlyNode, flyMotion);
+
+    AnimationNode *crouchNode = createNode();
+    addChild(crouchNode, walkFlyNode);
+    addChild(crouchNode, crouchMotion);
+
+    setAnimTree(crouchNode);
+  }
+  AnimationNode *createNode()
+  {
+    AnimationNode *node = new AnimationNode();
+    return node;
+  }
+  void addChild(AnimationNode *parent, AnimationNode *child)
+  {
+    parent->children.push_back(child);
+  }
+  void setAnimTree(AnimationNode *node)
+  {
     _animTree = node;
-    _animTree.children.push_back(_motions[92]); // 92 fly
-    _animTree.children.push_back(_motions[96]); // 96 walk
   }
   float **updateAnimationMixer(float timeS, float f)
   {
@@ -99,7 +138,7 @@ namespace AnimationSystem
     _animationMappings.push_back(animationMapping);
     std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
   }
-  void createAnimation(float duration)
+  Animation *createAnimation(float duration)
   {
     Animation *animation = new Animation();
     animation->index = _animations.size();
@@ -107,10 +146,15 @@ namespace AnimationSystem
     _animations.push_back(animation);
     std::cout << "_animations size: " << _animations.size() << std::endl;
 
-    // todo: Move to createMotion()?
+    return animation;
+  }
+  AnimationNode *createMotion(Animation *animation)
+  {
     AnimationNode *motion = new AnimationNode();
     motion->animation = animation;
     _motions.push_back(motion);
+
+    return motion;
   }
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
   {
@@ -372,7 +416,7 @@ namespace AnimationSystem
       AnimationMapping spec = _animationMappings[i];
 
       // float * aaa = _animTree.update(spec);
-      _animationValues[i] = _animTree.update(spec);
+      _animationValues[i] = _animTree->update(spec);
     }
     return _animationValues;
   }

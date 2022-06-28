@@ -66,6 +66,7 @@ EMSCRIPTEN_KEEPALIVE float getTest() {
   return AnimationSystem::getTest();
 }
 // ------
+// todo: use pointer instead of index.
 // EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixer(unsigned int avatarId) {
 EMSCRIPTEN_KEEPALIVE void createAnimationMixer(unsigned int avatarId) {
   return AnimationSystem::createAnimationMixer(avatarId);
@@ -76,8 +77,20 @@ EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(float timeS, float f) {
 EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone) {
   return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone);
 }
-EMSCRIPTEN_KEEPALIVE void createAnimation(float duration) {
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(float duration) {
   return AnimationSystem::createAnimation(duration);
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::Animation *animation) {
+  return AnimationSystem::createMotion(animation);
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode() {
+  return AnimationSystem::createNode();
+}
+EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *parent, AnimationSystem::AnimationNode *child) {
+  return AnimationSystem::addChild(parent, child);
+}
+EMSCRIPTEN_KEEPALIVE void setAnimTree(AnimationSystem::AnimationNode *node) {
+  return AnimationSystem::setAnimTree(node);
 }
 EMSCRIPTEN_KEEPALIVE void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return AnimationSystem::createInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
@@ -88,8 +101,8 @@ EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, uns
 EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
   return AnimationSystem::getAnimationValues(animationIndex, t);
 }
-EMSCRIPTEN_KEEPALIVE float changeWeight(unsigned int animationIndex, float weight) {
-  return AnimationSystem::changeWeight(animationIndex, weight);
+EMSCRIPTEN_KEEPALIVE float changeWeight(AnimationSystem::AnimationNode *node, float weight) {
+  return AnimationSystem::changeWeight(node, weight);
 }
 
 // End AnimationSystem
