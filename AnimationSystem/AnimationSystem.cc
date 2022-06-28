@@ -6,8 +6,8 @@ namespace AnimationSystem
   // std::vector<Interpolant> _interpolants;
   std::vector<AnimationMixer> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
-  // Animation _animation;
   std::vector<Animation *> _animations;
+  std::vector<AnimationMotion *> _motions;
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
@@ -70,15 +70,15 @@ namespace AnimationSystem
   // AnimationMixer *createAnimationMixer(unsigned int avatarId) {
   void createAnimationMixer(unsigned int avatarId)
   {
-    AnimationMixer animationMixer(avatarId, _animations[92]); // 92: flyMotion.
+    AnimationMixer animationMixer(avatarId); // 92: flyMotion.
     _animationMixers.push_back(animationMixer);
     // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
 
     // init
     AnimationNode node;
     _animTree = node;
-    _animTree.children.push_back(_animations[92]); // 92 fly
-    _animTree.children.push_back(_animations[96]); // 96 walk
+    _animTree.children.push_back(_motions[92]); // 92 fly
+    _animTree.children.push_back(_motions[96]); // 96 walk
   }
   float **updateAnimationMixer(float timeS, float f)
   {
@@ -101,6 +101,11 @@ namespace AnimationSystem
     animation->duration = duration;
     _animations.push_back(animation);
     std::cout << "_animations size: " << _animations.size() << std::endl;
+
+    // todo: Move to createMotion()?
+    AnimationMotion *motion = new AnimationMotion();
+    motion->animation = animation;
+    _motions.push_back(motion);
   }
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
   {
@@ -392,10 +397,10 @@ namespace AnimationSystem
     unsigned int nodeIndex = 0;
     unsigned int currentWeight = 0;
     for (int i = 0; i < this->children.size(); i++) {
-      Animation *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+      AnimationMotion *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
       if (childNode->weight > 0) {
-        float evaluateTimeS = fmod(AnimationMixer::timeS, childNode->duration);
-        float *value = evaluateInterpolant(childNode->index, spec.index, evaluateTimeS);
+        float evaluateTimeS = fmod(AnimationMixer::timeS, childNode->animation->duration);
+        float *value = evaluateInterpolant(childNode->animation->index, spec.index, evaluateTimeS);
         if (nodeIndex == 0) {
           result = value;
 

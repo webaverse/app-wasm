@@ -20,7 +20,6 @@ namespace AnimationSystem
     std::vector<Interpolant> interpolants; // todo: pure array?
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
-    float weight = 1; // todo: move to AnimationMotion
   };
   struct AnimationMapping
   {
@@ -29,14 +28,15 @@ namespace AnimationSystem
     bool isFirstBone;
     bool isLastBone;
   };
-  // class AnimationMotion {
-  // public:
-
-  // }
+  class AnimationMotion {
+  public:
+    Animation *animation;
+    float weight = 1; // todo: move to AnimationMotion
+  };
   class AnimationNode
   {
   public:
-    std::vector<Animation *> children;
+    std::vector<AnimationMotion *> children;
 
     float *update(AnimationMapping &spec);
   };
@@ -47,9 +47,8 @@ namespace AnimationSystem
 
     AnimationNode _animationNode; // todo: rename: animationTree
     unsigned int _avatarId;
-    AnimationMixer(unsigned int avatarId, Animation *animation)
+    AnimationMixer(unsigned int avatarId)
     {
-      // _animation = animation;
       _avatarId = avatarId;
     };
     // createMotion(Animation animation) {
