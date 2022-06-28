@@ -5,6 +5,13 @@
 
 namespace AnimationSystem
 {
+  enum NodeType
+  {
+    LIST = 1,
+    TWO = 2,
+    UNITARY = 3,
+    OVERWRITE = 4
+  };
   struct Interpolant
   {
     unsigned int numParameterPositions;
@@ -31,10 +38,17 @@ namespace AnimationSystem
   class AnimationNode
   {
   public:
-    // node ---
+    // node ------
     float weight = 1;
     std::vector<AnimationNode *> children;
-    // motion ---
+    unsigned int type = NodeType::LIST;
+    // NodeType::LIST ---
+    // NodeType::TWO ---
+    float factor = 0; // [0, 1]
+    // NodeType::UNITARY ---
+    // NodeType::OVERWRITE ---
+
+    // motion ------
     Animation *animation;
 
     float *update(AnimationMapping &spec);
@@ -69,7 +83,7 @@ namespace AnimationSystem
   // float createAnimation();
   Animation *createAnimation(float duration);
   AnimationNode *createMotion(Animation *animation);
-  AnimationNode *createNode();
+  AnimationNode *createNode(NodeType type = NodeType::LIST);
   void addChild(AnimationNode *parent, AnimationNode *child);
   void setAnimTree(AnimationNode *node);
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
@@ -77,7 +91,10 @@ namespace AnimationSystem
   float **getAnimationValues(unsigned int animationIndex, float t);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
-  float changeWeight(AnimationNode *node, float weight);
+  void changeWeight(AnimationNode *node, float weight);
+  void changeFactor(AnimationNode *node, float factor);
+  float getWeight(AnimationSystem::AnimationNode *node);
+  float getFactor(AnimationSystem::AnimationNode *node);
 
 };
 

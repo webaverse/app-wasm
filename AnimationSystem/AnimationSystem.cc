@@ -60,10 +60,24 @@ namespace AnimationSystem
   //   return weight;
   // }
 
-  float changeWeight(AnimationNode *node, float weight)
+  void changeWeight(AnimationNode *node, float weight)
   {
     node->weight = weight;
-    return weight;
+  }
+
+  void changeFactor(AnimationNode *node, float factor)
+  {
+    node->factor = factor;
+  }
+
+  float getWeight(AnimationSystem::AnimationNode *node)
+  {
+    return node->weight;
+  }
+
+  float getFactor(AnimationSystem::AnimationNode *node)
+  {
+    return node->factor;
   }
 
   void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition)
@@ -111,9 +125,11 @@ namespace AnimationSystem
 
     // setAnimTree(crouchNode);
   }
-  AnimationNode *createNode()
+  AnimationNode *createNode(NodeType type)
   {
     AnimationNode *node = new AnimationNode();
+    node->type = type;
+    std::cout << "NodeType: " << type << " " << node->type << std::endl;
     return node;
   }
   void addChild(AnimationNode *parent, AnimationNode *child)
@@ -136,7 +152,7 @@ namespace AnimationSystem
     animationMapping.isFirstBone = isFirstBone;
     animationMapping.isLastBone = isLastBone;
     _animationMappings.push_back(animationMapping);
-    std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
+    // std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
   }
   Animation *createAnimation(float duration)
   {
@@ -144,7 +160,7 @@ namespace AnimationSystem
     animation->index = _animations.size();
     animation->duration = duration;
     _animations.push_back(animation);
-    std::cout << "_animations size: " << _animations.size() << std::endl;
+    // std::cout << "_animations size: " << _animations.size() << std::endl;
 
     return animation;
   }
@@ -423,36 +439,24 @@ namespace AnimationSystem
 
   float *AnimationNode::update(AnimationMapping &spec) // todo: &spec
   {
-    // float t0 = fmod(AnimationMixer::timeS, _animTree.children[0].duration);
-    // float t1 = fmod(AnimationMixer::timeS, _animTree.children[1].duration);
-    // float *v0 = evaluateInterpolant(_animTree.children[0].index, spec.index, t0);
-    // float *v1 = evaluateInterpolant(_animTree.children[1].index, spec.index, t1);
-
-    // if (i == 1) std::cout << AnimationMixer::timeS << " " << _animations[92].duration << " " << t0 << " " << t1 << " " << v0[0] << " " << v1[0] << std::endl;
-    // _animationValues[i] = evaluateInterpolant(_animation.index, i, AnimationMixer::timeS);
-
-    // if (spec.isPosition)
-    // {
-    //   lerpFlat(v0, 1, v0, 1, v1, 1, 0.5);
-    // }
-    // else
-    // {
-    //   slerpFlat(v0, 1, v0, 1, v1, 1, 0.5);
-    // }
-    // return v0;
-
-    if (this->animation) // isMotion
+    if (this->animation) // isMotion ------
     {
       float evaluateTimeS = fmod(AnimationMixer::timeS, this->animation->duration);
       float *value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
       return value;
     }
-    else // isNode
+    else // isNode ------
     {
+      if (this->type == NodeType::TWO)
+      {
+        this->children[0]->weight = 1 - this->factor;
+        this->children[1]->weight = this->factor;
+      }
+
       // doBlendList ---
       float *result;
       unsigned int nodeIndex = 0;
-      unsigned int currentWeight = 0;
+      float currentWeight = 0;
       for (int i = 0; i < this->children.size(); i++)
       {
         AnimationNode *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.

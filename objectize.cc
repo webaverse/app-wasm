@@ -83,8 +83,8 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(float duration)
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::Animation *animation) {
   return AnimationSystem::createMotion(animation);
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode() {
-  return AnimationSystem::createNode();
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST) {
+  return AnimationSystem::createNode(type);
 }
 EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *parent, AnimationSystem::AnimationNode *child) {
   return AnimationSystem::addChild(parent, child);
@@ -101,8 +101,17 @@ EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, uns
 EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
   return AnimationSystem::getAnimationValues(animationIndex, t);
 }
-EMSCRIPTEN_KEEPALIVE float changeWeight(AnimationSystem::AnimationNode *node, float weight) {
+EMSCRIPTEN_KEEPALIVE void changeWeight(AnimationSystem::AnimationNode *node, float weight) {
   return AnimationSystem::changeWeight(node, weight);
+}
+EMSCRIPTEN_KEEPALIVE void changeFactor(AnimationSystem::AnimationNode *node, float factor) {
+  return AnimationSystem::changeFactor(node, factor);
+}
+EMSCRIPTEN_KEEPALIVE float getWeight(AnimationSystem::AnimationNode *node) {
+  return AnimationSystem::getWeight(node);
+}
+EMSCRIPTEN_KEEPALIVE float getFactor(AnimationSystem::AnimationNode *node) {
+  return AnimationSystem::getFactor(node);
 }
 
 // End AnimationSystem
