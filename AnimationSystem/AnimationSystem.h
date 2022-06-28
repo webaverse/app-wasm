@@ -28,15 +28,14 @@ namespace AnimationSystem
     bool isFirstBone;
     bool isLastBone;
   };
-  class AnimationMotion {
-  public:
-    Animation *animation;
-    float weight = 1; // todo: move to AnimationMotion
-  };
   class AnimationNode
   {
   public:
-    std::vector<AnimationMotion *> children;
+    // node ---
+    float weight = 1;
+    std::vector<AnimationNode *> children;
+    // motion ---
+    Animation *animation;
 
     float *update(AnimationMapping &spec);
   };

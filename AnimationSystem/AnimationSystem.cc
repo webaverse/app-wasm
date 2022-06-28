@@ -7,7 +7,7 @@ namespace AnimationSystem
   std::vector<AnimationMixer> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation *> _animations;
-  std::vector<AnimationMotion *> _motions;
+  std::vector<AnimationNode *> _motions;
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
@@ -108,7 +108,7 @@ namespace AnimationSystem
     std::cout << "_animations size: " << _animations.size() << std::endl;
 
     // todo: Move to createMotion()?
-    AnimationMotion *motion = new AnimationMotion();
+    AnimationNode *motion = new AnimationNode();
     motion->animation = animation;
     _motions.push_back(motion);
   }
@@ -397,34 +397,42 @@ namespace AnimationSystem
     // }
     // return v0;
 
-    // doBlendList ---
-    float *result;
-    unsigned int nodeIndex = 0;
-    unsigned int currentWeight = 0;
-    for (int i = 0; i < this->children.size(); i++)
+    if (this->animation) // isMotion
     {
-      AnimationMotion *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
-      if (childNode->weight > 0)
+      float evaluateTimeS = fmod(AnimationMixer::timeS, this->animation->duration);
+      float *value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
+      return value;
+    }
+    else // isNode
+    {
+      // doBlendList ---
+      float *result;
+      unsigned int nodeIndex = 0;
+      unsigned int currentWeight = 0;
+      for (int i = 0; i < this->children.size(); i++)
       {
-        float evaluateTimeS = fmod(AnimationMixer::timeS, childNode->animation->duration);
-        float *value = evaluateInterpolant(childNode->animation->index, spec.index, evaluateTimeS);
-        if (nodeIndex == 0)
+        AnimationNode *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+        if (childNode->weight > 0)
         {
-          result = value;
+          float *value = childNode->update(spec);
+          if (nodeIndex == 0)
+          {
+            result = value;
 
-          nodeIndex++;
-          currentWeight = childNode->weight;
-        }
-        else
-        {
-          float t = childNode->weight / (currentWeight + childNode->weight);
-          interpolateFlat(result, 1, result, 1, value, 1, t, spec.isPosition);
+            nodeIndex++;
+            currentWeight = childNode->weight;
+          }
+          else
+          {
+            float t = childNode->weight / (currentWeight + childNode->weight);
+            interpolateFlat(result, 1, result, 1, value, 1, t, spec.isPosition);
 
-          nodeIndex++;
-          currentWeight += childNode->weight;
+            nodeIndex++;
+            currentWeight += childNode->weight;
+          }
         }
       }
+      return result;
     }
-    return result;
   }
 }
