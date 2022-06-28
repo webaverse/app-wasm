@@ -135,6 +135,11 @@ namespace AnimationSystem
   void addChild(AnimationNode *parent, AnimationNode *child)
   {
     parent->children.push_back(child);
+
+    if (parent->type == NodeType::UNITARY && parent->children.size() == 1)
+    {
+      parent->activeNode = child;
+    }
   }
   void setAnimTree(AnimationNode *node)
   {
@@ -326,6 +331,10 @@ namespace AnimationSystem
     }
     return _animationValues;
   }
+  void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode)
+  {
+    parentNode->crossFade(duration, targetNode);
+  }
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t)
   {
     float x0 = src0[srcOffset0 + 0];
@@ -452,6 +461,15 @@ namespace AnimationSystem
         this->children[0]->weight = 1 - this->factor;
         this->children[1]->weight = this->factor;
       }
+      else if (this->type == NodeType::UNITARY)
+      {
+        for (int i = 0; i < this->children.size(); i++)
+        {
+          AnimationNode *childNode = this->children[i];
+          childNode->weight = 0;
+        }
+        this->activeNode->weight = 1;
+      }
 
       // doBlendList ---
       float *result;
@@ -482,5 +500,9 @@ namespace AnimationSystem
       }
       return result;
     }
+  }
+  void AnimationNode::crossFade(float duration, AnimationNode *targetNode)
+  {
+    this->activeNode = targetNode;
   }
 }

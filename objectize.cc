@@ -101,6 +101,9 @@ EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, uns
 EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
   return AnimationSystem::getAnimationValues(animationIndex, t);
 }
+EMSCRIPTEN_KEEPALIVE void crossFade(AnimationSystem::AnimationNode *parentNode, float duration, AnimationSystem::AnimationNode *targetNode) {
+  return AnimationSystem::crossFade(parentNode, duration, targetNode);
+}
 EMSCRIPTEN_KEEPALIVE void changeWeight(AnimationSystem::AnimationNode *node, float weight) {
   return AnimationSystem::changeWeight(node, weight);
 }
