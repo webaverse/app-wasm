@@ -65,6 +65,16 @@ EMSCRIPTEN_KEEPALIVE float setTestAlloc(float num) {
 EMSCRIPTEN_KEEPALIVE float getTest() {
   return AnimationSystem::getTest();
 }
+//
+EMSCRIPTEN_KEEPALIVE float setWeight1(float weight) {
+  return AnimationSystem::setWeight1(weight);
+}
+EMSCRIPTEN_KEEPALIVE float setWeight2(float weight) {
+  return AnimationSystem::setWeight2(weight);
+}
+EMSCRIPTEN_KEEPALIVE float getWeight() {
+  return AnimationSystem::getWeight();
+}
 // ------
 // EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixer(unsigned int avatarId) {
 EMSCRIPTEN_KEEPALIVE void createAnimationMixer(unsigned int avatarId) {

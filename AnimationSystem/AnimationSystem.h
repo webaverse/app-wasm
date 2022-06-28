@@ -36,7 +36,7 @@ namespace AnimationSystem
   class AnimationNode
   {
   public:
-    std::vector<Animation> children;
+    std::vector<std::reference_wrapper<Animation>> children;
 
     float *update(AnimationMapping &spec);
   };
@@ -63,6 +63,10 @@ namespace AnimationSystem
   float setTestNew(float num);
   float setTestAlloc(float num);
   float getTest();
+  //
+  float setWeight1(float weight);
+  float setWeight2(float weight);
+  float getWeight();
   // ------
   // AnimationMixer *createAnimationMixer(unsigned int avatarId);
   void createAnimationMixer(unsigned int avatarId);

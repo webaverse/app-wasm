@@ -7,7 +7,7 @@ namespace AnimationSystem
   std::vector<AnimationMixer> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   // Animation _animation;
-  std::vector<Animation> _animations;
+  std::vector<std::reference_wrapper<Animation>> _animations;
   float *_animationValues[53];
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
@@ -42,6 +42,24 @@ namespace AnimationSystem
     return *test;
   }
 
+  //
+
+  float setWeight1(float weight) {
+    Animation animation = _animations[92];
+    animation.weight = weight;
+    return _animations[92].get().weight;
+  }
+
+  float setWeight2(float weight) {
+    Animation &animation = _animations[92];
+    animation.weight = weight;
+    return _animations[92].get().weight;
+  }
+
+  float getWeight() {
+    return _animations[92].get().weight;
+  }
+
   // ------
 
   float changeWeight(unsigned int animationIndex, float weight)
@@ -51,7 +69,12 @@ namespace AnimationSystem
     // Animation animation = _animTree.children[animationIndex];
     // animation.weight = weight;
 
-    _animTree.children[animationIndex].weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
+    // Animation animation = _animations[animationIndex];
+    // animation.weight = weight;
+
+    _animations[animationIndex].get().weight = weight;
+
+    // _animTree.children[animationIndex].weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
     return weight;
   }
 
@@ -77,8 +100,11 @@ namespace AnimationSystem
     // init
     AnimationNode node;
     _animTree = node;
-    _animTree.children.push_back(_animations[92]); // 92 fly
-    _animTree.children.push_back(_animations[96]); // 96 walk
+    // Animation &animation0 = _animations[92]; // 92 fly
+    // Animation &animation1 = _animations[96]; // 96 walk
+    // // std::cout << "&animation0 == &_animations[92]: " << &animation0 == &(_animations[92]) << std::endl;
+    _animTree.children.push_back(std::ref(_animations[92]));
+    _animTree.children.push_back(std::ref(_animations[96]));
   }
   float **updateAnimationMixer(float timeS, float f)
   {
@@ -99,7 +125,7 @@ namespace AnimationSystem
     Animation animation;
     animation.index = _animations.size();
     animation.duration = duration;
-    _animations.push_back(animation);
+    _animations.push_back(std::ref(animation));
     std::cout << "_animations size: " << _animations.size() << std::endl;
   }
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
@@ -116,7 +142,7 @@ namespace AnimationSystem
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
     // _interpolant = interpolant;
-    _animations[animationIndex].interpolants.push_back(interpolant);
+    _animations[animationIndex].get().interpolants.push_back(interpolant);
 
     // std::cout
     // << "interpolant "
@@ -134,7 +160,7 @@ namespace AnimationSystem
 
     // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
 
-    Interpolant interpolant = _animations[animationIndex].interpolants[interpolantIndex];
+    Interpolant interpolant = _animations[animationIndex].get().interpolants[interpolantIndex];
 
     if (interpolant.numParameterPositions == 1)
     {
@@ -392,7 +418,8 @@ namespace AnimationSystem
     unsigned int nodeIndex = 0;
     unsigned int currentWeight = 0;
     for (int i = 0; i < this->children.size(); i++) {
-      Animation childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+      // Animation childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+      Animation &childNode = this->children[i];
       if (childNode.weight > 0) {
         float evaluateTimeS = fmod(AnimationMixer::timeS, childNode.duration);
         float *value = evaluateInterpolant(childNode.index, spec.index, evaluateTimeS);
