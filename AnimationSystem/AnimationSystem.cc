@@ -377,8 +377,18 @@ namespace AnimationSystem
     return _animationValues;
   }
 
-  float *AnimationNode::update(AnimationMapping &spec) // todo: &spec
+  float *AnimationMotion::update(AnimationMapping &spec)
   {
+    std::cout << "AnimationMotion::update()" << std::endl;
+    float evaluateTimeS = fmod(AnimationMixer::timeS, this->animation->duration);
+    float *value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
+    return value;
+  }
+
+  float *AnimationNodeBlendList::update(AnimationMapping &spec) // todo: &spec
+  {
+    std::cout << "AnimationNodeBlendList::update()" << std::endl;
+
     // float t0 = fmod(AnimationMixer::timeS, _animTree.children[0].duration);
     // float t1 = fmod(AnimationMixer::timeS, _animTree.children[1].duration);
     // float *v0 = evaluateInterpolant(_animTree.children[0].index, spec.index, t0);
@@ -403,11 +413,10 @@ namespace AnimationSystem
     unsigned int currentWeight = 0;
     for (int i = 0; i < this->children.size(); i++)
     {
-      AnimationMotion *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+      auto *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
       if (childNode->weight > 0)
       {
-        float evaluateTimeS = fmod(AnimationMixer::timeS, childNode->animation->duration);
-        float *value = evaluateInterpolant(childNode->animation->index, spec.index, evaluateTimeS);
+        float *value = childNode->update(spec);
         if (nodeIndex == 0)
         {
           result = value;

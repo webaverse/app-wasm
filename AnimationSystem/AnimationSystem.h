@@ -28,16 +28,28 @@ namespace AnimationSystem
     bool isFirstBone;
     bool isLastBone;
   };
-  class AnimationMotion {
-  public:
-    Animation *animation;
-    float weight = 1; // todo: move to AnimationMotion
-  };
   class AnimationNode
   {
   public:
-    std::vector<AnimationMotion *> children;
+    float weight = 1;
+    std::vector<AnimationNode *> children;
+    // virtual float *update(AnimationMapping &spec);
+    // virtual float *update(AnimationMapping &spec) { // Need to be overwritten.
+    //   std::cout << "AnimationNode::update()" << std::endl;
+    //   // test codes
+    //   float a = 0;
+    //   return &a; // warning: address of stack memory associated with local variable 'a' returned [-Wreturn-stack-address]
+    // };
+  };
+  class AnimationMotion : public AnimationNode
+  {
+  public:
+    Animation *animation;
 
+    float *update(AnimationMapping &spec);
+  };
+  class AnimationNodeBlendList : public AnimationNode
+  {
     float *update(AnimationMapping &spec);
   };
   class AnimationMixer
@@ -45,7 +57,7 @@ namespace AnimationSystem
   public:
     static float timeS;
 
-    AnimationNode _animationNode; // todo: rename: animationTree
+    // AnimationNode _animationNode; // todo: rename: animationTree
     unsigned int _avatarId;
     AnimationMixer(unsigned int avatarId)
     {
