@@ -42,9 +42,13 @@ namespace AnimationSystem
     float weight = 1;
     std::vector<AnimationNode *> children;
     unsigned int type = NodeType::LIST;
+    bool isCrossFade = false;
+    float crossFadeDuration = 0;
+    float crossFadeStartTime;
     // NodeType::LIST ---
     // NodeType::TWO ---
     float factor = 0; // [0, 1]
+    float crossFadeTargetFactor;
     // NodeType::UNITARY ---
     AnimationNode *activeNode;
     // NodeType::OVERWRITE ---

@@ -47,7 +47,32 @@ namespace AnimationSystem
     return *test;
   }
 
-  // ------
+  // Utils ------
+
+  float min(float a, float b)
+  {
+    if (a > b)
+    {
+      return b;
+    }
+    else
+    {
+      return a;
+    }
+  }
+  float max(float a, float b)
+  {
+    if (a > b)
+    {
+      return a;
+    }
+    else
+    {
+      return b;
+    }
+  }
+
+  // Main ------
 
   // float changeWeight(unsigned int animationIndex, float weight)
   // {
@@ -136,9 +161,17 @@ namespace AnimationSystem
   {
     parent->children.push_back(child);
 
-    if (parent->type == NodeType::UNITARY && parent->children.size() == 1)
+    if (parent->type == NodeType::UNITARY)
     {
-      parent->activeNode = child;
+      if (parent->children.size() == 1)
+      {
+        parent->activeNode = child;
+        child->weight = 1;
+      }
+      else
+      {
+        child->weight = 0;
+      }
     }
   }
   void setAnimTree(AnimationNode *node)
@@ -456,6 +489,7 @@ namespace AnimationSystem
     }
     else // isNode ------
     {
+
       if (this->type == NodeType::TWO)
       {
         this->children[0]->weight = 1 - this->factor;
@@ -463,12 +497,36 @@ namespace AnimationSystem
       }
       else if (this->type == NodeType::UNITARY)
       {
-        for (int i = 0; i < this->children.size(); i++)
+        if (this->isCrossFade)
         {
-          AnimationNode *childNode = this->children[i];
-          childNode->weight = 0;
+          float factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+          factor = min(max(factor, 0), 1);
+          float factorReverse = 1 - factor;
+
+          for (int i = 0; i < this->children.size(); i++)
+          {
+            AnimationNode *childNode = this->children[i];
+            if (childNode == this->activeNode)
+            {
+              // childNode->weight = factor;
+              childNode->weight = max(childNode->weight, factor);
+            }
+            else
+            { // ensure unitary
+              childNode->weight = min(childNode->weight, factorReverse); // todo: will cause jumpping values if last crossFade() hasn't finished.
+              // childNode->weight = childNode->weightStart * factorReverse;
+            }
+          }
+          if (spec.isFirstBone)
+          {
+            std::cout << "factor: " << factor << std::endl;
+          }
+
+          if (factor == 1)
+          {
+            this->isCrossFade = false;
+          }
         }
-        this->activeNode->weight = 1;
       }
 
       // doBlendList ---
@@ -503,6 +561,9 @@ namespace AnimationSystem
   }
   void AnimationNode::crossFade(float duration, AnimationNode *targetNode)
   {
+    this->isCrossFade = true;
+    this->crossFadeStartTime = AnimationMixer::timeS;
+    this->crossFadeDuration = duration;
     this->activeNode = targetNode;
   }
 }
