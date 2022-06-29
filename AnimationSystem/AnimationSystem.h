@@ -57,7 +57,8 @@ namespace AnimationSystem
     Animation *animation;
 
     float *update(AnimationMapping &spec);
-    void crossFade(float duration, AnimationNode *targetNode);
+    void crossFadeTwo(float duration, float factor);
+    void crossFadeUnitary(float duration, AnimationNode *targetNode);
   };
   class AnimationMixer
   {
@@ -95,7 +96,7 @@ namespace AnimationSystem
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   float **getAnimationValues(unsigned int animationIndex, float t);
-  void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode);
+  // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void changeWeight(AnimationNode *node, float weight);

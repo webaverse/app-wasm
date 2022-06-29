@@ -101,11 +101,16 @@ EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, uns
 EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
   return AnimationSystem::getAnimationValues(animationIndex, t);
 }
-EMSCRIPTEN_KEEPALIVE void crossFade(AnimationSystem::AnimationNode *parentNode, float duration, AnimationSystem::AnimationNode *targetNode) {
-  return AnimationSystem::crossFade(parentNode, duration, targetNode);
+EMSCRIPTEN_KEEPALIVE void crossFadeTwo(AnimationSystem::AnimationNode *parentNode, float duration, float targetFactor) {
+  // return AnimationSystem::crossFadeTwo(parentNode, duration, targetFactor);
+  return parentNode->crossFadeTwo(duration, targetFactor);
+}
+EMSCRIPTEN_KEEPALIVE void crossFadeUnitary(AnimationSystem::AnimationNode *parentNode, float duration, AnimationSystem::AnimationNode *targetNode) {
+  // return AnimationSystem::crossFadeUnitary(parentNode, duration, targetNode);
+  return parentNode->crossFadeUnitary(duration, targetNode);
 }
 EMSCRIPTEN_KEEPALIVE void changeWeight(AnimationSystem::AnimationNode *node, float weight) {
-  return AnimationSystem::changeWeight(node, weight);
+  return AnimationSystem::changeWeight(node, weight); // todo: run `node->weight = weight;` directly.
 }
 EMSCRIPTEN_KEEPALIVE void changeFactor(AnimationSystem::AnimationNode *node, float factor) {
   return AnimationSystem::changeFactor(node, factor);

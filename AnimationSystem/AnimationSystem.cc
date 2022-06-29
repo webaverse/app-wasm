@@ -364,10 +364,10 @@ namespace AnimationSystem
     }
     return _animationValues;
   }
-  void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode)
-  {
-    parentNode->crossFade(duration, targetNode);
-  }
+  // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode)
+  // {
+  //   parentNode->crossFade(duration, targetNode);
+  // }
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t)
   {
     float x0 = src0[srcOffset0 + 0];
@@ -492,6 +492,17 @@ namespace AnimationSystem
 
       if (this->type == NodeType::TWO)
       {
+        if (this->isCrossFade)
+        {
+          this->factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+          this->factor = min(max(this->factor, 0), 1);
+          if (this->crossFadeTargetFactor == 0)
+          {
+            this->factor = 1 - this->factor;
+          }
+          if (this->factor == this->crossFadeTargetFactor)
+            this->isCrossFade = false;
+        }
         this->children[0]->weight = 1 - this->factor;
         this->children[1]->weight = this->factor;
       }
@@ -512,7 +523,7 @@ namespace AnimationSystem
               childNode->weight = max(childNode->weight, factor);
             }
             else
-            { // ensure unitary
+            {                                                            // ensure unitary
               childNode->weight = min(childNode->weight, factorReverse); // todo: will cause jumpping values if last crossFade() hasn't finished.
               // childNode->weight = childNode->weightStart * factorReverse;
             }
@@ -559,7 +570,14 @@ namespace AnimationSystem
       return result;
     }
   }
-  void AnimationNode::crossFade(float duration, AnimationNode *targetNode)
+  void AnimationNode::crossFadeTwo(float duration, float factor)
+  {
+    this->isCrossFade = true;
+    this->crossFadeStartTime = AnimationMixer::timeS;
+    this->crossFadeDuration = duration;
+    this->crossFadeTargetFactor = factor;
+  }
+  void AnimationNode::crossFadeUnitary(float duration, AnimationNode *targetNode)
   {
     this->isCrossFade = true;
     this->crossFadeStartTime = AnimationMixer::timeS;
