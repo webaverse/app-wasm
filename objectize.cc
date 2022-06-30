@@ -121,6 +121,21 @@ EMSCRIPTEN_KEEPALIVE float getWeight(AnimationSystem::AnimationNode *node) {
 EMSCRIPTEN_KEEPALIVE float getFactor(AnimationSystem::AnimationNode *node) {
   return AnimationSystem::getFactor(node);
 }
+EMSCRIPTEN_KEEPALIVE void play(AnimationSystem::AnimationNode *motion) {
+  return motion->play();
+}
+EMSCRIPTEN_KEEPALIVE void stop(AnimationSystem::AnimationNode *motion) {
+  return motion->stop();
+}
+EMSCRIPTEN_KEEPALIVE void setTimeBias(AnimationSystem::AnimationNode *motion, float timeBias) {
+  return motion->setTimeBias(timeBias);
+}
+EMSCRIPTEN_KEEPALIVE void setSpeed(AnimationSystem::AnimationNode *motion, float speed) {
+  return motion->setSpeed(speed);
+}
+EMSCRIPTEN_KEEPALIVE void setLoop(AnimationSystem::AnimationNode *motion, AnimationSystem::LoopType loopType) {
+  return motion->setLoop(loopType);
+}
 
 // End AnimationSystem
 

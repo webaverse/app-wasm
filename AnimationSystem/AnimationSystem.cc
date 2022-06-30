@@ -483,8 +483,29 @@ namespace AnimationSystem
   {
     if (this->animation) // isMotion ------
     {
-      float evaluateTimeS = fmod(AnimationMixer::timeS, this->animation->duration);
-      float *value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
+      float *value;
+      float evaluateTimeS;
+      // std::cout << "loop: " << this->loop << std::endl;
+      if (this->loop == LoopType::LoopOnce)
+      {
+        evaluateTimeS = (AnimationMixer::timeS - this->startTime) / this->speed + this->timeBias;
+        // std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
+        // if (isLastBone && this->weight > 0 && !this->isFinished && evaluateTimeS >= this->animation.duration)
+        // {
+        //   // console.log('finished', this->name);
+        //   this->mixer.dispatchEvent({
+        //     type : 'finished',
+        //     motion : this,
+        //   });
+
+        //   this->isFinished = true;
+        // }
+      }
+      else
+      {
+        evaluateTimeS = fmod((AnimationMixer::timeS - this->startTime) / this->speed + this->timeBias, this->animation->duration);
+      }
+      value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
       return value;
     }
     else // isNode ------
@@ -528,10 +549,10 @@ namespace AnimationSystem
               // childNode->weight = childNode->weightStart * factorReverse;
             }
           }
-          if (spec.isFirstBone)
-          {
-            std::cout << "factor: " << factor << std::endl;
-          }
+          // if (spec.isFirstBone)
+          // {
+          //   std::cout << "factor: " << factor << std::endl;
+          // }
 
           if (factor == 1)
           {
@@ -583,5 +604,27 @@ namespace AnimationSystem
     this->crossFadeStartTime = AnimationMixer::timeS;
     this->crossFadeDuration = duration;
     this->activeNode = targetNode;
+  }
+  void AnimationNode::play()
+  {
+    this->weight = abs(this->weight);
+    this->startTime = AnimationMixer::timeS;
+    this->isFinished = false;
+  }
+  void AnimationNode::stop()
+  {
+    this->weight = -abs(this->weight);
+  }
+  void AnimationNode::setTimeBias(float timeBias)
+  {
+    this->timeBias = timeBias;
+  }
+  void AnimationNode::setSpeed(float speed)
+  {
+    this->speed = speed;
+  }
+  void AnimationNode::setLoop(LoopType loopType)
+  {
+    this->loop = loopType;
   }
 }

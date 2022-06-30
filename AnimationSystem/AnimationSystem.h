@@ -12,6 +12,12 @@ namespace AnimationSystem
     UNITARY = 3,
     OVERWRITE = 4
   };
+  enum LoopType
+  {
+    LoopOnce = 2200,
+    LoopRepeat = 2201,
+    LoopPingPong = 2202
+  };
   struct Interpolant
   {
     unsigned int numParameterPositions;
@@ -38,10 +44,13 @@ namespace AnimationSystem
   class AnimationNode
   {
   public:
+    // node & motion ------
+    float *update(AnimationMapping &spec);
+
     // node ------
     float weight = 1;
     std::vector<AnimationNode *> children;
-    unsigned int type = NodeType::LIST;
+    unsigned int type = NodeType::LIST; // todo: NodeType type =.
     bool isCrossFade = false;
     float crossFadeDuration = 0;
     float crossFadeStartTime;
@@ -49,16 +58,27 @@ namespace AnimationSystem
     // NodeType::TWO ---
     float factor = 0; // [0, 1]
     float crossFadeTargetFactor;
+    void crossFadeTwo(float duration, float factor);
     // NodeType::UNITARY ---
     AnimationNode *activeNode;
+    void crossFadeUnitary(float duration, AnimationNode *targetNode);
     // NodeType::OVERWRITE ---
 
     // motion ------
     Animation *animation;
-
-    float *update(AnimationMapping &spec);
-    void crossFadeTwo(float duration, float factor);
-    void crossFadeUnitary(float duration, AnimationNode *targetNode);
+    float startTime;
+    float timeBias = 0;
+    float speed = 1;
+    bool isFinished = false;
+    // default values same as THREE.AnimationAction.
+    unsigned int loop = LoopType::LoopRepeat; // todo: LoopType loop =.
+    bool clampWhenFinished = false;
+    //
+    void play();
+    void stop();
+    void setTimeBias(float timeBias);
+    void setSpeed(float speed);
+    void setLoop(LoopType loopType);
   };
   class AnimationMixer
   {
