@@ -109,6 +109,12 @@ namespace AnimationSystem
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
   // float createAnimation();
   Animation *createAnimation(float duration);
+  Animation *getAnimation1(unsigned int index);
+  float *getAnimation2(unsigned int index);
+  unsigned int *getAnimation3(unsigned int index);
+  float **getAnimation4(unsigned int index);
+  unsigned int **getAnimation5(unsigned int index);
+  Animation **getAnimation6(unsigned int index);
   AnimationNode *createMotion(Animation *animation);
   AnimationNode *createNode(NodeType type = NodeType::LIST);
   void addChild(AnimationNode *parent, AnimationNode *child);

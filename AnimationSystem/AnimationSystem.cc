@@ -15,6 +15,9 @@ namespace AnimationSystem
   // Interpolant _interpolant;
   AnimationNode *_animTree;
   float *test;
+  float **test2;
+  unsigned int **test3;
+  Animation **test4;
 
   // functions:
 
@@ -203,6 +206,33 @@ namespace AnimationSystem
     // std::cout << "_animations size: " << _animations.size() << std::endl;
 
     return animation;
+  }
+  Animation *getAnimation1(unsigned int index)
+  {
+    return _animations[index];
+  }
+  float *getAnimation2(unsigned int index)
+  {
+    return (float *)(_animations[index]);
+  }
+  unsigned int *getAnimation3(unsigned int index)
+  {
+    return (unsigned int *)(_animations[index]);
+  }
+  float **getAnimation4(unsigned int index)
+  {
+    *test2 = (float *)(_animations[index]);
+    return test2;
+  }
+  unsigned int **getAnimation5(unsigned int index)
+  {
+    *test3 = (unsigned int *)(_animations[index]);
+    return test3;
+  }
+  Animation **getAnimation6(unsigned int index)
+  {
+    *test4 = _animations[index];
+    return test4;
   }
   AnimationNode *createMotion(Animation *animation)
   {

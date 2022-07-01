@@ -80,6 +80,24 @@ EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int i
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(float duration) {
   return AnimationSystem::createAnimation(duration);
 }
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation1(unsigned int index) {
+  return AnimationSystem::getAnimation1(index);
+}
+EMSCRIPTEN_KEEPALIVE float *getAnimation2(unsigned int index) {
+  return AnimationSystem::getAnimation2(index);
+}
+EMSCRIPTEN_KEEPALIVE unsigned int *getAnimation3(unsigned int index) {
+  return AnimationSystem::getAnimation3(index);
+}
+EMSCRIPTEN_KEEPALIVE float **getAnimation4(unsigned int index) {
+  return AnimationSystem::getAnimation4(index);
+}
+EMSCRIPTEN_KEEPALIVE unsigned int **getAnimation5(unsigned int index) {
+  return AnimationSystem::getAnimation5(index);
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation **getAnimation6(unsigned int index) {
+  return AnimationSystem::getAnimation6(index);
+}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::Animation *animation) {
   return AnimationSystem::createMotion(animation);
 }
