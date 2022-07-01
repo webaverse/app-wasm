@@ -7,10 +7,10 @@ namespace AnimationSystem
   std::vector<AnimationMixer> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation *> _animations;
-  // std::vector<AnimationNode *> _motions;
+  std::vector<AnimationNode *> _motions;
   float *_animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished animation index.
   float finishedFlag = 0;
-  float finishedAnimationIndex; // todo: use pointer instead of index.
+  // float finishedAnimationIndex; // todo: use pointer instead of index.
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
   AnimationNode *_animTree;
@@ -283,7 +283,7 @@ namespace AnimationSystem
   {
     AnimationNode *motion = new AnimationNode();
     motion->animation = animation;
-    // _motions.push_back(motion);
+    _motions.push_back(motion);
 
     return motion;
   }
@@ -558,7 +558,7 @@ namespace AnimationSystem
     }
 
     _animationValues[53] = &finishedFlag;
-    _animationValues[54] = &finishedAnimationIndex;
+    // _animationValues[54] = &finishedAnimationIndex;
 
     return _animationValues;
   }
@@ -588,9 +588,18 @@ namespace AnimationSystem
         if (spec.isLastBone && !this->isFinished && evaluateTimeS >= this->animation->duration)
         {
           std::cout << "finished: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
-          // value[0] *= -1; // todo: Use bit mask instead of negative.
           finishedFlag = 1;
-          finishedAnimationIndex = (float)this->animation->index; // must explicitly convert index (unsigned int) to float, otherwise will cause wrong value.
+          // finishedAnimationIndex = (float)this->animation->index; // must explicitly convert index (unsigned int) to float, otherwise will cause wrong value.
+          // _animationValues[54] = _motions
+          for (int i = 0; i < _motions.size(); i++)
+          {
+            AnimationNode *motion = _motions[i];
+            if (motion->animation == animation)
+            {
+              _animationValues[54] = (float *)motion;
+              break;
+            }
+          }
 
           this->isFinished = true;
         }
