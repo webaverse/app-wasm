@@ -8,7 +8,9 @@ namespace AnimationSystem
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation *> _animations;
   // std::vector<AnimationNode *> _motions;
-  float *_animationValues[53];
+  float *_animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished animation index.
+  float finishedFlag = 0;
+  float finishedAnimationIndex; // todo: use pointer instead of index.
   // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
   AnimationNode *_animTree;
@@ -467,6 +469,9 @@ namespace AnimationSystem
   {
     AnimationMixer::timeS = timeS;
 
+    // reset
+    finishedFlag = 0; // reset animation finished event.
+
     // return getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
 
     for (int i = 0; i < 53; i++)
@@ -476,6 +481,10 @@ namespace AnimationSystem
       // float * aaa = _animTree.update(spec);
       _animationValues[i] = _animTree->update(spec);
     }
+
+    _animationValues[53] = &finishedFlag;
+    _animationValues[54] = &finishedAnimationIndex;
+
     return _animationValues;
   }
 
@@ -489,6 +498,7 @@ namespace AnimationSystem
       if (this->loop == LoopType::LoopOnce)
       {
         evaluateTimeS = (AnimationMixer::timeS - this->startTime) / this->speed + this->timeBias;
+        value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
         // std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
         // if (isLastBone && this->weight > 0 && !this->isFinished && evaluateTimeS >= this->animation.duration)
         // {
@@ -500,12 +510,21 @@ namespace AnimationSystem
 
         //   this->isFinished = true;
         // }
+        if (spec.isLastBone && !this->isFinished && evaluateTimeS >= this->animation->duration)
+        {
+          std::cout << "finished: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
+          // value[0] *= -1; // todo: Use bit mask instead of negative.
+          finishedFlag = 1;
+          finishedAnimationIndex = (float)this->animation->index; // must explicitly convert index (unsigned int) to float, otherwise will cause wrong value.
+
+          this->isFinished = true;
+        }
       }
       else
       {
         evaluateTimeS = fmod((AnimationMixer::timeS - this->startTime) / this->speed + this->timeBias, this->animation->duration);
+        value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
       }
-      value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
       return value;
     }
     else // isNode ------
