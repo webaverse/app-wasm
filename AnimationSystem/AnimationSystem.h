@@ -136,8 +136,8 @@ namespace AnimationSystem
   // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
-  void changeWeight(AnimationNode *node, float weight);
-  void changeFactor(AnimationNode *node, float factor);
+  void setWeight(AnimationNode *node, float weight);
+  void setFactor(AnimationNode *node, float factor);
   float getWeight(AnimationSystem::AnimationNode *node);
   float getFactor(AnimationSystem::AnimationNode *node);
 

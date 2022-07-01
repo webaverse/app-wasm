@@ -87,7 +87,7 @@ namespace AnimationSystem
 
   // Main ------
 
-  // float changeWeight(unsigned int animationIndex, float weight)
+  // float setWeight(unsigned int animationIndex, float weight)
   // {
   //   // // no effect if _animations not store pointer.
   //   // Animation animation = _animations[animationIndex];
@@ -98,12 +98,12 @@ namespace AnimationSystem
   //   return weight;
   // }
 
-  void changeWeight(AnimationNode *node, float weight)
+  void setWeight(AnimationNode *node, float weight)
   {
     node->weight = weight;
   }
 
-  void changeFactor(AnimationNode *node, float factor)
+  void setFactor(AnimationNode *node, float factor)
   {
     node->factor = factor;
   }

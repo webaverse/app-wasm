@@ -110,9 +110,9 @@ EMSCRIPTEN_KEEPALIVE float *getFloat2() {
 EMSCRIPTEN_KEEPALIVE float **getFloat3() {
   return AnimationSystem::getFloat3();
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation getAnimationB1() { // objectize.cc:110:49: warning: 'getAnimationB1' has C-linkage specified, but returns user-defined type 'AnimationSystem::Animation' which is incompatible with C [-Wreturn-type-c-linkage]
-  return AnimationSystem::getAnimationB1();
-}
+// EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation getAnimationB1() { // objectize.cc:110:49: warning: 'getAnimationB1' has C-linkage specified, but returns user-defined type 'AnimationSystem::Animation' which is incompatible with C [-Wreturn-type-c-linkage]
+//   return AnimationSystem::getAnimationB1();
+// }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimationB2() {
   return AnimationSystem::getAnimationB2();
 }
@@ -154,11 +154,11 @@ EMSCRIPTEN_KEEPALIVE void crossFadeUnitary(AnimationSystem::AnimationNode *paren
   // return AnimationSystem::crossFadeUnitary(parentNode, duration, targetNode);
   return parentNode->crossFadeUnitary(duration, targetNode);
 }
-EMSCRIPTEN_KEEPALIVE void changeWeight(AnimationSystem::AnimationNode *node, float weight) {
-  return AnimationSystem::changeWeight(node, weight); // todo: run `node->weight = weight;` directly.
+EMSCRIPTEN_KEEPALIVE void setWeight(AnimationSystem::AnimationNode *node, float weight) {
+  return AnimationSystem::setWeight(node, weight); // todo: run `node->weight = weight;` directly.
 }
-EMSCRIPTEN_KEEPALIVE void changeFactor(AnimationSystem::AnimationNode *node, float factor) {
-  return AnimationSystem::changeFactor(node, factor);
+EMSCRIPTEN_KEEPALIVE void setFactor(AnimationSystem::AnimationNode *node, float factor) {
+  return AnimationSystem::setFactor(node, factor);
 }
 EMSCRIPTEN_KEEPALIVE float getWeight(AnimationSystem::AnimationNode *node) {
   return AnimationSystem::getWeight(node);
