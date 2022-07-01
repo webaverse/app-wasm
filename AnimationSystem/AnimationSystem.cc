@@ -19,6 +19,14 @@ namespace AnimationSystem
   unsigned int **test3;
   Animation **test4;
 
+  float testFloat = 1.23;
+  float *testFloat2 = &testFloat;
+  float **testFloat3 = &testFloat2;
+
+  Animation testAnimation = Animation();
+  Animation *testAnimation2 = &testAnimation;
+  Animation **testAnimation3 = &testAnimation2;
+
   // functions:
 
   float setTest(float num)
@@ -233,6 +241,43 @@ namespace AnimationSystem
   {
     *test4 = _animations[index];
     return test4;
+  }
+  Animation **getAnimation7(unsigned int index)
+  {
+    test4 = &(_animations[index]);
+    return test4;
+  }
+  float getFloat1()
+  {
+    return testFloat;
+  }
+  float *getFloat2()
+  {
+    return testFloat2;
+  }
+  float **getFloat3()
+  {
+    return testFloat3;
+  }
+  Animation getAnimationB1()
+  {
+    return testAnimation;
+  }
+  Animation *getAnimationB2()
+  {
+    return testAnimation2;
+  }
+  Animation **getAnimationB3()
+  {
+    return testAnimation3;
+  }
+  float **getAnimationB4()
+  {
+    return (float **)testAnimation3;
+  }
+  unsigned int **getAnimationB5()
+  {
+    return (unsigned int **)testAnimation3;
   }
   AnimationNode *createMotion(Animation *animation)
   {

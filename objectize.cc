@@ -98,6 +98,33 @@ EMSCRIPTEN_KEEPALIVE unsigned int **getAnimation5(unsigned int index) {
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation **getAnimation6(unsigned int index) {
   return AnimationSystem::getAnimation6(index);
 }
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation **getAnimation7(unsigned int index) {
+  return AnimationSystem::getAnimation7(index);
+}
+EMSCRIPTEN_KEEPALIVE float getFloat1() {
+  return AnimationSystem::getFloat1();
+}
+EMSCRIPTEN_KEEPALIVE float *getFloat2() {
+  return AnimationSystem::getFloat2();
+}
+EMSCRIPTEN_KEEPALIVE float **getFloat3() {
+  return AnimationSystem::getFloat3();
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation getAnimationB1() { // objectize.cc:110:49: warning: 'getAnimationB1' has C-linkage specified, but returns user-defined type 'AnimationSystem::Animation' which is incompatible with C [-Wreturn-type-c-linkage]
+  return AnimationSystem::getAnimationB1();
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimationB2() {
+  return AnimationSystem::getAnimationB2();
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation **getAnimationB3() {
+  return AnimationSystem::getAnimationB3();
+}
+EMSCRIPTEN_KEEPALIVE float **getAnimationB4() {
+  return AnimationSystem::getAnimationB4();
+}
+EMSCRIPTEN_KEEPALIVE unsigned int **getAnimationB5() {
+  return AnimationSystem::getAnimationB5();
+}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::Animation *animation) {
   return AnimationSystem::createMotion(animation);
 }

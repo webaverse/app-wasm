@@ -115,6 +115,15 @@ namespace AnimationSystem
   float **getAnimation4(unsigned int index);
   unsigned int **getAnimation5(unsigned int index);
   Animation **getAnimation6(unsigned int index);
+  Animation **getAnimation7(unsigned int index);
+  float getFloat1();
+  float *getFloat2();
+  float **getFloat3();
+  Animation getAnimationB1();
+  Animation *getAnimationB2();
+  Animation **getAnimationB3();
+  float **getAnimationB4();
+  unsigned int **getAnimationB5();
   AnimationNode *createMotion(Animation *animation);
   AnimationNode *createNode(NodeType type = NodeType::LIST);
   void addChild(AnimationNode *parent, AnimationNode *child);
