@@ -191,9 +191,9 @@ namespace AnimationSystem
   {
     _animTree = node;
   }
-  float **updateAnimationMixer(float timeS, float f)
+  float **updateAnimationMixer(float timeS)
   {
-    return _animationMixers[0].update(timeS, f);
+    return _animationMixers[0].update(timeS);
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm)
   {
@@ -542,7 +542,7 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
-  float **AnimationMixer::update(float timeS, float f /*test*/)
+  float **AnimationMixer::update(float timeS)
   {
     AnimationMixer::timeS = timeS;
 
