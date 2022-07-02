@@ -40,6 +40,8 @@ namespace AnimationSystem
     unsigned int index;
     bool isFirstBone;
     bool isLastBone;
+    bool isTop;
+    bool isArm;
   };
   class AnimationNode
   {
@@ -106,7 +108,7 @@ namespace AnimationSystem
   // AnimationMixer *createAnimationMixer(unsigned int avatarId);
   void createAnimationMixer(unsigned int avatarId);
   float **updateAnimationMixer(float timeS, float f);
-  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone);
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();
   Animation *createAnimation(float duration);
   // test ---

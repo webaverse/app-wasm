@@ -195,13 +195,15 @@ namespace AnimationSystem
   {
     return _animationMixers[0].update(timeS, f);
   }
-  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone)
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm)
   {
     AnimationMapping animationMapping;
     animationMapping.isPosition = isPosition;
     animationMapping.index = index;
     animationMapping.isFirstBone = isFirstBone;
     animationMapping.isLastBone = isLastBone;
+    animationMapping.isTop = isTop;
+    animationMapping.isArm = isArm;
     _animationMappings.push_back(animationMapping);
     // std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
   }
@@ -585,7 +587,7 @@ namespace AnimationSystem
 
         //   this->isFinished = true;
         // }
-        if (spec.isLastBone && !this->isFinished && evaluateTimeS >= this->animation->duration)
+        if (/* spec.isLastBone &&  */ !this->isFinished && evaluateTimeS >= this->animation->duration) // Don't need and will cause bug if check `isLastBone`.
         {
           std::cout << "finished: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
           finishedFlag = 1;
@@ -661,6 +663,30 @@ namespace AnimationSystem
           {
             this->isCrossFade = false;
           }
+        }
+      }
+      else if (this->type == NodeType::OVERWRITE)
+      {
+        if (spec.isTop)
+        {
+          if (this->isCrossFade)
+          {
+            this->factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+            this->factor = min(max(this->factor, 0), 1);
+            if (this->crossFadeTargetFactor == 0)
+            {
+              this->factor = 1 - this->factor;
+            }
+            if (this->factor == this->crossFadeTargetFactor)
+              this->isCrossFade = false;
+          }
+          this->children[0]->weight = 1 - this->factor;
+          this->children[1]->weight = this->factor;
+        }
+        else
+        {
+          this->children[0]->weight = 1;
+          this->children[1]->weight = 0;
         }
       }
 
