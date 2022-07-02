@@ -105,7 +105,6 @@ namespace AnimationSystem
   float getTest();
   // ------
   AnimationMixer *createAnimationMixer();
-  float **updateAnimationMixer(float timeS);
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();
   Animation *createAnimation(float duration);

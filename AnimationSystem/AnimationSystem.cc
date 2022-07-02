@@ -188,10 +188,6 @@ namespace AnimationSystem
   {
     mixer->rootNode = node;
   }
-  float **updateAnimationMixer(float timeS)
-  {
-    return _animationMixers[0]->update(timeS);
-  }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm)
   {
     AnimationMapping animationMapping;

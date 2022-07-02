@@ -70,8 +70,8 @@ EMSCRIPTEN_KEEPALIVE float getTest() {
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }
-EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(float timeS) {
-  return AnimationSystem::updateAnimationMixer(timeS);
+EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(AnimationSystem::AnimationMixer *mixer, float timeS) {
+  return mixer->update(timeS);
 }
 EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm) {
   return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone, isTop, isArm);
