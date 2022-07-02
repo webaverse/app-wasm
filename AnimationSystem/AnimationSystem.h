@@ -91,11 +91,10 @@ namespace AnimationSystem
 
     AnimationNode _animationNode; // todo: rename: animationTree
     AnimationNode *rootNode;
+    std::vector<AnimationNode *> motions;
     float *animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished animation index.
 
-    // createMotion(Animation animation) {
-
-    // }
+    AnimationNode *createMotion(Animation *animation);
     float **update(float timeS);
   };
 
@@ -127,7 +126,6 @@ namespace AnimationSystem
   float **getAnimationB4();
   unsigned int **getAnimationB5();
   // end test ---
-  AnimationNode *createMotion(Animation *animation);
   AnimationNode *createNode(NodeType type = NodeType::LIST);
   void addChild(AnimationNode *parent, AnimationNode *child);
   void setRootNode(AnimationMixer *mixer, AnimationNode *node);

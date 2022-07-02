@@ -7,7 +7,6 @@ namespace AnimationSystem
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation *> _animations;
-  std::vector<AnimationNode *> _motions;
   float finishedFlag = 0;
   // float finishedAnimationIndex; // todo: use pointer instead of index.
   // float **animationValues = (float **)malloc(53 * sizeof(float)); // ok too
@@ -279,11 +278,11 @@ namespace AnimationSystem
   {
     return (unsigned int **)testAnimation3;
   }
-  AnimationNode *createMotion(Animation *animation)
+  AnimationNode *AnimationMixer::createMotion(Animation *animation)
   {
     AnimationNode *motion = new AnimationNode();
     motion->animation = animation;
-    _motions.push_back(motion);
+    this->motions.push_back(motion);
 
     return motion;
   }
@@ -590,10 +589,10 @@ namespace AnimationSystem
           std::cout << "finished: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
           finishedFlag = 1;
           // finishedAnimationIndex = (float)this->animation->index; // must explicitly convert index (unsigned int) to float, otherwise will cause wrong value.
-          // animationValues[54] = _motions
-          for (int i = 0; i < _motions.size(); i++)
+          // animationValues[54] = this->mixer->motions
+          for (int i = 0; i < this->mixer->motions.size(); i++)
           {
-            AnimationNode *motion = _motions[i];
+            AnimationNode *motion = this->mixer->motions[i];
             if (motion->animation == animation)
             {
               this->mixer->animationValues[54] = (float *)motion;

@@ -124,8 +124,8 @@ EMSCRIPTEN_KEEPALIVE float **getAnimationB4() {
 EMSCRIPTEN_KEEPALIVE unsigned int **getAnimationB5() {
   return AnimationSystem::getAnimationB5();
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::Animation *animation) {
-  return AnimationSystem::createMotion(animation);
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::AnimationMixer *mixer, AnimationSystem::Animation *animation) {
+  return mixer->createMotion(animation);
 }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST) {
   return AnimationSystem::createNode(type);
