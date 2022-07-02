@@ -140,12 +140,12 @@ EMSCRIPTEN_KEEPALIVE void setAnimTree(AnimationSystem::AnimationNode *node) {
 EMSCRIPTEN_KEEPALIVE void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return AnimationSystem::createInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
-EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
-  return AnimationSystem::evaluateInterpolant(animationIndex, interpolantIndex, t);
-}
-EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
-  return AnimationSystem::getAnimationValues(animationIndex, t);
-}
+// EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
+//   return AnimationSystem::evaluateInterpolant(animationIndex, interpolantIndex, t);
+// }
+// EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
+//   return AnimationSystem::getAnimationValues(animationIndex, t);
+// }
 EMSCRIPTEN_KEEPALIVE void crossFadeTwo(AnimationSystem::AnimationNode *parentNode, float duration, float targetFactor) {
   // return AnimationSystem::crossFadeTwo(parentNode, duration, targetFactor);
   return parentNode->crossFadeTwo(duration, targetFactor);

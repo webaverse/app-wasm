@@ -133,8 +133,8 @@ namespace AnimationSystem
   void addChild(AnimationNode *parent, AnimationNode *child);
   void setAnimTree(AnimationNode *node);
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
-  float **getAnimationValues(unsigned int animationIndex, float t);
+  // float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
+  // float **getAnimationValues(unsigned int animationIndex, float t);
   // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
