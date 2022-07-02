@@ -4,16 +4,14 @@ namespace AnimationSystem
 {
   // std::map<std::string, Interpolant *> interpolants;
   // std::vector<Interpolant> _interpolants;
-  std::vector<AnimationMixer> _animationMixers;
+  std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation *> _animations;
   std::vector<AnimationNode *> _motions;
-  float *_animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished animation index.
   float finishedFlag = 0;
   // float finishedAnimationIndex; // todo: use pointer instead of index.
-  // float **_animationValues = (float **)malloc(53 * sizeof(float)); // ok too
+  // float **animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
-  AnimationNode *_animTree;
   float *test;
   float **test2;
   unsigned int **test3;
@@ -91,10 +89,10 @@ namespace AnimationSystem
   // {
   //   // // no effect if _animations not store pointer.
   //   // Animation animation = _animations[animationIndex];
-  //   // Animation animation = _animTree.children[animationIndex];
+  //   // Animation animation = rootNode.children[animationIndex];
   //   // animation.weight = weight;
 
-  //   _animTree->children[animationIndex]->weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
+  //   rootNode->children[animationIndex]->weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
   //   return weight;
   // }
 
@@ -130,12 +128,12 @@ namespace AnimationSystem
     }
   }
 
-  // AnimationMixer *createAnimationMixer(unsigned int avatarId) {
-  void createAnimationMixer(unsigned int avatarId)
+  AnimationMixer *createAnimationMixer()
   {
-    AnimationMixer animationMixer(avatarId);
+    AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
     // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
+    return animationMixer;
 
     // // init old
     // AnimationNode *walkFlyNode = new AnimationNode();
@@ -146,7 +144,7 @@ namespace AnimationSystem
     // crouchNode->children.push_back(walkFlyNode);
     // crouchNode->children.push_back(_motions[9]); // 9 Crouch Idle.fbx
 
-    // _animTree = crouchNode;
+    // rootNode = crouchNode;
 
     // // init
     // AnimationNode *walkMotion = createMotion(_animations[96]);
@@ -161,7 +159,7 @@ namespace AnimationSystem
     // addChild(crouchNode, walkFlyNode);
     // addChild(crouchNode, crouchMotion);
 
-    // setAnimTree(crouchNode);
+    // setRootNode(crouchNode);
   }
   AnimationNode *createNode(NodeType type)
   {
@@ -187,13 +185,13 @@ namespace AnimationSystem
       }
     }
   }
-  void setAnimTree(AnimationNode *node)
+  void setRootNode(AnimationMixer *mixer, AnimationNode *node)
   {
-    _animTree = node;
+    mixer->rootNode = node;
   }
   float **updateAnimationMixer(float timeS)
   {
-    return _animationMixers[0].update(timeS);
+    return _animationMixers[0]->update(timeS);
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm)
   {
@@ -315,133 +313,133 @@ namespace AnimationSystem
 
     // std::cout << "interpolants size: " << _interpolants.size() << std::endl;
   }
-  // float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t)
-  // {
-  //   // std::cout << "evaluateInterpolant: " << interpolantIndex << " " << t << std::endl;
+  float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t)
+  {
+    // std::cout << "evaluateInterpolant: " << interpolantIndex << " " << t << std::endl;
 
-  //   // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
+    // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
 
-  //   Interpolant interpolant = _animations[animationIndex]->interpolants[interpolantIndex];
+    Interpolant interpolant = _animations[animationIndex]->interpolants[interpolantIndex];
 
-  //   if (interpolant.numParameterPositions == 1)
-  //   {
-  //     interpolant.resultBuffer[0] = interpolant.valueSize;
-  //     interpolant.resultBuffer[1] = interpolant.sampleValues[0];
-  //     interpolant.resultBuffer[2] = interpolant.sampleValues[1];
-  //     interpolant.resultBuffer[3] = interpolant.sampleValues[2];
-  //     if (interpolant.valueSize == 4)
-  //     {
-  //       interpolant.resultBuffer[4] = interpolant.sampleValues[3];
-  //     }
-  //   }
-  //   else
-  //   {
-  //     int index = 0;
-  //     // std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
-  //     for (; index < interpolant.numParameterPositions; index++)
-  //     {
-  //       // std::cout << "index: " << index << " position: " << interpolant.parameterPositions[index] << std::endl;
-  //       if (interpolant.parameterPositions[index] > t)
-  //       {
-  //         break;
-  //       }
-  //     }
-  //     // index -= 1; // evaluate floor
-  //     // if (interpolantIndex == 1) std::cout << "index: " << index << std::endl;
-  //     // std::cout << "index: " << index << std::endl;
+    if (interpolant.numParameterPositions == 1)
+    {
+      interpolant.resultBuffer[0] = interpolant.valueSize;
+      interpolant.resultBuffer[1] = interpolant.sampleValues[0];
+      interpolant.resultBuffer[2] = interpolant.sampleValues[1];
+      interpolant.resultBuffer[3] = interpolant.sampleValues[2];
+      if (interpolant.valueSize == 4)
+      {
+        interpolant.resultBuffer[4] = interpolant.sampleValues[3];
+      }
+    }
+    else
+    {
+      int index = 0;
+      // std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
+      for (; index < interpolant.numParameterPositions; index++)
+      {
+        // std::cout << "index: " << index << " position: " << interpolant.parameterPositions[index] << std::endl;
+        if (interpolant.parameterPositions[index] > t)
+        {
+          break;
+        }
+      }
+      // index -= 1; // evaluate floor
+      // if (interpolantIndex == 1) std::cout << "index: " << index << std::endl;
+      // std::cout << "index: " << index << std::endl;
 
-  //     if (index == 0)
-  //     { // Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0].
-  //       interpolant.resultBuffer[0] = interpolant.valueSize;
-  //       interpolant.resultBuffer[1] = interpolant.sampleValues[0];
-  //       interpolant.resultBuffer[2] = interpolant.sampleValues[1];
-  //       interpolant.resultBuffer[3] = interpolant.sampleValues[2];
-  //       if (interpolant.valueSize == 4)
-  //       {
-  //         interpolant.resultBuffer[4] = interpolant.sampleValues[3];
-  //       }
-  //     }
-  //     else if (index > interpolant.numParameterPositions - 1)
-  //     { // Handle situation that, t > max parameterPosition.
-  //       unsigned int maxIndex = interpolant.numParameterPositions - 1;
-  //       interpolant.resultBuffer[0] = interpolant.valueSize;
-  //       interpolant.resultBuffer[1] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 0];
-  //       interpolant.resultBuffer[2] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 1];
-  //       interpolant.resultBuffer[3] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 2];
-  //       if (interpolant.valueSize == 4)
-  //       {
-  //         interpolant.resultBuffer[4] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 3];
-  //       }
-  //     }
-  //     else
-  //     {
-  //       unsigned int index0 = index - 1;
-  //       unsigned int index1 = index;
+      if (index == 0)
+      { // Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0].
+        interpolant.resultBuffer[0] = interpolant.valueSize;
+        interpolant.resultBuffer[1] = interpolant.sampleValues[0];
+        interpolant.resultBuffer[2] = interpolant.sampleValues[1];
+        interpolant.resultBuffer[3] = interpolant.sampleValues[2];
+        if (interpolant.valueSize == 4)
+        {
+          interpolant.resultBuffer[4] = interpolant.sampleValues[3];
+        }
+      }
+      else if (index > interpolant.numParameterPositions - 1)
+      { // Handle situation that, t > max parameterPosition.
+        unsigned int maxIndex = interpolant.numParameterPositions - 1;
+        interpolant.resultBuffer[0] = interpolant.valueSize;
+        interpolant.resultBuffer[1] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 0];
+        interpolant.resultBuffer[2] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 1];
+        interpolant.resultBuffer[3] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 2];
+        if (interpolant.valueSize == 4)
+        {
+          interpolant.resultBuffer[4] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 3];
+        }
+      }
+      else
+      {
+        unsigned int index0 = index - 1;
+        unsigned int index1 = index;
 
-  //       // if (interpolantIndex == 33) { // mixamorigRightHandThumb1.quaternion
-  //       //   std::cout << "index: " << index << std::endl; // always 1
-  //       // }
+        // if (interpolantIndex == 33) { // mixamorigRightHandThumb1.quaternion
+        //   std::cout << "index: " << index << std::endl; // always 1
+        // }
 
-  //       // float *outputBuffer = (float *)malloc((
-  //       //   4
-  //       // ) * sizeof(float));
+        // float *outputBuffer = (float *)malloc((
+        //   4
+        // ) * sizeof(float));
 
-  //       // outputBuffer[0] = _parameterPositions[index];
-  //       // outputBuffer[1] = _sampleValues[index];
-  //       // outputBuffer[2] = _valueSize;
+        // outputBuffer[0] = _parameterPositions[index];
+        // outputBuffer[1] = _sampleValues[index];
+        // outputBuffer[2] = _valueSize;
 
-  //       // float x0 = interpolant.sampleValues[index0 * interpolant.valueSize + 0];
-  //       // float y0 = interpolant.sampleValues[index0 * interpolant.valueSize + 1];
-  //       // float z0 = interpolant.sampleValues[index0 * interpolant.valueSize + 2];
-  //       // float w0 = interpolant.sampleValues[index0 * interpolant.valueSize + 3];
+        // float x0 = interpolant.sampleValues[index0 * interpolant.valueSize + 0];
+        // float y0 = interpolant.sampleValues[index0 * interpolant.valueSize + 1];
+        // float z0 = interpolant.sampleValues[index0 * interpolant.valueSize + 2];
+        // float w0 = interpolant.sampleValues[index0 * interpolant.valueSize + 3];
 
-  //       // float x1 = interpolant.sampleValues[index1 * interpolant.valueSize + 0];
-  //       // float y1 = interpolant.sampleValues[index1 * interpolant.valueSize + 1];
-  //       // float z1 = interpolant.sampleValues[index1 * interpolant.valueSize + 2];
-  //       // float w1 = interpolant.sampleValues[index1 * interpolant.valueSize + 3];
+        // float x1 = interpolant.sampleValues[index1 * interpolant.valueSize + 0];
+        // float y1 = interpolant.sampleValues[index1 * interpolant.valueSize + 1];
+        // float z1 = interpolant.sampleValues[index1 * interpolant.valueSize + 2];
+        // float w1 = interpolant.sampleValues[index1 * interpolant.valueSize + 3];
 
-  //       float time0 = interpolant.parameterPositions[index0];
-  //       float time1 = interpolant.parameterPositions[index1];
-  //       float f = (t - time0) / (time1 - time0);
+        float time0 = interpolant.parameterPositions[index0];
+        float time1 = interpolant.parameterPositions[index1];
+        float f = (t - time0) / (time1 - time0);
 
-  //       if (interpolant.valueSize == 3)
-  //       {
-  //         interpolant.resultBuffer[0] = 3;
-  //         lerpFlat(
-  //             interpolant.resultBuffer, 1,
-  //             interpolant.sampleValues, index0 * interpolant.valueSize,
-  //             interpolant.sampleValues, index1 * interpolant.valueSize,
-  //             f);
-  //       }
-  //       else
-  //       {
-  //         interpolant.resultBuffer[0] = 4;
-  //         slerpFlat(
-  //             interpolant.resultBuffer, 1,
-  //             interpolant.sampleValues, index0 * interpolant.valueSize,
-  //             interpolant.sampleValues, index1 * interpolant.valueSize,
-  //             f);
-  //       }
+        if (interpolant.valueSize == 3)
+        {
+          interpolant.resultBuffer[0] = 3;
+          lerpFlat(
+              interpolant.resultBuffer, 1,
+              interpolant.sampleValues, index0 * interpolant.valueSize,
+              interpolant.sampleValues, index1 * interpolant.valueSize,
+              f);
+        }
+        else
+        {
+          interpolant.resultBuffer[0] = 4;
+          slerpFlat(
+              interpolant.resultBuffer, 1,
+              interpolant.sampleValues, index0 * interpolant.valueSize,
+              interpolant.sampleValues, index1 * interpolant.valueSize,
+              f);
+        }
 
-  //       // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
-  //       // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
-  //       // interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
-  //       // interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
+        // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
+        // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
+        // interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
+        // interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
 
-  //       // outputBuffer[3] = (float)index;
-  //     }
-  //   }
+        // outputBuffer[3] = (float)index;
+      }
+    }
 
-  //   return interpolant.resultBuffer;
-  // }
+    return interpolant.resultBuffer;
+  }
   // float **getAnimationValues(unsigned int animationIndex, float t)
   // {
   //   for (int i = 0; i < 53; i++)
   //   {
   //     AnimationMapping spec = _animationMappings[i];
-  //     _animationValues[i] = evaluateInterpolant(animationIndex, i, t);
+  //     animationValues[i] = evaluateInterpolant(animationIndex, i, t);
   //   }
-  //   return _animationValues;
+  //   return animationValues;
   // }
   // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode)
   // {
@@ -555,14 +553,14 @@ namespace AnimationSystem
     {
       AnimationMapping spec = _animationMappings[i];
 
-      // float * aaa = _animTree.update(spec);
-      _animationValues[i] = _animTree->update(spec);
+      // float * aaa = rootNode.update(spec);
+      animationValues[i] = rootNode->update(spec);
     }
 
-    _animationValues[53] = &finishedFlag;
-    // _animationValues[54] = &finishedAnimationIndex;
+    animationValues[53] = &finishedFlag;
+    // animationValues[54] = &finishedAnimationIndex;
 
-    return _animationValues;
+    return animationValues;
   }
 
   float *AnimationNode::update(AnimationMapping &spec) // todo: &spec
@@ -592,13 +590,13 @@ namespace AnimationSystem
           std::cout << "finished: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
           finishedFlag = 1;
           // finishedAnimationIndex = (float)this->animation->index; // must explicitly convert index (unsigned int) to float, otherwise will cause wrong value.
-          // _animationValues[54] = _motions
+          // animationValues[54] = _motions
           for (int i = 0; i < _motions.size(); i++)
           {
             AnimationNode *motion = _motions[i];
             if (motion->animation == animation)
             {
-              _animationValues[54] = (float *)motion;
+              this->mixer->animationValues[54] = (float *)motion;
               break;
             }
           }

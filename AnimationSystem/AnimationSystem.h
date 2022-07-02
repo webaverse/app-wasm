@@ -43,10 +43,12 @@ namespace AnimationSystem
     bool isTop;
     bool isArm;
   };
+  class AnimationMixer;
   class AnimationNode
   {
   public:
     // node & motion ------
+    AnimationMixer *mixer;
     float *update(AnimationMapping &spec);
 
     // node ------
@@ -88,11 +90,9 @@ namespace AnimationSystem
     static float timeS;
 
     AnimationNode _animationNode; // todo: rename: animationTree
-    unsigned int _avatarId;
-    AnimationMixer(unsigned int avatarId)
-    {
-      _avatarId = avatarId;
-    };
+    AnimationNode *rootNode;
+    float *animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished animation index.
+
     // createMotion(Animation animation) {
 
     // }
@@ -105,8 +105,7 @@ namespace AnimationSystem
   float setTestAlloc(float num);
   float getTest();
   // ------
-  // AnimationMixer *createAnimationMixer(unsigned int avatarId);
-  void createAnimationMixer(unsigned int avatarId);
+  AnimationMixer *createAnimationMixer();
   float **updateAnimationMixer(float timeS);
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();
@@ -131,7 +130,7 @@ namespace AnimationSystem
   AnimationNode *createMotion(Animation *animation);
   AnimationNode *createNode(NodeType type = NodeType::LIST);
   void addChild(AnimationNode *parent, AnimationNode *child);
-  void setAnimTree(AnimationNode *node);
+  void setRootNode(AnimationMixer *mixer, AnimationNode *node);
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   // float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   // float **getAnimationValues(unsigned int animationIndex, float t);

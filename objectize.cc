@@ -67,9 +67,8 @@ EMSCRIPTEN_KEEPALIVE float getTest() {
 }
 // ------
 // todo: use pointer instead of index.
-// EMSCRIPTEN_KEEPALIVE AnimationMixer *createAnimationMixer(unsigned int avatarId) {
-EMSCRIPTEN_KEEPALIVE void createAnimationMixer(unsigned int avatarId) {
-  return AnimationSystem::createAnimationMixer(avatarId);
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
+  return AnimationSystem::createAnimationMixer();
 }
 EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(float timeS) {
   return AnimationSystem::updateAnimationMixer(timeS);
@@ -134,8 +133,8 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem:
 EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *parent, AnimationSystem::AnimationNode *child) {
   return AnimationSystem::addChild(parent, child);
 }
-EMSCRIPTEN_KEEPALIVE void setAnimTree(AnimationSystem::AnimationNode *node) {
-  return AnimationSystem::setAnimTree(node);
+EMSCRIPTEN_KEEPALIVE void setRootNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::AnimationNode *node) {
+  return AnimationSystem::setRootNode(mixer, node);
 }
 EMSCRIPTEN_KEEPALIVE void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return AnimationSystem::createInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
