@@ -7,7 +7,9 @@ namespace AnimationSystem
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation *> _animations;
-  float finishedFlag = 0;
+  // float finishedFlag = 0;
+  // std::vector<float> _finishedFlags;
+  // float _finishedFlags[100];
   // float finishedAnimationIndex; // todo: use pointer instead of index.
   // float **animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
@@ -130,7 +132,9 @@ namespace AnimationSystem
   AnimationMixer *createAnimationMixer()
   {
     AnimationMixer *animationMixer = new AnimationMixer();
+    // animationMixer->index = _animationMixers.size();
     _animationMixers.push_back(animationMixer);
+    // _finishedFlags[animationMixer->index] = 0;
     // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
     return animationMixer;
 
@@ -159,13 +163,6 @@ namespace AnimationSystem
     // addChild(crouchNode, crouchMotion);
 
     // setRootNode(crouchNode);
-  }
-  AnimationNode *createNode(NodeType type)
-  {
-    AnimationNode *node = new AnimationNode();
-    node->type = type;
-    std::cout << "NodeType: " << type << " " << node->type << std::endl;
-    return node;
   }
   void addChild(AnimationNode *parent, AnimationNode *child)
   {
@@ -274,9 +271,18 @@ namespace AnimationSystem
   {
     return (unsigned int **)testAnimation3;
   }
+  AnimationNode *AnimationMixer::createNode(NodeType type)
+  {
+    AnimationNode *node = new AnimationNode();
+    node->mixer = this;
+    node->type = type;
+    std::cout << "NodeType: " << type << " " << node->type << std::endl;
+    return node;
+  }
   AnimationNode *AnimationMixer::createMotion(Animation *animation)
   {
     AnimationNode *motion = new AnimationNode();
+    motion->mixer = this;
     motion->animation = animation;
     this->motions.push_back(motion);
 
@@ -540,7 +546,11 @@ namespace AnimationSystem
     AnimationMixer::timeS = timeS;
 
     // reset
-    finishedFlag = 0; // reset animation finished event.
+    // reset animation finished event.
+    // finishedFlag = 0; // reset animation finished event.
+    this->finishedFlag = 0;
+    // *(animationValues[53]) = (float)0;
+    // _finishedFlags[this->index] = 0;
 
     // return getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
 
@@ -552,7 +562,9 @@ namespace AnimationSystem
       animationValues[i] = rootNode->update(spec);
     }
 
-    animationValues[53] = &finishedFlag;
+    // animationValues[53] = &finishedFlag;
+    // animationValues[53] = &_finishedFlags[this->index];
+    // animationValues[53] = &this->finishedFlag;
     // animationValues[54] = &finishedAnimationIndex;
 
     return animationValues;
@@ -582,15 +594,19 @@ namespace AnimationSystem
         // }
         if (/* spec.isLastBone &&  */ !this->isFinished && evaluateTimeS >= this->animation->duration) // Don't need and will cause bug if check `isLastBone`.
         {
-          std::cout << "finished: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
-          finishedFlag = 1;
-          // finishedAnimationIndex = (float)this->animation->index; // must explicitly convert index (unsigned int) to float, otherwise will cause wrong value.
+          std::cout << "finished: animation: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
+          // finishedFlag = 1;
+          // _finishedFlags[this->mixer->index] = 1;
+          this->mixer->finishedFlag = 1;
+          // *(this->mixer->animationValues[53]) = (float)1; // todo: Must explicitly convert `1` (int) to float, otherwise will cause wrong value ?
+          // finishedAnimationIndex = (float)this->animation->index; // Must explicitly convert index (unsigned int) to float, otherwise will cause wrong value.
           // animationValues[54] = this->mixer->motions
           for (int i = 0; i < this->mixer->motions.size(); i++)
           {
             AnimationNode *motion = this->mixer->motions[i];
             if (motion->animation == animation)
             {
+              std::cout << "finished: motion: pointer: " << motion << " pointer float: " << (float *)motion << std::endl;
               this->mixer->animationValues[54] = (float *)motion;
               break;
             }

@@ -79,6 +79,7 @@ EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int i
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(float duration) {
   return AnimationSystem::createAnimation(duration);
 }
+// test ---
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation1(unsigned int index) {
   return AnimationSystem::getAnimation1(index);
 }
@@ -124,11 +125,38 @@ EMSCRIPTEN_KEEPALIVE float **getAnimationB4() {
 EMSCRIPTEN_KEEPALIVE unsigned int **getAnimationB5() {
   return AnimationSystem::getAnimationB5();
 }
+//
+EMSCRIPTEN_KEEPALIVE float getTestMixerFloat(AnimationSystem::AnimationMixer *mixer) {
+  return mixer->getTestMixerFloat();
+}
+EMSCRIPTEN_KEEPALIVE float *getTestMixerPointer(AnimationSystem::AnimationMixer *mixer) {
+  return mixer->getTestMixerPointer();
+}
+EMSCRIPTEN_KEEPALIVE float **getTestMixerPointerPointer(AnimationSystem::AnimationMixer *mixer) {
+  return mixer->getTestMixerPointerPointer();
+}
+EMSCRIPTEN_KEEPALIVE void setTestMixerFloat(AnimationSystem::AnimationMixer *mixer, float val) {
+  return mixer->setTestMixerFloat(val);
+}
+//
+EMSCRIPTEN_KEEPALIVE float getFinishedFlag(AnimationSystem::AnimationMixer *mixer) {
+  return mixer->getFinishedFlag();
+}
+EMSCRIPTEN_KEEPALIVE float *getFinishedFlagPointer(AnimationSystem::AnimationMixer *mixer) {
+  return mixer->getFinishedFlagPointer();
+}
+EMSCRIPTEN_KEEPALIVE float **getFinishedFlagPointerPointer(AnimationSystem::AnimationMixer *mixer) {
+  return mixer->getFinishedFlagPointerPointer();
+}
+EMSCRIPTEN_KEEPALIVE void setFinishedFlag(AnimationSystem::AnimationMixer *mixer, float val) {
+  return mixer->setFinishedFlag(val);
+}
+// end test ---
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::AnimationMixer *mixer, AnimationSystem::Animation *animation) {
   return mixer->createMotion(animation);
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST) {
-  return AnimationSystem::createNode(type);
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST) {
+  return mixer->createNode(type);
 }
 EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *parent, AnimationSystem::AnimationNode *child) {
   return AnimationSystem::addChild(parent, child);

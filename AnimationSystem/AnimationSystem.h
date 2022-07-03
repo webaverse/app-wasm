@@ -89,13 +89,65 @@ namespace AnimationSystem
   public:
     static float timeS;
 
+    // unsigned int index;
     AnimationNode _animationNode; // todo: rename: animationTree
     AnimationNode *rootNode;
     std::vector<AnimationNode *> motions;
+    float finishedFlag = 0;
+    // float *finishedFlag = (float *)malloc((1) * sizeof(float));
+    // float *finishedFlag = new float();
     float *animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished animation index.
+    // test ---
+    float testMixerFloat = 7;
+    float *testMixerPointer;
+    float **testMixerPointerPointer;
+
+    AnimationMixer()
+    {
+      animationValues[53] = &finishedFlag;
+      // test ---
+      testMixerPointer = &testMixerFloat;
+      testMixerPointerPointer = &testMixerPointer;
+    }
 
     AnimationNode *createMotion(Animation *animation);
+    AnimationNode *createNode(NodeType type = NodeType::LIST);
     float **update(float timeS);
+    // test ---
+    float getTestMixerFloat()
+    {
+      return testMixerFloat;
+    }
+    float *getTestMixerPointer()
+    {
+      return testMixerPointer;
+    }
+    float **getTestMixerPointerPointer()
+    {
+      return testMixerPointerPointer;
+    }
+    void setTestMixerFloat(float val)
+    {
+      testMixerFloat = val;
+    }
+    //
+    float getFinishedFlag()
+    {
+      return finishedFlag;
+    }
+    float *getFinishedFlagPointer()
+    {
+      return animationValues[53];
+    }
+    float **getFinishedFlagPointerPointer()
+    {
+      return animationValues;
+    }
+    void setFinishedFlag(float val)
+    {
+      finishedFlag = val;
+    }
+    // end test ---
   };
 
   float setTest(float num);
@@ -125,7 +177,6 @@ namespace AnimationSystem
   float **getAnimationB4();
   unsigned int **getAnimationB5();
   // end test ---
-  AnimationNode *createNode(NodeType type = NodeType::LIST);
   void addChild(AnimationNode *parent, AnimationNode *child);
   void setRootNode(AnimationMixer *mixer, AnimationNode *node);
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
