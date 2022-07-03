@@ -50,7 +50,7 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
   // std::cerr << "on contact" << std::endl;
 }
 void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {
-  std::cout << "onoTrigger" << std::endl;
+  std::cout << "onTrigger" << std::endl;
 }
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
 
@@ -300,7 +300,26 @@ float PScene::getBodyMass(unsigned int id) {
     PxRigidActor *actor = *actorIter;
     return (dynamic_cast<PxRigidBody *>(actor))->getMass();
   } else {
-    std::cerr << "updateMassAndInertia unknown actor id " << id << std::endl;
+    std::cerr << "getBodyMass unknown actor id " << id << std::endl;
+    return -1;
+  }
+}
+
+float PScene::setTrigger(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxShape* shape;
+    actor->getShapes(&shape, 1);
+    shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+    shape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+
+    return 1;
+  } else {
+    std::cerr << "setTrigger unknown actor id " << id << std::endl;
     return -1;
   }
 }
