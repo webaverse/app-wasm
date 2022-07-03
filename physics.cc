@@ -49,7 +49,9 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
 
   // std::cerr << "on contact" << std::endl;
 }
-void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
+void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {
+  std::cout << "onoTrigger" << std::endl;
+}
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
 
 /*
@@ -445,6 +447,8 @@ void PScene::addCapsuleGeometry(
 void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxBoxGeometry geometry(size[0], size[1], size[2]);
+
+  std::cout << "groupId:" << " " << groupId << std::endl;
   
   PxRigidActor *actor;
   if (dynamic) {
