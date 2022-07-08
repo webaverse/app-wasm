@@ -25,9 +25,20 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
   free(ptr);
 }
 
+//
+
+EMSCRIPTEN_KEEPALIVE void initialize() {
+  physicsBase = new PBase();
+}
+
+//
+
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
+
+//
+
 EMSCRIPTEN_KEEPALIVE PxD6Joint *addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
   return scene->addJoint(id1, id2, position1, position2, quaternion1, quaternion2);
 }
@@ -156,12 +167,16 @@ EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, 
   scene->addBoxGeometry(position, quaternion, size, id, material, dynamic, groupId);
 }
 
-EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  scene->cookGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
+//
+
+EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  physicsBase->cookGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
-EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  scene->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
+EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  physicsBase->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
+
+//
 
 EMSCRIPTEN_KEEPALIVE PxTriangleMesh *createShapePhysics(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
   return scene->createShape(data, length, releaseWriteStream);

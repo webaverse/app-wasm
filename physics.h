@@ -47,7 +47,7 @@ public:
   virtual PxQueryHitType::Enum postFilter(const PxFilterData &filterData, const PxQueryHit &hit);
 };
 
-class PScene : public PBase {
+class PScene {
 public:
   PScene();
   ~PScene();

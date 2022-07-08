@@ -129,20 +129,18 @@ enum PhysicsObjectFlags {
   ENABLE_CCD = 2,
 };
 
-PScene::PScene() :
-  PBase()
-{
+PScene::PScene() {
   // tolerancesScale.length = 0.01;
   {
     // PxTolerancesScale tolerancesScale;
-    physics = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, tolerancesScale);
+    physics = PxCreatePhysics(PX_PHYSICS_VERSION, *(physicsBase->foundation), physicsBase->tolerancesScale);
   }
   {
     simulationEventCallback = new SimulationEventCallback2();
   }
   {
     // PxTolerancesScale tolerancesScale;
-    PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
+    PxSceneDesc sceneDesc = PxSceneDesc(physicsBase->tolerancesScale);
     sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
     sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;

@@ -7,7 +7,11 @@
 #include <string>
 #include <iostream>
 
+//
+
 using namespace physx;
+
+//
 
 PBase::PBase() {
   allocator = new PxDefaultAllocator();
@@ -24,6 +28,8 @@ PBase::PBase() {
   }
 }
 PBase::~PBase() {}
+
+//
 
 void PBase::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   PxVec3 *verts = (PxVec3 *)positions;
@@ -81,3 +87,7 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
+
+//
+
+PBase *physicsBase = nullptr;

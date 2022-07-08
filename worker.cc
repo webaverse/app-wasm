@@ -26,15 +26,21 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
 
 //
 
+EMSCRIPTEN_KEEPALIVE void initialize() {
+  physicsBase = new PBase();
+}
+
+//
+
 EMSCRIPTEN_KEEPALIVE PBase *makePhysicsBase() {
   return new PBase();
 }
 
-EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PBase *base, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  base->cookGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
+EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  physicsBase->cookGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
-EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PBase *base, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  base->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
+EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  physicsBase->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
 
 EMSCRIPTEN_KEEPALIVE void deleteMemoryOutputStream(PxDefaultMemoryOutputStream *writeStream) {
