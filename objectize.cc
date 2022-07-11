@@ -60,6 +60,12 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
 }
+EMSCRIPTEN_KEEPALIVE float setTriggerPhysics(PScene *scene, unsigned int id) {
+  return scene->setTrigger(id);
+}
+EMSCRIPTEN_KEEPALIVE unsigned int getTriggerEventPhysics(PScene *scene, unsigned int *scratchStack) {
+  return scene->getTriggerEvent(scratchStack);
+}
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float maxDist, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex) {
   scene->raycast(origin, direction, maxDist, *hit, position, normal, *distance, *objectId, *faceIndex);
