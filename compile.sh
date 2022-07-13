@@ -1,8 +1,7 @@
-# emsdk 2.0.6
 mkdir -p bin
 if [ ! -f physx-timestamp ]; then
   echo 'building physx...'
-  emcc -s WASM=1 -O3 \
+  emcc -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -204,6 +203,7 @@ if [ ! -f physx-timestamp ]; then
   PhysX/physx/source/geomutils/src/GuSweepSharedTests.cpp \
   PhysX/physx/source/geomutils/src/GuCCTSweepTests.cpp \
   PhysX/physx/source/lowlevelaabb/src/BpBroadPhaseSap.cpp \
+  PhysX/physx/source/lowlevelaabb/src/BpSAPTasks.cpp \
   PhysX/physx/source/geomutils/src/GuBounds.cpp \
   PhysX/physx/source/scenequery/src/SqCompoundPruningPool.cpp \
   PhysX/physx/source/foundation/src/unix/PsUnixPrintString.cpp \
@@ -277,22 +277,21 @@ if [ ! -f physx-timestamp ]; then
 fi
 if [ ! -f cut.o ]; then
   echo 'building cut...'
-  emcc -s WASM=1 -O3 \
+  emcc -O3 \
   cut.cc \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c
 fi
 if [ ! -f march.o ]; then
   echo 'building march...'
-  emcc -s WASM=1 -O3 \
+  emcc -O3 \
   march.cc \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c
 fi
 echo 'building main...'
-# m = 64*1024; s = 350000000; Math.floor(s/m)*m;
-# emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=419430400 -s ALLOW_MEMORY_GROWTH=1 -O3
-emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
+# m = 64*1024; s = 200 * 1024 * 1024; Math.floor(s/m)*m;
+emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \
@@ -322,15 +321,57 @@ emcc -s WASM=1 -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALL
   -IPhysX/physx/source/geomutils/src/sweep \
   -IRectBinPack/include \
   -Iconcaveman \
-  objectize.cc vector.cc physics.cc PathFinder.cc \
-  FastNoise.cpp DualContouring/main.cc DualContouring/octree.cc DualContouring/vectorMath.cc DualContouring/qef.cc DualContouring/svd.cc DualContouring/density.cc DualContouring/chunkDamageBuffer.cc DualContouring/mesh.cc \
+  objectize.cc \
+  vector.cc physics-base.cc physics.cc PathFinder.cc FastNoise.cpp \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
   -o bin/geometry.js
-  sed -Ei 's/geometry.wasm/bin\/geometry.wasm/g' bin/geometry.js
-  echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/geometry.js
-echo done
+sed -Ei 's/geometry.wasm/bin\/geometry.wasm/g' bin/geometry.js
+echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/geometry.js
+echo 'done building main'
+
+echo 'building worker...'
+# m = 64*1024; s = 50 * 1024 * 1024; Math.floor(s/m)*m;
+emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=52428800 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
+  -IPhysX/physx/include -IPhysX/pxshared/include \
+  -IPhysX/physx/source/foundation/include \
+  -IPhysX/physx/source/pvd/include \
+  -IPhysX/physx/source/simulationcontroller/include -IPhysX/physx/source/lowlevel/api/include \
+  -IPhysX/physx/source/geomutils/include \
+  -IPhysX/physx/source/scenequery/include \
+  -IPhysX/physx/source/lowleveldynamics/include \
+  -IPhysX/physx/source/lowlevel/software/include \
+  -IPhysX/physx/source/lowlevelaabb/include \
+  -IPhysX/physx/source/lowlevel/common/include/pipeline \
+  -IPhysX/physx/source/lowlevel/common/include/utils \
+  -IPhysX/physx/source/lowlevel/common/include/collision \
+  -IPhysX/physx/source/geomutils/src -IPhysX/physx/source/geomutils/src/common -IPhysX/physx/source/geomutils/src/mesh -IPhysX/physx/source/geomutils/src/hf -IPhysX/physx/source/geomutils/src/convex -IPhysX/physx/source/geomutils/src/gjk \
+  -IPhysX/physx/source/common/src \
+  -IPhysX/physx/source/physx/src/buffering \
+  -IPhysX/physx/source/physx/src \
+  -IPhysX/physx/source/physxcooking/src/convex \
+  -IPhysX/physx/source/physxcooking/src/mesh \
+  -IPhysX/physx/source/physxextensions/src/serialization/File \
+  -IPhysX/physx/source/physxcooking/src \
+  -IPhysX/physx/source/simulationcontroller/src \
+  -IPhysX/physx/source/geomutils/src/intersection \
+  -IPhysX//physx/source/geomutils/src/ccd \
+  -IPhysX/physx/source/geomutils/src/contact \
+  -IPhysX/physx/source/geomutils/src/pcm \
+  -IPhysX/physx/source/geomutils/src/distance \
+  -IPhysX/physx/source/geomutils/src/sweep \
+  -IRectBinPack/include \
+  -Iconcaveman \
+  worker.cc \
+  physics-base.cc \
+  *.o \
+  -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
+  -I. \
+  -o bin/app-wasm-worker.js
+sed -Ei 's/app-wasm-worker.wasm/bin\/app-wasm-worker.wasm/g' bin/app-wasm-worker.js
+echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/app-wasm-worker.js
+echo 'done building worker'
 
 # Prevent compile window auto close after error, to see the error details. https://askubuntu.com/a/20353/1012283
 # exec $SHELL

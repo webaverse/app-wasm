@@ -1,35 +1,10 @@
 #ifndef _PHYSICS_H
 #define _PHYSICS_H
 
+#include "physics-base.h"
 #include "vector.h"
 #include "march.h"
-#include "PxPhysicsVersion.h"
-#include "PxPhysics.h"
-#include "PxScene.h"
-#include "PxSceneDesc.h"
-#include "PxRigidStatic.h"
-#include "PxRigidDynamic.h"
-#include "PxMaterial.h"
-#include "extensions/PxDefaultStreams.h"
-#include "extensions/PxDefaultAllocator.h"
-#include "extensions/PxDefaultErrorCallback.h"
-#include "extensions/PxDefaultCpuDispatcher.h"
-#include "extensions/PxDefaultSimulationFilterShader.h"
-#include "extensions/PxSphericalJoint.h"
-#include "extensions/PxD6Joint.h"
-#include "geometry/PxTriangleMeshGeometry.h"
-#include "cooking/PxTriangleMeshDesc.h"
-#include "cooking/PxCooking.h"
-#include "extensions/PxTriangleMeshExt.h"
-#include "extensions/PxSimpleFactory.h"
-#include "extensions/PxRigidBodyExt.h"
-#include "extensions/PxRigidActorExt.h"
-// #include "PxPhysicsAPI.h"
-#include "PxQueryReport.h"
-#include "PxSimulationEventCallback.h"
-#include "characterkinematic/PxControllerManager.h"
-#include "characterkinematic/PxCapsuleController.h"
-#include "geometry/PxGeometryQuery.h"
+#include "physx.h"
 #include <list>
 #include <map>
 #include <set>
@@ -50,9 +25,17 @@ enum STATE_BITFIELD {
   STATE_BITFIELD_GROUNDED = 0x2,
 };
 
+struct TriggerEventInfo {
+  unsigned int status;
+  unsigned int triggerActorId;
+  unsigned int otherActorId;
+};
+
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
   std::map<unsigned int, unsigned int> stateBitfields;
+  unsigned int triggerCount = 0;
+  std::vector<TriggerEventInfo> triggerEventInfos;
 
   SimulationEventCallback2();
   virtual ~SimulationEventCallback2();
@@ -84,6 +67,8 @@ public:
   bool updateMassAndInertia(unsigned int id, float shapeDensities);
   float getBodyMass(unsigned int id);
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
+  float setTrigger(unsigned int id);
+  unsigned int getTriggerEvents(unsigned int *scratchStack);
   void raycast(float *origin, float *direction, float maxDist, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex);
   void sweepBox(
     float *origin,
@@ -124,9 +109,6 @@ public:
   
   void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int flags);
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId);
-
-  void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
-  void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   
   PxTriangleMesh *createShape(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream);
   void destroyShape(PxTriangleMesh *triangleMesh);
@@ -171,11 +153,7 @@ public:
   unsigned int moveCharacterController(PxController *characterController, float *displacement, float minDist, float elapsedTime, float *positionOut);
   void setCharacterControllerPosition(PxController *characterController, float *position);
 
-  PxDefaultAllocator *allocator = nullptr;
-  PxDefaultErrorCallback *errorCallback = nullptr;
-  PxFoundation *foundation = nullptr;
   PxPhysics *physics = nullptr;
-  PxCooking *cooking = nullptr;
   PxScene *scene = nullptr;
   PxControllerManager *controllerManager = nullptr;
   std::vector<PxRigidActor *> actors;

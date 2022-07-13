@@ -3,7 +3,7 @@
 // #include "compose.h"
 // #include "noise.h"
 #include "march.h"
-#include "DualContouring/main.h"
+// #include "DualContouring/main.h"
 // #include "collide.h"
 #include "physics.h"
 // #include "convex.h"
@@ -25,9 +25,20 @@ EMSCRIPTEN_KEEPALIVE void doFree(void *ptr) {
   free(ptr);
 }
 
+//
+
+EMSCRIPTEN_KEEPALIVE void initialize() {
+  physicsBase = new PBase();
+}
+
+//
+
 EMSCRIPTEN_KEEPALIVE PScene *makePhysics() {
   return new PScene();
 }
+
+//
+
 EMSCRIPTEN_KEEPALIVE PxD6Joint *addJointPhysics(PScene *scene, unsigned int id1, unsigned int id2, float *position1, float *position2, float *quaternion1, float *quaternion2) {
   return scene->addJoint(id1, id2, position1, position2, quaternion1, quaternion2);
 }
@@ -48,6 +59,12 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 }
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
+}
+EMSCRIPTEN_KEEPALIVE float setTriggerPhysics(PScene *scene, unsigned int id) {
+  return scene->setTrigger(id);
+}
+EMSCRIPTEN_KEEPALIVE unsigned int getTriggerEventsPhysics(PScene *scene, unsigned int *scratchStack) {
+  return scene->getTriggerEvents(scratchStack);
 }
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float maxDist, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex) {
@@ -156,12 +173,16 @@ EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, 
   scene->addBoxGeometry(position, quaternion, size, id, material, dynamic, groupId);
 }
 
-EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  scene->cookGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
+//
+
+EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  physicsBase->cookGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
-EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(PScene *scene, float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  scene->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
+EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  physicsBase->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
+
+//
 
 EMSCRIPTEN_KEEPALIVE PxTriangleMesh *createShapePhysics(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
   return scene->createShape(data, length, releaseWriteStream);
@@ -332,8 +353,7 @@ EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, flo
   return marchingCubes(dims, potential, shift, scale);
 }
 
-
-EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){
+/* EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){
     return DualContouring::generateChunkData(x, y, z);
 }
 
@@ -351,7 +371,7 @@ EMSCRIPTEN_KEEPALIVE void clearChunkRootDualContouring(float x, float y, float z
 
 EMSCRIPTEN_KEEPALIVE uint8_t *createChunkMeshDualContouring(float x, float y, float z){
     return DualContouring::createChunkMesh(x, y, z);
-}
+} */
 
 /* EMSCRIPTEN_KEEPALIVE bool drawDamage(float x, float y, float z, float radius, float value) {
     return DualContouring::drawDamage(x, y, z, radius, value);

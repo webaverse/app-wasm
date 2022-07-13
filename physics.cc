@@ -49,7 +49,17 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
 
   // std::cerr << "on contact" << std::endl;
 }
-void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
+void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {
+  this->triggerCount = count;
+  for (unsigned int i = 0; i < count; i++) {
+    TriggerEventInfo triggerEventInfo;
+    triggerEventInfo.status = pairs[i].status;
+    triggerEventInfo.triggerActorId = (unsigned int)pairs[i].triggerActor->userData;
+    triggerEventInfo.otherActorId = (unsigned int)pairs[i].otherActor->userData;
+
+    triggerEventInfos[i] = triggerEventInfo;
+  }
+}
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
 
 /*
@@ -130,30 +140,17 @@ enum PhysicsObjectFlags {
 };
 
 PScene::PScene() {
-  allocator = new PxDefaultAllocator();
-  errorCallback = new PxDefaultErrorCallback();
-  foundation = PxCreateFoundation(PX_PHYSICS_VERSION, *allocator, *errorCallback);
-  PxTolerancesScale tolerancesScale;
   // tolerancesScale.length = 0.01;
   {
     // PxTolerancesScale tolerancesScale;
-    physics = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, tolerancesScale);
-  }
-  {
-    PxCookingParams cookingParams(tolerancesScale);
-    cookingParams.meshWeldTolerance = 0.15;
-    // cookingParams.planeTolerance = 0;
-    cookingParams.meshPreprocessParams |= PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH;
-    cookingParams.meshPreprocessParams |= PxMeshPreprocessingFlag::eWELD_VERTICES;
-    // cookingParams.meshSizePerformanceTradeOff = 0;
-    cooking = PxCreateCooking(PX_PHYSICS_VERSION, *foundation, cookingParams);
+    physics = PxCreatePhysics(PX_PHYSICS_VERSION, *(physicsBase->foundation), physicsBase->tolerancesScale);
   }
   {
     simulationEventCallback = new SimulationEventCallback2();
   }
   {
     // PxTolerancesScale tolerancesScale;
-    PxSceneDesc sceneDesc = PxSceneDesc(tolerancesScale);
+    PxSceneDesc sceneDesc = PxSceneDesc(physicsBase->tolerancesScale);
     sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS;
     sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;
@@ -298,7 +295,7 @@ float PScene::getBodyMass(unsigned int id) {
     PxRigidActor *actor = *actorIter;
     return (dynamic_cast<PxRigidBody *>(actor))->getMass();
   } else {
-    std::cerr << "updateMassAndInertia unknown actor id " << id << std::endl;
+    std::cerr << "getBodyMass unknown actor id " << id << std::endl;
     return -1;
   }
 }
@@ -407,6 +404,40 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
   return numActors;
 }
 
+float PScene::setTrigger(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxShape* shape;
+    actor->getShapes(&shape, 1);
+    shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+    shape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+    shape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+
+    return 1;
+  } else {
+    std::cerr << "setTrigger unknown actor id " << id << std::endl;
+    return -1;
+  }
+}
+
+unsigned int PScene::getTriggerEvents(unsigned int *scratchStack) {
+  unsigned int triggerCount = this->simulationEventCallback->triggerCount;
+  for (unsigned int i = 0; i < triggerCount; i++) {
+    scratchStack[i * 3 + 0] = this->simulationEventCallback->triggerEventInfos[i].status;
+    scratchStack[i * 3 + 1] = this->simulationEventCallback->triggerEventInfos[i].triggerActorId;
+    scratchStack[i * 3 + 2] = this->simulationEventCallback->triggerEventInfos[i].otherActorId;
+  }
+
+  // reset
+  this->simulationEventCallback->triggerCount = 0;
+
+  return triggerCount;
+}
+
 void PScene::addCapsuleGeometry(
   float *position,
   float *quaternion,
@@ -475,63 +506,6 @@ void PScene::addBoxGeometry(float *position, float *quaternion, float *size, uns
   actor->userData = (void *)id;
   scene->addActor(*actor);
   actors.push_back(actor);
-}
-
-void PScene::cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  PxVec3 *verts = (PxVec3 *)positions;
-  PxU32 nbVerts = numPositions/3;
-  PxU32 *indices32 = (PxU32 *)indices;
-  PxU32 triCount = numIndices/3;
-
-  PxTriangleMeshDesc meshDesc{};
-  meshDesc.points.count           = nbVerts;
-  meshDesc.points.stride          = sizeof(PxVec3);
-  meshDesc.points.data            = verts;
-
-  meshDesc.triangles.count        = triCount;
-  meshDesc.triangles.stride       = 3*sizeof(PxU32);
-  meshDesc.triangles.data         = indices32;
-
-  /* bool ok = cooking->validateTriangleMesh(meshDesc);
-  if (!ok) {
-    std::cerr << "invalid triangle mesh" << std::endl;
-  } */
-
-  *writeStream = new PxDefaultMemoryOutputStream();
-  bool status = cooking->cookTriangleMesh(meshDesc, **writeStream);
-  if (!status) {
-    std::cerr << "geometry triangle mesh bake failed" << std::endl;
-  }
-
-  *data = (*writeStream)->getData();
-  *length = (*writeStream)->getSize();
-}
-void PScene::cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  PxVec3 *verts = (PxVec3 *)positions;
-  PxU32 nbVerts = numPositions/3;
-  PxU32 *indices32 = (PxU32 *)indices;
-  PxU32 triCount = numIndices/3;
-
-  PxConvexMeshDesc meshDesc{};
-  meshDesc.points.count           = nbVerts;
-  meshDesc.points.stride          = sizeof(PxVec3);
-  meshDesc.points.data            = verts;
-
-  meshDesc.indices.count        = triCount;
-  meshDesc.indices.stride       = 3*sizeof(PxU32);
-  meshDesc.indices.data         = indices32;
-
-  meshDesc.flags            = PxConvexFlag::eCOMPUTE_CONVEX;
-  // meshDesc.maxVerts         = 10;
-  
-  *writeStream = new PxDefaultMemoryOutputStream();
-  bool status = cooking->cookConvexMesh(meshDesc, **writeStream);
-  if (!status) {
-    std::cerr << "geometry convex mesh bake failed" << std::endl;
-  }
-
-  *data = (*writeStream)->getData();
-  *length = (*writeStream)->getSize();
 }
 
 PxTriangleMesh *PScene::createShape(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
