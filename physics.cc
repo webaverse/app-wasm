@@ -424,7 +424,7 @@ float PScene::setTrigger(unsigned int id) {
   }
 }
 
-unsigned int PScene::getTriggerEvent(unsigned int *scratchStack) {
+unsigned int PScene::getTriggerEvents(unsigned int *scratchStack) {
   unsigned int triggerCount = this->simulationEventCallback->triggerCount;
   for (unsigned int i = 0; i < triggerCount; i++) {
     scratchStack[i * 3 + 0] = this->simulationEventCallback->triggerEventInfos[i].status;
