@@ -594,7 +594,7 @@ namespace AnimationSystem
         // }
         if (/* spec.isLastBone &&  */ !this->isFinished && evaluateTimeS >= this->animation->duration) // Don't need and will cause bug if check `isLastBone`.
         {
-          std::cout << "finished: animation: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
+          // std::cout << "finished: animation: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
           // finishedFlag = 1;
           // _finishedFlags[this->mixer->index] = 1;
           this->mixer->finishedFlag = 1;
@@ -606,7 +606,7 @@ namespace AnimationSystem
             AnimationNode *motion = this->mixer->motions[i];
             if (motion->animation == animation)
             {
-              std::cout << "finished: motion: pointer: " << motion << " pointer float: " << (float *)motion << std::endl;
+              // std::cout << "finished: motion: pointer: " << motion << " pointer float: " << (float *)motion << std::endl;
               this->mixer->animationValues[54] = (float *)motion; // finished motion pointer
               break;
             }
