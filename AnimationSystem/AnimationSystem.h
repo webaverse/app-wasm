@@ -96,7 +96,7 @@ namespace AnimationSystem
     float finishedFlag = 0;
     // float *finishedFlag = (float *)malloc((1) * sizeof(float));
     // float *finishedFlag = new float();
-    float *animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished animation index.
+    float *animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished motion pointer.
     // test ---
     float testMixerFloat = 7;
     float *testMixerPointer;

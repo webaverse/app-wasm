@@ -607,7 +607,7 @@ namespace AnimationSystem
             if (motion->animation == animation)
             {
               std::cout << "finished: motion: pointer: " << motion << " pointer float: " << (float *)motion << std::endl;
-              this->mixer->animationValues[54] = (float *)motion;
+              this->mixer->animationValues[54] = (float *)motion; // finished motion pointer
               break;
             }
           }
