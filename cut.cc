@@ -1,5 +1,6 @@
 #include "cut.h"
 #include <vector>
+#include <cmath>
 
 float planeNormalX = 1;
 float planeNormalY = 0;
@@ -113,7 +114,7 @@ void getIntersectNode(
   // let part = this.tempVector3.subVectors(vI, v0).lengthSq()
   float part = lengthSq( *vIX-v0X, *vIY-v0Y, *vIZ-v0Z );
   // let ratio = Math.sqrt(part / total)
-  float ratio = sqrt( part / total );
+  float ratio = std::sqrt( part / total );
 
   // let normalPart = this.tempVector3.subVectors(n1, n0).multiplyScalar(ratio)
   float normalPartX = ( n1X - n0X ) * ratio;
