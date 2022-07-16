@@ -188,7 +188,8 @@ namespace AnimationSystem
   void setWeight(AnimationNode *node, float weight);
   void setFactor(AnimationNode *node, float factor);
   float getWeight(AnimationSystem::AnimationNode *node);
-  float getFactor(AnimationSystem::AnimationNode *node);
+  float getFactor(AnimationSystem::AnimationNode *node); // todo: AnimationSystem::AnimationNode -> AnimationNode.
+  unsigned int getChildren(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode **scratchStack);
 
 };
 

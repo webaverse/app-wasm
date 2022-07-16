@@ -202,7 +202,10 @@ EMSCRIPTEN_KEEPALIVE float getWeight(AnimationSystem::AnimationNode *node) {
   return AnimationSystem::getWeight(node);
 }
 EMSCRIPTEN_KEEPALIVE float getFactor(AnimationSystem::AnimationNode *node) {
-  return AnimationSystem::getFactor(node);
+  return AnimationSystem::getFactor(node); // todo: node->getFactor();
+}
+EMSCRIPTEN_KEEPALIVE unsigned int getChildren(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode **scratchStack) {
+  return AnimationSystem:: getChildren(node, scratchStack);
 }
 EMSCRIPTEN_KEEPALIVE void play(AnimationSystem::AnimationNode *motion) {
   return motion->play();

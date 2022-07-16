@@ -117,6 +117,14 @@ namespace AnimationSystem
     return node->factor;
   }
 
+  unsigned int getChildren(AnimationNode *node, AnimationNode **scratchStack) {
+    unsigned int count = node->children.size();
+    for (unsigned int i = 0; i < count; i++) {
+      scratchStack[i] = node->children[i];
+    }
+    return count;
+  }
+
   void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition)
   {
     if (isPosition)
