@@ -284,7 +284,7 @@ namespace AnimationSystem
     AnimationNode *node = new AnimationNode();
     node->mixer = this;
     node->type = type;
-    std::cout << "NodeType: " << type << " " << node->type << std::endl;
+    // std::cout << "NodeType: " << type << " " << node->type << std::endl;
     return node;
   }
   AnimationNode *AnimationMixer::createMotion(Animation *animation)
