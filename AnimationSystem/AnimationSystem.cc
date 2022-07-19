@@ -587,7 +587,7 @@ namespace AnimationSystem
       // std::cout << "loop: " << this->loop << std::endl;
       if (this->loop == LoopType::LoopOnce)
       {
-        evaluateTimeS = (AnimationMixer::timeS - this->startTime) / this->speed + this->timeBias;
+        evaluateTimeS = (AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias;
         value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
         // std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
         // if (isLastBone && this->weight > 0 && !this->isFinished && evaluateTimeS >= this->animation.duration)
@@ -625,7 +625,7 @@ namespace AnimationSystem
       }
       else
       {
-        evaluateTimeS = fmod((AnimationMixer::timeS - this->startTime) / this->speed + this->timeBias, this->animation->duration);
+        evaluateTimeS = fmod((AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias, this->animation->duration);
         value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
       }
       return value;
