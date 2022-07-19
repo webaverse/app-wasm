@@ -2,17 +2,9 @@
 
 namespace AnimationSystem
 {
-  // std::map<std::string, Interpolant *> interpolants;
-  // std::vector<Interpolant> _interpolants;
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::vector<Animation *> _animations;
-  // float finishedFlag = 0;
-  // std::vector<float> _finishedFlags;
-  // float _finishedFlags[100];
-  // float finishedAnimationIndex; // todo: use pointer instead of index.
-  // float **animationValues = (float **)malloc(53 * sizeof(float)); // ok too
-  // Interpolant _interpolant;
   float *test;
   float **test2;
   unsigned int **test3;
@@ -27,37 +19,6 @@ namespace AnimationSystem
   Animation **testAnimation3 = &testAnimation2;
 
   // functions:
-
-  float setTest(float num)
-  {
-    float a = num;
-    test = &a;
-    return *test;
-  }
-
-  float setTest2(float num)
-  {
-    *test = num;
-    return *test;
-  }
-
-  float setTestNew(float num)
-  {
-    test = new float(num);
-    return *test;
-  }
-
-  float setTestAlloc(float num)
-  {
-    test = (float *)malloc(1 * sizeof(float));
-    *test = num;
-    return *test;
-  }
-
-  float getTest()
-  {
-    return *test;
-  }
 
   // Utils ------
 
@@ -85,17 +46,6 @@ namespace AnimationSystem
   }
 
   // Main ------
-
-  // float setWeight(unsigned int animationIndex, float weight)
-  // {
-  //   // // no effect if _animations not store pointer.
-  //   // Animation animation = _animations[animationIndex];
-  //   // Animation animation = rootNode.children[animationIndex];
-  //   // animation.weight = weight;
-
-  //   rootNode->children[animationIndex]->weight = weight; // todo: test: animationIndex is 0 | 1 here, not real animationIndex.
-  //   return weight;
-  // }
 
   void setWeight(AnimationNode *node, float weight)
   {
@@ -140,37 +90,8 @@ namespace AnimationSystem
   AnimationMixer *createAnimationMixer()
   {
     AnimationMixer *animationMixer = new AnimationMixer();
-    // animationMixer->index = _animationMixers.size();
     _animationMixers.push_back(animationMixer);
-    // _finishedFlags[animationMixer->index] = 0;
-    // return &animationMixer; // todo: warning: address of stack memory associated with local variable 'animationMixer' returned [-Wreturn-stack-address]
     return animationMixer;
-
-    // // init old
-    // AnimationNode *walkFlyNode = new AnimationNode();
-    // walkFlyNode->children.push_back(_motions[96]); // 96 walk
-    // walkFlyNode->children.push_back(_motions[92]); // 92 fly
-
-    // AnimationNode *crouchNode = new AnimationNode();
-    // crouchNode->children.push_back(walkFlyNode);
-    // crouchNode->children.push_back(_motions[9]); // 9 Crouch Idle.fbx
-
-    // rootNode = crouchNode;
-
-    // // init
-    // AnimationNode *walkMotion = createMotion(_animations[96]);
-    // AnimationNode *flyMotion = createMotion(_animations[92]);
-    // AnimationNode *crouchMotion = createMotion(_animations[9]);
-
-    // AnimationNode *walkFlyNode = createNode();
-    // addChild(walkFlyNode, walkMotion);
-    // addChild(walkFlyNode, flyMotion);
-
-    // AnimationNode *crouchNode = createNode();
-    // addChild(crouchNode, walkFlyNode);
-    // addChild(crouchNode, crouchMotion);
-
-    // setRootNode(crouchNode);
   }
   void addChild(AnimationNode *parent, AnimationNode *child)
   {
@@ -203,7 +124,6 @@ namespace AnimationSystem
     animationMapping.isTop = isTop;
     animationMapping.isArm = isArm;
     _animationMappings.push_back(animationMapping);
-    // std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
   }
   Animation *createAnimation(float duration)
   {
@@ -211,73 +131,8 @@ namespace AnimationSystem
     animation->index = _animations.size();
     animation->duration = duration;
     _animations.push_back(animation);
-    // std::cout << "_animations size: " << _animations.size() << std::endl;
 
     return animation;
-  }
-  Animation *getAnimation1(unsigned int index)
-  {
-    return _animations[index];
-  }
-  float *getAnimation2(unsigned int index)
-  {
-    return (float *)(_animations[index]);
-  }
-  unsigned int *getAnimation3(unsigned int index)
-  {
-    return (unsigned int *)(_animations[index]);
-  }
-  float **getAnimation4(unsigned int index)
-  {
-    *test2 = (float *)(_animations[index]);
-    return test2;
-  }
-  unsigned int **getAnimation5(unsigned int index)
-  {
-    *test3 = (unsigned int *)(_animations[index]);
-    return test3;
-  }
-  Animation **getAnimation6(unsigned int index)
-  {
-    *test4 = _animations[index];
-    return test4;
-  }
-  Animation **getAnimation7(unsigned int index)
-  {
-    test4 = &(_animations[index]);
-    return test4;
-  }
-  float getFloat1()
-  {
-    return testFloat;
-  }
-  float *getFloat2()
-  {
-    return testFloat2;
-  }
-  float **getFloat3()
-  {
-    return testFloat3;
-  }
-  Animation getAnimationB1()
-  {
-    return testAnimation;
-  }
-  Animation *getAnimationB2()
-  {
-    return testAnimation2;
-  }
-  Animation **getAnimationB3()
-  {
-    return testAnimation3;
-  }
-  float **getAnimationB4()
-  {
-    return (float **)testAnimation3;
-  }
-  unsigned int **getAnimationB5()
-  {
-    return (unsigned int **)testAnimation3;
   }
   AnimationNode *AnimationMixer::createNode(NodeType type)
   {
@@ -298,9 +153,6 @@ namespace AnimationSystem
   }
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
   {
-
-    // std::cout << "createInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
-
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;
     interpolant.parameterPositions = parameterPositions;
@@ -309,25 +161,10 @@ namespace AnimationSystem
     interpolant.sampleValues = sampleValues;
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
-    // _interpolant = interpolant;
     _animations[animationIndex]->interpolants.push_back(interpolant);
-
-    // std::cout
-    // << "interpolant "
-    // << interpolant.numParameterPositions
-    // << interpolant.numSampleValues
-    // << interpolant.valueSize
-    // << _interpolants.size()
-    // << std::endl;
-
-    // std::cout << "interpolants size: " << _interpolants.size() << std::endl;
   }
   float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t)
   {
-    // std::cout << "evaluateInterpolant: " << interpolantIndex << " " << t << std::endl;
-
-    // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
-
     Interpolant interpolant = _animations[animationIndex]->interpolants[interpolantIndex];
 
     if (interpolant.numParameterPositions == 1)
@@ -344,18 +181,13 @@ namespace AnimationSystem
     else
     {
       int index = 0;
-      // std::cout << "numParameterPositions: " << interpolant.numParameterPositions << std::endl;
       for (; index < interpolant.numParameterPositions; index++)
       {
-        // std::cout << "index: " << index << " position: " << interpolant.parameterPositions[index] << std::endl;
         if (interpolant.parameterPositions[index] > t)
         {
           break;
         }
       }
-      // index -= 1; // evaluate floor
-      // if (interpolantIndex == 1) std::cout << "index: " << index << std::endl;
-      // std::cout << "index: " << index << std::endl;
 
       if (index == 0)
       { // Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0].
@@ -385,28 +217,6 @@ namespace AnimationSystem
         unsigned int index0 = index - 1;
         unsigned int index1 = index;
 
-        // if (interpolantIndex == 33) { // mixamorigRightHandThumb1.quaternion
-        //   std::cout << "index: " << index << std::endl; // always 1
-        // }
-
-        // float *outputBuffer = (float *)malloc((
-        //   4
-        // ) * sizeof(float));
-
-        // outputBuffer[0] = _parameterPositions[index];
-        // outputBuffer[1] = _sampleValues[index];
-        // outputBuffer[2] = _valueSize;
-
-        // float x0 = interpolant.sampleValues[index0 * interpolant.valueSize + 0];
-        // float y0 = interpolant.sampleValues[index0 * interpolant.valueSize + 1];
-        // float z0 = interpolant.sampleValues[index0 * interpolant.valueSize + 2];
-        // float w0 = interpolant.sampleValues[index0 * interpolant.valueSize + 3];
-
-        // float x1 = interpolant.sampleValues[index1 * interpolant.valueSize + 0];
-        // float y1 = interpolant.sampleValues[index1 * interpolant.valueSize + 1];
-        // float z1 = interpolant.sampleValues[index1 * interpolant.valueSize + 2];
-        // float w1 = interpolant.sampleValues[index1 * interpolant.valueSize + 3];
-
         float time0 = interpolant.parameterPositions[index0];
         float time1 = interpolant.parameterPositions[index1];
         float f = (t - time0) / (time1 - time0);
@@ -429,31 +239,11 @@ namespace AnimationSystem
               interpolant.sampleValues, index1 * interpolant.valueSize,
               f);
         }
-
-        // interpolant.resultBuffer[0] = interpolant.sampleValues[index * interpolant.valueSize + 0];
-        // interpolant.resultBuffer[1] = interpolant.sampleValues[index * interpolant.valueSize + 1];
-        // interpolant.resultBuffer[2] = interpolant.sampleValues[index * interpolant.valueSize + 2];
-        // interpolant.resultBuffer[3] = interpolant.sampleValues[index * interpolant.valueSize + 3];
-
-        // outputBuffer[3] = (float)index;
       }
     }
 
     return interpolant.resultBuffer;
   }
-  // float **getAnimationValues(unsigned int animationIndex, float t)
-  // {
-  //   for (int i = 0; i < 53; i++)
-  //   {
-  //     AnimationMapping spec = _animationMappings[i];
-  //     animationValues[i] = evaluateInterpolant(animationIndex, i, t);
-  //   }
-  //   return animationValues;
-  // }
-  // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode)
-  // {
-  //   parentNode->crossFade(duration, targetNode);
-  // }
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t)
   {
     float x0 = src0[srcOffset0 + 0];
@@ -554,26 +344,14 @@ namespace AnimationSystem
     AnimationMixer::timeS = timeS;
 
     // reset
-    // reset animation finished event.
-    // finishedFlag = 0; // reset animation finished event.
     this->finishedFlag = 0;
-    // *(animationValues[53]) = (float)0;
-    // _finishedFlags[this->index] = 0;
-
-    // return getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
 
     for (int i = 0; i < 53; i++)
     {
       AnimationMapping spec = _animationMappings[i];
 
-      // float * aaa = rootNode.update(spec);
       animationValues[i] = rootNode->update(spec);
     }
-
-    // animationValues[53] = &finishedFlag;
-    // animationValues[53] = &_finishedFlags[this->index];
-    // animationValues[53] = &this->finishedFlag;
-    // animationValues[54] = &finishedAnimationIndex;
 
     return animationValues;
   }
@@ -584,37 +362,18 @@ namespace AnimationSystem
     {
       float *value;
       float evaluateTimeS;
-      // std::cout << "loop: " << this->loop << std::endl;
       if (this->loop == LoopType::LoopOnce)
       {
         evaluateTimeS = (AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias;
         value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
-        // std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
-        // if (isLastBone && this->weight > 0 && !this->isFinished && evaluateTimeS >= this->animation.duration)
-        // {
-        //   // console.log('finished', this->name);
-        //   this->mixer.dispatchEvent({
-        //     type : 'finished',
-        //     motion : this,
-        //   });
-
-        //   this->isFinished = true;
-        // }
         if (/* spec.isLastBone &&  */ !this->isFinished && evaluateTimeS >= this->animation->duration) // Don't need and will cause bug if check `isLastBone`.
         {
-          // std::cout << "finished: animation: index: " << this->animation->index << " pointer: " << this->animation << std::endl;
-          // finishedFlag = 1;
-          // _finishedFlags[this->mixer->index] = 1;
           this->mixer->finishedFlag = 1;
-          // *(this->mixer->animationValues[53]) = (float)1; // todo: Must explicitly convert `1` (int) to float, otherwise will cause wrong value ?
-          // finishedAnimationIndex = (float)this->animation->index; // Must explicitly convert index (unsigned int) to float, otherwise will cause wrong value.
-          // animationValues[54] = this->mixer->motions
           for (int i = 0; i < this->mixer->motions.size(); i++)
           {
             AnimationNode *motion = this->mixer->motions[i];
             if (motion->animation == animation)
             {
-              // std::cout << "finished: motion: pointer: " << motion << " pointer float: " << (float *)motion << std::endl;
               this->mixer->animationValues[54] = (float *)motion; // finished motion pointer
               break;
             }
@@ -662,19 +421,13 @@ namespace AnimationSystem
             AnimationNode *childNode = this->children[i];
             if (childNode == this->activeNode)
             {
-              // childNode->weight = factor;
               childNode->weight = max(childNode->weight, factor);
             }
             else
             {                                                            // ensure unitary
               childNode->weight = min(childNode->weight, factorReverse); // todo: will cause jumpping values if last crossFade() hasn't finished.
-              // childNode->weight = childNode->weightStart * factorReverse;
             }
           }
-          // if (spec.isFirstBone)
-          // {
-          //   std::cout << "factor: " << factor << std::endl;
-          // }
 
           if (factor == 1)
           {

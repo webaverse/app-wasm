@@ -61,23 +61,6 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 
 // AnimationSystem
 
-EMSCRIPTEN_KEEPALIVE float setTest(float num) {
-  return AnimationSystem::setTest(num);
-}
-EMSCRIPTEN_KEEPALIVE float setTest2(float num) {
-  return AnimationSystem::setTest2(num);
-}
-EMSCRIPTEN_KEEPALIVE float setTestNew(float num) {
-  return AnimationSystem::setTestNew(num);
-}
-EMSCRIPTEN_KEEPALIVE float setTestAlloc(float num) {
-  return AnimationSystem::setTestAlloc(num);
-}
-EMSCRIPTEN_KEEPALIVE float getTest() {
-  return AnimationSystem::getTest();
-}
-// ------
-// todo: use pointer instead of index.
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }
@@ -90,79 +73,6 @@ EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int i
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(float duration) {
   return AnimationSystem::createAnimation(duration);
 }
-// test ---
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation1(unsigned int index) {
-  return AnimationSystem::getAnimation1(index);
-}
-EMSCRIPTEN_KEEPALIVE float *getAnimation2(unsigned int index) {
-  return AnimationSystem::getAnimation2(index);
-}
-EMSCRIPTEN_KEEPALIVE unsigned int *getAnimation3(unsigned int index) {
-  return AnimationSystem::getAnimation3(index);
-}
-EMSCRIPTEN_KEEPALIVE float **getAnimation4(unsigned int index) {
-  return AnimationSystem::getAnimation4(index);
-}
-EMSCRIPTEN_KEEPALIVE unsigned int **getAnimation5(unsigned int index) {
-  return AnimationSystem::getAnimation5(index);
-}
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation **getAnimation6(unsigned int index) {
-  return AnimationSystem::getAnimation6(index);
-}
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation **getAnimation7(unsigned int index) {
-  return AnimationSystem::getAnimation7(index);
-}
-EMSCRIPTEN_KEEPALIVE float getFloat1() {
-  return AnimationSystem::getFloat1();
-}
-EMSCRIPTEN_KEEPALIVE float *getFloat2() {
-  return AnimationSystem::getFloat2();
-}
-EMSCRIPTEN_KEEPALIVE float **getFloat3() {
-  return AnimationSystem::getFloat3();
-}
-// EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation getAnimationB1() { // objectize.cc:110:49: warning: 'getAnimationB1' has C-linkage specified, but returns user-defined type 'AnimationSystem::Animation' which is incompatible with C [-Wreturn-type-c-linkage]
-//   return AnimationSystem::getAnimationB1();
-// }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimationB2() {
-  return AnimationSystem::getAnimationB2();
-}
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation **getAnimationB3() {
-  return AnimationSystem::getAnimationB3();
-}
-EMSCRIPTEN_KEEPALIVE float **getAnimationB4() {
-  return AnimationSystem::getAnimationB4();
-}
-EMSCRIPTEN_KEEPALIVE unsigned int **getAnimationB5() {
-  return AnimationSystem::getAnimationB5();
-}
-//
-EMSCRIPTEN_KEEPALIVE float getTestMixerFloat(AnimationSystem::AnimationMixer *mixer) {
-  return mixer->getTestMixerFloat();
-}
-EMSCRIPTEN_KEEPALIVE float *getTestMixerPointer(AnimationSystem::AnimationMixer *mixer) {
-  return mixer->getTestMixerPointer();
-}
-EMSCRIPTEN_KEEPALIVE float **getTestMixerPointerPointer(AnimationSystem::AnimationMixer *mixer) {
-  return mixer->getTestMixerPointerPointer();
-}
-EMSCRIPTEN_KEEPALIVE void setTestMixerFloat(AnimationSystem::AnimationMixer *mixer, float val) {
-  return mixer->setTestMixerFloat(val);
-}
-//
-EMSCRIPTEN_KEEPALIVE float getFinishedFlag(AnimationSystem::AnimationMixer *mixer) {
-  return mixer->getFinishedFlag();
-}
-EMSCRIPTEN_KEEPALIVE float *getFinishedFlagPointer(AnimationSystem::AnimationMixer *mixer) {
-  return mixer->getFinishedFlagPointer();
-}
-EMSCRIPTEN_KEEPALIVE float **getFinishedFlagPointerPointer(AnimationSystem::AnimationMixer *mixer) {
-  return mixer->getFinishedFlagPointerPointer();
-}
-EMSCRIPTEN_KEEPALIVE void setFinishedFlag(AnimationSystem::AnimationMixer *mixer, float val) {
-  return mixer->setFinishedFlag(val);
-}
-// end test ---
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::AnimationMixer *mixer, AnimationSystem::Animation *animation) {
   return mixer->createMotion(animation);
 }
@@ -178,22 +88,14 @@ EMSCRIPTEN_KEEPALIVE void setRootNode(AnimationSystem::AnimationMixer *mixer, An
 EMSCRIPTEN_KEEPALIVE void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return AnimationSystem::createInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
-// EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
-//   return AnimationSystem::evaluateInterpolant(animationIndex, interpolantIndex, t);
-// }
-// EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
-//   return AnimationSystem::getAnimationValues(animationIndex, t);
-// }
 EMSCRIPTEN_KEEPALIVE void crossFadeTwo(AnimationSystem::AnimationNode *parentNode, float duration, float targetFactor) {
-  // return AnimationSystem::crossFadeTwo(parentNode, duration, targetFactor);
   return parentNode->crossFadeTwo(duration, targetFactor);
 }
 EMSCRIPTEN_KEEPALIVE void crossFadeUnitary(AnimationSystem::AnimationNode *parentNode, float duration, AnimationSystem::AnimationNode *targetNode) {
-  // return AnimationSystem::crossFadeUnitary(parentNode, duration, targetNode);
   return parentNode->crossFadeUnitary(duration, targetNode);
 }
 EMSCRIPTEN_KEEPALIVE void setWeight(AnimationSystem::AnimationNode *node, float weight) {
-  return AnimationSystem::setWeight(node, weight); // todo: run `node->weight = weight;` directly.
+  return AnimationSystem::setWeight(node, weight);
 }
 EMSCRIPTEN_KEEPALIVE void setFactor(AnimationSystem::AnimationNode *node, float factor) {
   return AnimationSystem::setFactor(node, factor);
@@ -202,7 +104,7 @@ EMSCRIPTEN_KEEPALIVE float getWeight(AnimationSystem::AnimationNode *node) {
   return AnimationSystem::getWeight(node);
 }
 EMSCRIPTEN_KEEPALIVE float getFactor(AnimationSystem::AnimationNode *node) {
-  return AnimationSystem::getFactor(node); // todo: node->getFactor();
+  return AnimationSystem::getFactor(node);
 }
 EMSCRIPTEN_KEEPALIVE unsigned int getChildren(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode **scratchStack) {
   return AnimationSystem:: getChildren(node, scratchStack);
