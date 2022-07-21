@@ -3,6 +3,7 @@
 // #include "compose.h"
 // #include "noise.h"
 #include "march.h"
+#include "occlusionCull/occlusionCull.h"
 // #include "DualContouring/main.h"
 // #include "collide.h"
 #include "physics.h"
@@ -345,6 +346,32 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 
 EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
+}
+
+EMSCRIPTEN_KEEPALIVE OcclusionCulling *createOcclusionCullingInstance(){
+  return Culling::createOcclusionCullingInstance();
+}
+
+EMSCRIPTEN_KEEPALIVE void allocateOcclusionCulling(OcclusionCulling *inst, const int &id,
+                                                   const int &minX, const int &minY, const int &minZ,
+                                                   uint8_t *peeks) {
+  Culling::allocateOcclusionCulling(inst, id, minX, minY, minZ, peeks);
+}
+
+EMSCRIPTEN_KEEPALIVE void freeOcclusionCulling(OcclusionCulling *inst, const int &minX, const int &minY, const int &minZ) {
+  Culling::freeOcclusionCulling(inst, minX, minY, minZ);
+}
+
+EMSCRIPTEN_KEEPALIVE void setVisibilityOcclusionCulling(OcclusionCulling *inst,
+                                                        const int &id,
+                                                        const float &cameraX, const float &cameraY, const float &cameraZ,
+                                                        int &minX, const int &minY, const int &minZ,
+                                                        const int &maxX, const int &maxY, const int &maxZ) {
+  Culling::setVisibilityOcclusionCulling(inst, id, cameraX, cameraY, cameraZ, minX, minY, minZ, maxX, maxY, maxZ);
+}
+
+EMSCRIPTEN_KEEPALIVE bool getDrawVisibilityOcclusionCulling(OcclusionCulling *inst, const int &minX, const int &minY, const int &minZ) {
+  return Culling::getDrawVisibilityOcclusionCulling(inst, minX, minY, minZ);
 }
 
 /* EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){
