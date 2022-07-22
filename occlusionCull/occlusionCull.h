@@ -50,6 +50,7 @@ struct CullQueueEntry
 };
 
 const int chunkDataSize = 35; // 4 + 12 + 4 + 15
+const int numPeeksPerChunk = 15;
 
 class OcclusionCulling
 {
@@ -58,18 +59,18 @@ public:
 
     OcclusionCulling();
 
-    uint8_t *cull(uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos);
+    uint8_t *cull(uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos, const int &numDraws);
 
 // private:
     std::vector<int> getDrawList(std::unordered_map<uint64_t, CullQueueEntry> &cullableCHunks, std::vector<int> &culledList, const int &numChunks);
-    void parseChunksBuffer(std::unordered_map<uint64_t, CullQueueEntry> &cullableChunks, uint8_t *buffer, const int &numChunks);
+    void parseChunksBuffer(std::unordered_map<uint64_t, CullQueueEntry> &cullableChunks, uint8_t *buffer, const int &numDraws);
     uint8_t *serializeDraws(const std::vector<int> &drawList);
 };
 
 namespace Culling
 {
     OcclusionCulling *init();
-    uint8_t *cull(OcclusionCulling *inst, uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos);
+    uint8_t *cull(OcclusionCulling *inst, uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos, const int &numDraws);
 };
 
 #endif // OCCLUSION_CULL_H

@@ -39,16 +39,13 @@ OcclusionCulling::OcclusionCulling()
     }
 }
 
-uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos)
+uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos, const int &numDraws)
 {
     std::unordered_map<uint64_t, CullQueueEntry> cullableChunks;
+    cullableChunks.reserve(numDraws);
+    // std::cout << chunksBuffer[100] << std::endl;
 
-    const int numChunks = sizeof(chunksBuffer) / chunkDataSize;
-    cullableChunks.reserve(numChunks);
-
-    std::cout << "hello" << std::endl;
-
-    parseChunksBuffer(cullableChunks, chunksBuffer, numChunks);
+    parseChunksBuffer(cullableChunks, chunksBuffer, numDraws);
 
     std::vector<int> culledList;
 
@@ -99,7 +96,7 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
         }
     }
 
-    std::vector<int> drawList = getDrawList(cullableChunks, culledList, numChunks);
+    std::vector<int> drawList = getDrawList(cullableChunks, culledList, numDraws);
 
     return serializeDraws(drawList);
 }
@@ -115,16 +112,18 @@ std::vector<int> OcclusionCulling::getDrawList(std::unordered_map<uint64_t, Cull
         auto culledIter = std::find(culledList.begin(), culledList.end(), id);
         if (culledIter == culledList.end())
         {
-            drawList.emplace_back();
+            drawList.emplace_back(id);
+        // std::cout << id << std::endl;
         }
     }
+    // std::cout << "My name is jeff" << std::endl;
 
     return drawList;
 }
 
-void OcclusionCulling::parseChunksBuffer(std::unordered_map<uint64_t, CullQueueEntry> &cullableChunks, uint8_t *buffer, const int &numChunks)
+void OcclusionCulling::parseChunksBuffer(std::unordered_map<uint64_t, CullQueueEntry> &cullableChunks, uint8_t *buffer, const int &numDraws)
 {
-    for (int i = 0; i < numChunks; i++)
+    for (int i = 0; i < numDraws; i++)
     {
         int index = i * chunkDataSize;
 
@@ -143,14 +142,20 @@ void OcclusionCulling::parseChunksBuffer(std::unordered_map<uint64_t, CullQueueE
         const int enterFace = *((int *)(buffer + index));
         index += sizeof(int);
 
-        uint8_t *peeks = ((uint8_t *)(buffer + index));
-        index += sizeof(peeks);
+        uint8_t peeks[numPeeksPerChunk];
+        for (int j = 0; j < numPeeksPerChunk; j++)
+        {
+            peeks[j] = *((uint8_t *)(buffer + index));
+            index += sizeof(uint8_t);
+        }
 
         const ivec3 min = ivec3{minX, minY, minZ};
         const uint64_t hashedMin = hashMin(min);
 
         const CullQueueEntry entry = CullQueueEntry{id, min, enterFace, peeks};
         const std::pair<uint64_t, CullQueueEntry> chunkPair(hashedMin, entry);
+
+        // std::cout << id << std::endl;
 
         cullableChunks.insert(chunkPair);
     }
@@ -183,7 +188,8 @@ uint8_t *Culling::cull(OcclusionCulling *inst,
                        const int &id,
                        const ivec3 &min,
                        const ivec3 &max,
-                       const vec3 &cameraPos)
+                       const vec3 &cameraPos,
+                       const int &numDraws)
 {
-    return inst->cull(chunksBuffer, id, min, max, cameraPos);
+    return inst->cull(chunksBuffer, id, min, max, cameraPos, numDraws);
 }
