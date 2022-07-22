@@ -5110,19 +5110,10 @@ var _doCut = Module["_doCut"] = createExportWrapper("doCut");
 var _doMarchingCubes = Module["_doMarchingCubes"] = createExportWrapper("doMarchingCubes");
 
 /** @type {function(...*):?} */
-var _createOcclusionCullingInstance = Module["_createOcclusionCullingInstance"] = createExportWrapper("createOcclusionCullingInstance");
+var _initOcclusionCulling = Module["_initOcclusionCulling"] = createExportWrapper("initOcclusionCulling");
 
 /** @type {function(...*):?} */
-var _allocateOcclusionCulling = Module["_allocateOcclusionCulling"] = createExportWrapper("allocateOcclusionCulling");
-
-/** @type {function(...*):?} */
-var _freeOcclusionCulling = Module["_freeOcclusionCulling"] = createExportWrapper("freeOcclusionCulling");
-
-/** @type {function(...*):?} */
-var _setVisibilityOcclusionCulling = Module["_setVisibilityOcclusionCulling"] = createExportWrapper("setVisibilityOcclusionCulling");
-
-/** @type {function(...*):?} */
-var _getDrawVisibilityOcclusionCulling = Module["_getDrawVisibilityOcclusionCulling"] = createExportWrapper("getDrawVisibilityOcclusionCulling");
+var _cullOcclusionCulling = Module["_cullOcclusionCulling"] = createExportWrapper("cullOcclusionCulling");
 
 /** @type {function(...*):?} */
 var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");

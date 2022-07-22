@@ -348,30 +348,20 @@ EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, flo
   return marchingCubes(dims, potential, shift, scale);
 }
 
-EMSCRIPTEN_KEEPALIVE OcclusionCulling *createOcclusionCullingInstance(){
-  return Culling::createOcclusionCullingInstance();
+EMSCRIPTEN_KEEPALIVE OcclusionCulling *initOcclusionCulling()
+{
+  return Culling::init();
 }
 
-EMSCRIPTEN_KEEPALIVE void allocateOcclusionCulling(OcclusionCulling *inst, const int &id,
+EMSCRIPTEN_KEEPALIVE uint8_t *cullOcclusionCulling(OcclusionCulling *inst,
+                                                   uint8_t *chunksBuffer,
+                                                   const int &id,
                                                    const int &minX, const int &minY, const int &minZ,
-                                                   uint8_t *peeks) {
-  Culling::allocateOcclusionCulling(inst, id, minX, minY, minZ, peeks);
-}
-
-EMSCRIPTEN_KEEPALIVE void freeOcclusionCulling(OcclusionCulling *inst, const int &minX, const int &minY, const int &minZ) {
-  Culling::freeOcclusionCulling(inst, minX, minY, minZ);
-}
-
-EMSCRIPTEN_KEEPALIVE void setVisibilityOcclusionCulling(OcclusionCulling *inst,
-                                                        const int &id,
-                                                        const float &cameraX, const float &cameraY, const float &cameraZ,
-                                                        int &minX, const int &minY, const int &minZ,
-                                                        const int &maxX, const int &maxY, const int &maxZ) {
-  Culling::setVisibilityOcclusionCulling(inst, id, cameraX, cameraY, cameraZ, minX, minY, minZ, maxX, maxY, maxZ);
-}
-
-EMSCRIPTEN_KEEPALIVE bool getDrawVisibilityOcclusionCulling(OcclusionCulling *inst, const int &minX, const int &minY, const int &minZ) {
-  return Culling::getDrawVisibilityOcclusionCulling(inst, minX, minY, minZ);
+                                                   const int &maxX, const int &maxY, const int &maxZ,
+                                                   const float &cameraX, const float &cameraY, const float &cameraZ)
+{
+  return inst->cull(chunksBuffer, id, ivec3{minX, minY, minZ}, ivec3{maxX, maxY, maxZ}, vec3{cameraX, cameraY, cameraZ});
+  // return Culling::cull(inst, chunksBuffer, id, ivec3{minX, minY, minZ}, ivec3{maxX, maxY, maxZ}, vec3{cameraX, cameraY, cameraZ});
 }
 
 /* EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){
