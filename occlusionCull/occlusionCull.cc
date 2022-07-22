@@ -46,6 +46,8 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
     const int numChunks = sizeof(chunksBuffer) / chunkDataSize;
     cullableChunks.reserve(numChunks);
 
+    std::cout << "hello" << std::endl;
+
     parseChunksBuffer(cullableChunks, chunksBuffer, numChunks);
 
     std::vector<int> culledList;
@@ -97,7 +99,7 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
         }
     }
 
-    const std::vector<int> drawList = getDrawList(cullableChunks, culledList, numChunks);
+    std::vector<int> drawList = getDrawList(cullableChunks, culledList, numChunks);
 
     return serializeDraws(drawList);
 }
@@ -172,6 +174,7 @@ uint8_t *OcclusionCulling::serializeDraws(const std::vector<int> &drawList)
 OcclusionCulling *Culling::init()
 {
     OcclusionCulling *instance = new OcclusionCulling();
+    // std::cout << instance << std::endl;
     return instance;
 };
 
