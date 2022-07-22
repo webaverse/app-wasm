@@ -360,8 +360,7 @@ EMSCRIPTEN_KEEPALIVE uint8_t *cullOcclusionCulling(OcclusionCulling *inst,
                                                    const int &maxX, const int &maxY, const int &maxZ,
                                                    const float &cameraX, const float &cameraY, const float &cameraZ)
 {
-  return inst->cull(chunksBuffer, id, ivec3{minX, minY, minZ}, ivec3{maxX, maxY, maxZ}, vec3{cameraX, cameraY, cameraZ});
-  // return Culling::cull(inst, chunksBuffer, id, ivec3{minX, minY, minZ}, ivec3{maxX, maxY, maxZ}, vec3{cameraX, cameraY, cameraZ});
+  return Culling::cull(inst, chunksBuffer, id, ivec3{minX, minY, minZ}, ivec3{maxX, maxY, maxZ}, vec3{cameraX, cameraY, cameraZ});
 }
 
 /* EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){

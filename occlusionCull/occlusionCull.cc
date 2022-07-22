@@ -182,6 +182,5 @@ uint8_t *Culling::cull(OcclusionCulling *inst,
                        const ivec3 &max,
                        const vec3 &cameraPos)
 {
-    // return inst->cull(chunksBuffer, id, min, max, cameraPos);
-    return 0;
+    return inst->cull(chunksBuffer, id, min, max, cameraPos);
 }
