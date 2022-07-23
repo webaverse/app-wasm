@@ -354,12 +354,12 @@ EMSCRIPTEN_KEEPALIVE OcclusionCulling *initOcclusionCulling()
 }
 
 EMSCRIPTEN_KEEPALIVE uint8_t *cullOcclusionCulling(OcclusionCulling *inst,
-                                                  uint8_t *chunksBuffer,
-                                                   const int id,
-                                                   const int minX, const int minY, const int minZ,
-                                                   const int maxX, const int maxY, const int maxZ,
-                                                   const float cameraX, const float cameraY, const float cameraZ,
-                                                   const int numDraws)
+                                                   uint8_t *chunksBuffer,
+                                                   int id,
+                                                   int minX, int minY, int minZ,
+                                                   int maxX, int maxY, int maxZ,
+                                                   float cameraX, float cameraY, float cameraZ,
+                                                   int numDraws)
 {
   return Culling::cull(inst, chunksBuffer, id, ivec3{minX, minY, minZ}, ivec3{maxX, maxY, maxZ}, vec3{cameraX, cameraY, cameraZ}, numDraws);
 }

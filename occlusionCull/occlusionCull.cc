@@ -43,8 +43,7 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
 {
     std::unordered_map<uint64_t, CullQueueEntry> cullableChunks;
     cullableChunks.reserve(numDraws);
-    // std::cout << chunksBuffer[100] << std::endl;
-
+    // std::cout << sizeof(*chunksBuffer) << std::endl;
     parseChunksBuffer(cullableChunks, chunksBuffer, numDraws);
 
     std::vector<int> culledList;
@@ -130,34 +129,35 @@ void OcclusionCulling::parseChunksBuffer(std::unordered_map<uint64_t, CullQueueE
         const int id = *((int *)(buffer + index));
         index += sizeof(int);
 
-        const int minX = *((int *)(buffer + index));
-        index += sizeof(int);
+        std::cout << id << std::endl;
 
-        const int minY = *((int *)(buffer + index));
-        index += sizeof(int);
+        // const int minX = *((int *)(buffer + index));
+        // index += sizeof(int);
 
-        const int minZ = *((int *)(buffer + index));
-        index += sizeof(int);
+        // const int minY = *((int *)(buffer + index));
+        // index += sizeof(int);
 
-        const int enterFace = *((int *)(buffer + index));
-        index += sizeof(int);
+        // const int minZ = *((int *)(buffer + index));
+        // index += sizeof(int);
 
-        uint8_t peeks[numPeeksPerChunk];
-        for (int j = 0; j < numPeeksPerChunk; j++)
-        {
-            peeks[j] = *((uint8_t *)(buffer + index));
-            index += sizeof(uint8_t);
-        }
+        // const int enterFace = *((int *)(buffer + index));
+        // index += sizeof(int);
 
-        const ivec3 min = ivec3{minX, minY, minZ};
-        const uint64_t hashedMin = hashMin(min);
+        // uint8_t peeks[numPeeksPerChunk];
+        // for (int j = 0; j < numPeeksPerChunk; j++)
+        // {
+        //     peeks[j] = *((uint8_t *)(buffer + index));
+        //     index += sizeof(uint8_t);
+        // }
 
-        const CullQueueEntry entry = CullQueueEntry{id, min, enterFace, peeks};
-        const std::pair<uint64_t, CullQueueEntry> chunkPair(hashedMin, entry);
+        // const ivec3 min = ivec3{minX, minY, minZ};
+        // const uint64_t hashedMin = hashMin(min);
 
-        // std::cout << id << std::endl;
+        // const CullQueueEntry entry = CullQueueEntry{id, min, enterFace, peeks};
+        // const std::pair<uint64_t, CullQueueEntry> chunkPair(hashedMin, entry);
 
-        cullableChunks.insert(chunkPair);
+
+        // cullableChunks.insert(chunkPair);
     }
 };
 
@@ -191,5 +191,11 @@ uint8_t *Culling::cull(OcclusionCulling *inst,
                        const vec3 &cameraPos,
                        const int &numDraws)
 {
+    //     std::cout << "ChunksBuffer : " << chunksBuffer << std::endl; 
+    // std::cout << "ID : " << id << std::endl;
+    // std::cout << "NumDraws :" << numDraws << std::endl;
+    // std::cout << "MinX : " << min.x << std::endl;
+
+
     return inst->cull(chunksBuffer, id, min, max, cameraPos, numDraws);
 }

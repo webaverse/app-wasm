@@ -49,8 +49,8 @@ struct CullQueueEntry
     uint8_t *peeks; // 15 bytes
 };
 
-const int chunkDataSize = 35; // 4 + 12 + 4 + 15
 const int numPeeksPerChunk = 15;
+const int chunkDataSize = sizeof(int) + 3 * sizeof(int) + sizeof(int) + numPeeksPerChunk * sizeof(uint64_t); // 4 + 12 + 4 + 15
 
 class OcclusionCulling
 {
