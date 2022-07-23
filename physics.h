@@ -25,9 +25,17 @@ enum STATE_BITFIELD {
   STATE_BITFIELD_GROUNDED = 0x2,
 };
 
+struct TriggerEventInfo {
+  unsigned int status;
+  unsigned int triggerActorId;
+  unsigned int otherActorId;
+};
+
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
   std::map<unsigned int, unsigned int> stateBitfields;
+  unsigned int triggerCount = 0;
+  std::vector<TriggerEventInfo> triggerEventInfos;
 
   SimulationEventCallback2();
   virtual ~SimulationEventCallback2();
@@ -59,6 +67,8 @@ public:
   bool updateMassAndInertia(unsigned int id, float shapeDensities);
   float getBodyMass(unsigned int id);
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
+  float setTrigger(unsigned int id);
+  unsigned int getTriggerEvents(unsigned int *scratchStack);
   void raycast(float *origin, float *direction, float maxDist, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex);
   void sweepBox(
     float *origin,
