@@ -66,7 +66,7 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
         {
             const PeekFace &peekFaceSpec = peekFaceSpecs[i];
             const int ay = y + peekFaceSpec.offset.y * range;
-            if (ay < min.y - 2 * range) // height limiter 
+            if (ay <= min.y - 2 * range) // height limiter 
             {
                 const int ax = x + peekFaceSpec.offset.x * range;
                 const int az = z + peekFaceSpec.offset.z * range;
@@ -117,7 +117,7 @@ std::vector<int> OcclusionCulling::sortDraws(CullQueueEntryMap &cullableCHunks,
     sortedDraws.reserve(drawListSize);
 
     // ! culled draws percentage :
-    std::cout << (float)culledList.size() / (float)numChunks * 100.f << std::endl;
+    // std::cout << (float)culledList.size() / (float)numChunks * 100.f << "%" << std::endl;
 
     for (const auto &p : cullableCHunks)
     {
