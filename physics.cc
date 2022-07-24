@@ -49,7 +49,17 @@ void SimulationEventCallback2::onContact(const PxContactPairHeader& pairHeader, 
 
   // std::cerr << "on contact" << std::endl;
 }
-void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {}
+void SimulationEventCallback2::onTrigger(PxTriggerPair *pairs, PxU32 count) {
+  this->triggerCount = count;
+  for (unsigned int i = 0; i < count; i++) {
+    TriggerEventInfo triggerEventInfo;
+    triggerEventInfo.status = pairs[i].status;
+    triggerEventInfo.triggerActorId = (unsigned int)pairs[i].triggerActor->userData;
+    triggerEventInfo.otherActorId = (unsigned int)pairs[i].otherActor->userData;
+
+    triggerEventInfos[i] = triggerEventInfo;
+  }
+}
 void SimulationEventCallback2::onAdvance(const PxRigidBody *const *bodyBuffer, const PxTransform *poseBuffer, const PxU32 count) {}
 
 /*
@@ -285,7 +295,7 @@ float PScene::getBodyMass(unsigned int id) {
     PxRigidActor *actor = *actorIter;
     return (dynamic_cast<PxRigidBody *>(actor))->getMass();
   } else {
-    std::cerr << "updateMassAndInertia unknown actor id " << id << std::endl;
+    std::cerr << "getBodyMass unknown actor id " << id << std::endl;
     return -1;
   }
 }
@@ -392,6 +402,40 @@ unsigned int PScene::simulate(unsigned int *ids, float *positions, float *quater
     }
   }
   return numActors;
+}
+
+float PScene::setTrigger(unsigned int id) {
+  auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
+    return (unsigned int)actor->userData == id;
+  });
+  if (actorIter != actors.end()) {
+    PxRigidActor *actor = *actorIter;
+
+    PxShape* shape;
+    actor->getShapes(&shape, 1);
+    shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+    shape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+    shape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+
+    return 1;
+  } else {
+    std::cerr << "setTrigger unknown actor id " << id << std::endl;
+    return -1;
+  }
+}
+
+unsigned int PScene::getTriggerEvents(unsigned int *scratchStack) {
+  unsigned int triggerCount = this->simulationEventCallback->triggerCount;
+  for (unsigned int i = 0; i < triggerCount; i++) {
+    scratchStack[i * 3 + 0] = this->simulationEventCallback->triggerEventInfos[i].status;
+    scratchStack[i * 3 + 1] = this->simulationEventCallback->triggerEventInfos[i].triggerActorId;
+    scratchStack[i * 3 + 2] = this->simulationEventCallback->triggerEventInfos[i].otherActorId;
+  }
+
+  // reset
+  this->simulationEventCallback->triggerCount = 0;
+
+  return triggerCount;
 }
 
 void PScene::addCapsuleGeometry(
