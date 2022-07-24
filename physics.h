@@ -108,6 +108,7 @@ public:
   void getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id);
   
   void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int flags);
+  void addPlaneGeometry(float *position, float *quaternion, unsigned int id, PxMaterial *material, unsigned int dynamic);
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId);
   
   PxTriangleMesh *createShape(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream);

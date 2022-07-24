@@ -169,6 +169,9 @@ EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *positi
   scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, id, material, dynamic, flags);
 }
 
+EMSCRIPTEN_KEEPALIVE void addPlaneGeometryPhysics(PScene *scene, float *position, float *quaternion, unsigned int id, PxMaterial *material, unsigned int dynamic) {
+  scene->addPlaneGeometry(position, quaternion, id, material, dynamic);
+}
 EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
   scene->addBoxGeometry(position, quaternion, size, id, material, dynamic, groupId);
 }

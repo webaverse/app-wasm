@@ -473,6 +473,23 @@ void PScene::addCapsuleGeometry(
   actors.push_back(actor);
 }
 
+void PScene::addPlaneGeometry(float *position, float *quaternion, unsigned int id, PxMaterial *material, unsigned int dynamic) {
+  PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
+  PxPlaneGeometry geometry;
+  
+  PxRigidActor *actor;
+  if (dynamic) {
+    PxRigidDynamic *plane = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+    actor = plane;
+  } else {
+    PxRigidStatic *plane = PxCreateStatic(*physics, transform, geometry, *material);
+    actor = plane;
+  }
+
+  actor->userData = (void *)id;
+  scene->addActor(*actor);
+  actors.push_back(actor);
+}
 void PScene::addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
   PxTransform transform(PxVec3(position[0], position[1], position[2]), PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3]));
   PxBoxGeometry geometry(size[0], size[1], size[2]);
