@@ -3,6 +3,7 @@
 // #include "compose.h"
 // #include "noise.h"
 #include "march.h"
+#include "occlusionCull/occlusionCull.h"
 // #include "DualContouring/main.h"
 // #include "collide.h"
 #include "physics.h"
@@ -354,6 +355,29 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 
 EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
+}
+
+EMSCRIPTEN_KEEPALIVE OcclusionCulling *initOcclusionCulling()
+{
+  return Culling::init();
+}
+
+EMSCRIPTEN_KEEPALIVE uint8_t *cullOcclusionCulling(OcclusionCulling *inst,
+                                                   uint8_t *chunksBuffer,
+                                                   int id,
+                                                   int minX, int minY, int minZ,
+                                                   int maxX, int maxY, int maxZ,
+                                                   float cameraX, float cameraY, float cameraZ,
+                                                   float cameraViewX, float cameraViewY, float cameraViewZ,
+                                                   int numDraws)
+{
+  return Culling::cull(inst,
+                       chunksBuffer, id,
+                       ivec3{minX, minY, minZ},
+                       ivec3{maxX, maxY, maxZ},
+                       vec3{cameraX, cameraY, cameraZ},
+                       vec3{cameraViewX, cameraViewY, cameraViewZ},
+                       numDraws);
 }
 
 /* EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){
