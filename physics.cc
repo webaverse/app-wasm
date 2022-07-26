@@ -139,6 +139,37 @@ enum PhysicsObjectFlags {
   ENABLE_CCD = 2,
 };
 
+//
+
+constexpr size_t maxNumTouches = 32;
+class OverlapCallback : public PxOverlapCallback {
+public:
+  PxOverlapHit touches[maxNumTouches];
+  std::deque<PxOverlapHit> hits;
+
+  OverlapCallback() :
+    PxOverlapCallback(touches, maxNumTouches)
+    {
+      // hits.reserve(maxNumTouches);
+    }
+  PxAgain processTouches(const PxOverlapHit *buffer, PxU32 nbHits) {
+    for (PxU32 i = 0; i < nbHits; i++) {
+      hits.push_back(buffer[i]);
+    }
+    return hits.size() < maxNumTouches;
+    // return true;
+    // return false; // do not continue
+  }
+};
+class PenetrationDepth {
+public:
+  PxRigidActor *actor;
+  PxVec3 direction;
+  float depth;
+};
+
+//
+
 PScene::PScene() {
   // tolerancesScale.length = 0.01;
   {
