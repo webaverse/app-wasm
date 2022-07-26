@@ -49,8 +49,10 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
     const int range = max.x - min.x;
     std::queue<CullQueueEntry> cullQueue;
 
-    CullQueueEntry firstEntry{id, ivec3{min.x, min.y - 2 * range, min.z}, (int)PEEK_FACES::NONE, 0};
+    CullQueueEntry firstEntry{id, ivec3{min.x, min.y, min.z}, (int)PEEK_FACES::NONE, 0};
     cullQueue.push(firstEntry);
+
+    std::unordered_map<uint64_t, CullQueueEntry> seenChunks;
 
     while (cullQueue.size() > 0)
     {
@@ -66,35 +68,50 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
         {
             const PeekFace &peekFaceSpec = peekFaceSpecs[i];
             const int ay = y + peekFaceSpec.offset.y * range;
-            if (ay <= min.y - 2 * range) // height limiter 
-            {
-                const int ax = x + peekFaceSpec.offset.x * range;
-                const int az = z + peekFaceSpec.offset.z * range;
-                const ivec3 nextEntryMin = ivec3{ax, ay, az};
-                const uint64_t hashedMin = hashMin(nextEntryMin);
-                auto allocatedIter = cullableChunks.find(hashedMin);
-
-                if (allocatedIter != cullableChunks.end())
-                {
-                    const CullQueueEntry &allocatedEntry = allocatedIter->second;
-                    auto isCulledIter = std::find(culledList.begin(), culledList.end(), allocatedEntry.id);
-                    if (isCulledIter == culledList.end())
+            const int ax = x + peekFaceSpec.offset.x * range;
+            const int az = z + peekFaceSpec.offset.z * range;
+            if (ax >= min.x - 5 * range && ax <= min.x + 5 * range)
+                if (ay >= min.y - 5 * range && ay <= min.y + 5 * range)
+                    if (az >= min.z - 5 * range && az <= min.z + 5 * range)
                     {
-                        culledList.push_back(allocatedEntry.id);
-                        const CullQueueEntry newEntry{allocatedEntry.id, allocatedEntry.min, enterFace, allocatedEntry.peeks};
-                        if (enterFace == (int)PEEK_FACES::NONE || entry.peeks[PEEK_FACE_INDICES[enterFace << 3 | peekFaceSpec.exitFace]] == 1)
+                        CullQueueEntry newEntry;
+
+                        const ivec3 nextEntryMin = ivec3{ax, ay, az};
+                        const uint64_t hashedMin = hashMin(nextEntryMin);
+
+                        auto seenIter = seenChunks.find(hashedMin);
+                        if (seenIter == seenChunks.end())
                         {
-                            cullQueue.push(newEntry);
+                            const std::pair<uint64_t, CullQueueEntry> seenPair(hashedMin, newEntry);
+                            seenChunks.insert(seenPair);
+
+                            auto allocatedIter = cullableChunks.find(hashedMin);
+                            if (allocatedIter != cullableChunks.end())
+                            {
+                                const CullQueueEntry &allocatedEntry = allocatedIter->second;
+                                auto isCulledIter = std::find(culledList.begin(), culledList.end(), allocatedEntry.id);
+                                if (isCulledIter == culledList.end())
+                                {
+                                    culledList.push_back(allocatedEntry.id);
+                                }
+                                newEntry = {allocatedEntry.id, nextEntryMin, enterFace, allocatedEntry.peeks};
+                            }
+                            else
+                            {
+                                newEntry = {airChunkId, nextEntryMin, (int)PEEK_FACES::NONE, 0};
+                            }
+                            if (enterFace == (int)PEEK_FACES::NONE || entry.peeks[PEEK_FACE_INDICES[enterFace << 3 | peekFaceSpec.exitFace]] == 1)
+                            {
+                                cullQueue.push(newEntry);
+                            }
                         }
                     }
-                }
-            }
         }
     }
 
     std::vector<int> drawList = sortDraws(cullableChunks, culledList, cameraPos, numDraws);
 
-    return serializeDraws(drawList);
+    return serializeDraws(culledList);
 }
 
 float distanceToCamera(const ivec3 &min, const vec3 &cameraPos)
@@ -117,7 +134,7 @@ std::vector<int> OcclusionCulling::sortDraws(CullQueueEntryMap &cullableCHunks,
     sortedDraws.reserve(drawListSize);
 
     // ! culled draws percentage :
-    // std::cout << (float)culledList.size() / (float)numChunks * 100.f << "%" << std::endl;
+    std::cout << (float)culledList.size() / (float)numChunks * 100.f << "%" << std::endl;
 
     for (const auto &p : cullableCHunks)
     {

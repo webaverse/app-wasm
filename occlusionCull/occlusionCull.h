@@ -34,6 +34,8 @@ enum class PEEK_FACES : int
     NONE
 };
 
+const int airChunkId = -1;
+
 struct PeekFace
 {
     int exitFace;
