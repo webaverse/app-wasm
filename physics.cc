@@ -1836,7 +1836,7 @@ void PScene::collideCapsule(float radius, float halfHeight, float *position, flo
   PScene::collide(&geom, position, quaternion, maxIter, hit, direction, grounded, id);
 }
 
-void PScene::getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
+void PScene::getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *direction, unsigned int &hit, unsigned int &id) {
   hit = 0;
   
   PxCapsuleGeometry geom(radius, halfHeight);
@@ -1844,12 +1844,81 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
     PxVec3{position[0], position[1], position[2]},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
   );
-  PxTransform meshPose{
+  /* PxTransform meshPose{
     PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
     PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
-  };
+  }; */
 
-  PxVec3 smallestSizeVec;
+  OverlapCallback hitCallback;
+  bool overlapped = scene->overlap(
+    geom,
+    geomPose,
+    hitCallback
+    /* PxOverlapCallback &hitCall,
+    const PxQueryFilterData &filterData=PxQueryFilterData(),
+    PxQueryFilterCallback *filterCall=NULL */
+  );
+  if (overlapped && hitCallback.hits.size() > 0) {
+    std::vector<PenetrationDepth> penetrationDepths;
+
+    for (size_t i = 0; i < hitCallback.hits.size(); i++) {
+      auto &localHit = hitCallback.hits[i];
+      PxRigidActor *actor = localHit.actor;
+      PxShape *shape = localHit.shape;
+      PxU32 &faceIndex = localHit.faceIndex;
+
+      PxGeometryHolder holder = shape->getGeometry();
+      PxGeometry &geometry = holder.any();
+
+      PxTransform geometryPose = actor->getGlobalPose();
+
+      PxVec3 directionVec;
+      PxReal depthFloat;
+      bool result = PxGeometryQuery::computePenetration(
+        directionVec,
+        depthFloat,
+        geom,
+        geomPose,
+        geometry,
+        geometryPose
+      );
+      if (result) {
+        PenetrationDepth penetrationDepth{
+          actor,
+          directionVec,
+          depthFloat
+        };
+        penetrationDepths.push_back(penetrationDepth);
+      } /* else {
+        std::cout << "was not actually penetrated..." << std::endl;
+        abort();
+      } */
+      /* if (hit.shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+        id = (unsigned int)hit.actor->userData;
+        hit = 1;
+        return;
+      } */
+    }
+
+    if (penetrationDepths.size() > 0) {
+      // sort by highest penetration depth first
+      std::sort(penetrationDepths.begin(), penetrationDepths.end(), [](const PenetrationDepth &a, const PenetrationDepth &b) {
+        return a.depth > b.depth;
+      });
+
+      // get the first penetration depth
+      PenetrationDepth &penetrationDepth = penetrationDepths[0];
+    
+      // set output
+      direction[0] = penetrationDepth.direction.x * penetrationDepth.depth;
+      direction[1] = penetrationDepth.direction.y * penetrationDepth.depth;
+      direction[2] = penetrationDepth.direction.z * penetrationDepth.depth;
+      id = (unsigned int)penetrationDepth.actor->userData;
+      hit = 1;
+    }
+  }
+
+  /* PxVec3 smallestSizeVec;
   unsigned int largestId = 0;
   for (unsigned int i = 0; i < actors.size(); i++) {
     PxRigidActor *actor = actors[i];
@@ -1879,5 +1948,5 @@ void PScene::getCollisionObject(float radius, float halfHeight, float *position,
         }
       }
     }
-  }
+  } */
 }
