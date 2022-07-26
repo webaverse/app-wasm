@@ -1668,42 +1668,48 @@ float *PScene::getPath(float *_start, float *_dest, bool _isWalk, float _hy, flo
   return outputBuffer;
 }
 
-float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion) {
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
   );
-  PxTransform meshPose{
+  /* PxTransform meshPose{
     PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
     PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
   };
 
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
-  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]); */
   
+  OverlapCallback hitCallback;
+  bool overlapped = scene->overlap(
+    *geom,
+    geomPose,
+    hitCallback
+  );
   std::vector<float> outIds;
-  {
-      for (unsigned int i = 0; i < actors.size(); i++) {
-        PxRigidActor *actor = actors[i];
-        PxShape *shape;
-        actor->getShapes(&shape, 1);
+  if (overlapped) {
+    for (size_t i = 0; i < hitCallback.hits.size(); i++) {
+      auto &localHit = hitCallback.hits[i];
+      PxRigidActor *actor = localHit.actor;
+      PxShape *shape = localHit.shape;
 
-        if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
-          PxGeometryHolder holder = shape->getGeometry();
-          PxGeometry &geometry = holder.any();
+      // if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+        PxGeometryHolder holder = shape->getGeometry();
+        PxGeometry &geometry = holder.any();
 
-          PxTransform meshPose2 = actor->getGlobalPose();
-          PxTransform meshPose3 = meshPose * meshPose2;
+        PxTransform meshPose = actor->getGlobalPose();
+        // PxTransform meshPose3 = meshPose * meshPose2;
 
-          PxVec3 directionVec;
-          PxReal depthFloat;
-          bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose3);
-          if (result) {
-            const unsigned int id = (unsigned int)actor->userData;
-            outIds.push_back(id);
-          }
+        PxVec3 directionVec;
+        PxReal depthFloat;
+        bool result = PxGeometryQuery::overlap(*geom, geomPose, geometry, meshPose);
+        if (result) {
+          const unsigned int id = (unsigned int)actor->userData;
+          outIds.push_back(id);
         }
-      }
+      // }
+    }
   }
 
   float *outputBuffer = (float *)malloc((
@@ -1712,7 +1718,9 @@ float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion, flo
   ) * sizeof(float));
 
   outputBuffer[0] = outIds.size();
-  memcpy(outputBuffer+1, &outIds[0], outIds.size()*sizeof(float));
+  if (outIds.size() > 0) {
+    memcpy(outputBuffer+1, &outIds[0], outIds.size()*sizeof(float));
+  }
 
   return outputBuffer;
 }
