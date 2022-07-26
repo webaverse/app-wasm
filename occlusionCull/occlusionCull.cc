@@ -39,7 +39,7 @@ OcclusionCulling::OcclusionCulling()
     }
 }
 
-uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos, const vec3 &cameraView, const int &numDraws)
+uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos, const vec3 &cameraView, const int &lod, const int &numDraws)
 {
     std::unordered_map<uint64_t, CullQueueEntry> cullableChunks;
     deserializeCullableChunks(cullableChunks, chunksBuffer, numDraws);
@@ -49,7 +49,7 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
     const int range = max.x - min.x;
     std::queue<CullQueueEntry> cullQueue;
 
-    CullQueueEntry firstEntry{id, ivec3{min.x, min.y, min.z}, (int)PEEK_FACES::NONE, 0};
+    CullQueueEntry firstEntry{id, ivec3{min.x, min.y - range, min.z}, (int)PEEK_FACES::NONE, 0, lod};
     cullQueue.push(firstEntry);
 
     std::unordered_map<uint64_t, CullQueueEntry> seenChunks;
@@ -63,55 +63,58 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
         const int y = entry.min.y;
         const int z = entry.min.z;
         const int enterFace = entry.enterFace;
+        const int lod = entry.lod;
 
         for (int i = 0; i < 6; i++)
         {
             const PeekFace &peekFaceSpec = peekFaceSpecs[i];
-            const int ay = y + peekFaceSpec.offset.y * range;
-            const int ax = x + peekFaceSpec.offset.x * range;
-            const int az = z + peekFaceSpec.offset.z * range;
-            if (ax >= min.x - 5 * range && ax <= min.x + 5 * range)
-                if (ay >= min.y - 5 * range && ay <= min.y + 5 * range)
-                    if (az >= min.z - 5 * range && az <= min.z + 5 * range)
+            const int ay = y + peekFaceSpec.offset.y * 16 * lod;
+            const int ax = x + peekFaceSpec.offset.x * 16 * lod;
+            const int az = z + peekFaceSpec.offset.z * 16 * lod;
+            // if (ax >= min.x - 10 * 16 && ax <= min.x + 10 * 16)
+            if (ay >= min.y - 10 * 16 && ay < min.y - 16)
+            // if (az >= min.z - 10 * 16 && az <= min.z + 10 * 16)
+            {
+                CullQueueEntry newEntry;
+
+                const ivec3 nextEntryMin = ivec3{ax, ay, az};
+                const uint64_t hashedMin = hashMin(nextEntryMin);
+
+                auto seenIter = seenChunks.find(hashedMin);
+                if (seenIter == seenChunks.end())
+                {
+                    const std::pair<uint64_t, CullQueueEntry> seenPair(hashedMin, newEntry);
+                    seenChunks.insert(seenPair);
+
+                    auto allocatedIter = cullableChunks.find(hashedMin);
+                    if (allocatedIter != cullableChunks.end())
                     {
-                        CullQueueEntry newEntry;
+                        const CullQueueEntry &allocatedEntry = allocatedIter->second;
 
-                        const ivec3 nextEntryMin = ivec3{ax, ay, az};
-                        const uint64_t hashedMin = hashMin(nextEntryMin);
-
-                        auto seenIter = seenChunks.find(hashedMin);
-                        if (seenIter == seenChunks.end())
+                        auto isCulledIter = std::find(culledList.begin(), culledList.end(), allocatedEntry.id);
+                        if (isCulledIter == culledList.end())
                         {
-                            const std::pair<uint64_t, CullQueueEntry> seenPair(hashedMin, newEntry);
-                            seenChunks.insert(seenPair);
-
-                            auto allocatedIter = cullableChunks.find(hashedMin);
-                            if (allocatedIter != cullableChunks.end())
-                            {
-                                const CullQueueEntry &allocatedEntry = allocatedIter->second;
-                                auto isCulledIter = std::find(culledList.begin(), culledList.end(), allocatedEntry.id);
-                                if (isCulledIter == culledList.end())
-                                {
-                                    culledList.push_back(allocatedEntry.id);
-                                }
-                                newEntry = {allocatedEntry.id, nextEntryMin, enterFace, allocatedEntry.peeks};
-                            }
-                            else
-                            {
-                                newEntry = {airChunkId, nextEntryMin, (int)PEEK_FACES::NONE, 0};
-                            }
-                            if (enterFace == (int)PEEK_FACES::NONE || entry.peeks[PEEK_FACE_INDICES[enterFace << 3 | peekFaceSpec.exitFace]] == 1)
-                            {
-                                cullQueue.push(newEntry);
-                            }
+                            culledList.push_back(allocatedEntry.id);
                         }
+
+                        newEntry = {allocatedEntry.id, nextEntryMin, enterFace, allocatedEntry.peeks, allocatedEntry.lod};
                     }
+                    else
+                    {
+                        newEntry = {airChunkId, nextEntryMin, (int)PEEK_FACES::NONE, 0, 0};
+                    }
+                    if (enterFace == (int)PEEK_FACES::NONE || entry.peeks[PEEK_FACE_INDICES[enterFace << 3 | peekFaceSpec.exitFace]] == 1)
+                    {
+                        cullQueue.push(newEntry);
+                    }
+                }
+            }
         }
     }
 
     std::vector<int> drawList = sortDraws(cullableChunks, culledList, cameraPos, numDraws);
 
-    return serializeDraws(culledList);
+    return serializeDraws(drawList);
 }
 
 float distanceToCamera(const ivec3 &min, const vec3 &cameraPos)
@@ -192,10 +195,13 @@ void OcclusionCulling::deserializeCullableChunks(CullQueueEntryMap &cullableChun
             index += sizeof(uint8_t);
         }
 
+        const int lod = *((int *)(buffer + index));
+        index += sizeof(int);
+
         const ivec3 min = ivec3{minX, minY, minZ};
         const uint64_t hashedMin = hashMin(min);
 
-        const CullQueueEntry entry = CullQueueEntry{id, min, enterFace, peeks};
+        const CullQueueEntry entry = CullQueueEntry{id, min, enterFace, peeks, lod};
         const std::pair<uint64_t, CullQueueEntry> chunkPair(hashedMin, entry);
 
         cullableChunks.insert(chunkPair);
@@ -236,7 +242,8 @@ uint8_t *Culling::cull(OcclusionCulling *inst,
                        const ivec3 &max,
                        const vec3 &cameraPos,
                        const vec3 &cameraView,
+                       const int &lod,
                        const int &numDraws)
 {
-    return inst->cull(chunksBuffer, id, min, max, cameraPos, cameraView, numDraws);
+    return inst->cull(chunksBuffer, id, min, max, cameraPos, cameraView, lod, numDraws);
 }

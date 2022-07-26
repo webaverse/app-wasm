@@ -49,10 +49,11 @@ struct CullQueueEntry
     ivec3 min;      // 12 bytes
     int enterFace;  // 4 bytes
     uint8_t *peeks; // 15 bytes
+    int lod;        // 4 bytes
 };
 
 const int numPeeksPerChunk = 15;
-const int chunkDataSize = sizeof(int) + 3 * sizeof(int) + sizeof(int) + numPeeksPerChunk * sizeof(uint8_t); // 4 + 12 + 4 + 15
+const int chunkDataSize = sizeof(int) + 3 * sizeof(int) + sizeof(int) + numPeeksPerChunk * sizeof(uint8_t) + sizeof(int); // 4 + 12 + 4 + 15
 
 typedef std::unordered_map<uint64_t, CullQueueEntry> CullQueueEntryMap;
 class OcclusionCulling
@@ -68,6 +69,7 @@ public:
                   const ivec3 &max,
                   const vec3 &cameraPos,
                   const vec3 &cameraView,
+                  const int &lod,
                   const int &numDraws);
 
 private:
@@ -86,7 +88,7 @@ private:
 namespace Culling
 {
     OcclusionCulling *init();
-    uint8_t *cull(OcclusionCulling *inst, uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos, const vec3 &cameraView, const int &numDraws);
+    uint8_t *cull(OcclusionCulling *inst, uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos, const vec3 &cameraView, const int &lod, const int &numDraws);
 };
 
 #endif // OCCLUSION_CULL_H

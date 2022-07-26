@@ -366,6 +366,7 @@ EMSCRIPTEN_KEEPALIVE uint8_t *cullOcclusionCulling(OcclusionCulling *inst,
                                                    int maxX, int maxY, int maxZ,
                                                    float cameraX, float cameraY, float cameraZ,
                                                    float cameraViewX, float cameraViewY, float cameraViewZ,
+                                                   int lod,
                                                    int numDraws)
 {
   return Culling::cull(inst,
@@ -374,6 +375,7 @@ EMSCRIPTEN_KEEPALIVE uint8_t *cullOcclusionCulling(OcclusionCulling *inst,
                        ivec3{maxX, maxY, maxZ},
                        vec3{cameraX, cameraY, cameraZ},
                        vec3{cameraViewX, cameraViewY, cameraViewZ},
+                       lod,
                        numDraws);
 }
 
