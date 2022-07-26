@@ -99,13 +99,13 @@ public:
     unsigned int *faceIndex
   );
   float *getPath(float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
-  float *overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
-  float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
-  float *overlapCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
-  void collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
-  void collideBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
-  void collideCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
-  void getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id);
+  float *overlap(PxGeometry *geom, float *position, float *quaternion);
+  float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion);
+  float *overlapCapsule(float radius, float halfHeight, float *position, float *quaternion);
+  void collide(PxGeometry *geom, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void collideBox(float hx, float hy, float hz, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void collideCapsule(float radius, float halfHeight, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *direction, unsigned int &hit, unsigned int &id);
   
   void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int flags);
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId);
