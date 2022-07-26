@@ -1735,19 +1735,19 @@ float *PScene::overlapCapsule(float radius, float halfHeight, float *position, f
   return PScene::overlap(&geom, position, quaternion);
 }
 
-void PScene::collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
+void PScene::collide(PxGeometry *geom, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
   PxTransform geomPose(
     PxVec3{position[0], position[1], position[2]},
     PxQuat{quaternion[0], quaternion[1], quaternion[2], quaternion[3]}
   );
-  PxTransform meshPose{
+  /* PxTransform meshPose{
     PxVec3{meshPosition[0], meshPosition[1], meshPosition[2]},
     PxQuat{meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]}
   };
 
   Vec p(meshPosition[0], meshPosition[1], meshPosition[2]);
-  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]);
-  
+  Quat q(meshQuaternion[0], meshQuaternion[1], meshQuaternion[2], meshQuaternion[3]); */
+
   Vec offset(0, 0, 0);
   bool anyHadHit = false;
   bool anyHadGrounded = false;
@@ -1755,24 +1755,39 @@ void PScene::collide(PxGeometry *geom, float *position, float *quaternion, float
   {
     for (unsigned int i = 0; i < maxIter; i++) {
       bool hadHit = false;
-        
+
+      OverlapCallback hitCallback;
+      bool overlapped = scene->overlap(
+        *geom,
+        geomPose,
+        hitCallback
+      );
+
       PxVec3 largestDirectionVec;
       unsigned int largestId = 0;
-      for (unsigned int i = 0; i < actors.size(); i++) {
-        PxRigidActor *actor = actors[i];
-        PxShape *shape;
-        actor->getShapes(&shape, 1);
+      for (size_t i = 0; i < hitCallback.hits.size(); i++) {
+        auto &localHit = hitCallback.hits[i];
+        PxRigidActor *actor = localHit.actor;
+        PxShape *shape = localHit.shape;
+        // actor->getShapes(&shape, 1);
 
-        if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
+        // if (shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE)) {
           PxGeometryHolder holder = shape->getGeometry();
           PxGeometry &geometry = holder.any();
 
-          PxTransform meshPose2 = actor->getGlobalPose();
-          PxTransform meshPose3 = meshPose * meshPose2;
+          PxTransform meshPose = actor->getGlobalPose();
+          // PxTransform meshPose3 = meshPose * meshPose2;
 
           PxVec3 directionVec;
           PxReal depthFloat;
-          bool result = PxGeometryQuery::computePenetration(directionVec, depthFloat, *geom, geomPose, geometry, meshPose3);
+          bool result = PxGeometryQuery::computePenetration(
+            directionVec,
+            depthFloat,
+            *geom,
+            geomPose,
+            geometry,
+            meshPose
+          );
           if (result) {
             // std::cout << "collide shape " << (unsigned int)actor->userData << " " << (uint32_t)shape << " " << shape->getFlags().isSet(PxShapeFlag::eSCENE_QUERY_SHAPE) << std::endl; // XXX
             
@@ -1786,7 +1801,7 @@ void PScene::collide(PxGeometry *geom, float *position, float *quaternion, float
               largestId = (unsigned int)actor->userData;
             }
           }
-        }
+        // }
       }
       if (hadHit) {
         offset += Vec(largestDirectionVec.x, largestDirectionVec.y, largestDirectionVec.z);
@@ -1811,14 +1826,14 @@ void PScene::collide(PxGeometry *geom, float *position, float *quaternion, float
   }
 }
 
-void PScene::collideBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
+void PScene::collideBox(float hx, float hy, float hz, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
   PxBoxGeometry geom(hx, hy, hz);
-  PScene::collide(&geom, position, quaternion, meshPosition, meshQuaternion, maxIter, hit, direction, grounded, id);
+  PScene::collide(&geom, position, quaternion, maxIter, hit, direction, grounded, id);
 }
 
-void PScene::collideCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
+void PScene::collideCapsule(float radius, float halfHeight, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
   PxCapsuleGeometry geom(radius, halfHeight);
-  PScene::collide(&geom, position, quaternion, meshPosition, meshQuaternion, maxIter, hit, direction, grounded, id);
+  PScene::collide(&geom, position, quaternion, maxIter, hit, direction, grounded, id);
 }
 
 void PScene::getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id) {
