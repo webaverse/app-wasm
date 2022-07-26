@@ -1725,14 +1725,14 @@ float *PScene::overlap(PxGeometry *geom, float *position, float *quaternion) {
   return outputBuffer;
 }
 
-float *PScene::overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+float *PScene::overlapBox(float hx, float hy, float hz, float *position, float *quaternion) {
   PxBoxGeometry geom(hx, hy, hz);
-  return PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion);
+  return PScene::overlap(&geom, position, quaternion);
 }
 
-float *PScene::overlapCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
+float *PScene::overlapCapsule(float radius, float halfHeight, float *position, float *quaternion) {
   PxCapsuleGeometry geom(radius, halfHeight);
-  return PScene::overlap(&geom, position, quaternion, meshPosition, meshQuaternion);
+  return PScene::overlap(&geom, position, quaternion);
 }
 
 void PScene::collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id) {
