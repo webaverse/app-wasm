@@ -713,13 +713,22 @@ namespace AnimationSystem
         float *result;
         float *value0 = children[0]->update(spec);
         float *value1 = children[1]->update(spec);
+        result = value0;
 
         // current only has hold animation specific func
         if (spec.isTop)
         {
-          if (spec.isArm)
+          // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
+          if (spec.index == 8 || spec.index == 27)
           {
-            // interpolateFlat(value0, 1, value0, 1, identityQuaternion, 0, 0.5, spec.isPosition);
+            result = value1;
+          }
+          else
+          {
+            if (spec.isArm)
+            {
+              interpolateFlat(value0, 1, value0, 1, identityQuaternion, 0, this->factor, spec.isPosition);
+            }
 
             Quat quat0(value0[1], value0[2], value0[3], value0[4]);
             Quat quat1(value1[1], value1[2], value1[3], value1[4]);
@@ -731,7 +740,6 @@ namespace AnimationSystem
           }
         }
 
-        result = value0;
         return result;
       }
 
