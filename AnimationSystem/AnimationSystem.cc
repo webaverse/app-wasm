@@ -26,6 +26,8 @@ namespace AnimationSystem
   Animation *testAnimation2 = &testAnimation;
   Animation **testAnimation3 = &testAnimation2;
 
+  float identityQuaternion[4] = {0, 0, 0, 1};
+
   // functions:
 
   float setTest(float num)
@@ -705,6 +707,32 @@ namespace AnimationSystem
           this->children[0]->weight = 1;
           this->children[1]->weight = 0;
         }
+      }
+      else if (this->type == NodeType::FUNC)
+      {
+        float *result;
+        float *value0 = children[0]->update(spec);
+        float *value1 = children[1]->update(spec);
+
+        // current only has hold animation specific func
+        if (spec.isTop)
+        {
+          if (spec.isArm)
+          {
+            // interpolateFlat(value0, 1, value0, 1, identityQuaternion, 0, 0.5, spec.isPosition);
+
+            Quat quat0(value0[1], value0[2], value0[3], value0[4]);
+            Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+            quat0.premultiply(quat1);
+            value0[1] = quat0.x;
+            value0[2] = quat0.y;
+            value0[3] = quat0.z;
+            value0[4] = quat0.w;
+          }
+        }
+
+        result = value0;
+        return result;
       }
 
       // doBlendList ---

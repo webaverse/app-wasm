@@ -10,7 +10,8 @@ namespace AnimationSystem
     LIST = 1,
     TWO = 2,
     UNITARY = 3,
-    OVERWRITE = 4
+    OVERWRITE = 4,
+    FUNC = 5
   };
   enum LoopType
   {
@@ -58,15 +59,21 @@ namespace AnimationSystem
     bool isCrossFade = false;
     float crossFadeDuration = 0;
     float crossFadeStartTime;
+
     // NodeType::LIST ---
+
     // NodeType::TWO ---
+    // NodeType::OVERWRITE ---
     float factor = 0; // [0, 1]
     float crossFadeTargetFactor;
     void crossFadeTwo(float duration, float factor);
+
     // NodeType::UNITARY ---
     AnimationNode *activeNode;
     void crossFadeUnitary(float duration, AnimationNode *targetNode);
-    // NodeType::OVERWRITE ---
+
+    // NodeType::FUNC ---
+    // factor
 
     // motion ------
     Animation *animation;
