@@ -361,22 +361,27 @@ EMSCRIPTEN_KEEPALIVE OcclusionCulling *initOcclusionCulling()
 
 EMSCRIPTEN_KEEPALIVE uint8_t *cullOcclusionCulling(OcclusionCulling *inst,
                                                    uint8_t *chunksBuffer,
+                                                   uint8_t *chunkNodesMapBuffer,
                                                    int id,
                                                    int minX, int minY, int minZ,
                                                    int maxX, int maxY, int maxZ,
                                                    float cameraX, float cameraY, float cameraZ,
                                                    float cameraViewX, float cameraViewY, float cameraViewZ,
                                                    int lod,
-                                                   int numDraws)
+                                                   int numDraws,
+                                                   int numNodes)
 {
   return Culling::cull(inst,
-                       chunksBuffer, id,
+                       chunksBuffer, 
+                       chunkNodesMapBuffer,
+                       id,
                        ivec3{minX, minY, minZ},
                        ivec3{maxX, maxY, maxZ},
                        vec3{cameraX, cameraY, cameraZ},
                        vec3{cameraViewX, cameraViewY, cameraViewZ},
                        lod,
-                       numDraws);
+                       numDraws,
+                       numNodes);
 }
 
 /* EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){

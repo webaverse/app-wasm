@@ -41,19 +41,28 @@ OcclusionCulling::OcclusionCulling()
     }
 }
 
-uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec3 &min, const ivec3 &max, const vec3 &cameraPos, const vec3 &cameraView, const int &lod, const int &numDraws)
+uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer,
+                                uint8_t *chunkNodesMapBuffer,
+                                const int &id,
+                                const ivec3 &min,
+                                const ivec3 &max,
+                                const vec3 &cameraPos,
+                                const vec3 &cameraView,
+                                const int &lod,
+                                const int &numDraws,
+                                const int &numNodes)
 {
     std::unordered_map<uint64_t, CullQueueEntry> cullableChunks;
     deserializeCullableChunks(cullableChunks, chunksBuffer, numDraws);
 
-    std::vector<int> culledList;
+    std::vector<uint64_t> chunkNodes;
+    deserializeChunkNodesMap(chunkNodes, chunkNodesMapBuffer, numNodes);
 
-    const int range = max.x - min.x;
+    std::vector<int> culledList;
     std::queue<CullQueueEntry> cullQueue;
 
-    CullQueueEntry firstEntry{id, ivec3{min.x, min.y + 70, min.z}, (int)PEEK_FACES::NONE, 0, lod};
+    CullQueueEntry firstEntry{id, ivec3{min.x, min.y, min.z}, (int)PEEK_FACES::NONE, airChunkPeeks, lod};
     cullQueue.push(firstEntry);
-    // std::cout << "SY :" << min.y << std:: endl;
 
     std::unordered_map<uint64_t, CullQueueEntry> seenChunks;
 
@@ -66,27 +75,24 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
         const int y = entry.min.y;
         const int z = entry.min.z;
         const int enterFace = entry.enterFace;
-        const int lod = entry.lod;
-
-        // if(lod == 4){
-        //     std::cout << enterFace << std::endl;
-        // }
+        const int entryLod = entry.lod;
+        const int chunkSize = defaultChunkSize * entryLod;
 
         for (int i = 0; i < 6; i++)
         {
             const PeekFace &peekFaceSpec = peekFaceSpecs[i];
-            const int ay = y + peekFaceSpec.offset.y * 16 * lod;
-            const int ax = x + peekFaceSpec.offset.x * 16 * lod;
-            const int az = z + peekFaceSpec.offset.z * 16 * lod;
-            if (ax >= firstEntry.min.x - 15 * 16 && ax <= firstEntry.min.x + 15 * 16)
-            if (ay >= firstEntry.min.y - 15 * 16 && ay <= firstEntry.min.y + 15 * 16)
-            if (az >= firstEntry.min.z - 15 * 16 && az <= firstEntry.min.z + 15 * 16)
+            const int ay = y + peekFaceSpec.offset.y * chunkSize;
+            const int ax = x + peekFaceSpec.offset.x * chunkSize;
+            const int az = z + peekFaceSpec.offset.z * chunkSize;
+
+            CullQueueEntry newEntry;
+
+            const ivec3 nextEntryMin = ivec3{ax, ay, az};
+            const uint64_t hashedMin = hashMin(nextEntryMin);
+
+            auto chunkNodesIter = std::find(chunkNodes.begin(), chunkNodes.end(), hashedMin);
+            if (chunkNodesIter != chunkNodes.end())
             {
-                CullQueueEntry newEntry;
-
-                const ivec3 nextEntryMin = ivec3{ax, ay, az};
-                const uint64_t hashedMin = hashMin(nextEntryMin);
-
                 auto seenIter = seenChunks.find(hashedMin);
                 if (seenIter == seenChunks.end())
                 {
@@ -108,8 +114,9 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
                     }
                     else
                     {
-                        newEntry = {airChunkId, nextEntryMin, peekFaceSpec.enterFace, airChunkPeeks, lod};
+                        newEntry = {airChunkId, nextEntryMin, peekFaceSpec.enterFace, airChunkPeeks, entryLod};
                     }
+
                     if (enterFace == (int)PEEK_FACES::NONE || entry.peeks[PEEK_FACE_INDICES[enterFace << 3 | peekFaceSpec.exitFace]] == 1)
                     {
                         cullQueue.push(newEntry);
@@ -144,7 +151,7 @@ std::vector<int> OcclusionCulling::sortDraws(CullQueueEntryMap &cullableCHunks,
     sortedDraws.reserve(drawListSize);
 
     // ! culled draws percentage :
-    std::cout << (float)culledList.size() / (float)numChunks * 100.f << "%" << std::endl;
+    // std::cout << (float)(numChunks - culledList.size()) / (float)numChunks * 100.f << "%" << std::endl;
 
     for (const auto &p : cullableCHunks)
     {
@@ -171,6 +178,28 @@ std::vector<int> OcclusionCulling::sortDraws(CullQueueEntryMap &cullableCHunks,
     }
 
     return drawList;
+}
+
+void OcclusionCulling::deserializeChunkNodesMap(std::vector<uint64_t> &chunkNodes, uint8_t *buffer, const int &numNodes)
+{
+    int index = 0;
+    for (int i = 0; i < numNodes; i++)
+    {
+        const int minX = *((int *)(buffer + index)) * defaultChunkSize;
+        index += sizeof(int);
+
+        const int minY = *((int *)(buffer + index)) * defaultChunkSize;
+        index += sizeof(int);
+
+        const int minZ = *((int *)(buffer + index)) * defaultChunkSize;
+        index += sizeof(int);
+
+        const ivec3 min = {minX, minY, minZ};
+
+        const uint64_t hash = hashMin(min);
+
+        chunkNodes.push_back(hash);
+    }
 }
 
 void OcclusionCulling::deserializeCullableChunks(CullQueueEntryMap &cullableChunks, uint8_t *buffer, const int &numDraws)
@@ -244,13 +273,15 @@ OcclusionCulling *Culling::init()
 
 uint8_t *Culling::cull(OcclusionCulling *inst,
                        uint8_t *chunksBuffer,
+                       uint8_t *chunkNodesMapBuffer,
                        const int &id,
                        const ivec3 &min,
                        const ivec3 &max,
                        const vec3 &cameraPos,
                        const vec3 &cameraView,
                        const int &lod,
-                       const int &numDraws)
+                       const int &numDraws,
+                       const int &numNodes)
 {
-    return inst->cull(chunksBuffer, id, min, max, cameraPos, cameraView, lod, numDraws);
+    return inst->cull(chunksBuffer, chunkNodesMapBuffer, id, min, max, cameraPos, cameraView, lod, numDraws, numNodes);
 }
