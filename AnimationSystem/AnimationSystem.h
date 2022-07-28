@@ -35,7 +35,7 @@ namespace AnimationSystem
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
   };
-  struct AnimationMapping
+  struct AnimationMapping // spec
   {
     bool isPosition;
     unsigned int index;
