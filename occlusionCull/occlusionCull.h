@@ -8,7 +8,6 @@
 #include "../vector.h"
 #include <emscripten.h>
 
-
 struct vec3
 {
     float x;
@@ -33,9 +32,6 @@ enum class PEEK_FACES : int
     BOTTOM,
     NONE
 };
-
-const int airChunkId = -1;
-
 struct PeekFace
 {
     int exitFace;
@@ -54,6 +50,9 @@ struct CullQueueEntry
 
 const int numPeeksPerChunk = 15;
 const int chunkDataSize = sizeof(int) + 3 * sizeof(int) + sizeof(int) + numPeeksPerChunk * sizeof(uint8_t) + sizeof(int); // 4 + 12 + 4 + 15
+
+
+const int airChunkId = -1;
 
 typedef std::unordered_map<uint64_t, CullQueueEntry> CullQueueEntryMap;
 class OcclusionCulling

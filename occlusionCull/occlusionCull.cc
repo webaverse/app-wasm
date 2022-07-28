@@ -9,6 +9,8 @@ PeekFace peekFaceSpecs[] = {
     {(int)PEEK_FACES::BOTTOM, (int)PEEK_FACES::TOP, ivec3{0, -1, 0}},
 };
 
+uint8_t airChunkPeeks[15] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
 uint64_t hashMin(const ivec3 &min)
 {
     uint64_t result = uint16_t(min.x);
@@ -49,8 +51,9 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
     const int range = max.x - min.x;
     std::queue<CullQueueEntry> cullQueue;
 
-    CullQueueEntry firstEntry{id, ivec3{min.x, min.y - range, min.z}, (int)PEEK_FACES::NONE, 0, lod};
+    CullQueueEntry firstEntry{id, ivec3{min.x, min.y + 70, min.z}, (int)PEEK_FACES::NONE, 0, lod};
     cullQueue.push(firstEntry);
+    // std::cout << "SY :" << min.y << std:: endl;
 
     std::unordered_map<uint64_t, CullQueueEntry> seenChunks;
 
@@ -65,15 +68,19 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
         const int enterFace = entry.enterFace;
         const int lod = entry.lod;
 
+        // if(lod == 4){
+        //     std::cout << enterFace << std::endl;
+        // }
+
         for (int i = 0; i < 6; i++)
         {
             const PeekFace &peekFaceSpec = peekFaceSpecs[i];
             const int ay = y + peekFaceSpec.offset.y * 16 * lod;
             const int ax = x + peekFaceSpec.offset.x * 16 * lod;
             const int az = z + peekFaceSpec.offset.z * 16 * lod;
-            // if (ax >= min.x - 10 * 16 && ax <= min.x + 10 * 16)
-            if (ay >= min.y - 10 * 16 && ay < min.y - 16)
-            // if (az >= min.z - 10 * 16 && az <= min.z + 10 * 16)
+            if (ax >= firstEntry.min.x - 15 * 16 && ax <= firstEntry.min.x + 15 * 16)
+            if (ay >= firstEntry.min.y - 15 * 16 && ay <= firstEntry.min.y + 15 * 16)
+            if (az >= firstEntry.min.z - 15 * 16 && az <= firstEntry.min.z + 15 * 16)
             {
                 CullQueueEntry newEntry;
 
@@ -97,11 +104,11 @@ uint8_t *OcclusionCulling::cull(uint8_t *chunksBuffer, const int &id, const ivec
                             culledList.push_back(allocatedEntry.id);
                         }
 
-                        newEntry = {allocatedEntry.id, nextEntryMin, enterFace, allocatedEntry.peeks, allocatedEntry.lod};
+                        newEntry = {allocatedEntry.id, nextEntryMin, peekFaceSpec.enterFace, allocatedEntry.peeks, allocatedEntry.lod};
                     }
                     else
                     {
-                        newEntry = {airChunkId, nextEntryMin, (int)PEEK_FACES::NONE, 0, 0};
+                        newEntry = {airChunkId, nextEntryMin, peekFaceSpec.enterFace, airChunkPeeks, lod};
                     }
                     if (enterFace == (int)PEEK_FACES::NONE || entry.peeks[PEEK_FACE_INDICES[enterFace << 3 | peekFaceSpec.exitFace]] == 1)
                     {
