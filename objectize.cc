@@ -198,6 +198,9 @@ EMSCRIPTEN_KEEPALIVE void setWeight(AnimationSystem::AnimationNode *node, float 
 EMSCRIPTEN_KEEPALIVE void setFactor(AnimationSystem::AnimationNode *node, float factor) {
   return AnimationSystem::setFactor(node, factor);
 }
+EMSCRIPTEN_KEEPALIVE void setArg(AnimationSystem::AnimationNode *node, float arg) {
+  return AnimationSystem::setArg(node, arg);
+}
 EMSCRIPTEN_KEEPALIVE float getWeight(AnimationSystem::AnimationNode *node) {
   return AnimationSystem::getWeight(node);
 }

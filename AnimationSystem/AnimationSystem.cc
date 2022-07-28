@@ -109,6 +109,11 @@ namespace AnimationSystem
     node->factor = factor;
   }
 
+  void setArg(AnimationNode *node, float arg)
+  {
+    node->arg = arg;
+  }
+
   float getWeight(AnimationSystem::AnimationNode *node)
   {
     return node->weight;
@@ -710,37 +715,43 @@ namespace AnimationSystem
       }
       else if (this->type == NodeType::FUNC)
       {
-        float *result;
         float *value0 = children[0]->update(spec);
-        float *value1 = children[1]->update(spec);
-        result = value0;
-
-        // current only has hold animation specific func
-        if (spec.isTop)
+        if (this->factor > 0) // todo: crossFade
         {
-          // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
-          if (spec.index == 8 || spec.index == 27)
+          float *result;
+          float *value1 = children[1]->update(spec);
+          result = value0;
+
+          // current only has hold animation specific func
+          if (spec.isTop)
           {
-            result = value1;
-          }
-          else
-          {
-            if (spec.isArm)
+            // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
+            if (spec.index == 8 || spec.index == 27)
             {
-              interpolateFlat(value0, 1, value0, 1, identityQuaternion, 0, this->factor, spec.isPosition);
+              result = value1;
             }
+            else
+            {
+              if (spec.isArm)
+              {
+                interpolateFlat(value0, 1, value0, 1, identityQuaternion, 0, this->arg, spec.isPosition);
+              }
 
-            Quat quat0(value0[1], value0[2], value0[3], value0[4]);
-            Quat quat1(value1[1], value1[2], value1[3], value1[4]);
-            quat0.premultiply(quat1);
-            value0[1] = quat0.x;
-            value0[2] = quat0.y;
-            value0[3] = quat0.z;
-            value0[4] = quat0.w;
+              Quat quat0(value0[1], value0[2], value0[3], value0[4]);
+              Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+              quat0.premultiply(quat1);
+              value0[1] = quat0.x;
+              value0[2] = quat0.y;
+              value0[3] = quat0.z;
+              value0[4] = quat0.w;
+            }
           }
+          return result;
         }
-
-        return result;
+        else
+        {
+          return value0;
+        }
       }
 
       // doBlendList ---

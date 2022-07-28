@@ -73,6 +73,7 @@ namespace AnimationSystem
     void crossFadeUnitary(float duration, AnimationNode *targetNode);
 
     // NodeType::FUNC ---
+    float arg = 0;
     // factor
 
     // motion ------
@@ -194,6 +195,7 @@ namespace AnimationSystem
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void setWeight(AnimationNode *node, float weight);
   void setFactor(AnimationNode *node, float factor);
+  void setArg(AnimationNode *node, float arg);
   float getWeight(AnimationSystem::AnimationNode *node);
   float getFactor(AnimationSystem::AnimationNode *node); // todo: AnimationSystem::AnimationNode -> AnimationNode.
   unsigned int getChildren(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode **scratchStack);
