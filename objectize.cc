@@ -3,6 +3,7 @@
 // #include "compose.h"
 // #include "noise.h"
 #include "march.h"
+#include "occlusionCull/occlusionCull.h"
 // #include "DualContouring/main.h"
 #include "AnimationSystem/AnimationSystem.h"
 // #include "collide.h"
@@ -231,6 +232,12 @@ EMSCRIPTEN_KEEPALIVE void setLoop(AnimationSystem::AnimationNode *motion, Animat
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
 }
+EMSCRIPTEN_KEEPALIVE float setTriggerPhysics(PScene *scene, unsigned int id) {
+  return scene->setTrigger(id);
+}
+EMSCRIPTEN_KEEPALIVE unsigned int getTriggerEventsPhysics(PScene *scene, unsigned int *scratchStack) {
+  return scene->getTriggerEvents(scratchStack);
+}
 
 EMSCRIPTEN_KEEPALIVE void raycastPhysics(PScene *scene, float *origin, float *direction, float maxDist, unsigned int *hit, float *position, float *normal, float *distance, unsigned int *objectId, unsigned int *faceIndex) {
   scene->raycast(origin, direction, maxDist, *hit, position, normal, *distance, *objectId, *faceIndex);
@@ -315,25 +322,28 @@ EMSCRIPTEN_KEEPALIVE float *getPathPhysics(PScene *scene, float *_start, float *
   return scene->getPath(_start, _dest, _isWalk, _hy, _heightTolerance, _maxIterdetect, _maxIterStep, _numIgnorePhysicsIds, _ignorePhysicsIds);
 }
 
-EMSCRIPTEN_KEEPALIVE float *overlapBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
-  return scene->overlapBox(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion);
+EMSCRIPTEN_KEEPALIVE float *overlapBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion) {
+  return scene->overlapBox(hx, hy, hz, position, quaternion);
 }
-EMSCRIPTEN_KEEPALIVE float *overlapCapsulePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion) {
-  return scene->overlapCapsule(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion);
+EMSCRIPTEN_KEEPALIVE float *overlapCapsulePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion) {
+  return scene->overlapCapsule(radius, halfHeight, position, quaternion);
 }
-EMSCRIPTEN_KEEPALIVE void collideBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded, unsigned int *id) {
-  scene->collideBox(hx, hy, hz, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
+EMSCRIPTEN_KEEPALIVE void collideBoxPhysics(PScene *scene, float hx, float hy, float hz, float *position, float *quaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded, unsigned int *id) {
+  scene->collideBox(hx, hy, hz, position, quaternion, maxIter, *hit, direction, *grounded, *id);
 }
-EMSCRIPTEN_KEEPALIVE void collideCapsulePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded, unsigned int *id) {
-  scene->collideCapsule(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, maxIter, *hit, direction, *grounded, *id);
+EMSCRIPTEN_KEEPALIVE void collideCapsulePhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, unsigned int maxIter, unsigned int *hit, float *direction, unsigned int *grounded, unsigned int *id) {
+  scene->collideCapsule(radius, halfHeight, position, quaternion, maxIter, *hit, direction, *grounded, *id);
 }
-EMSCRIPTEN_KEEPALIVE void getCollisionObjectPhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int *hit, unsigned int *id) {
-  scene->getCollisionObject(radius, halfHeight, position, quaternion, meshPosition, meshQuaternion, *hit, *id);
+EMSCRIPTEN_KEEPALIVE void getCollisionObjectPhysics(PScene *scene, float radius, float halfHeight, float *position, float *quaternion, float *direction, unsigned int *hit, unsigned int *id) {
+  scene->getCollisionObject(radius, halfHeight, position, quaternion, direction, *hit, *id);
 }
 EMSCRIPTEN_KEEPALIVE void addCapsuleGeometryPhysics(PScene *scene, float *position, float *quaternion, float radius, float halfHeight, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int flags) {
   scene->addCapsuleGeometry(position, quaternion, radius, halfHeight, id, material, dynamic, flags);
 }
 
+EMSCRIPTEN_KEEPALIVE void addPlaneGeometryPhysics(PScene *scene, float *position, float *quaternion, unsigned int id, PxMaterial *material, unsigned int dynamic) {
+  scene->addPlaneGeometry(position, quaternion, id, material, dynamic);
+}
 EMSCRIPTEN_KEEPALIVE void addBoxGeometryPhysics(PScene *scene, float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId) {
   scene->addBoxGeometry(position, quaternion, size, id, material, dynamic, groupId);
 }
@@ -516,6 +526,29 @@ EMSCRIPTEN_KEEPALIVE float *doCut(
 
 EMSCRIPTEN_KEEPALIVE uint8_t *doMarchingCubes(int dims[3], float *potential, float shift[3], float scale[3]) {
   return marchingCubes(dims, potential, shift, scale);
+}
+
+EMSCRIPTEN_KEEPALIVE OcclusionCulling *initOcclusionCulling()
+{
+  return Culling::init();
+}
+
+EMSCRIPTEN_KEEPALIVE uint8_t *cullOcclusionCulling(OcclusionCulling *inst,
+                                                   uint8_t *chunksBuffer,
+                                                   int id,
+                                                   int minX, int minY, int minZ,
+                                                   int maxX, int maxY, int maxZ,
+                                                   float cameraX, float cameraY, float cameraZ,
+                                                   float cameraViewX, float cameraViewY, float cameraViewZ,
+                                                   int numDraws)
+{
+  return Culling::cull(inst,
+                       chunksBuffer, id,
+                       ivec3{minX, minY, minZ},
+                       ivec3{maxX, maxY, maxZ},
+                       vec3{cameraX, cameraY, cameraZ},
+                       vec3{cameraViewX, cameraViewY, cameraViewZ},
+                       numDraws);
 }
 
 /* EMSCRIPTEN_KEEPALIVE void generateChunkDataDualContouring(float x, float y, float z){
