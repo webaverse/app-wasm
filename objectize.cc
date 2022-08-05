@@ -188,9 +188,9 @@ EMSCRIPTEN_KEEPALIVE void crossFadeTwo(AnimationSystem::AnimationNode *parentNod
   // return AnimationSystem::crossFadeTwo(parentNode, duration, targetFactor);
   return parentNode->crossFadeTwo(duration, targetFactor);
 }
-EMSCRIPTEN_KEEPALIVE void crossFadeUnitary(AnimationSystem::AnimationNode *parentNode, float duration, AnimationSystem::AnimationNode *targetNode) {
-  // return AnimationSystem::crossFadeUnitary(parentNode, duration, targetNode);
-  return parentNode->crossFadeUnitary(duration, targetNode);
+EMSCRIPTEN_KEEPALIVE void crossFadeSolitary(AnimationSystem::AnimationNode *parentNode, float duration, AnimationSystem::AnimationNode *targetNode) {
+  // return AnimationSystem::crossFadeSolitary(parentNode, duration, targetNode);
+  return parentNode->crossFadeSolitary(duration, targetNode);
 }
 EMSCRIPTEN_KEEPALIVE void setWeight(AnimationSystem::AnimationNode *node, float weight) {
   return AnimationSystem::setWeight(node, weight); // todo: run `node->weight = weight;` directly.

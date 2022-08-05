@@ -9,7 +9,7 @@ namespace AnimationSystem
   {
     LIST = 1,
     TWO = 2,
-    UNITARY = 3,
+    SOLITARY = 3,
     OVERWRITE = 4,
     FUNC = 5
   };
@@ -68,9 +68,9 @@ namespace AnimationSystem
     float crossFadeTargetFactor;
     void crossFadeTwo(float duration, float factor);
 
-    // NodeType::UNITARY ---
+    // NodeType::SOLITARY ---
     AnimationNode *activeNode;
-    void crossFadeUnitary(float duration, AnimationNode *targetNode);
+    void crossFadeSolitary(float duration, AnimationNode *targetNode);
 
     // NodeType::FUNC ---
     float arg = 0;

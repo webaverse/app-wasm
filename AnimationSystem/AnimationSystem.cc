@@ -183,7 +183,7 @@ namespace AnimationSystem
   {
     parent->children.push_back(child);
 
-    if (parent->type == NodeType::UNITARY)
+    if (parent->type == NodeType::SOLITARY)
     {
       if (parent->children.size() == 1)
       {
@@ -656,7 +656,7 @@ namespace AnimationSystem
         this->children[0]->weight = 1 - this->factor;
         this->children[1]->weight = this->factor;
       }
-      else if (this->type == NodeType::UNITARY)
+      else if (this->type == NodeType::SOLITARY)
       {
         if (this->isCrossFade)
         {
@@ -673,7 +673,7 @@ namespace AnimationSystem
               childNode->weight = max(childNode->weight, factor);
             }
             else
-            {                                                            // ensure unitary
+            {                                                            // ensure solitary
               childNode->weight = min(childNode->weight, factorReverse); // todo: will cause jumpping values if last crossFade() hasn't finished.
               // childNode->weight = childNode->weightStart * factorReverse;
             }
@@ -791,7 +791,7 @@ namespace AnimationSystem
     this->crossFadeDuration = duration;
     this->crossFadeTargetFactor = factor;
   }
-  void AnimationNode::crossFadeUnitary(float duration, AnimationNode *targetNode)
+  void AnimationNode::crossFadeSolitary(float duration, AnimationNode *targetNode)
   {
     this->isCrossFade = true;
     this->crossFadeStartTime = AnimationMixer::timeS;
