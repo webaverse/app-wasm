@@ -363,7 +363,7 @@ namespace AnimationSystem
     return animationValues;
   }
 
-  float *AnimationNode::update(AnimationMapping &spec) // todo: &spec
+  float *AnimationNode::update(AnimationMapping &spec)
   {
     if (this->animation) // isMotion ------
     {
@@ -373,7 +373,7 @@ namespace AnimationSystem
       {
         evaluateTimeS = (AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias;
         value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
-        if (/* spec.isLastBone &&  */ !this->isFinished && evaluateTimeS >= this->animation->duration) // Don't need and will cause bug if check `isLastBone`.
+        if (!this->isFinished && evaluateTimeS >= this->animation->duration)
         {
           this->mixer->finishedFlag = 1;
           for (int i = 0; i < this->mixer->motions.size(); i++)
@@ -430,9 +430,9 @@ namespace AnimationSystem
             {
               childNode->weight = max(childNode->weight, factor);
             }
-            else
-            {                                                            // ensure solitary
-              childNode->weight = min(childNode->weight, factorReverse); // todo: will cause jumpping values if last crossFade() hasn't finished.
+            else // ensure solitary
+            {
+              childNode->weight = min(childNode->weight, factorReverse);
             }
           }
 
@@ -469,7 +469,7 @@ namespace AnimationSystem
       else if (this->type == NodeType::FUNC)
       {
         float *value0 = children[0]->update(spec);
-        if (this->factor > 0) // todo: crossFade
+        if (this->factor > 0)
         {
           float *result;
           float *value1 = children[1]->update(spec);
@@ -513,7 +513,7 @@ namespace AnimationSystem
       float currentWeight = 0;
       for (int i = 0; i < this->children.size(); i++)
       {
-        AnimationNode *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+        AnimationNode *childNode = this->children[i];
         if (childNode->weight > 0)
         {
           float *value = childNode->update(spec);
