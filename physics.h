@@ -25,9 +25,17 @@ enum STATE_BITFIELD {
   STATE_BITFIELD_GROUNDED = 0x2,
 };
 
+struct TriggerEventInfo {
+  unsigned int status;
+  unsigned int triggerActorId;
+  unsigned int otherActorId;
+};
+
 class SimulationEventCallback2 : public PxSimulationEventCallback {
 public:
   std::map<unsigned int, unsigned int> stateBitfields;
+  unsigned int triggerCount = 0;
+  std::vector<TriggerEventInfo> triggerEventInfos;
 
   SimulationEventCallback2();
   virtual ~SimulationEventCallback2();
@@ -59,6 +67,8 @@ public:
   bool updateMassAndInertia(unsigned int id, float shapeDensities);
   float getBodyMass(unsigned int id);
   unsigned int simulate(unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities);
+  float setTrigger(unsigned int id);
+  unsigned int getTriggerEvents(unsigned int *scratchStack);
   void raycast(float *origin, float *direction, float maxDist, unsigned int &hit, float *position, float *normal, float &distance, unsigned int &objectId, unsigned int &faceIndex);
   void sweepBox(
     float *origin,
@@ -89,15 +99,16 @@ public:
     unsigned int *faceIndex
   );
   float *getPath(float *_start, float *_dest, bool _isWalk, float _hy, float _heightTolerance, unsigned int _maxIterdetect, unsigned int _maxIterStep, unsigned int _numIgnorePhysicsIds, unsigned int *_ignorePhysicsIds);
-  float *overlap(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
-  float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
-  float *overlapCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion);
-  void collide(PxGeometry *geom, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
-  void collideBox(float hx, float hy, float hz, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
-  void collideCapsule(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
-  void getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *meshPosition, float *meshQuaternion, unsigned int &hit, unsigned int &id);
+  float *overlap(PxGeometry *geom, float *position, float *quaternion);
+  float *overlapBox(float hx, float hy, float hz, float *position, float *quaternion);
+  float *overlapCapsule(float radius, float halfHeight, float *position, float *quaternion);
+  void collide(PxGeometry *geom, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void collideBox(float hx, float hy, float hz, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void collideCapsule(float radius, float halfHeight, float *position, float *quaternion, unsigned int maxIter, unsigned int &hit, float *direction, unsigned int &grounded, unsigned int &id);
+  void getCollisionObject(float radius, float halfHeight, float *position, float *quaternion, float *direction, unsigned int &hit, unsigned int &id);
   
   void addCapsuleGeometry(float *position, float *quaternion, float radius, float halfHeight, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int flags);
+  void addPlaneGeometry(float *position, float *quaternion, unsigned int id, PxMaterial *material, unsigned int dynamic);
   void addBoxGeometry(float *position, float *quaternion, float *size, unsigned int id, PxMaterial *material, unsigned int dynamic, int groupId);
   
   PxTriangleMesh *createShape(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream);

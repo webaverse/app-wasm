@@ -289,6 +289,13 @@ if [ ! -f march.o ]; then
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -c
 fi
+if [ ! -f occlusionCull.o ]; then
+  echo 'building occlusionCull...'
+  emcc -O3 \
+  occlusionCull/occlusionCull.cc \
+  -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
+  -c
+fi
 echo 'building main...'
 # m = 64*1024; s = 200 * 1024 * 1024; Math.floor(s/m)*m;
 emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \

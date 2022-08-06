@@ -18,6 +18,8 @@ namespace AnimationSystem
   Animation *testAnimation2 = &testAnimation;
   Animation **testAnimation3 = &testAnimation2;
 
+  float identityQuaternion[4] = {0, 0, 0, 1};
+
   // functions:
 
   // Utils ------
@@ -55,6 +57,11 @@ namespace AnimationSystem
   void setFactor(AnimationNode *node, float factor)
   {
     node->factor = factor;
+  }
+
+  void setArg(AnimationNode *node, float arg)
+  {
+    node->arg = arg;
   }
 
   float getWeight(AnimationSystem::AnimationNode *node)
@@ -97,7 +104,7 @@ namespace AnimationSystem
   {
     parent->children.push_back(child);
 
-    if (parent->type == NodeType::UNITARY)
+    if (parent->type == NodeType::SOLITARY)
     {
       if (parent->children.size() == 1)
       {
@@ -139,7 +146,7 @@ namespace AnimationSystem
     AnimationNode *node = new AnimationNode();
     node->mixer = this;
     node->type = type;
-    std::cout << "NodeType: " << type << " " << node->type << std::endl;
+    // std::cout << "NodeType: " << type << " " << node->type << std::endl;
     return node;
   }
   AnimationNode *AnimationMixer::createMotion(Animation *animation)
@@ -408,7 +415,7 @@ namespace AnimationSystem
         this->children[0]->weight = 1 - this->factor;
         this->children[1]->weight = this->factor;
       }
-      else if (this->type == NodeType::UNITARY)
+      else if (this->type == NodeType::SOLITARY)
       {
         if (this->isCrossFade)
         {
@@ -424,7 +431,7 @@ namespace AnimationSystem
               childNode->weight = max(childNode->weight, factor);
             }
             else
-            {                                                            // ensure unitary
+            {                                                            // ensure solitary
               childNode->weight = min(childNode->weight, factorReverse); // todo: will cause jumpping values if last crossFade() hasn't finished.
             }
           }
@@ -457,6 +464,46 @@ namespace AnimationSystem
         {
           this->children[0]->weight = 1;
           this->children[1]->weight = 0;
+        }
+      }
+      else if (this->type == NodeType::FUNC)
+      {
+        float *value0 = children[0]->update(spec);
+        if (this->factor > 0) // todo: crossFade
+        {
+          float *result;
+          float *value1 = children[1]->update(spec);
+          result = value0;
+
+          // current only has hold animation specific func
+          if (spec.isTop)
+          {
+            // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
+            if (spec.index == 8 || spec.index == 27)
+            {
+              result = value1;
+            }
+            else
+            {
+              if (spec.isArm)
+              {
+                interpolateFlat(value0, 1, value0, 1, identityQuaternion, 0, this->arg, spec.isPosition);
+              }
+
+              Quat quat0(value0[1], value0[2], value0[3], value0[4]);
+              Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+              quat0.premultiply(quat1);
+              value0[1] = quat0.x;
+              value0[2] = quat0.y;
+              value0[3] = quat0.z;
+              value0[4] = quat0.w;
+            }
+          }
+          return result;
+        }
+        else
+        {
+          return value0;
         }
       }
 
@@ -497,7 +544,7 @@ namespace AnimationSystem
     this->crossFadeDuration = duration;
     this->crossFadeTargetFactor = factor;
   }
-  void AnimationNode::crossFadeUnitary(float duration, AnimationNode *targetNode)
+  void AnimationNode::crossFadeSolitary(float duration, AnimationNode *targetNode)
   {
     this->isCrossFade = true;
     this->crossFadeStartTime = AnimationMixer::timeS;

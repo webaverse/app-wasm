@@ -9,8 +9,9 @@ namespace AnimationSystem
   {
     LIST = 1,
     TWO = 2,
-    UNITARY = 3,
-    OVERWRITE = 4
+    SOLITARY = 3,
+    OVERWRITE = 4,
+    FUNC = 5
   };
   enum LoopType
   {
@@ -34,7 +35,7 @@ namespace AnimationSystem
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
   };
-  struct AnimationMapping
+  struct AnimationMapping // spec
   {
     bool isPosition;
     unsigned int index;
@@ -58,15 +59,22 @@ namespace AnimationSystem
     bool isCrossFade = false;
     float crossFadeDuration = 0;
     float crossFadeStartTime;
+
     // NodeType::LIST ---
+
     // NodeType::TWO ---
+    // NodeType::OVERWRITE ---
     float factor = 0; // [0, 1]
     float crossFadeTargetFactor;
     void crossFadeTwo(float duration, float factor);
-    // NodeType::UNITARY ---
+
+    // NodeType::SOLITARY ---
     AnimationNode *activeNode;
-    void crossFadeUnitary(float duration, AnimationNode *targetNode);
-    // NodeType::OVERWRITE ---
+    void crossFadeSolitary(float duration, AnimationNode *targetNode);
+
+    // NodeType::FUNC ---
+    float arg = 0;
+    // factor
 
     // motion ------
     Animation *animation;
@@ -115,6 +123,7 @@ namespace AnimationSystem
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void setWeight(AnimationNode *node, float weight);
   void setFactor(AnimationNode *node, float factor);
+  void setArg(AnimationNode *node, float arg);
   float getWeight(AnimationSystem::AnimationNode *node);
   float getFactor(AnimationSystem::AnimationNode *node);
   unsigned int getChildren(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode **scratchStack);
