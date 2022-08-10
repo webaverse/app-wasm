@@ -587,6 +587,13 @@ namespace AnimationSystem
 
   float *AnimationNode::update(AnimationMapping &spec) // todo: &spec
   {
+    // this->results[spec.index] = NULL; // todo: don't need ?
+    for (unsigned int i = 0; i < this->children.size(); i++)
+    {
+      AnimationNode *childNode = this->children[i];
+      childNode->results[spec.index] = NULL;
+    }
+
     if (this->animation) // isMotion ------
     {
       float *value;
@@ -635,6 +642,7 @@ namespace AnimationSystem
         evaluateTimeS = fmod((AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias, this->animation->duration);
         value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
       }
+      this->results[spec.index] = value;
       return value;
     }
     else // isNode ------
@@ -715,12 +723,23 @@ namespace AnimationSystem
       }
       else if (this->type == NodeType::FUNC)
       {
+        
+        if (this->isCrossFade)
+        {
+          this->factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+          this->factor = min(max(this->factor, 0), 1);
+          if (this->crossFadeTargetFactor == 0)
+          {
+            this->factor = 1 - this->factor;
+          }
+          if (this->factor == this->crossFadeTargetFactor)
+            this->isCrossFade = false;
+        }
+        
         float *value0 = children[0]->update(spec);
         if (this->factor > 0) // todo: crossFade
         {
-          float *result;
           float *value1 = children[1]->update(spec);
-          result = value0;
 
           // // current only has hold animation specific func
           // if (spec.isTop)
@@ -748,17 +767,18 @@ namespace AnimationSystem
           // }
 
           // current only has emote animation specific func
+          // 2: Spin, 3: Chest, 4: UpperChest, 5: Neck, 6: Head
           if (spec.index == 2 || spec.index == 3 || spec.index == 4 || spec.index == 5 || spec.index == 6) {
             if (!spec.isPosition) {
-              Quat quat0(result[1], result[2], result[3], result[4]);
+              Quat quat0(value0[1], value0[2], value0[3], value0[4]);
               Quat quat1(value1[1], value1[2], value1[3], value1[4]);
               quat0.premultiply(quat1);
-              result[1] = quat0.x;
-              result[2] = quat0.y;
-              result[3] = quat0.z;
-              result[4] = quat0.w;
+              value1[1] = quat0.x;
+              value1[2] = quat0.y;
+              value1[3] = quat0.z;
+              value1[4] = quat0.w;
             } else {
-              interpolateFlat(result, 1, result, 1, value1, 1, this->factor, spec.isPosition);
+              interpolateFlat(value1, 1, value0, 1, value1, 1, this->factor, spec.isPosition);
             }
           } else {
             float f = this->factor;
@@ -766,15 +786,12 @@ namespace AnimationSystem
               f *= (1 - this->arg); // arg: idleWalkFactor
             }
 
-            interpolateFlat(result, 1, result, 1, value1, 1, f, spec.isPosition);
+            interpolateFlat(value1, 1, value0, 1, value1, 1, f, spec.isPosition);
           }
+        }
 
-          return result;
-        }
-        else
-        {
-          return value0;
-        }
+        this->children[0]->weight = 1 - this->factor;
+        this->children[1]->weight = this->factor;
       }
 
       // doBlendList ---
@@ -786,7 +803,16 @@ namespace AnimationSystem
         AnimationNode *childNode = this->children[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
         if (childNode->weight > 0)
         {
-          float *value = childNode->update(spec);
+          float *value;
+          if (childNode->results[spec.index])
+          {
+            value = childNode->results[spec.index];
+            childNode->results[spec.index] = NULL;
+          }
+          else
+          {
+            value = childNode->update(spec);
+          }
           if (nodeIndex == 0)
           {
             result = value;
@@ -804,6 +830,7 @@ namespace AnimationSystem
           }
         }
       }
+      this->results[spec.index] = result;
       return result;
     }
   }
