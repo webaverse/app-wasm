@@ -74,6 +74,7 @@ namespace AnimationSystem
     void crossFadeSolitary(float duration, AnimationNode *targetNode);
 
     // NodeType::FUNC ---
+    unsigned int index;
     float arg = 0;
     // factor
     // void crossFadeTwo(float duration, float factor);
@@ -121,7 +122,7 @@ namespace AnimationSystem
     }
 
     AnimationNode *createMotion(Animation *animation);
-    AnimationNode *createNode(NodeType type = NodeType::LIST);
+    AnimationNode *createNode(NodeType type = NodeType::LIST, unsigned int index = 0);
     float **update(float timeS);
     // test ---
     float getTestMixerFloat()

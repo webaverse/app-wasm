@@ -287,11 +287,12 @@ namespace AnimationSystem
   {
     return (unsigned int **)testAnimation3;
   }
-  AnimationNode *AnimationMixer::createNode(NodeType type)
+  AnimationNode *AnimationMixer::createNode(NodeType type, unsigned int index)
   {
     AnimationNode *node = new AnimationNode();
     node->mixer = this;
     node->type = type;
+    node->index = index;
     // std::cout << "NodeType: " << type << " " << node->type << std::endl;
     return node;
   }
@@ -742,70 +743,67 @@ namespace AnimationSystem
         {
           float *value1 = children[1]->update(spec);
 
-          // ---
-
-          // current only has hold animation specific func
-          if (spec.isTop)
+          if (this->index == 0) // hold animation
           {
-            // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
-            if (spec.index == 8 || spec.index == 27)
+            if (spec.isTop)
             {
-              // result = value1;
+              // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
+              if (spec.index == 8 || spec.index == 27)
+              {
+                // result = value1;
+              }
+              else
+              {
+                localQuaternion[1] = value0[1];
+                localQuaternion[2] = value0[2];
+                localQuaternion[3] = value0[3];
+                localQuaternion[4] = value0[4];
+                if (spec.isArm)
+                {
+                  interpolateFlat(localQuaternion, 1, localQuaternion, 1, identityQuaternion, 0, this->arg, spec.isPosition);
+                }
+
+                Quat quat0(localQuaternion[1], localQuaternion[2], localQuaternion[3], localQuaternion[4]);
+                Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+                quat0.premultiply(quat1);
+                value1[1] = quat0.x;
+                value1[2] = quat0.y;
+                value1[3] = quat0.z;
+                value1[4] = quat0.w;
+              }
             }
             else
             {
-              localQuaternion[1] = value0[1];
-              localQuaternion[2] = value0[2];
-              localQuaternion[3] = value0[3];
-              localQuaternion[4] = value0[4];
-              if (spec.isArm)
-              {
-                interpolateFlat(localQuaternion, 1, localQuaternion, 1, identityQuaternion, 0, this->arg, spec.isPosition);
-              }
-
-              Quat quat0(localQuaternion[1], localQuaternion[2], localQuaternion[3], localQuaternion[4]);
-              Quat quat1(value1[1], value1[2], value1[3], value1[4]);
-              quat0.premultiply(quat1);
-              value1[1] = quat0.x;
-              value1[2] = quat0.y;
-              value1[3] = quat0.z;
-              value1[4] = quat0.w;
+              value1[1] = value0[1];
+              value1[2] = value0[2];
+              value1[3] = value0[3];
+              value1[4] = value0[4];
             }
           }
-          else
+          else if (this->index == 1) // emote animation
           {
-            value1[1] = value0[1];
-            value1[2] = value0[2];
-            value1[3] = value0[3];
-            value1[4] = value0[4];
+            // 2: Spin, 3: Chest, 4: UpperChest, 5: Neck, 6: Head
+            if (spec.index == 2 || spec.index == 3 || spec.index == 4 || spec.index == 5 || spec.index == 6) {
+              if (!spec.isPosition) {
+                Quat quat0(value0[1], value0[2], value0[3], value0[4]);
+                Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+                quat0.premultiply(quat1);
+                value1[1] = quat0.x;
+                value1[2] = quat0.y;
+                value1[3] = quat0.z;
+                value1[4] = quat0.w;
+              } else {
+                interpolateFlat(value1, 1, value0, 1, value1, 1, this->factor, spec.isPosition);
+              }
+            } else {
+              float f = this->factor;
+              if (!spec.isTop) {
+                f *= (1 - this->arg); // arg: idleWalkFactor
+              }
+
+              interpolateFlat(value1, 1, value0, 1, value1, 1, f, spec.isPosition);
+            }
           }
-
-          // ---
-
-          // // current only has emote animation specific func
-          // // 2: Spin, 3: Chest, 4: UpperChest, 5: Neck, 6: Head
-          // if (spec.index == 2 || spec.index == 3 || spec.index == 4 || spec.index == 5 || spec.index == 6) {
-          //   if (!spec.isPosition) {
-          //     Quat quat0(value0[1], value0[2], value0[3], value0[4]);
-          //     Quat quat1(value1[1], value1[2], value1[3], value1[4]);
-          //     quat0.premultiply(quat1);
-          //     value1[1] = quat0.x;
-          //     value1[2] = quat0.y;
-          //     value1[3] = quat0.z;
-          //     value1[4] = quat0.w;
-          //   } else {
-          //     interpolateFlat(value1, 1, value0, 1, value1, 1, this->factor, spec.isPosition);
-          //   }
-          // } else {
-          //   float f = this->factor;
-          //   if (!spec.isTop) {
-          //     f *= (1 - this->arg); // arg: idleWalkFactor
-          //   }
-
-          //   interpolateFlat(value1, 1, value0, 1, value1, 1, f, spec.isPosition);
-          // }
-
-          // ---
         }
 
         this->children[0]->weight = 1 - this->factor;

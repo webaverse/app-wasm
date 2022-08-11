@@ -167,8 +167,8 @@ EMSCRIPTEN_KEEPALIVE void setFinishedFlag(AnimationSystem::AnimationMixer *mixer
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::AnimationMixer *mixer, AnimationSystem::Animation *animation) {
   return mixer->createMotion(animation);
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST) {
-  return mixer->createNode(type);
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST, unsigned int index = 0) {
+  return mixer->createNode(type, index);
 }
 EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *parent, AnimationSystem::AnimationNode *child) {
   return AnimationSystem::addChild(parent, child);
