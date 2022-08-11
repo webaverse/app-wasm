@@ -739,7 +739,7 @@ namespace AnimationSystem
         }
         
         float *value0 = children[0]->update(spec);
-        if (this->factor > 0) // todo: crossFade
+        if (this->factor > 0)
         {
           float *value1 = children[1]->update(spec);
 
@@ -747,8 +747,7 @@ namespace AnimationSystem
           {
             if (spec.isTop)
             {
-              // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
-              if (spec.index == 8 || spec.index == 27)
+              if (spec.index == BoneName::Left_arm || spec.index == BoneName::Right_arm)
               {
                 // result = value1;
               }
@@ -782,8 +781,7 @@ namespace AnimationSystem
           }
           else if (this->index == 1) // emote animation
           {
-            // 2: Spin, 3: Chest, 4: UpperChest, 5: Neck, 6: Head
-            if (spec.index == 2 || spec.index == 3 || spec.index == 4 || spec.index == 5 || spec.index == 6) {
+            if (spec.index == BoneName::Spine || spec.index == BoneName::Chest || spec.index == BoneName::UpperChest || spec.index == BoneName::Neck || spec.index == BoneName::Head) {
               if (!spec.isPosition) {
                 Quat quat0(value0[1], value0[2], value0[3], value0[4]);
                 Quat quat1(value1[1], value1[2], value1[3], value1[4]);
