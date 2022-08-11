@@ -13,6 +13,7 @@ namespace AnimationSystem
   float testFloat = 1.23;
   float *testFloat2 = &testFloat;
   float **testFloat3 = &testFloat2;
+  float *localQuaternion = (float *)malloc(5 * sizeof(float));
 
   Animation testAnimation = Animation();
   Animation *testAnimation2 = &testAnimation;
@@ -141,11 +142,12 @@ namespace AnimationSystem
 
     return animation;
   }
-  AnimationNode *AnimationMixer::createNode(NodeType type)
+  AnimationNode *AnimationMixer::createNode(NodeType type, unsigned int index)
   {
     AnimationNode *node = new AnimationNode();
     node->mixer = this;
     node->type = type;
+    node->index = index;
     // std::cout << "NodeType: " << type << " " << node->type << std::endl;
     return node;
   }
@@ -365,6 +367,13 @@ namespace AnimationSystem
 
   float *AnimationNode::update(AnimationMapping &spec)
   {
+    // this->results[spec.index] = NULL; // todo: don't need ?
+    for (unsigned int i = 0; i < this->children.size(); i++)
+    {
+      AnimationNode *childNode = this->children[i];
+      childNode->results[spec.index] = NULL;
+    }
+
     if (this->animation) // isMotion ------
     {
       float *value;
@@ -394,6 +403,7 @@ namespace AnimationSystem
         evaluateTimeS = fmod((AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias, this->animation->duration);
         value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
       }
+      this->results[spec.index] = value;
       return value;
     }
     else // isNode ------
@@ -468,43 +478,89 @@ namespace AnimationSystem
       }
       else if (this->type == NodeType::FUNC)
       {
+        
+        if (this->isCrossFade)
+        {
+          this->factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+          this->factor = min(max(this->factor, 0), 1);
+          if (this->crossFadeTargetFactor == 0)
+          {
+            this->factor = 1 - this->factor;
+          }
+          if (this->factor == this->crossFadeTargetFactor)
+            this->isCrossFade = false;
+        }
+        
         float *value0 = children[0]->update(spec);
         if (this->factor > 0)
         {
-          float *result;
           float *value1 = children[1]->update(spec);
-          result = value0;
 
-          // current only has hold animation specific func
-          if (spec.isTop)
+          if (this->index == 0) // hold animation
           {
-            // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
-            if (spec.index == 8 || spec.index == 27)
+            if (spec.isTop)
             {
-              result = value1;
+              // if (boneName === 'Left_arm' /* 8 */ || boneName === 'Right_arm' /* 27 */) {
+              if (spec.index == 8 || spec.index == 27)
+              {
+                // result = value1;
+              }
+              else
+              {
+                localQuaternion[1] = value0[1];
+                localQuaternion[2] = value0[2];
+                localQuaternion[3] = value0[3];
+                localQuaternion[4] = value0[4];
+                if (spec.isArm)
+                {
+                  interpolateFlat(localQuaternion, 1, localQuaternion, 1, identityQuaternion, 0, this->arg, spec.isPosition);
+                }
+
+                Quat quat0(localQuaternion[1], localQuaternion[2], localQuaternion[3], localQuaternion[4]);
+                Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+                quat0.premultiply(quat1);
+                value1[1] = quat0.x;
+                value1[2] = quat0.y;
+                value1[3] = quat0.z;
+                value1[4] = quat0.w;
+              }
             }
             else
             {
-              if (spec.isArm)
-              {
-                interpolateFlat(value0, 1, value0, 1, identityQuaternion, 0, this->arg, spec.isPosition);
-              }
-
-              Quat quat0(value0[1], value0[2], value0[3], value0[4]);
-              Quat quat1(value1[1], value1[2], value1[3], value1[4]);
-              quat0.premultiply(quat1);
-              value0[1] = quat0.x;
-              value0[2] = quat0.y;
-              value0[3] = quat0.z;
-              value0[4] = quat0.w;
+              value1[1] = value0[1];
+              value1[2] = value0[2];
+              value1[3] = value0[3];
+              value1[4] = value0[4];
             }
           }
-          return result;
+          else if (this->index == 1) // emote animation
+          {
+            // 2: Spin, 3: Chest, 4: UpperChest, 5: Neck, 6: Head
+            if (spec.index == 2 || spec.index == 3 || spec.index == 4 || spec.index == 5 || spec.index == 6) {
+              if (!spec.isPosition) {
+                Quat quat0(value0[1], value0[2], value0[3], value0[4]);
+                Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+                quat0.premultiply(quat1);
+                value1[1] = quat0.x;
+                value1[2] = quat0.y;
+                value1[3] = quat0.z;
+                value1[4] = quat0.w;
+              } else {
+                interpolateFlat(value1, 1, value0, 1, value1, 1, this->factor, spec.isPosition);
+              }
+            } else {
+              float f = this->factor;
+              if (!spec.isTop) {
+                f *= (1 - this->arg); // arg: idleWalkFactor
+              }
+
+              interpolateFlat(value1, 1, value0, 1, value1, 1, f, spec.isPosition);
+            }
+          }
         }
-        else
-        {
-          return value0;
-        }
+
+        this->children[0]->weight = 1 - this->factor;
+        this->children[1]->weight = this->factor;
       }
 
       // doBlendList ---
@@ -516,7 +572,16 @@ namespace AnimationSystem
         AnimationNode *childNode = this->children[i];
         if (childNode->weight > 0)
         {
-          float *value = childNode->update(spec);
+          float *value;
+          if (childNode->results[spec.index])
+          {
+            value = childNode->results[spec.index];
+            childNode->results[spec.index] = NULL;
+          }
+          else
+          {
+            value = childNode->update(spec);
+          }
           if (nodeIndex == 0)
           {
             result = value;
@@ -534,6 +599,7 @@ namespace AnimationSystem
           }
         }
       }
+      this->results[spec.index] = result;
       return result;
     }
   }

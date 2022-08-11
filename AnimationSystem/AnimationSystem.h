@@ -50,6 +50,7 @@ namespace AnimationSystem
   public:
     // node & motion ------
     AnimationMixer *mixer;
+    float *results[53];
     float *update(AnimationMapping &spec);
 
     // node ------
@@ -73,8 +74,10 @@ namespace AnimationSystem
     void crossFadeSolitary(float duration, AnimationNode *targetNode);
 
     // NodeType::FUNC ---
+    unsigned int index;
     float arg = 0;
     // factor
+    // void crossFadeTwo(float duration, float factor);
 
     // motion ------
     Animation *animation;
@@ -109,7 +112,7 @@ namespace AnimationSystem
     }
 
     AnimationNode *createMotion(Animation *animation);
-    AnimationNode *createNode(NodeType type = NodeType::LIST);
+    AnimationNode *createNode(NodeType type = NodeType::LIST, unsigned int index = 0);
     float **update(float timeS);
   };
 
