@@ -6,6 +6,9 @@
 #include "physics.h"
 #include <string>
 #include <iostream>
+#include "geometry/PxHeightFieldSample.h"
+#include "geometry/PxHeightFieldDesc.h"
+#include "geometry/PxHeightFieldGeometry.h"
 
 //
 
@@ -86,6 +89,46 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
 
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
+}
+void PBase::addHeightFieldGeometry() {
+  // args
+  float hfScale = 10.;
+  const PxReal heightScale = 0.005f;
+  PxVec3 midPoint(0, 0, 0);
+  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
+  // end args
+
+	unsigned int hfWidth = 10;
+	unsigned int hfHeight = 10;
+
+  PxTransform pose;
+	pose.p = midPoint + PxVec3(-((hfWidth - 1)*0.5f*hfScale), 0, -((hfHeight - 1)*0.5f*hfScale));
+
+	PxU32 hfNumVerts = hfWidth*hfHeight;
+
+	PxHeightFieldSample* samples = new PxHeightFieldSample[hfNumVerts];
+	memset(samples,0,hfNumVerts*sizeof(PxHeightFieldSample));
+
+	PxHeightFieldDesc hfDesc;
+	//hfDesc.format = PxHeightFieldFormat::eS16_TM;
+	hfDesc.nbColumns = hfWidth;
+	hfDesc.nbRows = hfHeight;
+	hfDesc.samples.data = samples;
+	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
+
+	PxHeightField* heightField = cooking->createHeightField(hfDesc, physics->getPhysicsInsertionCallback());
+
+	PxRigidStatic* hfActor = physics->createRigidStatic(pose);
+
+	PxHeightFieldGeometry hfGeom(heightField, PxMeshGeometryFlags(), heightScale, hfScale, hfScale);
+	PxShape* hfShape = PxRigidActorExt::createExclusiveShape(*hfActor, hfGeom, *material);
+
+	// hfShape->setQueryFilterData(queryFilterData);
+	// hfShape->setSimulationFilterData(simulationFilterData);
+
+	scene->addActor(*hfActor);
+
+	delete[] samples;
 }
 
 //

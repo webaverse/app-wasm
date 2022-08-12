@@ -18,9 +18,12 @@ public:
   PxDefaultErrorCallback *errorCallback = nullptr;
   PxFoundation *foundation = nullptr;
   PxCooking *cooking = nullptr;
+  PxPhysics *physics = nullptr;
+  PxScene *scene = nullptr;
 
   void cookGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
   void cookConvexGeometry(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream);
+  void addHeightFieldGeometry();
 };
 
 extern PBase *physicsBase;

@@ -175,6 +175,7 @@ PScene::PScene() {
   {
     // PxTolerancesScale tolerancesScale;
     physics = PxCreatePhysics(PX_PHYSICS_VERSION, *(physicsBase->foundation), physicsBase->tolerancesScale);
+    physicsBase->physics = physics;
   }
   {
     simulationEventCallback = new SimulationEventCallback2();
@@ -196,6 +197,7 @@ PScene::PScene() {
     }
     sceneDesc.filterShader = ccdFilterShader;
     scene = physics->createScene(sceneDesc);
+    physicsBase->scene = scene;
     controllerManager = PxCreateControllerManager(*scene);
     controllerManager->setOverlapRecoveryModule(true);
   }
