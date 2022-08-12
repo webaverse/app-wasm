@@ -90,7 +90,7 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
-void PBase::addHeightFieldGeometry(unsigned int id) {
+void PBase::addHeightFieldGeometry(unsigned int id) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
   // args
   float hfScale = 10.;
   const PxReal heightScale = 0.005f;
