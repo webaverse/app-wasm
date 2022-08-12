@@ -90,7 +90,7 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
-void PBase::addHeightFieldGeometry() {
+void PBase::addHeightFieldGeometry(unsigned int id) {
   // args
   float hfScale = 10.;
   const PxReal heightScale = 0.005f;
@@ -118,15 +118,17 @@ void PBase::addHeightFieldGeometry() {
 
 	PxHeightField* heightField = cooking->createHeightField(hfDesc, physics->getPhysicsInsertionCallback());
 
-	PxRigidStatic* hfActor = physics->createRigidStatic(pose);
+	PxRigidStatic* actor = physics->createRigidStatic(pose);
 
 	PxHeightFieldGeometry hfGeom(heightField, PxMeshGeometryFlags(), heightScale, hfScale, hfScale);
-	PxShape* hfShape = PxRigidActorExt::createExclusiveShape(*hfActor, hfGeom, *material);
+	PxShape* hfShape = PxRigidActorExt::createExclusiveShape(*actor, hfGeom, *material);
 
 	// hfShape->setQueryFilterData(queryFilterData);
 	// hfShape->setSimulationFilterData(simulationFilterData);
 
-	scene->addActor(*hfActor);
+  actor->userData = (void *)id;
+  scene->addActor(*actor);
+  actors->push_back(actor);
 
 	delete[] samples;
 }
