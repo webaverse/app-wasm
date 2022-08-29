@@ -117,6 +117,8 @@ public:
   PxConvexMesh *createConvexShape(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream);
   void destroyConvexShape(PxConvexMesh *convexMesh);
   
+  PxHeightField *createHeightField(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream);
+
   PxMaterial *createMaterial(float *mat);
   void destroyMaterial(PxMaterial *material);
 

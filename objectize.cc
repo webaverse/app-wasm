@@ -205,6 +205,10 @@ EMSCRIPTEN_KEEPALIVE void destroyConvexShapePhysics(PScene *scene, PxConvexMesh 
   scene->destroyConvexShape(convexMesh);
 }
 
+EMSCRIPTEN_KEEPALIVE PxHeightField *createHeightFieldPhysics(PScene *scene, uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
+  return scene->createHeightField(data, length, releaseWriteStream);
+}
+
 EMSCRIPTEN_KEEPALIVE PxMaterial *createMaterialPhysics(PScene *scene, float *mat) {
   return scene->createMaterial(mat);
 }

@@ -570,6 +570,17 @@ void PScene::destroyConvexShape(PxConvexMesh *convexMesh) {
   convexMesh->release();
 }
 
+PxHeightField *PScene::createHeightField(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream) {
+  PxDefaultMemoryInputData readBuffer(data, length);
+  PxHeightField *heightfield = physics->createHeightField(readBuffer);
+
+  if (releaseWriteStream) {
+    delete releaseWriteStream;
+  }
+
+  return heightfield;
+}
+
 PxMaterial *PScene::createMaterial(float *mat) {
   PxMaterial *material = physics->createMaterial(mat[0], mat[1], mat[2]);
   return material;
