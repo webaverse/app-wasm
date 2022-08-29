@@ -108,8 +108,9 @@ void PBase::cookHeightFieldGeometry(uint8_t **data, unsigned int *length, PxDefa
 		for(PxU32 z = 0; z < hfWidth; z++)
 		{
       const PxU32 Index = z + x*hfWidth;
-      // float height = std::sin(x);
-      float height = x;
+      // float height = std::sin(x); // nok: float. todo: use int * heightScale. https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxapi/files/classPxHeightFieldGeometry.html#a8ced165e5b805d5e6c2b6a4fdc33ed2a
+      // float height = x; // ok: int
+      float height = x % 2; // ok: int
       std::cout << "height: " << height << std::endl;
 			samples[Index].height = (PxI16)(height);
 		}
