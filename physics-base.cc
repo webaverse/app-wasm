@@ -95,18 +95,8 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *length = (*writeStream)->getSize();
 }
 void PBase::cookHeightFieldGeometry(uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
-  // args
-  float hfScale = 10.;
-  const PxReal heightScale = 0.005f;
-  PxVec3 midPoint(0, 0, 0);
-  PxMaterial *material = physics->createMaterial(0.5f, 0.5f, 0.1f);
-  // end args
-
 	unsigned int hfWidth = 10;
 	unsigned int hfHeight = 10;
-
-  PxTransform pose;
-	pose.p = midPoint + PxVec3(-((hfWidth - 1)*0.5f*hfScale), 0, -((hfHeight - 1)*0.5f*hfScale));
 
 	PxU32 hfNumVerts = hfWidth*hfHeight;
 
