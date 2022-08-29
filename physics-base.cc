@@ -58,6 +58,8 @@ void PBase::cookGeometry(float *positions, unsigned int *indices, unsigned int n
   bool status = cooking->cookTriangleMesh(meshDesc, **writeStream);
   if (!status) {
     std::cerr << "geometry triangle mesh bake failed" << std::endl;
+  } else {
+    std::cerr << "geometry triangle mesh bake succeeded" << std::endl;
   }
 
   *data = (*writeStream)->getData();
@@ -85,12 +87,14 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   bool status = cooking->cookConvexMesh(meshDesc, **writeStream);
   if (!status) {
     std::cerr << "geometry convex mesh bake failed" << std::endl;
+  } else {
+    std::cerr << "geometry convex mesh bake succeeded" << std::endl;
   }
 
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
-void PBase::addHeightFieldGeometry(unsigned int id) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
+void PBase::cookHeightFieldGeometry(uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
   // args
   float hfScale = 10.;
   const PxReal heightScale = 0.005f;
@@ -109,28 +113,23 @@ void PBase::addHeightFieldGeometry(unsigned int id) { // todo: separate `cook` `
 	PxHeightFieldSample* samples = new PxHeightFieldSample[hfNumVerts];
 	memset(samples,0,hfNumVerts*sizeof(PxHeightFieldSample));
 
-	PxHeightFieldDesc hfDesc;
+	PxHeightFieldDesc hfDesc{};
 	//hfDesc.format = PxHeightFieldFormat::eS16_TM;
 	hfDesc.nbColumns = hfWidth;
 	hfDesc.nbRows = hfHeight;
 	hfDesc.samples.data = samples;
 	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
-	PxHeightField* heightField = cooking->createHeightField(hfDesc, physics->getPhysicsInsertionCallback());
+  *writeStream = new PxDefaultMemoryOutputStream();
+  bool status = cooking->cookHeightField(hfDesc, **writeStream);
+  if (!status) {
+    std::cerr << "geometry heightfield bake failed" << std::endl;
+  } else {
+    std::cerr << "geometry heightfield bake succeeded" << std::endl;
+  }
 
-	PxRigidStatic* actor = physics->createRigidStatic(pose);
-
-	PxHeightFieldGeometry hfGeom(heightField, PxMeshGeometryFlags(), heightScale, hfScale, hfScale);
-	PxShape* hfShape = PxRigidActorExt::createExclusiveShape(*actor, hfGeom, *material);
-
-	// hfShape->setQueryFilterData(queryFilterData);
-	// hfShape->setSimulationFilterData(simulationFilterData);
-
-  actor->userData = (void *)id;
-  scene->addActor(*actor);
-  actors->push_back(actor);
-
-	delete[] samples;
+  *data = (*writeStream)->getData();
+  *length = (*writeStream)->getSize();
 }
 
 //
