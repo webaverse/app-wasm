@@ -630,6 +630,26 @@ void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float 
     releaseConvexMesh->release();
   }
 }
+
+void PScene::addHeightFieldGeometry(PxHeightField *heightField, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxHeightField *releaseHeightField) {
+  PxTransform transform(PxVec3(0, 0, 0), PxQuat(0, 0, 0, 1));
+  PxHeightFieldGeometry geometry(heightField, PxMeshGeometryFlags(), 1, 1, 1);
+
+  PxRigidActor *mesh;
+  if (dynamic) {
+    mesh = PxCreateDynamic(*physics, transform, geometry, *material, 1);
+  } else {
+    mesh = PxCreateStatic(*physics, transform, geometry, *material);
+  }
+  mesh->userData = (void *)id;
+  scene->addActor(*mesh);
+  actors.push_back(mesh);
+
+  // if (releaseHeightField != nullptr) {
+  //   releaseHeightField->release();
+  // }
+}
+
 void PScene::enableActor(unsigned int id) {
   auto actorIter = std::find_if(actors.begin(), actors.end(), [&](PxRigidActor *actor) -> bool {
     return (unsigned int)actor->userData == id;

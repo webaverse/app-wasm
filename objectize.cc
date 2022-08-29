@@ -222,6 +222,9 @@ EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, PxTriangleMesh *tria
 EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxConvexMesh *releaseConvexMesh) {
   scene->addConvexGeometry(convexMesh, position, quaternion, scale, id, material, dynamic, external, releaseConvexMesh);
 }
+EMSCRIPTEN_KEEPALIVE void addHeightFieldGeometryPhysics(PScene *scene, PxHeightField *convexMesh, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxHeightField *releaseHeightField) {
+  scene->addHeightFieldGeometry(convexMesh, id, material, dynamic, external, releaseHeightField);
+}
 
 EMSCRIPTEN_KEEPALIVE void setGeometryScalePhysics(PScene *scene, unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream) {
   scene->setGeometryScale(id, scale, writeStream);
