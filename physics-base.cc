@@ -95,13 +95,25 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *length = (*writeStream)->getSize();
 }
 void PBase::cookHeightFieldGeometry(uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
-	unsigned int hfWidth = 10;
-	unsigned int hfHeight = 10;
+	unsigned int hfWidth = 10; // z axis
+	unsigned int hfHeight = 10; // x axis
 
 	PxU32 hfNumVerts = hfWidth*hfHeight;
 
 	PxHeightFieldSample* samples = new PxHeightFieldSample[hfNumVerts];
 	memset(samples,0,hfNumVerts*sizeof(PxHeightFieldSample));
+
+  for(PxU32 x = 0; x < hfHeight; x++)
+	{
+		for(PxU32 z = 0; z < hfWidth; z++)
+		{
+      const PxU32 Index = z + x*hfWidth;
+      // float height = std::sin(x);
+      float height = x;
+      std::cout << "height: " << height << std::endl;
+			samples[Index].height = (PxI16)(height);
+		}
+	}
 
 	PxHeightFieldDesc hfDesc{};
 	//hfDesc.format = PxHeightFieldFormat::eS16_TM;
