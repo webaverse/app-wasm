@@ -11,10 +11,9 @@ It is compiled with EMSDK.
 
 
 ### Get [Emscripten SDK](https://github.com/emscripten-core/emsdk)
-- For it to work with the current build you need to install version **2.0.6**
 - Clone it and then run these commands inside the **emsdk** directory:
-    `./emsdk install 2.0.6`
-    `./emsdk activate 2.0.6`
+    `./emsdk install latest`
+    `./emsdk activate latest`
     
 
 ## Compilation
