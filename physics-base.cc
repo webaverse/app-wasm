@@ -107,6 +107,7 @@ void PBase::cookHeightFieldGeometry(unsigned int width, unsigned int height, uin
       // float height = std::sin(x); // nok: float. todo: use int * heightScale. https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxapi/files/classPxHeightFieldGeometry.html#a8ced165e5b805d5e6c2b6a4fdc33ed2a
       // float height = x; // ok: int
       float height = x % 2; // ok: int
+      // float height = 1;
       std::cout << "height: " << height << std::endl;
 			samples[Index].height = (PxI16)(height);
 		}
@@ -114,8 +115,8 @@ void PBase::cookHeightFieldGeometry(unsigned int width, unsigned int height, uin
 
 	PxHeightFieldDesc hfDesc{};
 	//hfDesc.format = PxHeightFieldFormat::eS16_TM;
-	hfDesc.nbColumns = width;
-	hfDesc.nbRows = height;
+	hfDesc.nbColumns = width; // columns: z axis
+	hfDesc.nbRows = height; // rows: x axis
 	hfDesc.samples.data = samples;
 	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
