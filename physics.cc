@@ -175,8 +175,6 @@ PScene::PScene() {
   {
     // PxTolerancesScale tolerancesScale;
     physics = PxCreatePhysics(PX_PHYSICS_VERSION, *(physicsBase->foundation), physicsBase->tolerancesScale);
-    physicsBase->physics = physics;
-    physicsBase->actors = &actors;
   }
   {
     simulationEventCallback = new SimulationEventCallback2();
@@ -198,7 +196,6 @@ PScene::PScene() {
     }
     sceneDesc.filterShader = ccdFilterShader;
     scene = physics->createScene(sceneDesc);
-    physicsBase->scene = scene;
     controllerManager = PxCreateControllerManager(*scene);
     controllerManager->setOverlapRecoveryModule(true);
   }
@@ -533,6 +530,22 @@ void PScene::addBoxGeometry(float *position, float *quaternion, float *size, uns
     PxRigidDynamic *box = PxCreateDynamic(*physics, transform, geometry, *material, 1);
     PxRigidBodyExt::updateMassAndInertia(*box, 1.0f);
     actor = box;
+    if (groupId != -1) {
+      // collision filter
+      unsigned int numShapes = box->getNbShapes();
+      if (numShapes == 1) {
+        PxShape *shapes[1];
+        box->getShapes(shapes, sizeof(shapes)/sizeof(shapes[0]), 0);
+        PxShape *shape = shapes[0];
+        PxFilterData filterData{};
+        filterData.word0 = groupId; // character id
+        filterData.word1 = groupId; // the unique bone id in the character
+        filterData.word3 = 3; // signal this is a character skeleton bone; used during filtering
+        shape->setSimulationFilterData(filterData); 
+      } else {
+        std::cerr << "unexpected number of shapes: " << numShapes << std::endl;
+      }
+    }
   } else {
     PxRigidStatic *box = PxCreateStatic(*physics, transform, geometry, *material);
     actor = box;

@@ -58,8 +58,6 @@ void PBase::cookGeometry(float *positions, unsigned int *indices, unsigned int n
   bool status = cooking->cookTriangleMesh(meshDesc, **writeStream);
   if (!status) {
     std::cerr << "geometry triangle mesh bake failed" << std::endl;
-  } else {
-    std::cerr << "geometry triangle mesh bake succeeded" << std::endl;
   }
 
   *data = (*writeStream)->getData();
@@ -87,8 +85,6 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   bool status = cooking->cookConvexMesh(meshDesc, **writeStream);
   if (!status) {
     std::cerr << "geometry convex mesh bake failed" << std::endl;
-  } else {
-    std::cerr << "geometry convex mesh bake succeeded" << std::endl;
   }
 
   *data = (*writeStream)->getData();
