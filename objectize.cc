@@ -185,8 +185,8 @@ EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(float *positions, unsigned int *in
 EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   physicsBase->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
-EMSCRIPTEN_KEEPALIVE void cookHeightFieldGeometryPhysics(uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
-  physicsBase->cookHeightFieldGeometry(data, length, writeStream);
+EMSCRIPTEN_KEEPALIVE void cookHeightFieldGeometryPhysics(unsigned int width, unsigned int height, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  physicsBase->cookHeightFieldGeometry(width, height, data, length, writeStream);
 }
 
 //

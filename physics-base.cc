@@ -90,20 +90,20 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
-void PBase::cookHeightFieldGeometry(uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
-	unsigned int hfWidth = 10; // z axis
-	unsigned int hfHeight = 10; // x axis
+void PBase::cookHeightFieldGeometry(unsigned int width, unsigned int height, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
+	// unsigned int width = 10; // z axis
+	// unsigned int height = 10; // x axis
 
-	PxU32 hfNumVerts = hfWidth*hfHeight;
+	PxU32 hfNumVerts = width*height;
 
 	PxHeightFieldSample* samples = new PxHeightFieldSample[hfNumVerts];
 	memset(samples,0,hfNumVerts*sizeof(PxHeightFieldSample));
 
-  for(PxU32 x = 0; x < hfHeight; x++)
+  for(PxU32 x = 0; x < height; x++)
 	{
-		for(PxU32 z = 0; z < hfWidth; z++)
+		for(PxU32 z = 0; z < width; z++)
 		{
-      const PxU32 Index = z + x*hfWidth;
+      const PxU32 Index = z + x*width;
       // float height = std::sin(x); // nok: float. todo: use int * heightScale. https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxapi/files/classPxHeightFieldGeometry.html#a8ced165e5b805d5e6c2b6a4fdc33ed2a
       // float height = x; // ok: int
       float height = x % 2; // ok: int
@@ -114,8 +114,8 @@ void PBase::cookHeightFieldGeometry(uint8_t **data, unsigned int *length, PxDefa
 
 	PxHeightFieldDesc hfDesc{};
 	//hfDesc.format = PxHeightFieldFormat::eS16_TM;
-	hfDesc.nbColumns = hfWidth;
-	hfDesc.nbRows = hfHeight;
+	hfDesc.nbColumns = width;
+	hfDesc.nbRows = height;
 	hfDesc.samples.data = samples;
 	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
