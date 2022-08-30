@@ -90,24 +90,24 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
-void PBase::cookHeightFieldGeometry(unsigned int width, unsigned int height, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
-	// unsigned int width = 10; // z axis
-	// unsigned int height = 10; // x axis
+void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumns, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
+	// unsigned int numRows = 10; // x axis
+	// unsigned int numColumns = 10; // z axis
 
-	PxU32 hfNumVerts = width*height;
+	PxU32 hfNumVerts = numRows * numColumns;
 
 	PxHeightFieldSample* samples = new PxHeightFieldSample[hfNumVerts];
 	memset(samples,0,hfNumVerts*sizeof(PxHeightFieldSample));
 
-  for(PxU32 x = 0; x < height; x++)
+  for(PxU32 z = 0; z < numColumns; z++)
 	{
-		for(PxU32 z = 0; z < width; z++)
+		for(PxU32 x = 0; x < numRows; x++)
 		{
-      const PxU32 Index = z + x*width;
+      const PxU32 Index = x + z * numRows;
       // float height = std::sin(x); // nok: float. todo: use int * heightScale. https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxapi/files/classPxHeightFieldGeometry.html#a8ced165e5b805d5e6c2b6a4fdc33ed2a
       // float height = x; // ok: int
-      float height = x % 2; // ok: int
-      // float height = 1;
+      // float height = x % 2; // ok: int
+      float height = 1;
       std::cout << "height: " << height << std::endl;
 			samples[Index].height = (PxI16)(height);
 		}
@@ -115,8 +115,8 @@ void PBase::cookHeightFieldGeometry(unsigned int width, unsigned int height, uin
 
 	PxHeightFieldDesc hfDesc{};
 	//hfDesc.format = PxHeightFieldFormat::eS16_TM;
-	hfDesc.nbColumns = width; // columns: z axis
-	hfDesc.nbRows = height; // rows: x axis
+	hfDesc.nbRows = numRows; // rows: x axis
+	hfDesc.nbColumns = numColumns; // columns: z axis
 	hfDesc.samples.data = samples;
 	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
