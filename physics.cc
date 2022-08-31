@@ -657,10 +657,6 @@ void PScene::addHeightFieldGeometry(PxHeightField *heightField, float heightScal
   mesh->userData = (void *)id;
   scene->addActor(*mesh);
   actors.push_back(mesh);
-
-  // if (releaseHeightField != nullptr) {
-  //   releaseHeightField->release();
-  // }
 }
 
 void PScene::enableActor(unsigned int id) {
