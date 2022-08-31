@@ -90,7 +90,7 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
-void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumns, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
+void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumns, unsigned int *scratchStack, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) { // todo: separate `cook` `add` steps like what `physx.js` -> `w.addConvexGeometryPhysics()` do.
 	// unsigned int numRows = 10; // x axis
 	// unsigned int numColumns = 10; // z axis
 
@@ -107,7 +107,8 @@ void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumn
       // float height = std::sin(x); // nok: float. todo: use int * heightScale. https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxapi/files/classPxHeightFieldGeometry.html#a8ced165e5b805d5e6c2b6a4fdc33ed2a
       // float height = x; // ok: int
       // float height = x % 2; // ok: int
-      float height = 1;
+      // float height = 1;
+      unsigned int height = scratchStack[Index];
       std::cout << "height: " << height << std::endl;
 			samples[Index].height = (PxI16)(height);
 		}
