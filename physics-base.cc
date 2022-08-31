@@ -102,7 +102,6 @@ void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumn
 		{
       const PxU32 Index = x + z * numRows;
       unsigned int height = scratchStack[Index];
-      std::cout << "height: " << height << std::endl;
 			samples[Index].height = (PxI16)(height);
 		}
 	}
