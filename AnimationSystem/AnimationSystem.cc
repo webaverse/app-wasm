@@ -6,7 +6,8 @@ namespace AnimationSystem
   // std::vector<Interpolant> _interpolants;
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
-  std::vector<Animation *> _animations;
+  // std::vector<Animation *> _animations;
+  std::map<std::string, Animation *> animationo;
   // float finishedFlag = 0;
   // std::vector<float> _finishedFlags;
   // float _finishedFlags[100];
@@ -107,6 +108,9 @@ namespace AnimationSystem
     }
   }
 
+  void initAvatar() {
+
+  }
   AnimationMixer *createAnimationMixer()
   {
     AnimationMixer *animationMixer = new AnimationMixer();
@@ -178,10 +182,7 @@ namespace AnimationSystem
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration)
   {
     Animation *animation = new Animation();
-    animation->index = _animations.size();
     animation->duration = duration;
-    _animations.push_back(animation);
-    // std::cout << "_animations size: " << _animations.size() << std::endl;
     // std::cout << "nameByteLength: " << nameByteLength << std::endl;
     // for (unsigned int i = 0; i < nameByteLength; i++)
     // {
@@ -194,6 +195,8 @@ namespace AnimationSystem
       name += scratchStack[i];
     }
     std::cout << name << std::endl;
+
+    animationo[name] = animation;
 
     return animation;
   }
@@ -215,7 +218,7 @@ namespace AnimationSystem
 
     return motion;
   }
-  void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
+  void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
   {
 
     // std::cout << "createInterpolant: " << numParameterPositions << " " << numSampleValues << " " << valueSize << std::endl;
@@ -228,8 +231,12 @@ namespace AnimationSystem
     interpolant.sampleValues = sampleValues;
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
-    // _interpolant = interpolant;
-    _animations[animationIndex]->interpolants.push_back(interpolant);
+    std::string name = "";
+    for (unsigned int i = 0; i < animationNameByteLength; i++)
+    {
+      name += scratchStack[i];
+    }
+    animationo[name]->interpolants.push_back(interpolant);
 
     // std::cout
     // << "interpolant "
@@ -241,13 +248,13 @@ namespace AnimationSystem
 
     // std::cout << "interpolants size: " << _interpolants.size() << std::endl;
   }
-  float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t)
+  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t)
   {
     // std::cout << "evaluateInterpolant: " << interpolantIndex << " " << t << std::endl;
 
     // return _sampleValues[(int)t] + _parameterPositions[(int)t] + _valueSize;
 
-    Interpolant interpolant = _animations[animationIndex]->interpolants[interpolantIndex];
+    Interpolant interpolant = animation->interpolants[interpolantIndex];
 
     if (interpolant.numParameterPositions == 1)
     {
@@ -514,7 +521,7 @@ namespace AnimationSystem
       if (this->loop == LoopType::LoopOnce)
       {
         evaluateTimeS = (AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias;
-        value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
+        value = evaluateInterpolant(this->animation, spec.index, evaluateTimeS);
         // std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
         // if (isLastBone && this->weight > 0 && !this->isFinished && evaluateTimeS >= this->animation.duration)
         // {
@@ -552,7 +559,7 @@ namespace AnimationSystem
       else
       {
         evaluateTimeS = fmod((AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias, this->animation->duration);
-        value = evaluateInterpolant(this->animation->index, spec.index, evaluateTimeS);
+        value = evaluateInterpolant(this->animation, spec.index, evaluateTimeS);
       }
       this->results[spec.index] = value;
       return value;

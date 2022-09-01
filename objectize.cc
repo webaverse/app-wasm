@@ -87,8 +87,8 @@ EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *parent, Anima
 EMSCRIPTEN_KEEPALIVE void setRootNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::AnimationNode *node) {
   return AnimationSystem::setRootNode(mixer, node);
 }
-EMSCRIPTEN_KEEPALIVE void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
-  return AnimationSystem::createInterpolant(animationIndex, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
+EMSCRIPTEN_KEEPALIVE void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  return AnimationSystem::createInterpolant(scratchStack, animationNameByteLength, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
 // EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
 //   return AnimationSystem::evaluateInterpolant(animationIndex, interpolantIndex, t);

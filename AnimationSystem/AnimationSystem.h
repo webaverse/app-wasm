@@ -1,7 +1,7 @@
 #ifndef _ANIMATIONSYSTEM_H
 #define _ANIMATIONSYSTEM_H
+#include "physics.h"
 #include <iostream>
-#include "vector.h"
 
 namespace AnimationSystem
 {
@@ -176,13 +176,14 @@ namespace AnimationSystem
   };
 
   // ------
+  void initAvatar();
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   void addChild(AnimationNode *parent, AnimationNode *child);
   void setRootNode(AnimationMixer *mixer, AnimationNode *node);
-  void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
+  void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   // float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   // float **getAnimationValues(unsigned int animationIndex, float t);
   // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode);
