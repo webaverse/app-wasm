@@ -5,6 +5,14 @@
 
 namespace AnimationSystem
 {
+  struct Interpolant;
+  struct Animation;
+  struct AnimationMapping;
+  struct Avatar;
+  class AnimationNode;
+  class AnimationMixer;
+
+
   enum NodeType
   {
     LIST = 1,
@@ -75,6 +83,7 @@ namespace AnimationSystem
     Left_ankle = 51,
     Left_toe = 52
   };
+
   struct Interpolant
   {
     unsigned int numParameterPositions;
@@ -100,7 +109,12 @@ namespace AnimationSystem
     bool isTop;
     bool isArm;
   };
-  class AnimationMixer;
+  struct Avatar
+  {
+    AnimationMixer *mixer;
+    std::map<std::string, AnimationNode *> motiono;
+  };
+
   class AnimationNode
   {
   public:
@@ -171,16 +185,18 @@ namespace AnimationSystem
     }
 
     AnimationNode *createMotion(Animation *animation);
+    AnimationNode *getMotion(char *scratchStack, unsigned int nameByteLength);
     AnimationNode *createNode(NodeType type = NodeType::LIST, unsigned int index = 0);
     float **update(float timeS);
   };
 
   // ------
-  void initAvatar();
+  void initAvatar(AnimationMixer *mixer);
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
+  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
   void addChild(AnimationNode *parent, AnimationNode *child);
   void setRootNode(AnimationMixer *mixer, AnimationNode *node);
   void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);

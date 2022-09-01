@@ -63,6 +63,9 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 // AnimationSystem
 
 // todo: use pointer instead of index.
+EMSCRIPTEN_KEEPALIVE void initAvatar(AnimationSystem::AnimationMixer *mixer) {
+  return AnimationSystem::initAvatar(mixer);
+}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }
@@ -75,8 +78,14 @@ EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int i
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration) {
   return AnimationSystem::createAnimation(scratchStack, nameByteLength, duration);
 }
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
+  return AnimationSystem::getAnimation(scratchStack, nameByteLength);
+}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::AnimationMixer *mixer, AnimationSystem::Animation *animation) {
   return mixer->createMotion(animation);
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getMotion(AnimationSystem::AnimationMixer *mixer, char *scratchStack, unsigned int nameByteLength) {
+  return mixer->getMotion(scratchStack, nameByteLength);
 }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST, unsigned int index = 0) {
   return mixer->createNode(type, index);

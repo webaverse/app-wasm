@@ -23,6 +23,8 @@ namespace AnimationSystem
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
+  Avatar avatar; // todo: support multi avatars
+
   // functions:
 
   // Utils ------
@@ -108,8 +110,51 @@ namespace AnimationSystem
     }
   }
 
-  void initAvatar() {
+  void initAvatar(AnimationMixer *mixer) {
+    // avatar.mixer = createAnimationMixer();
+    avatar.mixer = mixer;
 
+    //
+
+    avatar.motiono["idle"] = avatar.mixer->createMotion(animationo["idle.fbx"]);
+
+    avatar.motiono["walkForward"] = avatar.mixer->createMotion(animationo["walking.fbx"]);
+    avatar.motiono["walkBackward"] = avatar.mixer->createMotion(animationo["walking backwards.fbx"]);
+    avatar.motiono["walkLeft"] = avatar.mixer->createMotion(animationo["left strafe walking.fbx"]);
+    avatar.motiono["walkRight"] = avatar.mixer->createMotion(animationo["right strafe walking.fbx"]);
+    avatar.motiono["walkLeftMirror"] = avatar.mixer->createMotion(animationo["right strafe walking reverse.fbx"]);
+    avatar.motiono["walkRightMirror"] = avatar.mixer->createMotion(animationo["left strafe walking reverse.fbx"]);
+
+    avatar.motiono["runForward"] = avatar.mixer->createMotion(animationo["Fast Run.fbx"]);
+    avatar.motiono["runBackward"] = avatar.mixer->createMotion(animationo["running backwards.fbx"]);
+    avatar.motiono["runLeft"] = avatar.mixer->createMotion(animationo["left strafe.fbx"]);
+    avatar.motiono["runRight"] = avatar.mixer->createMotion(animationo["right strafe.fbx"]);
+    avatar.motiono["runLeftMirror"] = avatar.mixer->createMotion(animationo["right strafe reverse.fbx"]);
+    avatar.motiono["runRightMirror"] = avatar.mixer->createMotion(animationo["left strafe reverse.fbx"]);
+
+    avatar.motiono["crouchForward"] = avatar.mixer->createMotion(animationo["Sneaking Forward.fbx"]);
+    avatar.motiono["crouchBackward"] = avatar.mixer->createMotion(animationo["Sneaking Forward reverse.fbx"]);
+    avatar.motiono["crouchLeft"] = avatar.mixer->createMotion(animationo["Crouched Sneaking Left.fbx"]);
+    avatar.motiono["crouchRight"] = avatar.mixer->createMotion(animationo["Crouched Sneaking Right.fbx"]);
+    avatar.motiono["crouchLeftMirror"] = avatar.mixer->createMotion(animationo["Crouched Sneaking Right reverse.fbx"]);
+    avatar.motiono["crouchRightMirror"] = avatar.mixer->createMotion(animationo["Crouched Sneaking Left reverse.fbx"]);
+
+    avatar.motiono["bowForward"] = avatar.mixer->createMotion(animationo["Standing Aim Walk Forward.fbx"]);
+    avatar.motiono["bowBackward"] = avatar.mixer->createMotion(animationo["Standing Aim Walk Forward reverse.fbx"]);
+    avatar.motiono["bowLeft"] = avatar.mixer->createMotion(animationo["Standing Aim Walk Left.fbx"]);
+    avatar.motiono["bowRight"] = avatar.mixer->createMotion(animationo["Standing Aim Walk Right.fbx"]);
+    avatar.motiono["bowLeftMirror"] = avatar.mixer->createMotion(animationo["Standing Aim Walk Right reverse.fbx"]);
+    avatar.motiono["bowRightMirror"] = avatar.mixer->createMotion(animationo["Standing Aim Walk Left reverse.fbx"]);
+
+    avatar.motiono["crouchIdle"] = avatar.mixer->createMotion(animationo["Crouch Idle.fbx"]);
+    avatar.motiono["fly"] = avatar.mixer->createMotion(animationo["treading water.fbx"]);
+    avatar.motiono["flyIdle"] = avatar.mixer->createMotion(animationo["fly_idle.fbx"]);
+    avatar.motiono["flyDodgeForward"] = avatar.mixer->createMotion(animationo["fly_dodge_forward.fbx"]);
+    avatar.motiono["flyDodgeBackward"] = avatar.mixer->createMotion(animationo["fly_dodge_backward.fbx"]);
+    avatar.motiono["flyDodgeLeft"] = avatar.mixer->createMotion(animationo["fly_dodge_left.fbx"]);
+    avatar.motiono["flyDodgeRight"] = avatar.mixer->createMotion(animationo["fly_dodge_right.fbx"]);
+    avatar.motiono["flyDash"] = avatar.mixer->createMotion(animationo["fly_dash_forward.fbx"]);
+    avatar.motiono["narutoRun"] = avatar.mixer->createMotion(animationo["naruto run.fbx"]);
   }
   AnimationMixer *createAnimationMixer()
   {
@@ -200,6 +245,16 @@ namespace AnimationSystem
 
     return animation;
   }
+  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength)
+  {
+    std::string name = "";
+    for (unsigned int i = 0; i < nameByteLength; i++)
+    {
+      name += scratchStack[i];
+    }
+
+    return animationo[name];
+  }
   AnimationNode *AnimationMixer::createNode(NodeType type, unsigned int index)
   {
     AnimationNode *node = new AnimationNode();
@@ -217,6 +272,16 @@ namespace AnimationSystem
     this->motions.push_back(motion);
 
     return motion;
+  }
+  AnimationNode *AnimationMixer::getMotion(char *scratchStack, unsigned int nameByteLength)
+  {
+    std::string name = "";
+    for (unsigned int i = 0; i < nameByteLength; i++)
+    {
+      name += scratchStack[i];
+    }
+
+    return avatar.motiono[name];
   }
   void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
   {
