@@ -164,86 +164,22 @@ namespace AnimationSystem
     // float *finishedFlag = (float *)malloc((1) * sizeof(float));
     // float *finishedFlag = new float();
     float *animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished motion pointer.
-    // test ---
-    float testMixerFloat = 7;
-    float *testMixerPointer;
-    float **testMixerPointerPointer;
 
     AnimationMixer()
     {
       animationValues[53] = &finishedFlag;
-      // test ---
-      testMixerPointer = &testMixerFloat;
-      testMixerPointerPointer = &testMixerPointer;
     }
 
     AnimationNode *createMotion(Animation *animation);
     AnimationNode *createNode(NodeType type = NodeType::LIST, unsigned int index = 0);
     float **update(float timeS);
-    // test ---
-    float getTestMixerFloat()
-    {
-      return testMixerFloat;
-    }
-    float *getTestMixerPointer()
-    {
-      return testMixerPointer;
-    }
-    float **getTestMixerPointerPointer()
-    {
-      return testMixerPointerPointer;
-    }
-    void setTestMixerFloat(float val)
-    {
-      testMixerFloat = val;
-    }
-    //
-    float getFinishedFlag()
-    {
-      return finishedFlag;
-    }
-    float *getFinishedFlagPointer()
-    {
-      return animationValues[53];
-    }
-    float **getFinishedFlagPointerPointer()
-    {
-      return animationValues;
-    }
-    void setFinishedFlag(float val)
-    {
-      finishedFlag = val;
-    }
-    // end test ---
   };
 
-  float setTest(float num);
-  float setTest2(float num);
-  float setTestNew(float num);
-  float setTestAlloc(float num);
-  float getTest();
   // ------
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
-  // test ---
-  Animation *getAnimation1(unsigned int index);
-  float *getAnimation2(unsigned int index);
-  unsigned int *getAnimation3(unsigned int index);
-  float **getAnimation4(unsigned int index);
-  unsigned int **getAnimation5(unsigned int index);
-  Animation **getAnimation6(unsigned int index);
-  Animation **getAnimation7(unsigned int index);
-  float getFloat1();
-  float *getFloat2();
-  float **getFloat3();
-  Animation getAnimationB1();
-  Animation *getAnimationB2();
-  Animation **getAnimationB3();
-  float **getAnimationB4();
-  unsigned int **getAnimationB5();
-  // end test ---
   void addChild(AnimationNode *parent, AnimationNode *child);
   void setRootNode(AnimationMixer *mixer, AnimationNode *node);
   void createInterpolant(unsigned int animationIndex, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);

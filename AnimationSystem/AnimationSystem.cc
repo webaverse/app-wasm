@@ -13,14 +13,7 @@ namespace AnimationSystem
   // float finishedAnimationIndex; // todo: use pointer instead of index.
   // float **animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
-  float *test;
-  float **test2;
-  unsigned int **test3;
-  Animation **test4;
 
-  float testFloat = 1.23;
-  float *testFloat2 = &testFloat;
-  float **testFloat3 = &testFloat2;
   float *localQuaternion = (float *)malloc(5 * sizeof(float));
 
   Animation testAnimation = Animation();
@@ -30,37 +23,6 @@ namespace AnimationSystem
   float identityQuaternion[4] = {0, 0, 0, 1};
 
   // functions:
-
-  float setTest(float num)
-  {
-    float a = num;
-    test = &a;
-    return *test;
-  }
-
-  float setTest2(float num)
-  {
-    *test = num;
-    return *test;
-  }
-
-  float setTestNew(float num)
-  {
-    test = new float(num);
-    return *test;
-  }
-
-  float setTestAlloc(float num)
-  {
-    test = (float *)malloc(1 * sizeof(float));
-    *test = num;
-    return *test;
-  }
-
-  float getTest()
-  {
-    return *test;
-  }
 
   // Utils ------
 
@@ -234,70 +196,6 @@ namespace AnimationSystem
     std::cout << name << std::endl;
 
     return animation;
-  }
-  Animation *getAnimation1(unsigned int index)
-  {
-    return _animations[index];
-  }
-  float *getAnimation2(unsigned int index)
-  {
-    return (float *)(_animations[index]);
-  }
-  unsigned int *getAnimation3(unsigned int index)
-  {
-    return (unsigned int *)(_animations[index]);
-  }
-  float **getAnimation4(unsigned int index)
-  {
-    *test2 = (float *)(_animations[index]);
-    return test2;
-  }
-  unsigned int **getAnimation5(unsigned int index)
-  {
-    *test3 = (unsigned int *)(_animations[index]);
-    return test3;
-  }
-  Animation **getAnimation6(unsigned int index)
-  {
-    *test4 = _animations[index];
-    return test4;
-  }
-  Animation **getAnimation7(unsigned int index)
-  {
-    test4 = &(_animations[index]);
-    return test4;
-  }
-  float getFloat1()
-  {
-    return testFloat;
-  }
-  float *getFloat2()
-  {
-    return testFloat2;
-  }
-  float **getFloat3()
-  {
-    return testFloat3;
-  }
-  Animation getAnimationB1()
-  {
-    return testAnimation;
-  }
-  Animation *getAnimationB2()
-  {
-    return testAnimation2;
-  }
-  Animation **getAnimationB3()
-  {
-    return testAnimation3;
-  }
-  float **getAnimationB4()
-  {
-    return (float **)testAnimation3;
-  }
-  unsigned int **getAnimationB5()
-  {
-    return (unsigned int **)testAnimation3;
   }
   AnimationNode *AnimationMixer::createNode(NodeType type, unsigned int index)
   {
