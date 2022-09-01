@@ -226,7 +226,7 @@ namespace AnimationSystem
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();
-  Animation *createAnimation(float duration);
+  Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   // test ---
   Animation *getAnimation1(unsigned int index);
   float *getAnimation2(unsigned int index);

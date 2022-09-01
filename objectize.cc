@@ -88,8 +88,8 @@ EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(AnimationSystem::AnimationMixe
 EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm) {
   return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone, isTop, isArm);
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(float duration) {
-  return AnimationSystem::createAnimation(duration);
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration) {
+  return AnimationSystem::createAnimation(scratchStack, nameByteLength, duration);
 }
 // test ---
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation1(unsigned int index) {

@@ -213,13 +213,25 @@ namespace AnimationSystem
     _animationMappings.push_back(animationMapping);
     // std::cout << "_animationMappings size: " << _animationMappings.size() << std::endl;
   }
-  Animation *createAnimation(float duration)
+  Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration)
   {
     Animation *animation = new Animation();
     animation->index = _animations.size();
     animation->duration = duration;
     _animations.push_back(animation);
     // std::cout << "_animations size: " << _animations.size() << std::endl;
+    // std::cout << "nameByteLength: " << nameByteLength << std::endl;
+    // for (unsigned int i = 0; i < nameByteLength; i++)
+    // {
+    //   std::cout << scratchStack[i] << std::endl;
+    // }
+    // https://www.geeksforgeeks.org/convert-character-array-to-string-in-c/
+    std::string name = "";
+    for (unsigned int i = 0; i < nameByteLength; i++)
+    {
+      name += scratchStack[i];
+    }
+    std::cout << name << std::endl;
 
     return animation;
   }
