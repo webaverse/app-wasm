@@ -42,6 +42,9 @@ EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(float *positions, unsigned int *in
 EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   physicsBase->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
+EMSCRIPTEN_KEEPALIVE void cookHeightFieldGeometryPhysics(unsigned int numRows, unsigned int numColumns, unsigned int *scratchStack, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+  physicsBase->cookHeightFieldGeometry(numRows, numColumns, scratchStack, data, length, writeStream);
+}
 
 EMSCRIPTEN_KEEPALIVE void deleteMemoryOutputStream(PxDefaultMemoryOutputStream *writeStream) {
   delete writeStream;
