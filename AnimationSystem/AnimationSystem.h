@@ -113,6 +113,7 @@ namespace AnimationSystem
   {
     AnimationMixer *mixer;
     std::map<std::string, AnimationNode *> motiono;
+    std::map<std::string, AnimationNode *> nodeo;
   };
 
   class AnimationNode
@@ -187,6 +188,7 @@ namespace AnimationSystem
     AnimationNode *createMotion(Animation *animation);
     AnimationNode *getMotion(char *scratchStack, unsigned int nameByteLength);
     AnimationNode *createNode(NodeType type = NodeType::LIST, unsigned int index = 0);
+    AnimationNode *getNode(char *scratchStack, unsigned int nameByteLength);
     float **update(float timeS);
   };
 

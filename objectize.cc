@@ -90,6 +90,9 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getMotion(AnimationSystem::
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST, unsigned int index = 0) {
   return mixer->createNode(type, index);
 }
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getNode(AnimationSystem::AnimationMixer *mixer, char *scratchStack, unsigned int nameByteLength) {
+  return mixer->getNode(scratchStack, nameByteLength);
+}
 EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *parent, AnimationSystem::AnimationNode *child) {
   return AnimationSystem::addChild(parent, child);
 }
