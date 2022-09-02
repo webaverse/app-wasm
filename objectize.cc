@@ -66,6 +66,9 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 EMSCRIPTEN_KEEPALIVE void initAvatar(AnimationSystem::AnimationMixer *mixer) {
   return AnimationSystem::initAvatar(mixer);
 }
+EMSCRIPTEN_KEEPALIVE void updateAvatar(float *scratchStack) {
+  return AnimationSystem::updateAvatar(scratchStack);
+}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }

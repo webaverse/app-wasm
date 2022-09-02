@@ -123,6 +123,7 @@ namespace AnimationSystem
     AnimationMixer *mixer;
     float *results[53];
     float *update(AnimationMapping &spec);
+    // std::string name;
 
     // node ------
     float weight = 1;
@@ -194,6 +195,7 @@ namespace AnimationSystem
 
   // ------
   void initAvatar(AnimationMixer *mixer);
+  void updateAvatar(float *scratchStack);
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();
