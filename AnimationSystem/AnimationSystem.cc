@@ -114,7 +114,7 @@ namespace AnimationSystem
     // avatar.mixer = createAnimationMixer();
     avatar.mixer = mixer;
 
-    // create motion
+    // create motion ---
 
     avatar.motiono["idle"] = avatar.mixer->createMotion(animationo["idle.fbx"]);
 
@@ -156,7 +156,97 @@ namespace AnimationSystem
     avatar.motiono["flyDash"] = avatar.mixer->createMotion(animationo["fly_dash_forward.fbx"]);
     avatar.motiono["narutoRun"] = avatar.mixer->createMotion(animationo["naruto run.fbx"]);
 
-    // create node
+    avatar.motiono["jump"] = avatar.mixer->createMotion(animationo["jump.fbx"]);
+    avatar.motiono["doubleJump"] = avatar.mixer->createMotion(animationo["jump_double.fbx"]);
+    avatar.motiono["fallLoop"] = avatar.mixer->createMotion(animationo["falling.fbx"]);
+    avatar.motiono["land"] = avatar.mixer->createMotion(animationo["landing.fbx"]);
+    avatar.motiono["land2"] = avatar.mixer->createMotion(animationo["landing 2.fbx"]);
+
+    // useAnimations
+    avatar.motiono["combo"] = avatar.mixer->createMotion(animationo["One Hand Sword Combo.fbx"]);
+    avatar.motiono["dashAttack"] = avatar.mixer->createMotion(animationo["sword_dash.fbx"]);
+    avatar.motiono["drink"] = avatar.mixer->createMotion(animationo["drinking.fbx"]);
+    avatar.motiono["eat"] = avatar.mixer->createMotion(animationo["eating.fbx"]);
+    avatar.motiono["magic"] = avatar.mixer->createMotion(animationo["magic cast.fbx"]);
+    avatar.motiono["pickUpThrow"] = avatar.mixer->createMotion(animationo["pick_up_throw.fbx"]);
+    avatar.motiono["pistol"] = avatar.mixer->createMotion(animationo["Pistol Aiming Idle.fbx"]);
+    avatar.motiono["rifle"] = avatar.mixer->createMotion(animationo["Rifle Aiming Idle.fbx"]);
+    avatar.motiono["slash"] = avatar.mixer->createMotion(animationo["sword and shield slash.fbx"]);
+    avatar.motiono["throw"] = avatar.mixer->createMotion(animationo["pick_up_throw.fbx"]);
+    
+    // useComboAnimations
+    avatar.motiono["swordSideIdle"] = avatar.mixer->createMotion(animationo["sword_idle_side.fbx"]);
+    avatar.motiono["swordSideSlash"] = avatar.mixer->createMotion(animationo["sword_side_slash.fbx"]);
+    avatar.motiono["swordSideSlashStep"] = avatar.mixer->createMotion(animationo["sword_side_slash_step.fbx"]);
+    avatar.motiono["swordTopDownSlash"] = avatar.mixer->createMotion(animationo["sword_topdown_slash.fbx"]);
+    avatar.motiono["swordTopDownSlashStep"] = avatar.mixer->createMotion(animationo["sword_topdown_slash_step.fbx"]);
+    avatar.motiono["dashAttack"] = avatar.mixer->createMotion(animationo["sword_dash.fbx"]);
+
+    // bowAnimations
+    avatar.motiono["bowDraw"] = avatar.mixer->createMotion(animationo["bow draw.fbx"]);
+    avatar.motiono["bowIdle"] = avatar.mixer->createMotion(animationo["bow idle.fbx"]);
+    avatar.motiono["bowLoose"] = avatar.mixer->createMotion(animationo["bow loose.fbx"]);
+
+    // sitAnimations
+    avatar.motiono["chair"] = avatar.mixer->createMotion(animationo["sitting idle.fbx"]);
+    avatar.motiono["saddle"] = avatar.mixer->createMotion(animationo["sitting idle.fbx"]);
+    avatar.motiono["stand"] = avatar.mixer->createMotion(animationo["Skateboarding.fbx"]);
+
+    // hurtAnimations
+    avatar.motiono["pain_back"] = avatar.mixer->createMotion(animationo["pain_back.fbx"]);
+    avatar.motiono["pain_arch"] = avatar.mixer->createMotion(animationo["pain_arch.fbx"]);
+
+    // emoteAnimations
+    avatar.motiono["alert"] = avatar.mixer->createMotion(animationo["alert.fbx"]);
+    avatar.motiono["alertSoft"] = avatar.mixer->createMotion(animationo["alert_soft.fbx"]);
+    avatar.motiono["angry"] = avatar.mixer->createMotion(animationo["angry.fbx"]);
+    avatar.motiono["angrySoft"] = avatar.mixer->createMotion(animationo["angry_soft.fbx"]);
+    avatar.motiono["embarrassed"] = avatar.mixer->createMotion(animationo["embarrassed.fbx"]);
+    avatar.motiono["embarrassedSoft"] = avatar.mixer->createMotion(animationo["embarrassed_soft.fbx"]);
+    avatar.motiono["headNod"] = avatar.mixer->createMotion(animationo["head_nod.fbx"]);
+    avatar.motiono["headNodSoft"] = avatar.mixer->createMotion(animationo["head_nod_single.fbx"]);
+    avatar.motiono["headShake"] = avatar.mixer->createMotion(animationo["head_shake.fbx"]);
+    avatar.motiono["headShakeSoft"] = avatar.mixer->createMotion(animationo["head_shake_single.fbx"]);
+    avatar.motiono["sad"] = avatar.mixer->createMotion(animationo["sad.fbx"]);
+    avatar.motiono["sadSoft"] = avatar.mixer->createMotion(animationo["sad_soft.fbx"]);
+    avatar.motiono["surprise"] = avatar.mixer->createMotion(animationo["surprise.fbx"]);
+    avatar.motiono["surpriseSoft"] = avatar.mixer->createMotion(animationo["surprise_soft.fbx"]);
+    avatar.motiono["victory"] = avatar.mixer->createMotion(animationo["victory.fbx"]);
+    avatar.motiono["victorySoft"] = avatar.mixer->createMotion(animationo["victory_soft.fbx"]);
+
+    // danceAnimations
+    avatar.motiono["dansu"] = avatar.mixer->createMotion(animationo["Hip Hop Dancing.fbx"]);
+    avatar.motiono["powerup"] = avatar.mixer->createMotion(animationo["powerup.fbx"]);
+
+    // holdAnimations
+    avatar.motiono["pick_up_idle"] = avatar.mixer->createMotion(animationo["pick_up_idle.fbx"]);
+
+    // activateAnimations
+    avatar.motiono["grab_forward"] = avatar.mixer->createMotion(animationo["grab_forward.fbx"]);
+    avatar.motiono["grab_down"] = avatar.mixer->createMotion(animationo["grab_down.fbx"]);
+    avatar.motiono["grab_up"] = avatar.mixer->createMotion(animationo["grab_up.fbx"]);
+    avatar.motiono["grab_left"] = avatar.mixer->createMotion(animationo["grab_left.fbx"]);
+    avatar.motiono["grab_right"] = avatar.mixer->createMotion(animationo["grab_right.fbx"]);
+    avatar.motiono["pick_up"] = avatar.mixer->createMotion(animationo["pick_up.fbx"]);
+
+    //
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+    // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
+
+    // create node ---
     avatar.nodeo["_8DirectionsWalkNodeList"] = avatar.mixer->createNode(NodeType::LIST);
     addChild(avatar.nodeo["_8DirectionsWalkNodeList"], avatar.motiono["walkForward"]);
     addChild(avatar.nodeo["_8DirectionsWalkNodeList"], avatar.motiono["walkBackward"]);
