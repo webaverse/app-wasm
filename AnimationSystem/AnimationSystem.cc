@@ -465,6 +465,7 @@ namespace AnimationSystem
 
     unsigned int index = 0;
 
+    // values ---
     float forwardFactor = scratchStack[index++];
     float backwardFactor = scratchStack[index++];
     float leftFactor = scratchStack[index++];
@@ -481,6 +482,26 @@ namespace AnimationSystem
 
     float holdFactor = scratchStack[index++];
 
+    // action end events ---
+    float landEnd = scratchStack[index++];
+    float fallLoopEnd = scratchStack[index++];
+    float flyEnd = scratchStack[index++];
+    float jumpEnd = scratchStack[index++];
+    float doubleJumpEnd = scratchStack[index++];
+    float narutoRunEnd = scratchStack[index++];
+    float activateEnd = scratchStack[index++];
+    float useEnd = scratchStack[index++];
+    float useComboEnd = scratchStack[index++];
+    float useEnvelopeEnd = scratchStack[index++];
+    float sitEnd = scratchStack[index++];
+    float emoteEnd = scratchStack[index++];
+    float hurtEnd = scratchStack[index++];
+    float danceEnd = scratchStack[index++];
+    float holdEnd = scratchStack[index++];
+
+    float landWithMoving = scratchStack[index++];
+
+    // values ---
     setWeight(avatar.motiono["walkForward"], forwardFactor);
     setWeight(avatar.motiono["walkBackward"], backwardFactor);
     setWeight(avatar.motiono["walkLeft"], mirrorLeftFactorReverse);
@@ -525,6 +546,73 @@ namespace AnimationSystem
 
     setArg(avatar.nodeo["holdNodeFunc"], holdFactor);
     setArg(avatar.nodeo["emoteNodeFunc"], idleWalkFactor);
+
+    // action end events ---
+    if (landEnd) {
+      if (!landWithMoving) {
+        avatar.nodeo["landNodeTwo"]->crossFadeTwo(0.05, 0);
+      } else {
+        avatar.nodeo["landNodeTwo"]->crossFadeTwo(0.15, 0);
+      }
+    }
+    
+    if (fallLoopEnd) {
+      avatar.nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+    
+    if (flyEnd) {
+      avatar.nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (jumpEnd) {
+      avatar.nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (doubleJumpEnd) {
+      avatar.nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (narutoRunEnd) {
+      avatar.nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (activateEnd) {
+      avatar.nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (useEnd) {
+      avatar.nodeo["useNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (useComboEnd) {
+      avatar.nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, avatar.nodeo["useNodeTwo"]);
+    }
+
+    if (useEnvelopeEnd) {
+      avatar.motiono["bowLoose"]->play();
+      setFactor(avatar.nodeo["bowDrawLooseNodoeTwo"], 1);
+      avatar.nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 1);
+    }
+
+    if (sitEnd) {
+      avatar.nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (emoteEnd) {
+      avatar.nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (hurtEnd) {
+      avatar.nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (danceEnd) {
+      avatar.nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
+    if (holdEnd) {
+      avatar.nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 0);
+    }
   }
   AnimationMixer *createAnimationMixer()
   {
