@@ -116,7 +116,7 @@ namespace AnimationSystem
     // avatar.mixer = createAnimationMixer();
     avatar.mixer = mixer;
 
-    // create motion ---
+    // create motion ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     avatar.motiono["idle"] = avatar.mixer->createMotion(animationo["idle.fbx"]);
 
@@ -248,7 +248,7 @@ namespace AnimationSystem
     // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
     // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
 
-    // create node ---
+    // create node ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     avatar.nodeo["_8DirectionsWalkNodeList"] = avatar.mixer->createNode(NodeType::LIST);
     addChild(avatar.nodeo["_8DirectionsWalkNodeList"], avatar.motiono["walkForward"]);
     addChild(avatar.nodeo["_8DirectionsWalkNodeList"], avatar.motiono["walkBackward"]);
@@ -492,22 +492,22 @@ namespace AnimationSystem
     setWeight(avatar.motiono["bowRight"], scratchStack[index++]); // mirrorRightFactorReverse,
     setWeight(avatar.motiono["bowRightMirror"], scratchStack[index++]); // mirrorRightFactor,
 
-    // setFactor(avatar.nodeo["_8DirectionsWalkNodeList"], scratchStack[index++]); // avatar.walkRunFactor,
-    // setFactor(avatar.nodeo["idle8DWalkRunNodeTwo"], scratchStack[index++]); // avatar.idleWalkFactor,
-    // setFactor(avatar.nodeo["idle8DCrouchNodeTwo"], scratchStack[index++]); // avatar.idleWalkFactor,
-    // setFactor(avatar.nodeo["default"], scratchStack[index++]); // avatar.crouchFactor,
-    // setFactor(avatar.nodeo["idle8DBow"], scratchStack[index++]); // avatar.idleWalkFactor,
+    setFactor(avatar.nodeo["_8DirectionsWalkRunNodeTwo"], scratchStack[index++]); // avatar.walkRunFactor,
+    setFactor(avatar.nodeo["idle8DWalkRunNodeTwo"], scratchStack[index++]); // avatar.idleWalkFactor,
+    setFactor(avatar.nodeo["idle8DCrouchNodeTwo"], scratchStack[index++]); // avatar.idleWalkFactor,
+    setFactor(avatar.nodeo["defaultNodeTwo"], scratchStack[index++]); // avatar.crouchFactor,
+    setFactor(avatar.nodeo["idle8DBowNodeTwo"], scratchStack[index++]); // avatar.idleWalkFactor,
 
-    // setWeight(avatar.nodeo["flyForwardNodeTwo"], scratchStack[index++]); // forwardFactor,
-    // setWeight(avatar.motiono["flyDodgeBackward"], scratchStack[index++]); // backwardFactor,
-    // setWeight(avatar.motiono["flyDodgeLeft"], scratchStack[index++]); // leftFactor,
-    // setWeight(avatar.motiono["flyDodgeRight"], scratchStack[index++]); // rightFactor,
+    setWeight(avatar.nodeo["flyForwardNodeTwo"], scratchStack[index++]); // forwardFactor,
+    setWeight(avatar.motiono["flyDodgeBackward"], scratchStack[index++]); // backwardFactor,
+    setWeight(avatar.motiono["flyDodgeLeft"], scratchStack[index++]); // leftFactor,
+    setWeight(avatar.motiono["flyDodgeRight"], scratchStack[index++]); // rightFactor,
 
-    // setFactor(avatar.nodeo["idle8DFly"], scratchStack[index++]); // avatar.walkRunFactor,
-    // setFactor(avatar.nodeo["flyForwardNodeTwo"], scratchStack[index++]); // avatar.flyDashFactor,
+    setFactor(avatar.nodeo["idle8DFlyNodeTwo"], scratchStack[index++]); // avatar.walkRunFactor,
+    setFactor(avatar.nodeo["flyForwardNodeTwo"], scratchStack[index++]); // avatar.flyDashFactor,
 
-    // setArg(avatar.nodeo["hold"], scratchStack[index++]); // holdFactor,
-    // setArg(avatar.nodeo["emote"], scratchStack[index++]); // avatar.idleWalkFactor,
+    setArg(avatar.nodeo["holdNodeFunc"], scratchStack[index++]); // holdFactor,
+    setArg(avatar.nodeo["emoteNodeFunc"], scratchStack[index++]); // avatar.idleWalkFactor,
   }
   AnimationMixer *createAnimationMixer()
   {
