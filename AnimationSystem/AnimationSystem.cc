@@ -499,7 +499,26 @@ namespace AnimationSystem
     float danceEnd = scratchStack[index++];
     float holdEnd = scratchStack[index++];
 
+    // action start events ---
+    float landStart = scratchStack[index++];
+    float fallLoopStart = scratchStack[index++];
+    float flyStart = scratchStack[index++];
+    float jumpStart = scratchStack[index++];
+    float doubleJumpStart = scratchStack[index++];
+    float narutoRunStart = scratchStack[index++];
+    float useStart = scratchStack[index++];
+    float useComboStart = scratchStack[index++];
+    float useEnvelopeStart = scratchStack[index++];
+    float sitStart = scratchStack[index++];
+    float emoteStart = scratchStack[index++];
+    float hurtStart = scratchStack[index++];
+    float danceStart = scratchStack[index++];
+    float holdStart = scratchStack[index++];
+    float activateStart = scratchStack[index++];
+
+    // other ---
     float landWithMoving = scratchStack[index++];
+    float dashAttacking = scratchStack[index++];
 
     // values ---
     setWeight(avatar.motiono["walkForward"], forwardFactor);
@@ -613,6 +632,128 @@ namespace AnimationSystem
     if (holdEnd) {
       avatar.nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 0);
     }
+
+    // action start events ---
+    if (landStart) {
+      std::cout << landWithMoving << std::endl;
+      std::cout << (bool)(landWithMoving) << std::endl;
+      if (!landWithMoving) {
+        avatar.motiono["land"]->play();
+        avatar.nodeo["landsNodeSolitary"]->crossFadeSolitary(0, avatar.motiono["land"]);
+        avatar.nodeo["landNodeTwo"]->crossFadeTwo(0, 1);
+      } else {
+        avatar.motiono["land2"]->play();
+        avatar.nodeo["landsNodeSolitary"]->crossFadeSolitary(0, avatar.motiono["land2"]);
+        avatar.nodeo["landNodeTwo"]->crossFadeTwo(0.1, 1);
+      }
+    }
+
+    if (fallLoopStart) {
+      avatar.nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
+
+    if (flyStart) {
+      avatar.nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
+
+    if (jumpStart) {
+      avatar.motiono["jumpMotion"]->play();
+      avatar.nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
+
+    if (doubleJumpStart) {
+      avatar.motiono["doubleJumpMotion"]->play();
+      avatar.nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
+
+    if (narutoRunStart) {
+      avatar.nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
+
+    // // sword
+    // if (useStart) {
+    //   let useAnimationName;
+    //   if (dashAttacking) {
+    //     useAnimationName = 'dashAttack';
+    //   } else {
+    //     useAnimationName = avatar.useAnimation;
+    //   }
+    //   const useMotion = avatar.useMotionPtro[useAnimationName];
+    //   physx.physxWorker.play(useMotion);
+    //   physx.physxWorker.crossFadeSolitary(avatar.usesNodeSolitaryPtr, 0, useMotion);
+    //   avatar.nodeo["useNodeTwo"].crossFadeTwo(0.2, 1);
+    // }
+
+    // // silsword
+    // if (useComboStart) {
+    //   let useAnimationName;
+    //   if (dashAttacking) {
+    //     useAnimationName = 'dashAttack';
+    //   } else {
+    //     useAnimationName = avatar.useAnimationCombo[avatar.useAnimationIndex];
+    //   }
+    //   const useMotion = avatar.useComboMotionPtro[useAnimationName];
+    //   physx.physxWorker.play(useMotion);
+    //   physx.physxWorker.crossFadeSolitary(avatar.useCombosNodeSolitaryPtr, 0.2, useMotion);
+    // }
+
+    // // bow
+    // if (useEnvelopeStart) {
+    //   console.log('useEnvelopeStart');
+    //   physx.physxWorker.play(avatar.bowMotionPtro.bowDraw);
+    //   physx.physxWorker.setFactor(avatar.bowDrawLooseNodoeTwoPtr, 0);
+    //   physx.physxWorker.setFactor(avatar.bowIdle8DDrawLooseNodeOverwritePtr, 1);
+    //   avatar.nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"].crossFadeTwo(0.2, 1);
+    // }
+
+    // // sit
+    // if (sitStart) {
+    //   const sitMotion = avatar.sitMotionPtro[avatar.sitAnimation || defaultSitAnimation];
+    //   physx.physxWorker.play(sitMotion);
+    //   physx.physxWorker.crossFadeSolitary(avatar.sitsNodeSolitaryPtr, 0, sitMotion);
+    //   avatar.nodeo["sitNodeTwo"].crossFadeTwo(0.2, 1);
+    // }
+
+    // // emote
+    // if (emoteStart) {
+    //   const emoteMotion = avatar.emoteMotionPtro[avatar.emoteAnimation || defaultEmoteAnimation];
+    //   physx.physxWorker.play(emoteMotion);
+    //   physx.physxWorker.crossFadeSolitary(avatar.emotesNodeSolitaryPtr, 0, emoteMotion);
+    //   avatar.nodeo["emoteNodeFunc"].crossFadeTwo(0.2, 1);
+    //   // physx.physxWorker.setFactor(avatar.emoteNodeFuncPtr, 1);
+    // }
+
+    // // hurt
+    // if (hurtStart) {
+    //   const hurtMotion = avatar.hurtMotionPtro[avatar.hurtAnimation];
+    //   physx.physxWorker.play(hurtMotion);
+    //   physx.physxWorker.crossFadeSolitary(avatar.hurtsNodeSolitaryPtr, 0, hurtMotion);
+    //   avatar.nodeo["hurtNodeTwo"].crossFadeTwo(0.2, 1);
+    // }
+
+    // // dance
+    // if (danceStart) {
+    //   const danceMotion = avatar.danceMotionPtro[avatar.danceAnimation || defaultDanceAnimation];
+    //   physx.physxWorker.play(danceMotion);
+    //   physx.physxWorker.crossFadeSolitary(avatar.dancesNodeSolitaryPtr, 0, danceMotion);
+    //   avatar.nodeo["danceNodeTwo"].crossFadeTwo(0.2, 1);
+    // }
+
+    // // hold
+    // if (holdStart) {
+    //   const holdMotion = avatar.holdMotionPtro[avatar.holdAnimation || defaultHoldAnimation];
+    //   physx.physxWorker.play(holdMotion);
+    //   physx.physxWorker.crossFadeSolitary(avatar.holdsNodeSolitaryPtr, 0, holdMotion);
+    //   avatar.nodeo["holdNodeFunc"].crossFadeTwo(0.2, 1);
+    // }
+
+    // // activate
+    // if (activateStart) {
+    //   const activateMotion = avatar.activateMotionPtro[avatar.activateAnimation || defaultActivateAnimation];
+    //   physx.physxWorker.play(activateMotion);
+    //   physx.physxWorker.crossFadeSolitary(avatar.activatesNodeSolitaryPtr, 0, activateMotion);
+    //   avatar.nodeo["activateNodeTwo"].crossFadeTwo(0.2, 1);
+    // }
   }
   AnimationMixer *createAnimationMixer()
   {
