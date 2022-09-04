@@ -455,6 +455,9 @@ namespace AnimationSystem
     avatar.nodeo["holdNodeFunc"] = avatar.mixer->createNode(NodeType::FUNC, 0);
     addChild(avatar.nodeo["holdNodeFunc"], avatar.nodeo["activateNodeTwo"]);
     addChild(avatar.nodeo["holdNodeFunc"], avatar.nodeo["holdsNodeSolitary"]);
+
+    // set root node ---
+    setRootNode(avatar.mixer, avatar.nodeo["holdNodeFunc"]);
   }
   void updateAvatar(float *scratchStack)
   {
