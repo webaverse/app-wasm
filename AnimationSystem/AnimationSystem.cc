@@ -767,6 +767,20 @@ namespace AnimationSystem
     //   avatar.nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
   }
+  void updateAvatarString(char *scratchStack, unsigned int numStrings)
+  {
+    unsigned int index = 0;
+    for (unsigned int stringIndex = 0; stringIndex < numStrings; stringIndex++)
+    {
+      unsigned int stringByteLength = (unsigned int)(scratchStack[index++]);
+      std::string string = "";
+      for (unsigned int charIndex = 0; charIndex < stringByteLength; charIndex++)
+      {
+        string += scratchStack[index++];
+      }
+      std::cout << string << std::endl;
+    }
+  }
   AnimationMixer *createAnimationMixer()
   {
     AnimationMixer *animationMixer = new AnimationMixer();

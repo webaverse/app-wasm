@@ -199,6 +199,7 @@ namespace AnimationSystem
   // ------
   void initAvatar(AnimationMixer *mixer);
   void updateAvatar(float *scratchStack);
+  void updateAvatarString(char *scratchStack, unsigned int numStrings);
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();

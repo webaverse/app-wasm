@@ -69,6 +69,9 @@ EMSCRIPTEN_KEEPALIVE void initAvatar(AnimationSystem::AnimationMixer *mixer) {
 EMSCRIPTEN_KEEPALIVE void updateAvatar(float *scratchStack) {
   return AnimationSystem::updateAvatar(scratchStack);
 }
+EMSCRIPTEN_KEEPALIVE void updateAvatarString(char *scratchStack, unsigned int numStrings) {
+  return AnimationSystem::updateAvatarString(scratchStack, numStrings);
+}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }
