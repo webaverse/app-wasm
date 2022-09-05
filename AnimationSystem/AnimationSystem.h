@@ -116,6 +116,12 @@ namespace AnimationSystem
     std::map<std::string, AnimationNode *> motiono;
     std::map<std::string, AnimationNode *> useMotiono;
     std::map<std::string, AnimationNode *> useComboMotiono;
+    std::map<std::string, AnimationNode *> sitMotiono;
+    std::map<std::string, AnimationNode *> emoteMotiono;
+    std::map<std::string, AnimationNode *> danceMotiono;
+    std::map<std::string, AnimationNode *> holdMotiono;
+    std::map<std::string, AnimationNode *> activateMotiono;
+
     std::map<std::string, AnimationNode *> nodeo;
     std::vector<std::string> strings;
   };

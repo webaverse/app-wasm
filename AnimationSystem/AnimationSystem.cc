@@ -207,46 +207,46 @@ namespace AnimationSystem
     avatar.motiono["bowLoose"] = avatar.mixer->createMotion(animationo["bow loose.fbx"]);
 
     // sitAnimations
-    avatar.motiono["chair"] = avatar.mixer->createMotion(animationo["sitting idle.fbx"]);
-    avatar.motiono["saddle"] = avatar.mixer->createMotion(animationo["sitting idle.fbx"]);
-    avatar.motiono["stand"] = avatar.mixer->createMotion(animationo["Skateboarding.fbx"]);
+    avatar.sitMotiono["chair"] = avatar.mixer->createMotion(animationo["sitting idle.fbx"], "chair");
+    avatar.sitMotiono["saddle"] = avatar.mixer->createMotion(animationo["sitting idle.fbx"], "saddle");
+    avatar.sitMotiono["stand"] = avatar.mixer->createMotion(animationo["Skateboarding.fbx"], "stand");
 
     // hurtAnimations
     avatar.motiono["pain_back"] = avatar.mixer->createMotion(animationo["pain_back.fbx"]);
     avatar.motiono["pain_arch"] = avatar.mixer->createMotion(animationo["pain_arch.fbx"]);
 
     // emoteAnimations
-    avatar.motiono["alert"] = avatar.mixer->createMotion(animationo["alert.fbx"]);
-    avatar.motiono["alertSoft"] = avatar.mixer->createMotion(animationo["alert_soft.fbx"]);
-    avatar.motiono["angry"] = avatar.mixer->createMotion(animationo["angry.fbx"]);
-    avatar.motiono["angrySoft"] = avatar.mixer->createMotion(animationo["angry_soft.fbx"]);
-    avatar.motiono["embarrassed"] = avatar.mixer->createMotion(animationo["embarrassed.fbx"]);
-    avatar.motiono["embarrassedSoft"] = avatar.mixer->createMotion(animationo["embarrassed_soft.fbx"]);
-    avatar.motiono["headNod"] = avatar.mixer->createMotion(animationo["head_nod.fbx"]);
-    avatar.motiono["headNodSoft"] = avatar.mixer->createMotion(animationo["head_nod_single.fbx"]);
-    avatar.motiono["headShake"] = avatar.mixer->createMotion(animationo["head_shake.fbx"]);
-    avatar.motiono["headShakeSoft"] = avatar.mixer->createMotion(animationo["head_shake_single.fbx"]);
-    avatar.motiono["sad"] = avatar.mixer->createMotion(animationo["sad.fbx"]);
-    avatar.motiono["sadSoft"] = avatar.mixer->createMotion(animationo["sad_soft.fbx"]);
-    avatar.motiono["surprise"] = avatar.mixer->createMotion(animationo["surprise.fbx"]);
-    avatar.motiono["surpriseSoft"] = avatar.mixer->createMotion(animationo["surprise_soft.fbx"]);
-    avatar.motiono["victory"] = avatar.mixer->createMotion(animationo["victory.fbx"]);
-    avatar.motiono["victorySoft"] = avatar.mixer->createMotion(animationo["victory_soft.fbx"]);
+    avatar.emoteMotiono["alert"] = avatar.mixer->createMotion(animationo["alert.fbx"], "alert");
+    avatar.emoteMotiono["alertSoft"] = avatar.mixer->createMotion(animationo["alert_soft.fbx"], "alertSoft");
+    avatar.emoteMotiono["angry"] = avatar.mixer->createMotion(animationo["angry.fbx"], "angry");
+    avatar.emoteMotiono["angrySoft"] = avatar.mixer->createMotion(animationo["angry_soft.fbx"], "angrySoft");
+    avatar.emoteMotiono["embarrassed"] = avatar.mixer->createMotion(animationo["embarrassed.fbx"], "embarrassed");
+    avatar.emoteMotiono["embarrassedSoft"] = avatar.mixer->createMotion(animationo["embarrassed_soft.fbx"], "embarrassedSoft");
+    avatar.emoteMotiono["headNod"] = avatar.mixer->createMotion(animationo["head_nod.fbx"], "headNod");
+    avatar.emoteMotiono["headNodSoft"] = avatar.mixer->createMotion(animationo["head_nod_single.fbx"], "headNodSoft");
+    avatar.emoteMotiono["headShake"] = avatar.mixer->createMotion(animationo["head_shake.fbx"], "headShake");
+    avatar.emoteMotiono["headShakeSoft"] = avatar.mixer->createMotion(animationo["head_shake_single.fbx"], "headShakeSoft");
+    avatar.emoteMotiono["sad"] = avatar.mixer->createMotion(animationo["sad.fbx"], "sad");
+    avatar.emoteMotiono["sadSoft"] = avatar.mixer->createMotion(animationo["sad_soft.fbx"], "sadSoft");
+    avatar.emoteMotiono["surprise"] = avatar.mixer->createMotion(animationo["surprise.fbx"], "surprise");
+    avatar.emoteMotiono["surpriseSoft"] = avatar.mixer->createMotion(animationo["surprise_soft.fbx"], "surpriseSoft");
+    avatar.emoteMotiono["victory"] = avatar.mixer->createMotion(animationo["victory.fbx"], "victory");
+    avatar.emoteMotiono["victorySoft"] = avatar.mixer->createMotion(animationo["victory_soft.fbx"], "victorySoft");
 
     // danceAnimations
-    avatar.motiono["dansu"] = avatar.mixer->createMotion(animationo["Hip Hop Dancing.fbx"]);
-    avatar.motiono["powerup"] = avatar.mixer->createMotion(animationo["powerup.fbx"]);
+    avatar.danceMotiono["dansu"] = avatar.mixer->createMotion(animationo["Hip Hop Dancing.fbx"], "dansu");
+    avatar.danceMotiono["powerup"] = avatar.mixer->createMotion(animationo["powerup.fbx"], "powerup");
 
     // holdAnimations
-    avatar.motiono["pick_up_idle"] = avatar.mixer->createMotion(animationo["pick_up_idle.fbx"]);
+    avatar.holdMotiono["pick_up_idle"] = avatar.mixer->createMotion(animationo["pick_up_idle.fbx"], "pick_up_idle");
 
     // activateAnimations
-    avatar.motiono["grab_forward"] = avatar.mixer->createMotion(animationo["grab_forward.fbx"]);
-    avatar.motiono["grab_down"] = avatar.mixer->createMotion(animationo["grab_down.fbx"]);
-    avatar.motiono["grab_up"] = avatar.mixer->createMotion(animationo["grab_up.fbx"]);
-    avatar.motiono["grab_left"] = avatar.mixer->createMotion(animationo["grab_left.fbx"]);
-    avatar.motiono["grab_right"] = avatar.mixer->createMotion(animationo["grab_right.fbx"]);
-    avatar.motiono["pick_up"] = avatar.mixer->createMotion(animationo["pick_up.fbx"]);
+    avatar.activateMotiono["grab_forward"] = avatar.mixer->createMotion(animationo["grab_forward.fbx"], "grab_forward");
+    avatar.activateMotiono["grab_down"] = avatar.mixer->createMotion(animationo["grab_down.fbx"], "grab_down");
+    avatar.activateMotiono["grab_up"] = avatar.mixer->createMotion(animationo["grab_up.fbx"], "grab_up");
+    avatar.activateMotiono["grab_left"] = avatar.mixer->createMotion(animationo["grab_left.fbx"], "grab_left");
+    avatar.activateMotiono["grab_right"] = avatar.mixer->createMotion(animationo["grab_right.fbx"], "grab_right");
+    avatar.activateMotiono["pick_up"] = avatar.mixer->createMotion(animationo["pick_up.fbx"], "pick_up");
 
     //
     // avatar.motiono[] = avatar.mixer->createMotion(animationo[]);
@@ -378,22 +378,22 @@ namespace AnimationSystem
 
     // emoteAnimations
     avatar.nodeo["emotesNodeSolitary"] = avatar.mixer->createNode(NodeType::SOLITARY);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["alert"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["alertSoft"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["angry"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["angrySoft"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["embarrassed"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["embarrassedSoft"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["headNod"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["headNodSoft"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["headShake"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["headShakeSoft"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["sad"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["sadSoft"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["surprise"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["surpriseSoft"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["victory"]);
-    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.motiono["victorySoft"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["alert"]); // todo: for loop
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["alertSoft"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["angry"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["angrySoft"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["embarrassed"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["embarrassedSoft"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["headNod"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["headNodSoft"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["headShake"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["headShakeSoft"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["sad"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["sadSoft"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["surprise"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["surpriseSoft"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["victory"]);
+    addChild(avatar.nodeo["emotesNodeSolitary"], avatar.emoteMotiono["victorySoft"]);
     //
     avatar.nodeo["emoteNodeFunc"] = avatar.mixer->createNode(NodeType::FUNC, 1);
     addChild(avatar.nodeo["emoteNodeFunc"], avatar.nodeo["useCombosNodeSolitary"]);
@@ -401,8 +401,8 @@ namespace AnimationSystem
 
     // danceAnimations
     avatar.nodeo["dancesNodeSolitary"] = avatar.mixer->createNode(NodeType::SOLITARY);
-    addChild(avatar.nodeo["dancesNodeSolitary"], avatar.motiono["dansu"]);
-    addChild(avatar.nodeo["dancesNodeSolitary"], avatar.motiono["powerup"]);
+    addChild(avatar.nodeo["dancesNodeSolitary"], avatar.danceMotiono["dansu"]);
+    addChild(avatar.nodeo["dancesNodeSolitary"], avatar.danceMotiono["powerup"]);
     //
     avatar.nodeo["danceNodeTwo"] = avatar.mixer->createNode(NodeType::TWO);
     addChild(avatar.nodeo["danceNodeTwo"], avatar.nodeo["emoteNodeFunc"]);
@@ -414,9 +414,9 @@ namespace AnimationSystem
 
     // sitAnimations
     avatar.nodeo["sitsNodeSolitary"] = avatar.mixer->createNode(NodeType::SOLITARY);
-    addChild(avatar.nodeo["sitsNodeSolitary"], avatar.motiono["chair"]);
-    addChild(avatar.nodeo["sitsNodeSolitary"], avatar.motiono["saddle"]);
-    addChild(avatar.nodeo["sitsNodeSolitary"], avatar.motiono["stand"]);
+    addChild(avatar.nodeo["sitsNodeSolitary"], avatar.sitMotiono["chair"]);
+    addChild(avatar.nodeo["sitsNodeSolitary"], avatar.sitMotiono["saddle"]);
+    addChild(avatar.nodeo["sitsNodeSolitary"], avatar.sitMotiono["stand"]);
     //
     avatar.nodeo["sitNodeTwo"] = avatar.mixer->createNode(NodeType::TWO);
     addChild(avatar.nodeo["sitNodeTwo"], avatar.nodeo["narutoRunNodeTwo"]);
@@ -448,12 +448,12 @@ namespace AnimationSystem
 
     // activateAnimations
     avatar.nodeo["activatesNodeSolitary"] = avatar.mixer->createNode(NodeType::SOLITARY);
-    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.motiono["grab_forward"]);
-    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.motiono["grab_down"]);
-    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.motiono["grab_up"]);
-    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.motiono["grab_left"]);
-    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.motiono["grab_right"]);
-    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.motiono["pick_up"]);
+    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.activateMotiono["grab_forward"]);
+    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.activateMotiono["grab_down"]);
+    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.activateMotiono["grab_up"]);
+    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.activateMotiono["grab_left"]);
+    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.activateMotiono["grab_right"]);
+    addChild(avatar.nodeo["activatesNodeSolitary"], avatar.activateMotiono["pick_up"]);
     //
     avatar.nodeo["activateNodeTwo"] = avatar.mixer->createNode(NodeType::TWO);
     addChild(avatar.nodeo["activateNodeTwo"], avatar.nodeo["landNodeTwo"]);
@@ -461,7 +461,7 @@ namespace AnimationSystem
 
     // holdAnimations
     avatar.nodeo["holdsNodeSolitary"] = avatar.mixer->createNode(NodeType::SOLITARY);
-    addChild(avatar.nodeo["holdsNodeSolitary"], avatar.motiono["pick_up_idle"]);
+    addChild(avatar.nodeo["holdsNodeSolitary"], avatar.holdMotiono["pick_up_idle"]);
     //
     avatar.nodeo["holdNodeFunc"] = avatar.mixer->createNode(NodeType::FUNC, 0);
     addChild(avatar.nodeo["holdNodeFunc"], avatar.nodeo["activateNodeTwo"]);
@@ -494,7 +494,20 @@ namespace AnimationSystem
     unsigned int index = 0;
 
     // strings ----
+    std::string defaultSitAnimation = avatar.strings[index++];
+    std::string defaultEmoteAnimation = avatar.strings[index++];
+    std::string defaultDanceAnimation = avatar.strings[index++];
+    std::string defaultHoldAnimation = avatar.strings[index++];
+    std::string defaultActivateAnimation = avatar.strings[index++];
+    // ---
     std::string useAnimationComboName = avatar.strings[index++];
+    std::string sitAnimation = avatar.strings[index++];
+    std::string emoteAnimation = avatar.strings[index++];
+    std::string danceAnimation = avatar.strings[index++];
+    std::string holdAnimation = avatar.strings[index++];
+    std::string activateAnimation = avatar.strings[index++];
+
+    // std::cout << "sitAnimation: " << sitAnimation << std::endl;
 
     // ---------------------------------------------------------------------------------------------------
 
@@ -735,33 +748,34 @@ namespace AnimationSystem
       avatar.nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, avatar.useComboMotiono[animationName]);
     }
 
-    // // bow
-    // if (useEnvelopeStart) {
-    //   console.log('useEnvelopeStart');
-    //   physx.physxWorker.play(avatar.bowMotionPtro.bowDraw);
-    //   physx.physxWorker.setFactor(avatar.bowDrawLooseNodoeTwoPtr, 0);
-    //   physx.physxWorker.setFactor(avatar.bowIdle8DDrawLooseNodeOverwritePtr, 1);
-    //   avatar.nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 1);
-    // }
+    // bow
+    if (useEnvelopeStart) {
+      avatar.motiono["bowDraw"]->play();
+      setFactor(avatar.nodeo["bowDrawLooseNodoeTwo"], 0);
+      setFactor(avatar.nodeo["bowIdle8DDrawLooseNodeOverwrite"], 1);
+      avatar.nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
 
-    // // sit
-    // if (sitStart) {
-    //   const sitMotion = avatar.sitMotionPtro[avatar.sitAnimation || defaultSitAnimation];
-    //   physx.physxWorker.play(sitMotion);
-    //   physx.physxWorker.crossFadeSolitary(avatar.sitsNodeSolitaryPtr, 0, sitMotion);
-    //   avatar.nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 1);
-    // }
+    // sitAnimations // sit
+    if (sitStart) {
+      // AnimationNode *sitMotion = avatar.sitMotiono[sitAnimation == "" ? defaultSitAnimation : sitAnimation];
+      std::string animationName = sitAnimation == "" ? defaultSitAnimation : sitAnimation;
+      std::cout << "animationName: " << animationName << std::endl;
+      avatar.sitMotiono[animationName]->play();
+      avatar.nodeo["sitsNodeSolitary"]->crossFadeSolitary(0, avatar.sitMotiono[animationName]);
+      avatar.nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
 
-    // // emote
-    // if (emoteStart) {
-    //   const emoteMotion = avatar.emoteMotionPtro[avatar.emoteAnimation || defaultEmoteAnimation];
-    //   physx.physxWorker.play(emoteMotion);
-    //   physx.physxWorker.crossFadeSolitary(avatar.emotesNodeSolitaryPtr, 0, emoteMotion);
-    //   avatar.nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 1);
-    //   // physx.physxWorker.setFactor(avatar.emoteNodeFuncPtr, 1);
-    // }
+    // emoteAnimations // emote
+    if (emoteStart) {
+      AnimationNode *emoteMotion = avatar.emoteMotiono[emoteAnimation == "" ? defaultEmoteAnimation : emoteAnimation];
+      emoteMotion->play();
+      avatar.nodeo["emotesNodeSolitary"]->crossFadeSolitary(0, emoteMotion);
+      avatar.nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 1);
+      // physx.physxWorker.setFactor(avatar.emoteNodeFuncPtr, 1);
+    }
 
-    // // hurt
+    // // hurt // todo:
     // if (hurtStart) {
     //   const hurtMotion = avatar.hurtMotionPtro[avatar.hurtAnimation];
     //   physx.physxWorker.play(hurtMotion);
@@ -769,29 +783,29 @@ namespace AnimationSystem
     //   avatar.nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
 
-    // // dance
-    // if (danceStart) {
-    //   const danceMotion = avatar.danceMotionPtro[avatar.danceAnimation || defaultDanceAnimation];
-    //   physx.physxWorker.play(danceMotion);
-    //   physx.physxWorker.crossFadeSolitary(avatar.dancesNodeSolitaryPtr, 0, danceMotion);
-    //   avatar.nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 1);
-    // }
+    // danceAnimations // dance
+    if (danceStart) {
+      AnimationNode *danceMotion = avatar.danceMotiono[danceAnimation == "" ? defaultDanceAnimation : danceAnimation];
+      danceMotion->play();
+      avatar.nodeo["dancesNodeSolitary"]->crossFadeSolitary(0, danceMotion);
+      avatar.nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 1); // todo: check if node exists
+    }
 
-    // // hold
-    // if (holdStart) {
-    //   const holdMotion = avatar.holdMotionPtro[avatar.holdAnimation || defaultHoldAnimation];
-    //   physx.physxWorker.play(holdMotion);
-    //   physx.physxWorker.crossFadeSolitary(avatar.holdsNodeSolitaryPtr, 0, holdMotion);
-    //   avatar.nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 1);
-    // }
+    // holdAnimations // hold
+    if (holdStart) {
+      AnimationNode *holdMotion = avatar.holdMotiono[holdAnimation == "" ? defaultHoldAnimation : holdAnimation];
+      holdMotion->play();
+      avatar.nodeo["holdsNodeSolitary"]->crossFadeSolitary(0, holdMotion);
+      avatar.nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 1);
+    }
 
-    // // activate
-    // if (activateStart) {
-    //   const activateMotion = avatar.activateMotionPtro[avatar.activateAnimation || defaultActivateAnimation];
-    //   physx.physxWorker.play(activateMotion);
-    //   physx.physxWorker.crossFadeSolitary(avatar.activatesNodeSolitaryPtr, 0, activateMotion);
-    //   avatar.nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
-    // }
+    // activateAnimations // activate
+    if (activateStart) {
+      AnimationNode *activateMotion = avatar.activateMotiono[activateAnimation == "" ? defaultActivateAnimation : activateAnimation];
+      activateMotion->play();
+      avatar.nodeo["activatesNodeSolitary"]->crossFadeSolitary(0, activateMotion);
+      avatar.nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
   }
   AnimationMixer *createAnimationMixer()
   {
@@ -828,7 +842,7 @@ namespace AnimationSystem
 
     // setRootNode(crouchNode);
   }
-  void addChild(AnimationNode *parent, AnimationNode *child)
+  void addChild(AnimationNode *parent, AnimationNode *child) // todo: check if node exists
   {
     parent->children.push_back(child);
 
