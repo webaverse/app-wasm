@@ -470,11 +470,35 @@ namespace AnimationSystem
     // set root node ---
     setRootNode(avatar.mixer, avatar.nodeo["holdNodeFunc"]);
   }
+  void updateAvatarString(char *scratchStack, unsigned int numStrings)
+  {
+    avatar.strings.clear();
+    unsigned int index = 0;
+    for (unsigned int stringIndex = 0; stringIndex < numStrings; stringIndex++)
+    {
+      unsigned int stringByteLength = (unsigned int)(scratchStack[index++]);
+      std::string string = "";
+      for (unsigned int charIndex = 0; charIndex < stringByteLength; charIndex++)
+      {
+        string += scratchStack[index++];
+      }
+      avatar.strings.push_back(string);
+      // avatar.strings[stringIndex] = string;
+      // std::cout << string << std::endl;
+    }
+  }
   void updateAvatar(float *scratchStack)
   {
     // std::cout << "idleWalkFactor: " << scratchStack[index] << std::endl;
 
     unsigned int index = 0;
+
+    // strings ----
+    std::string useAnimationComboName = avatar.strings[index++];
+
+    // ---------------------------------------------------------------------------------------------------
+
+    index = 0;
 
     // values ---
     float forwardFactor = scratchStack[index++];
@@ -683,30 +707,32 @@ namespace AnimationSystem
 
     // useAnimations // sword
     if (useStart) {
-      // let useAnimationName;
+      // let animationName;
       // if (dashAttacking) {
-      //   useAnimationName = 'dashAttack';
+      //   animationName = 'dashAttack';
       // } else {
-      //   useAnimationName = avatar.useAnimation;
+      //   animationName = avatar.useAnimation;
       // }
-      std::string useAnimationName = "combo"; // test
-      // AnimationNode *useMotion = avatar.useMotiono[useAnimationName];
-      avatar.useMotiono[useAnimationName]->play();
-      avatar.nodeo["usesNodeSolitary"]->crossFadeSolitary(0, avatar.useMotiono[useAnimationName]);
+      std::string animationName = "combo"; // test
+      // AnimationNode *useMotion = avatar.useMotiono[animationName];
+      avatar.useMotiono[animationName]->play();
+      avatar.nodeo["usesNodeSolitary"]->crossFadeSolitary(0, avatar.useMotiono[animationName]);
       avatar.nodeo["useNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // useComboAnimations // silsword
     if (useComboStart) {
-      std::string useAnimationName;
+      std::string animationName;
       if (dashAttacking) {
-        useAnimationName = "dashAttack";
+        animationName = "dashAttack";
       } else {
-        // useAnimationName = avatar.useAnimationCombo[avatar.useAnimationIndex];
-        useAnimationName = "swordSideSlash"; // test
+        // animationName = avatar.useAnimationCombo[avatar.useAnimationIndex];
+        // animationName = "swordSideSlash"; // test
+        animationName = useAnimationComboName;
+        std::cout << "useAnimationComboName: " << useAnimationComboName << std::endl;
       }
-      avatar.useComboMotiono[useAnimationName]->play();
-      avatar.nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, avatar.useComboMotiono[useAnimationName]);
+      avatar.useComboMotiono[animationName]->play();
+      avatar.nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, avatar.useComboMotiono[animationName]);
     }
 
     // // bow
@@ -766,20 +792,6 @@ namespace AnimationSystem
     //   physx.physxWorker.crossFadeSolitary(avatar.activatesNodeSolitaryPtr, 0, activateMotion);
     //   avatar.nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
-  }
-  void updateAvatarString(char *scratchStack, unsigned int numStrings)
-  {
-    unsigned int index = 0;
-    for (unsigned int stringIndex = 0; stringIndex < numStrings; stringIndex++)
-    {
-      unsigned int stringByteLength = (unsigned int)(scratchStack[index++]);
-      std::string string = "";
-      for (unsigned int charIndex = 0; charIndex < stringByteLength; charIndex++)
-      {
-        string += scratchStack[index++];
-      }
-      std::cout << string << std::endl;
-    }
   }
   AnimationMixer *createAnimationMixer()
   {

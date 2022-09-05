@@ -117,6 +117,7 @@ namespace AnimationSystem
     std::map<std::string, AnimationNode *> useMotiono;
     std::map<std::string, AnimationNode *> useComboMotiono;
     std::map<std::string, AnimationNode *> nodeo;
+    std::vector<std::string> strings;
   };
 
   class AnimationNode
