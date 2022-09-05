@@ -113,7 +113,7 @@ namespace AnimationSystem
   struct Avatar
   {
     AnimationMixer *mixer;
-    std::map<std::string, AnimationNode *> motiono;
+    std::map<std::string, AnimationNode *> motiono; // todo: duplicated with mixer.motiono ?
     std::map<std::string, AnimationNode *> useMotiono;
     std::map<std::string, AnimationNode *> useComboMotiono;
     std::map<std::string, AnimationNode *> sitMotiono;
@@ -122,7 +122,7 @@ namespace AnimationSystem
     std::map<std::string, AnimationNode *> holdMotiono;
     std::map<std::string, AnimationNode *> activateMotiono;
 
-    std::map<std::string, AnimationNode *> nodeo;
+    std::map<std::string, AnimationNode *> nodeo; // todo: duplicated with mixer.nodeo ?
     std::vector<std::string> strings;
   };
 
@@ -177,7 +177,7 @@ namespace AnimationSystem
     void setSpeed(float speed);
     void setLoop(LoopType loopType);
   };
-  class AnimationMixer
+  class AnimationMixer // note: mixer can't aware of avatar.
   {
   public:
     static float timeS;
@@ -185,7 +185,9 @@ namespace AnimationSystem
     // unsigned int index;
     AnimationNode _animationNode; // todo: rename: animationTree
     AnimationNode *rootNode;
-    std::vector<AnimationNode *> motions;
+    // std::vector<AnimationNode *> motions;
+    std::map<std::string, AnimationNode *> motiono;
+    std::map<std::string, AnimationNode *> nodeo;
     float finishedFlag = 0;
     // float *finishedFlag = (float *)malloc((1) * sizeof(float));
     // float *finishedFlag = new float();
@@ -198,15 +200,15 @@ namespace AnimationSystem
 
     AnimationNode *createMotion(Animation *animation, std::string name = "");
     AnimationNode *getMotion(char *scratchStack, unsigned int nameByteLength);
-    AnimationNode *createNode(NodeType type = NodeType::LIST, unsigned int index = 0);
+    AnimationNode *createNode(NodeType type = NodeType::LIST, std::string name = "", unsigned int index = 0);
     AnimationNode *getNode(char *scratchStack, unsigned int nameByteLength);
     float **update(float timeS);
   };
 
   // ------
-  void initAvatar(AnimationMixer *mixer);
-  void updateAvatar(float *scratchStack);
-  void updateAvatarString(char *scratchStack, unsigned int numStrings);
+  Avatar *initAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
+  void updateAvatar(Avatar *avatar, float *scratchStack);
+  void updateAvatarString(Avatar *avatar, char *scratchStack, unsigned int numStrings);
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();

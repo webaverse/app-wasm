@@ -63,14 +63,14 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 // AnimationSystem
 
 // todo: use pointer instead of index.
-EMSCRIPTEN_KEEPALIVE void initAvatar(AnimationSystem::AnimationMixer *mixer) {
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Avatar *initAvatar(AnimationSystem::AnimationMixer *mixer) {
   return AnimationSystem::initAvatar(mixer);
 }
-EMSCRIPTEN_KEEPALIVE void updateAvatar(float *scratchStack) {
-  return AnimationSystem::updateAvatar(scratchStack);
+EMSCRIPTEN_KEEPALIVE void updateAvatar(AnimationSystem::Avatar *avatar, float *scratchStack) {
+  return AnimationSystem::updateAvatar(avatar, scratchStack);
 }
-EMSCRIPTEN_KEEPALIVE void updateAvatarString(char *scratchStack, unsigned int numStrings) {
-  return AnimationSystem::updateAvatarString(scratchStack, numStrings);
+EMSCRIPTEN_KEEPALIVE void updateAvatarString(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int numStrings) {
+  return AnimationSystem::updateAvatarString(avatar, scratchStack, numStrings);
 }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
@@ -87,15 +87,15 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchSt
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
   return AnimationSystem::getAnimation(scratchStack, nameByteLength);
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::AnimationMixer *mixer, AnimationSystem::Animation *animation) {
-  return mixer->createMotion(animation);
-}
+// EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::AnimationMixer *mixer, AnimationSystem::Animation *animation) {
+//   return mixer->createMotion(animation);
+// }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getMotion(AnimationSystem::AnimationMixer *mixer, char *scratchStack, unsigned int nameByteLength) {
   return mixer->getMotion(scratchStack, nameByteLength);
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST, unsigned int index = 0) {
-  return mixer->createNode(type, index);
-}
+// EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST, unsigned int index = 0) {
+//   return mixer->createNode(type, index);
+// }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getNode(AnimationSystem::AnimationMixer *mixer, char *scratchStack, unsigned int nameByteLength) {
   return mixer->getNode(scratchStack, nameByteLength);
 }
