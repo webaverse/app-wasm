@@ -165,24 +165,41 @@ namespace AnimationSystem
     avatar.motiono["land2"] = avatar.mixer->createMotion(animationo["landing 2.fbx"]);
 
     // useAnimations
-    avatar.motiono["combo"] = avatar.mixer->createMotion(animationo["One Hand Sword Combo.fbx"]);
-    avatar.motiono["dashAttack"] = avatar.mixer->createMotion(animationo["sword_dash.fbx"]);
-    avatar.motiono["drink"] = avatar.mixer->createMotion(animationo["drinking.fbx"]);
-    avatar.motiono["eat"] = avatar.mixer->createMotion(animationo["eating.fbx"]);
-    avatar.motiono["magic"] = avatar.mixer->createMotion(animationo["magic cast.fbx"]);
-    avatar.motiono["pickUpThrow"] = avatar.mixer->createMotion(animationo["pick_up_throw.fbx"]);
-    avatar.motiono["pistol"] = avatar.mixer->createMotion(animationo["Pistol Aiming Idle.fbx"]);
-    avatar.motiono["rifle"] = avatar.mixer->createMotion(animationo["Rifle Aiming Idle.fbx"]);
-    avatar.motiono["slash"] = avatar.mixer->createMotion(animationo["sword and shield slash.fbx"]);
-    avatar.motiono["throw"] = avatar.mixer->createMotion(animationo["pick_up_throw.fbx"]);
+    avatar.useMotiono["combo"] = avatar.mixer->createMotion(animationo["One Hand Sword Combo.fbx"], "combo");
+    avatar.useMotiono["dashAttack"] = avatar.mixer->createMotion(animationo["sword_dash.fbx"], "dashAttack");
+    avatar.useMotiono["drink"] = avatar.mixer->createMotion(animationo["drinking.fbx"], "drink");
+    avatar.useMotiono["eat"] = avatar.mixer->createMotion(animationo["eating.fbx"], "eat");
+    avatar.useMotiono["magic"] = avatar.mixer->createMotion(animationo["magic cast.fbx"], "magic");
+    avatar.useMotiono["pickUpThrow"] = avatar.mixer->createMotion(animationo["pick_up_throw.fbx"], "pickUpThrow");
+    avatar.useMotiono["pistol"] = avatar.mixer->createMotion(animationo["Pistol Aiming Idle.fbx"], "pistol");
+    avatar.useMotiono["rifle"] = avatar.mixer->createMotion(animationo["Rifle Aiming Idle.fbx"], "rifle");
+    avatar.useMotiono["slash"] = avatar.mixer->createMotion(animationo["sword and shield slash.fbx"], "slash");
+    avatar.useMotiono["throw"] = avatar.mixer->createMotion(animationo["pick_up_throw.fbx"], "throw");
+    // todo: add to avatar.motiono too ?
+    avatar.motiono["combo"] = avatar.useMotiono["combo"];
+    avatar.motiono["dashAttack"] = avatar.useMotiono["dashAttack"];
+    avatar.motiono["drink"] = avatar.useMotiono["drink"];
+    avatar.motiono["eat"] = avatar.useMotiono["eat"];
+    avatar.motiono["magic"] = avatar.useMotiono["magic"];
+    avatar.motiono["pickUpThrow"] = avatar.useMotiono["pickUpThrow"];
+    avatar.motiono["pistol"] = avatar.useMotiono["pistol"];
+    avatar.motiono["rifle"] = avatar.useMotiono["rifle"];
+    avatar.motiono["slash"] = avatar.useMotiono["slash"];
+    avatar.motiono["throw"] = avatar.useMotiono["throw"];
     
     // useComboAnimations
-    avatar.motiono["swordSideIdle"] = avatar.mixer->createMotion(animationo["sword_idle_side.fbx"]);
-    avatar.motiono["swordSideSlash"] = avatar.mixer->createMotion(animationo["sword_side_slash.fbx"]);
-    avatar.motiono["swordSideSlashStep"] = avatar.mixer->createMotion(animationo["sword_side_slash_step.fbx"]);
-    avatar.motiono["swordTopDownSlash"] = avatar.mixer->createMotion(animationo["sword_topdown_slash.fbx"]);
-    avatar.motiono["swordTopDownSlashStep"] = avatar.mixer->createMotion(animationo["sword_topdown_slash_step.fbx"]);
-    avatar.motiono["dashAttack"] = avatar.mixer->createMotion(animationo["sword_dash.fbx"]);
+    avatar.useComboMotiono["swordSideIdle"] = avatar.mixer->createMotion(animationo["sword_idle_side.fbx"], "swordSideIdle");
+    avatar.useComboMotiono["swordSideSlash"] = avatar.mixer->createMotion(animationo["sword_side_slash.fbx"], "swordSideSlash");
+    avatar.useComboMotiono["swordSideSlashStep"] = avatar.mixer->createMotion(animationo["sword_side_slash_step.fbx"], "swordSideSlashStep");
+    avatar.useComboMotiono["swordTopDownSlash"] = avatar.mixer->createMotion(animationo["sword_topdown_slash.fbx"], "swordTopDownSlash");
+    avatar.useComboMotiono["swordTopDownSlashStep"] = avatar.mixer->createMotion(animationo["sword_topdown_slash_step.fbx"], "swordTopDownSlashStep");
+    avatar.useComboMotiono["dashAttack"] = avatar.mixer->createMotion(animationo["sword_dash.fbx"], "dashAttack");
+    avatar.motiono["swordSideIdle"] = avatar.useComboMotiono["swordSideIdle"];
+    avatar.motiono["swordSideSlash"] = avatar.useComboMotiono["swordSideSlash"];
+    avatar.motiono["swordSideSlashStep"] = avatar.useComboMotiono["swordSideSlashStep"];
+    avatar.motiono["swordTopDownSlash"] = avatar.useComboMotiono["swordTopDownSlash"];
+    avatar.motiono["swordTopDownSlashStep"] = avatar.useComboMotiono["swordTopDownSlashStep"];
+    avatar.motiono["dashAttack"] = avatar.useComboMotiono["dashAttack"];
 
     // bowAnimations
     avatar.motiono["bowDraw"] = avatar.mixer->createMotion(animationo["bow draw.fbx"]);
@@ -338,16 +355,12 @@ namespace AnimationSystem
 
     // useAnimations
     avatar.nodeo["usesNodeSolitary"] = avatar.mixer->createNode(NodeType::SOLITARY);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["combo"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["dashAttack"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["drink"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["eat"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["magic"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["pickUpThrow"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["pistol"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["rifle"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["slash"]);
-    addChild(avatar.nodeo["usesNodeSolitary"], avatar.motiono["throw"]);
+    // https://stackoverflow.com/questions/26281979/c-loop-through-map
+    for (auto const& x : avatar.useMotiono)
+    {
+      std::cout << "useMotiono: " << avatar.useMotiono[x.first]->name << std::endl;
+      addChild(avatar.nodeo["usesNodeSolitary"], avatar.useMotiono[x.first]);
+    }
     //
     avatar.nodeo["useNodeTwo"] = avatar.mixer->createNode(NodeType::TWO);
     addChild(avatar.nodeo["useNodeTwo"], avatar.nodeo["hurtNodeTwo"]);
@@ -358,12 +371,10 @@ namespace AnimationSystem
     //
     addChild(avatar.nodeo["useCombosNodeSolitary"], avatar.nodeo["useNodeTwo"]);
     //
-    addChild(avatar.nodeo["useCombosNodeSolitary"], avatar.motiono["swordSideIdle"]);
-    addChild(avatar.nodeo["useCombosNodeSolitary"], avatar.motiono["swordSideSlash"]);
-    addChild(avatar.nodeo["useCombosNodeSolitary"], avatar.motiono["swordSideSlashStep"]);
-    addChild(avatar.nodeo["useCombosNodeSolitary"], avatar.motiono["swordTopDownSlash"]);
-    addChild(avatar.nodeo["useCombosNodeSolitary"], avatar.motiono["swordTopDownSlashStep"]);
-    addChild(avatar.nodeo["useCombosNodeSolitary"], avatar.motiono["dashAttack"]);
+    for (auto const& x : avatar.useComboMotiono)
+    {
+      addChild(avatar.nodeo["useCombosNodeSolitary"], avatar.useComboMotiono[x.first]);
+    }
 
     // emoteAnimations
     avatar.nodeo["emotesNodeSolitary"] = avatar.mixer->createNode(NodeType::SOLITARY);
@@ -670,32 +681,33 @@ namespace AnimationSystem
       avatar.nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
-    // // sword
-    // if (useStart) {
-    //   let useAnimationName;
-    //   if (dashAttacking) {
-    //     useAnimationName = 'dashAttack';
-    //   } else {
-    //     useAnimationName = avatar.useAnimation;
-    //   }
-    //   const useMotion = avatar.useMotionPtro[useAnimationName];
-    //   physx.physxWorker.play(useMotion);
-    //   physx.physxWorker.crossFadeSolitary(avatar.usesNodeSolitaryPtr, 0, useMotion);
-    //   avatar.nodeo["useNodeTwo"].crossFadeTwo(0.2, 1);
-    // }
+    // useAnimations // sword
+    if (useStart) {
+      // let useAnimationName;
+      // if (dashAttacking) {
+      //   useAnimationName = 'dashAttack';
+      // } else {
+      //   useAnimationName = avatar.useAnimation;
+      // }
+      std::string useAnimationName = "combo"; // test
+      // AnimationNode *useMotion = avatar.useMotiono[useAnimationName];
+      avatar.useMotiono[useAnimationName]->play();
+      avatar.nodeo["usesNodeSolitary"]->crossFadeSolitary(0, avatar.useMotiono[useAnimationName]);
+      avatar.nodeo["useNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
 
-    // // silsword
-    // if (useComboStart) {
-    //   let useAnimationName;
-    //   if (dashAttacking) {
-    //     useAnimationName = 'dashAttack';
-    //   } else {
-    //     useAnimationName = avatar.useAnimationCombo[avatar.useAnimationIndex];
-    //   }
-    //   const useMotion = avatar.useComboMotionPtro[useAnimationName];
-    //   physx.physxWorker.play(useMotion);
-    //   physx.physxWorker.crossFadeSolitary(avatar.useCombosNodeSolitaryPtr, 0.2, useMotion);
-    // }
+    // useComboAnimations // silsword
+    if (useComboStart) {
+      std::string useAnimationName;
+      if (dashAttacking) {
+        useAnimationName = "dashAttack";
+      } else {
+        // useAnimationName = avatar.useAnimationCombo[avatar.useAnimationIndex];
+        useAnimationName = "swordSideSlash"; // test
+      }
+      avatar.useComboMotiono[useAnimationName]->play();
+      avatar.nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, avatar.useComboMotiono[useAnimationName]);
+    }
 
     // // bow
     // if (useEnvelopeStart) {
@@ -703,7 +715,7 @@ namespace AnimationSystem
     //   physx.physxWorker.play(avatar.bowMotionPtro.bowDraw);
     //   physx.physxWorker.setFactor(avatar.bowDrawLooseNodoeTwoPtr, 0);
     //   physx.physxWorker.setFactor(avatar.bowIdle8DDrawLooseNodeOverwritePtr, 1);
-    //   avatar.nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"].crossFadeTwo(0.2, 1);
+    //   avatar.nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
 
     // // sit
@@ -711,7 +723,7 @@ namespace AnimationSystem
     //   const sitMotion = avatar.sitMotionPtro[avatar.sitAnimation || defaultSitAnimation];
     //   physx.physxWorker.play(sitMotion);
     //   physx.physxWorker.crossFadeSolitary(avatar.sitsNodeSolitaryPtr, 0, sitMotion);
-    //   avatar.nodeo["sitNodeTwo"].crossFadeTwo(0.2, 1);
+    //   avatar.nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
 
     // // emote
@@ -719,7 +731,7 @@ namespace AnimationSystem
     //   const emoteMotion = avatar.emoteMotionPtro[avatar.emoteAnimation || defaultEmoteAnimation];
     //   physx.physxWorker.play(emoteMotion);
     //   physx.physxWorker.crossFadeSolitary(avatar.emotesNodeSolitaryPtr, 0, emoteMotion);
-    //   avatar.nodeo["emoteNodeFunc"].crossFadeTwo(0.2, 1);
+    //   avatar.nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 1);
     //   // physx.physxWorker.setFactor(avatar.emoteNodeFuncPtr, 1);
     // }
 
@@ -728,7 +740,7 @@ namespace AnimationSystem
     //   const hurtMotion = avatar.hurtMotionPtro[avatar.hurtAnimation];
     //   physx.physxWorker.play(hurtMotion);
     //   physx.physxWorker.crossFadeSolitary(avatar.hurtsNodeSolitaryPtr, 0, hurtMotion);
-    //   avatar.nodeo["hurtNodeTwo"].crossFadeTwo(0.2, 1);
+    //   avatar.nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
 
     // // dance
@@ -736,7 +748,7 @@ namespace AnimationSystem
     //   const danceMotion = avatar.danceMotionPtro[avatar.danceAnimation || defaultDanceAnimation];
     //   physx.physxWorker.play(danceMotion);
     //   physx.physxWorker.crossFadeSolitary(avatar.dancesNodeSolitaryPtr, 0, danceMotion);
-    //   avatar.nodeo["danceNodeTwo"].crossFadeTwo(0.2, 1);
+    //   avatar.nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
 
     // // hold
@@ -744,7 +756,7 @@ namespace AnimationSystem
     //   const holdMotion = avatar.holdMotionPtro[avatar.holdAnimation || defaultHoldAnimation];
     //   physx.physxWorker.play(holdMotion);
     //   physx.physxWorker.crossFadeSolitary(avatar.holdsNodeSolitaryPtr, 0, holdMotion);
-    //   avatar.nodeo["holdNodeFunc"].crossFadeTwo(0.2, 1);
+    //   avatar.nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 1);
     // }
 
     // // activate
@@ -752,7 +764,7 @@ namespace AnimationSystem
     //   const activateMotion = avatar.activateMotionPtro[avatar.activateAnimation || defaultActivateAnimation];
     //   physx.physxWorker.play(activateMotion);
     //   physx.physxWorker.crossFadeSolitary(avatar.activatesNodeSolitaryPtr, 0, activateMotion);
-    //   avatar.nodeo["activateNodeTwo"].crossFadeTwo(0.2, 1);
+    //   avatar.nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
   }
   AnimationMixer *createAnimationMixer()
@@ -839,6 +851,7 @@ namespace AnimationSystem
       name += scratchStack[i];
     }
     // std::cout << name << std::endl;
+    animation->name = name; // todo: don't need ?
 
     animationo[name] = animation;
 
@@ -863,11 +876,12 @@ namespace AnimationSystem
     // std::cout << "NodeType: " << type << " " << node->type << std::endl;
     return node;
   }
-  AnimationNode *AnimationMixer::createMotion(Animation *animation)
+  AnimationNode *AnimationMixer::createMotion(Animation *animation, std::string name)
   {
     AnimationNode *motion = new AnimationNode();
     motion->mixer = this;
     motion->animation = animation;
+    motion->name = name;
     this->motions.push_back(motion);
 
     return motion;

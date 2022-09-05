@@ -99,6 +99,7 @@ namespace AnimationSystem
     std::vector<Interpolant> interpolants; // todo: pure array?
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
+    std::string name;
   };
   struct AnimationMapping // spec
   {
@@ -113,6 +114,8 @@ namespace AnimationSystem
   {
     AnimationMixer *mixer;
     std::map<std::string, AnimationNode *> motiono;
+    std::map<std::string, AnimationNode *> useMotiono;
+    std::map<std::string, AnimationNode *> useComboMotiono;
     std::map<std::string, AnimationNode *> nodeo;
   };
 
@@ -123,7 +126,7 @@ namespace AnimationSystem
     AnimationMixer *mixer;
     float *results[53];
     float *update(AnimationMapping &spec);
-    // std::string name;
+    std::string name;
 
     // node ------
     float weight = 1;
@@ -186,7 +189,7 @@ namespace AnimationSystem
       animationValues[53] = &finishedFlag;
     }
 
-    AnimationNode *createMotion(Animation *animation);
+    AnimationNode *createMotion(Animation *animation, std::string name = "");
     AnimationNode *getMotion(char *scratchStack, unsigned int nameByteLength);
     AnimationNode *createNode(NodeType type = NodeType::LIST, unsigned int index = 0);
     AnimationNode *getNode(char *scratchStack, unsigned int nameByteLength);
