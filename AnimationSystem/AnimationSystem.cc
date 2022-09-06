@@ -714,12 +714,12 @@ namespace AnimationSystem
     }
 
     if (jumpStart) {
-      avatar->motiono["jumpMotion"]->play();
+      avatar->motiono["jump"]->play();
       avatar->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     if (doubleJumpStart) {
-      avatar->motiono["doubleJumpMotion"]->play();
+      avatar->motiono["doubleJump"]->play();
       avatar->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
@@ -1274,6 +1274,8 @@ namespace AnimationSystem
       if (this->loop == LoopType::LoopOnce)
       {
         evaluateTimeS = (AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias;
+        // if (spec.isPosition && this->name == "jump") std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
+        // if (spec.isPosition && this->name == "swordSideSlash") std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
         value = evaluateInterpolant(this->animation, spec.index, evaluateTimeS);
         // std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
         // if (isLastBone && this->weight > 0 && !this->isFinished && evaluateTimeS >= this->animation.duration)
@@ -1537,6 +1539,8 @@ namespace AnimationSystem
   }
   void AnimationNode::play()
   {
+    // todo: check if motion exists
+    std::cout << "play name: " << this->name << std::endl;
     this->weight = abs(this->weight);
     this->startTime = AnimationMixer::timeS;
     this->isFinished = false;
