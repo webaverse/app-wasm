@@ -1239,6 +1239,7 @@ namespace AnimationSystem
     this->finishedFlag = 0;
     // *(animationValues[53]) = (float)0;
     // _finishedFlags[this->index] = 0;
+    this->finishedMotion = NULL;
 
     // return getAnimationValues(_animation.index, timeS); // Move `getAnimationValues()` to class AnimationMixer.
 
@@ -1256,6 +1257,15 @@ namespace AnimationSystem
     // animationValues[54] = &finishedAnimationIndex;
 
     return animationValues;
+  }
+  unsigned int AnimationMixer::getFinishedMotionName(char *scratchStack) // todo: getFinishedMotionNames
+  {
+    unsigned int nameByteLength = this->finishedMotion->name.length();
+    for (unsigned int i = 0; i < nameByteLength; i++)
+    {
+      scratchStack[i] = this->finishedMotion->name.at(i);
+    }
+    return nameByteLength;
   }
 
   float *AnimationNode::update(AnimationMapping &spec) // todo: &spec
@@ -1307,7 +1317,8 @@ namespace AnimationSystem
             if (motion->animation == animation)
             {
               // std::cout << "finished: motion: pointer: " << motion << " pointer float: " << (float *)motion << std::endl;
-              this->mixer->animationValues[54] = (float *)motion; // finished motion pointer
+              // this->mixer->animationValues[54] = (float *)motion; // finished motion pointer
+              this->mixer->finishedMotion = motion;
               break;
             }
           }
