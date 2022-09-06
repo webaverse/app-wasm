@@ -164,6 +164,9 @@ namespace AnimationSystem
     avatar->motiono["jump"]->stop();
 
     avatar->motiono["doubleJump"] = avatar->mixer->createMotion(animationo["jump_double.fbx"], "doubleJump");
+    avatar->motiono["doubleJump"]->setLoop(LoopType::LoopOnce);
+    avatar->motiono["doubleJump"]->stop();
+
     avatar->motiono["fallLoop"] = avatar->mixer->createMotion(animationo["falling.fbx"], "fallLoop");
     avatar->motiono["land"] = avatar->mixer->createMotion(animationo["landing.fbx"], "land");
     avatar->motiono["land2"] = avatar->mixer->createMotion(animationo["landing 2.fbx"], "land2");
@@ -689,8 +692,8 @@ namespace AnimationSystem
 
     // action start events ---
     if (landStart) {
-      std::cout << landWithMoving << std::endl;
-      std::cout << (bool)(landWithMoving) << std::endl;
+      // std::cout << "landWithMoving: " << landWithMoving << std::endl;
+      // std::cout << "landWithMoving: " << (bool)(landWithMoving) << std::endl;
       if (!landWithMoving) {
         avatar->motiono["land"]->play();
         avatar->nodeo["landsNodeSolitary"]->crossFadeSolitary(0, avatar->motiono["land"]);
@@ -948,6 +951,15 @@ namespace AnimationSystem
     }
 
     return this->motiono[name];
+  }
+  unsigned int AnimationMixer::getMotionName(AnimationNode *motion, char *scratchStack)
+  {
+    unsigned int nameByteLength = motion->name.length();
+    for (unsigned int i = 0; i < nameByteLength; i++)
+    {
+      scratchStack[i] = motion->name.at(i);
+    }
+    return nameByteLength;
   }
   AnimationNode *AnimationMixer::getNode(char *scratchStack, unsigned int nameByteLength)
   {

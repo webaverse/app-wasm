@@ -93,6 +93,9 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation(char *scratchStack
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getMotion(AnimationSystem::AnimationMixer *mixer, char *scratchStack, unsigned int nameByteLength) {
   return mixer->getMotion(scratchStack, nameByteLength);
 }
+EMSCRIPTEN_KEEPALIVE unsigned int getMotionName(AnimationSystem::AnimationMixer *mixer, AnimationSystem::AnimationNode *motion, char *scratchStack) {
+  return mixer->getMotionName(motion, scratchStack);
+}
 // EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST, unsigned int index = 0) {
 //   return mixer->createNode(type, index);
 // }

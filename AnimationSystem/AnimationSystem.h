@@ -200,6 +200,7 @@ namespace AnimationSystem
 
     AnimationNode *createMotion(Animation *animation, std::string name = "");
     AnimationNode *getMotion(char *scratchStack, unsigned int nameByteLength);
+    unsigned int getMotionName(AnimationNode *motion, char *scratchStack);
     AnimationNode *createNode(NodeType type = NodeType::LIST, std::string name = "", unsigned int index = 0);
     AnimationNode *getNode(char *scratchStack, unsigned int nameByteLength);
     float **update(float timeS);
