@@ -610,6 +610,7 @@ namespace AnimationSystem
     // other ---
     float landWithMoving = scratchStack[index++];
     float dashAttacking = scratchStack[index++];
+    float useEnvelopeState = scratchStack[index++];
 
     // values ---
     setWeight(avatar->motiono["walkForward"], forwardFactor);
@@ -848,6 +849,18 @@ namespace AnimationSystem
       activateMotion->play();
       avatar->nodeo["activatesNodeSolitary"]->crossFadeSolitary(0, activateMotion);
       avatar->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
+
+    // handle finished event ---
+    if (avatar->mixer->finishedFlag)
+    {
+      std::string finishedMotionName = avatar->mixer->finishedMotion->name;
+      if (useEnvelopeState && finishedMotionName == "bowDraw") {
+        avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 0);
+      }
+      if (finishedMotionName == "bowLoose") {
+        avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 0);
+      }
     }
   }
   AnimationMixer *createAnimationMixer()
