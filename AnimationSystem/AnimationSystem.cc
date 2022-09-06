@@ -542,7 +542,8 @@ namespace AnimationSystem
     std::string defaultHoldAnimation = avatar->strings[index++];
     std::string defaultActivateAnimation = avatar->strings[index++];
     // ---
-    std::string useAnimationComboName = avatar->strings[index++];
+    std::string useAnimation = avatar->strings[index++];
+    std::string useAnimationCombo = avatar->strings[index++];
     std::string sitAnimation = avatar->strings[index++];
     std::string emoteAnimation = avatar->strings[index++];
     std::string danceAnimation = avatar->strings[index++];
@@ -764,13 +765,13 @@ namespace AnimationSystem
 
     // useAnimations // sword
     if (useStart) {
-      // let animationName;
-      // if (dashAttacking) {
-      //   animationName = 'dashAttack';
-      // } else {
-      //   animationName = avatar->useAnimation;
-      // }
-      std::string animationName = "combo"; // test
+      std::string animationName;
+      if (dashAttacking) {
+        animationName = "dashAttack";
+      } else {
+        animationName = useAnimation;
+      }
+      // std::string animationName = "combo"; // test
       // AnimationNode *useMotion = avatar->useMotiono[animationName];
       avatar->useMotiono[animationName]->play();
       avatar->nodeo["usesNodeSolitary"]->crossFadeSolitary(0, avatar->useMotiono[animationName]);
@@ -785,8 +786,8 @@ namespace AnimationSystem
       } else {
         // animationName = avatar->useAnimationCombo[avatar->useAnimationIndex];
         // animationName = "swordSideSlash"; // test
-        animationName = useAnimationComboName;
-        std::cout << "useAnimationComboName: " << useAnimationComboName << std::endl;
+        animationName = useAnimationCombo;
+        // std::cout << "useAnimationCombo: " << useAnimationCombo << std::endl;
       }
       avatar->useComboMotiono[animationName]->play();
       avatar->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, avatar->useComboMotiono[animationName]);
