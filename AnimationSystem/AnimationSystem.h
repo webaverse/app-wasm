@@ -121,6 +121,7 @@ namespace AnimationSystem
     std::map<std::string, AnimationNode *> danceMotiono;
     std::map<std::string, AnimationNode *> holdMotiono;
     std::map<std::string, AnimationNode *> activateMotiono;
+    std::map<std::string, AnimationNode *> hurtMotiono;
 
     std::map<std::string, AnimationNode *> nodeo; // todo: duplicated with mixer.nodeo ?
     std::vector<std::string> strings;

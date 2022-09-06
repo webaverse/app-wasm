@@ -219,8 +219,8 @@ namespace AnimationSystem
     avatar->sitMotiono["stand"] = avatar->mixer->createMotion(animationo["Skateboarding.fbx"], "stand");
 
     // hurtAnimations
-    avatar->motiono["pain_back"] = avatar->mixer->createMotion(animationo["pain_back.fbx"], "pain_back");
-    avatar->motiono["pain_arch"] = avatar->mixer->createMotion(animationo["pain_arch.fbx"], "pain_arch");
+    avatar->hurtMotiono["pain_back"] = avatar->mixer->createMotion(animationo["pain_back.fbx"], "pain_back");
+    avatar->hurtMotiono["pain_arch"] = avatar->mixer->createMotion(animationo["pain_arch.fbx"], "pain_arch");
 
     // emoteAnimations
     avatar->emoteMotiono["alert"] = avatar->mixer->createMotion(animationo["alert.fbx"], "alert");
@@ -353,8 +353,8 @@ namespace AnimationSystem
 
     // hurtAnimations
     avatar->nodeo["hurtsNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "hurtsNodeSolitary");
-    addChild(avatar->nodeo["hurtsNodeSolitary"], avatar->motiono["pain_back"]);
-    addChild(avatar->nodeo["hurtsNodeSolitary"], avatar->motiono["pain_arch"]);
+    addChild(avatar->nodeo["hurtsNodeSolitary"], avatar->hurtMotiono["pain_back"]);
+    addChild(avatar->nodeo["hurtsNodeSolitary"], avatar->hurtMotiono["pain_arch"]);
     //
     avatar->nodeo["hurtNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "hurtNodeTwo");
     addChild(avatar->nodeo["hurtNodeTwo"], avatar->nodeo["defaultNodeTwo"]);
@@ -515,6 +515,7 @@ namespace AnimationSystem
     std::string danceAnimation = avatar->strings[index++];
     std::string holdAnimation = avatar->strings[index++];
     std::string activateAnimation = avatar->strings[index++];
+    std::string hurtAnimation = avatar->strings[index++];
 
     // std::cout << "sitAnimation: " << sitAnimation << std::endl;
 
@@ -784,13 +785,13 @@ namespace AnimationSystem
       // physx.physxWorker.setFactor(avatar->emoteNodeFuncPtr, 1);
     }
 
-    // // hurt // todo:
-    // if (hurtStart) {
-    //   const hurtMotion = avatar->hurtMotionPtro[avatar->hurtAnimation];
-    //   physx.physxWorker.play(hurtMotion);
-    //   physx.physxWorker.crossFadeSolitary(avatar->hurtsNodeSolitaryPtr, 0, hurtMotion);
-    //   avatar->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 1);
-    // }
+    // hurtAnimations // hurt
+    if (hurtStart) {
+      AnimationNode *hurtMotion = avatar->hurtMotiono[hurtAnimation];
+      hurtMotion->play();
+      avatar->nodeo["hurtsNodeSolitary"]->crossFadeSolitary(0, hurtMotion);
+      avatar->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
 
     // danceAnimations // dance
     if (danceStart) {
