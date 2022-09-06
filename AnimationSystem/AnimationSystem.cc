@@ -168,8 +168,16 @@ namespace AnimationSystem
     avatar->motiono["doubleJump"]->stop();
 
     avatar->motiono["fallLoop"] = avatar->mixer->createMotion(animationo["falling.fbx"], "fallLoop");
+
     avatar->motiono["land"] = avatar->mixer->createMotion(animationo["landing.fbx"], "land");
+    avatar->motiono["land"]->setLoop(LoopType::LoopOnce);
+    avatar->motiono["land"]->stop();
+    avatar->motiono["land"]->setSpeed(0.75);
+
     avatar->motiono["land2"] = avatar->mixer->createMotion(animationo["landing 2.fbx"], "land2");
+    avatar->motiono["land2"]->setLoop(LoopType::LoopOnce);
+    avatar->motiono["land2"]->stop();
+    avatar->motiono["land2"]->setSpeed(1.7);
 
     // useAnimations
     avatar->useMotiono["combo"] = avatar->mixer->createMotion(animationo["One Hand Sword Combo.fbx"], "combo");
@@ -182,17 +190,12 @@ namespace AnimationSystem
     avatar->useMotiono["rifle"] = avatar->mixer->createMotion(animationo["Rifle Aiming Idle.fbx"], "rifle");
     avatar->useMotiono["slash"] = avatar->mixer->createMotion(animationo["sword and shield slash.fbx"], "slash");
     avatar->useMotiono["throw"] = avatar->mixer->createMotion(animationo["pick_up_throw.fbx"], "throw");
-    // todo: add to avatar->motiono too ?
-    avatar->motiono["combo"] = avatar->useMotiono["combo"];
-    avatar->motiono["dashAttack"] = avatar->useMotiono["dashAttack"];
-    avatar->motiono["drink"] = avatar->useMotiono["drink"];
-    avatar->motiono["eat"] = avatar->useMotiono["eat"];
-    avatar->motiono["magic"] = avatar->useMotiono["magic"];
-    avatar->motiono["pickUpThrow"] = avatar->useMotiono["pickUpThrow"];
-    avatar->motiono["pistol"] = avatar->useMotiono["pistol"];
-    avatar->motiono["rifle"] = avatar->useMotiono["rifle"];
-    avatar->motiono["slash"] = avatar->useMotiono["slash"];
-    avatar->motiono["throw"] = avatar->useMotiono["throw"];
+    for (auto const& x : avatar->useMotiono)
+    {
+      avatar->useMotiono[x.first]->setLoop(LoopType::LoopOnce);
+      avatar->useMotiono[x.first]->stop();
+    }
+    avatar->useMotiono["combo"]->setSpeed(1.3);
     
     // useComboAnimations
     avatar->useComboMotiono["swordSideIdle"] = avatar->mixer->createMotion(animationo["sword_idle_side.fbx"], "swordSideIdle");
@@ -201,26 +204,40 @@ namespace AnimationSystem
     avatar->useComboMotiono["swordTopDownSlash"] = avatar->mixer->createMotion(animationo["sword_topdown_slash.fbx"], "swordTopDownSlash");
     avatar->useComboMotiono["swordTopDownSlashStep"] = avatar->mixer->createMotion(animationo["sword_topdown_slash_step.fbx"], "swordTopDownSlashStep");
     avatar->useComboMotiono["dashAttack"] = avatar->mixer->createMotion(animationo["sword_dash.fbx"], "dashAttack");
-    avatar->motiono["swordSideIdle"] = avatar->useComboMotiono["swordSideIdle"];
-    avatar->motiono["swordSideSlash"] = avatar->useComboMotiono["swordSideSlash"];
-    avatar->motiono["swordSideSlashStep"] = avatar->useComboMotiono["swordSideSlashStep"];
-    avatar->motiono["swordTopDownSlash"] = avatar->useComboMotiono["swordTopDownSlash"];
-    avatar->motiono["swordTopDownSlashStep"] = avatar->useComboMotiono["swordTopDownSlashStep"];
-    avatar->motiono["dashAttack"] = avatar->useComboMotiono["dashAttack"];
+    for (auto const& x : avatar->useComboMotiono)
+    {
+      avatar->useComboMotiono[x.first]->setLoop(LoopType::LoopOnce);
+      avatar->useComboMotiono[x.first]->stop();
+    }
 
     // bowAnimations
-    avatar->motiono["bowDraw"] = avatar->mixer->createMotion(animationo["bow draw.fbx"], "bowDraw");
-    avatar->motiono["bowIdle"] = avatar->mixer->createMotion(animationo["bow idle.fbx"], "bowIdle");
-    avatar->motiono["bowLoose"] = avatar->mixer->createMotion(animationo["bow loose.fbx"], "bowLoose");
+    avatar->bowMotiono["bowDraw"] = avatar->mixer->createMotion(animationo["bow draw.fbx"], "bowDraw");
+    avatar->bowMotiono["bowIdle"] = avatar->mixer->createMotion(animationo["bow idle.fbx"], "bowIdle");
+    avatar->bowMotiono["bowLoose"] = avatar->mixer->createMotion(animationo["bow loose.fbx"], "bowLoose");
+    for (auto const& x : avatar->bowMotiono)
+    {
+      avatar->bowMotiono[x.first]->setLoop(LoopType::LoopOnce);
+      avatar->bowMotiono[x.first]->stop();
+    }
 
     // sitAnimations
     avatar->sitMotiono["chair"] = avatar->mixer->createMotion(animationo["sitting idle.fbx"], "chair");
     avatar->sitMotiono["saddle"] = avatar->mixer->createMotion(animationo["sitting idle.fbx"], "saddle");
     avatar->sitMotiono["stand"] = avatar->mixer->createMotion(animationo["Skateboarding.fbx"], "stand");
+    for (auto const& x : avatar->sitMotiono)
+    {
+      avatar->sitMotiono[x.first]->setLoop(LoopType::LoopOnce);
+      avatar->sitMotiono[x.first]->stop();
+    }
 
     // hurtAnimations
     avatar->hurtMotiono["pain_back"] = avatar->mixer->createMotion(animationo["pain_back.fbx"], "pain_back");
     avatar->hurtMotiono["pain_arch"] = avatar->mixer->createMotion(animationo["pain_arch.fbx"], "pain_arch");
+    for (auto const& x : avatar->hurtMotiono)
+    {
+      avatar->hurtMotiono[x.first]->setLoop(LoopType::LoopOnce);
+      avatar->hurtMotiono[x.first]->stop();
+    }
 
     // emoteAnimations
     avatar->emoteMotiono["alert"] = avatar->mixer->createMotion(animationo["alert.fbx"], "alert");
@@ -239,6 +256,11 @@ namespace AnimationSystem
     avatar->emoteMotiono["surpriseSoft"] = avatar->mixer->createMotion(animationo["surprise_soft.fbx"], "surpriseSoft");
     avatar->emoteMotiono["victory"] = avatar->mixer->createMotion(animationo["victory.fbx"], "victory");
     avatar->emoteMotiono["victorySoft"] = avatar->mixer->createMotion(animationo["victory_soft.fbx"], "victorySoft");
+    for (auto const& x : avatar->emoteMotiono)
+    {
+      avatar->emoteMotiono[x.first]->setLoop(LoopType::LoopOnce);
+      avatar->emoteMotiono[x.first]->stop();
+    }
 
     // danceAnimations
     avatar->danceMotiono["dansu"] = avatar->mixer->createMotion(animationo["Hip Hop Dancing.fbx"], "dansu");
@@ -254,6 +276,17 @@ namespace AnimationSystem
     avatar->activateMotiono["grab_left"] = avatar->mixer->createMotion(animationo["grab_left.fbx"], "grab_left");
     avatar->activateMotiono["grab_right"] = avatar->mixer->createMotion(animationo["grab_right.fbx"], "grab_right");
     avatar->activateMotiono["pick_up"] = avatar->mixer->createMotion(animationo["pick_up.fbx"], "pick_up");
+    for (auto const& x : avatar->activateMotiono)
+    {
+      avatar->activateMotiono[x.first]->setLoop(LoopType::LoopOnce);
+      avatar->activateMotiono[x.first]->stop();
+    }
+    avatar->activateMotiono["grab_forward"]->setSpeed(1.2);
+    avatar->activateMotiono["grab_down"]->setSpeed(1.7);
+    avatar->activateMotiono["grab_up"]->setSpeed(1.2);
+    avatar->activateMotiono["grab_left"]->setSpeed(1.2);
+    avatar->activateMotiono["grab_right"]->setSpeed(1.2);
+    avatar->activateMotiono["pick_up"]->setSpeed(1);
 
     //
     // avatar->motiono[] = avatar->mixer->createMotion(animationo[]);
@@ -332,12 +365,12 @@ namespace AnimationSystem
     addChild(avatar->nodeo["idle8DFlyNodeTwo"], avatar->nodeo["_8DirectionsFlyNodeList"]);
 
     avatar->nodeo["idle8DBowNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "idle8DBowNodeTwo");
-    addChild(avatar->nodeo["idle8DBowNodeTwo"], avatar->motiono["bowIdle"]);
+    addChild(avatar->nodeo["idle8DBowNodeTwo"], avatar->bowMotiono["bowIdle"]);
     addChild(avatar->nodeo["idle8DBowNodeTwo"], avatar->nodeo["_8DirectionsBowNodeList"]);
 
     avatar->nodeo["bowDrawLooseNodoeTwo"] = avatar->mixer->createNode(NodeType::TWO, "bowDrawLooseNodoeTwo");
-    addChild(avatar->nodeo["bowDrawLooseNodoeTwo"], avatar->motiono["bowDraw"]);
-    addChild(avatar->nodeo["bowDrawLooseNodoeTwo"], avatar->motiono["bowLoose"]);
+    addChild(avatar->nodeo["bowDrawLooseNodoeTwo"], avatar->bowMotiono["bowDraw"]);
+    addChild(avatar->nodeo["bowDrawLooseNodoeTwo"], avatar->bowMotiono["bowLoose"]);
 
     avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"] = avatar->mixer->createNode(NodeType::OVERWRITE, "bowIdle8DDrawLooseNodeOverwrite");
     addChild(avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"], avatar->nodeo["idle8DBowNodeTwo"]);
@@ -666,7 +699,7 @@ namespace AnimationSystem
     }
 
     if (useEnvelopeEnd) {
-      avatar->motiono["bowLoose"]->play();
+      avatar->bowMotiono["bowLoose"]->play();
       setFactor(avatar->nodeo["bowDrawLooseNodoeTwo"], 1);
       avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 1);
     }
@@ -760,7 +793,7 @@ namespace AnimationSystem
 
     // bow
     if (useEnvelopeStart) {
-      avatar->motiono["bowDraw"]->play();
+      avatar->bowMotiono["bowDraw"]->play();
       setFactor(avatar->nodeo["bowDrawLooseNodoeTwo"], 0);
       setFactor(avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"], 1);
       avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 1);
