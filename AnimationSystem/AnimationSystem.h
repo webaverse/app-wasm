@@ -110,8 +110,10 @@ namespace AnimationSystem
     bool isTop;
     bool isArm;
   };
-  struct Avatar
+
+  class Avatar
   {
+  public:
     AnimationMixer *mixer;
     std::map<std::string, AnimationNode *> motiono; // todo: duplicated with mixer.motiono ?
     std::map<std::string, AnimationNode *> useMotiono;
@@ -126,8 +128,10 @@ namespace AnimationSystem
 
     std::map<std::string, AnimationNode *> nodeo; // todo: duplicated with mixer.nodeo ?
     std::vector<std::string> strings;
+    
+    void update(float *scratchStack);
+    void updateString(char *scratchStack, unsigned int numStrings);
   };
-
   class AnimationNode
   {
   public:
@@ -220,9 +224,7 @@ namespace AnimationSystem
   };
 
   // ------
-  Avatar *initAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
-  void updateAvatar(Avatar *avatar, float *scratchStack);
-  void updateAvatarString(Avatar *avatar, char *scratchStack, unsigned int numStrings);
+  Avatar *createAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   // float createAnimation();

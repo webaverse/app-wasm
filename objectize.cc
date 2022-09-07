@@ -63,14 +63,14 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 // AnimationSystem
 
 // todo: use pointer instead of index.
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Avatar *initAvatar(AnimationSystem::AnimationMixer *mixer) {
-  return AnimationSystem::initAvatar(mixer);
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Avatar *createAnimationAvatar(AnimationSystem::AnimationMixer *mixer) {
+  return AnimationSystem::createAvatar(mixer);
 }
 EMSCRIPTEN_KEEPALIVE void updateAvatar(AnimationSystem::Avatar *avatar, float *scratchStack) {
-  return AnimationSystem::updateAvatar(avatar, scratchStack);
+  return avatar->update(scratchStack);
 }
 EMSCRIPTEN_KEEPALIVE void updateAvatarString(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int numStrings) {
-  return AnimationSystem::updateAvatarString(avatar, scratchStack, numStrings);
+  return avatar->updateString(scratchStack, numStrings);
 }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();

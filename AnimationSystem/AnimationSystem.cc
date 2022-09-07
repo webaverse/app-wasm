@@ -111,7 +111,7 @@ namespace AnimationSystem
     }
   }
 
-  Avatar *initAvatar(AnimationMixer *mixer) {
+  Avatar *createAvatar(AnimationMixer *mixer) {
     // avatar->mixer = createAnimationMixer();
     Avatar *avatar = new Avatar();
     avatars.push_back(avatar);
@@ -512,9 +512,9 @@ namespace AnimationSystem
 
     return avatar;
   }
-  void updateAvatarString(Avatar *avatar, char *scratchStack, unsigned int numStrings)
+  void Avatar::updateString(char *scratchStack, unsigned int numStrings)
   {
-    avatar->strings.clear();
+    this->strings.clear();
     unsigned int index = 0;
     for (unsigned int stringIndex = 0; stringIndex < numStrings; stringIndex++)
     {
@@ -524,32 +524,32 @@ namespace AnimationSystem
       {
         string += scratchStack[index++];
       }
-      avatar->strings.push_back(string);
-      // avatar->strings[stringIndex] = string;
+      this->strings.push_back(string);
+      // this->strings[stringIndex] = string;
       // std::cout << string << std::endl;
     }
   }
-  void updateAvatar(Avatar *avatar, float *scratchStack)
+  void Avatar::update(float *scratchStack)
   {
     // std::cout << "idleWalkFactor: " << scratchStack[index] << std::endl;
 
     unsigned int index = 0;
 
     // strings ----
-    std::string defaultSitAnimation = avatar->strings[index++];
-    std::string defaultEmoteAnimation = avatar->strings[index++];
-    std::string defaultDanceAnimation = avatar->strings[index++];
-    std::string defaultHoldAnimation = avatar->strings[index++];
-    std::string defaultActivateAnimation = avatar->strings[index++];
+    std::string defaultSitAnimation = this->strings[index++];
+    std::string defaultEmoteAnimation = this->strings[index++];
+    std::string defaultDanceAnimation = this->strings[index++];
+    std::string defaultHoldAnimation = this->strings[index++];
+    std::string defaultActivateAnimation = this->strings[index++];
     // ---
-    std::string useAnimation = avatar->strings[index++];
-    std::string useAnimationCombo = avatar->strings[index++];
-    std::string sitAnimation = avatar->strings[index++];
-    std::string emoteAnimation = avatar->strings[index++];
-    std::string danceAnimation = avatar->strings[index++];
-    std::string holdAnimation = avatar->strings[index++];
-    std::string activateAnimation = avatar->strings[index++];
-    std::string hurtAnimation = avatar->strings[index++];
+    std::string useAnimation = this->strings[index++];
+    std::string useAnimationCombo = this->strings[index++];
+    std::string sitAnimation = this->strings[index++];
+    std::string emoteAnimation = this->strings[index++];
+    std::string danceAnimation = this->strings[index++];
+    std::string holdAnimation = this->strings[index++];
+    std::string activateAnimation = this->strings[index++];
+    std::string hurtAnimation = this->strings[index++];
 
     // std::cout << "sitAnimation: " << sitAnimation << std::endl;
 
@@ -614,116 +614,116 @@ namespace AnimationSystem
     float useEnvelopeState = scratchStack[index++];
 
     // values ---
-    avatar->motiono["walkForward"]->setWeight(forwardFactor);
-    avatar->motiono["walkBackward"]->setWeight(backwardFactor);
-    avatar->motiono["walkLeft"]->setWeight(mirrorLeftFactorReverse);
-    avatar->motiono["walkLeftMirror"]->setWeight(mirrorLeftFactor);
-    avatar->motiono["walkRight"]->setWeight(mirrorRightFactorReverse);
-    avatar->motiono["walkRightMirror"]->setWeight(mirrorRightFactor);
+    this->motiono["walkForward"]->setWeight(forwardFactor);
+    this->motiono["walkBackward"]->setWeight(backwardFactor);
+    this->motiono["walkLeft"]->setWeight(mirrorLeftFactorReverse);
+    this->motiono["walkLeftMirror"]->setWeight(mirrorLeftFactor);
+    this->motiono["walkRight"]->setWeight(mirrorRightFactorReverse);
+    this->motiono["walkRightMirror"]->setWeight(mirrorRightFactor);
 
-    avatar->motiono["runForward"]->setWeight(forwardFactor);
-    avatar->motiono["runBackward"]->setWeight(backwardFactor);
-    avatar->motiono["runLeft"]->setWeight(mirrorLeftFactorReverse);
-    avatar->motiono["runLeftMirror"]->setWeight(mirrorLeftFactor);
-    avatar->motiono["runRight"]->setWeight(mirrorRightFactorReverse);
-    avatar->motiono["runRightMirror"]->setWeight(mirrorRightFactor);
+    this->motiono["runForward"]->setWeight(forwardFactor);
+    this->motiono["runBackward"]->setWeight(backwardFactor);
+    this->motiono["runLeft"]->setWeight(mirrorLeftFactorReverse);
+    this->motiono["runLeftMirror"]->setWeight(mirrorLeftFactor);
+    this->motiono["runRight"]->setWeight(mirrorRightFactorReverse);
+    this->motiono["runRightMirror"]->setWeight(mirrorRightFactor);
 
-    avatar->motiono["crouchForward"]->setWeight(forwardFactor);
-    avatar->motiono["crouchBackward"]->setWeight(backwardFactor);
-    avatar->motiono["crouchLeft"]->setWeight(mirrorLeftFactorReverse);
-    avatar->motiono["crouchLeftMirror"]->setWeight(mirrorLeftFactor);
-    avatar->motiono["crouchRight"]->setWeight(mirrorRightFactorReverse);
-    avatar->motiono["crouchRightMirror"]->setWeight(mirrorRightFactor);
+    this->motiono["crouchForward"]->setWeight(forwardFactor);
+    this->motiono["crouchBackward"]->setWeight(backwardFactor);
+    this->motiono["crouchLeft"]->setWeight(mirrorLeftFactorReverse);
+    this->motiono["crouchLeftMirror"]->setWeight(mirrorLeftFactor);
+    this->motiono["crouchRight"]->setWeight(mirrorRightFactorReverse);
+    this->motiono["crouchRightMirror"]->setWeight(mirrorRightFactor);
 
-    avatar->motiono["bowForward"]->setWeight(forwardFactor);
-    avatar->motiono["bowBackward"]->setWeight(backwardFactor);
-    avatar->motiono["bowLeft"]->setWeight(mirrorLeftFactorReverse);
-    avatar->motiono["bowLeftMirror"]->setWeight(mirrorLeftFactor);
-    avatar->motiono["bowRight"]->setWeight(mirrorRightFactorReverse);
-    avatar->motiono["bowRightMirror"]->setWeight(mirrorRightFactor);
+    this->motiono["bowForward"]->setWeight(forwardFactor);
+    this->motiono["bowBackward"]->setWeight(backwardFactor);
+    this->motiono["bowLeft"]->setWeight(mirrorLeftFactorReverse);
+    this->motiono["bowLeftMirror"]->setWeight(mirrorLeftFactor);
+    this->motiono["bowRight"]->setWeight(mirrorRightFactorReverse);
+    this->motiono["bowRightMirror"]->setWeight(mirrorRightFactor);
 
-    avatar->nodeo["_8DirectionsWalkRunNodeTwo"]->setFactor(walkRunFactor);
-    avatar->nodeo["idle8DWalkRunNodeTwo"]->setFactor(idleWalkFactor);
-    avatar->nodeo["idle8DCrouchNodeTwo"]->setFactor(idleWalkFactor);
-    avatar->nodeo["defaultNodeTwo"]->setFactor(crouchFactor);
-    avatar->nodeo["idle8DBowNodeTwo"]->setFactor(idleWalkFactor);
+    this->nodeo["_8DirectionsWalkRunNodeTwo"]->setFactor(walkRunFactor);
+    this->nodeo["idle8DWalkRunNodeTwo"]->setFactor(idleWalkFactor);
+    this->nodeo["idle8DCrouchNodeTwo"]->setFactor(idleWalkFactor);
+    this->nodeo["defaultNodeTwo"]->setFactor(crouchFactor);
+    this->nodeo["idle8DBowNodeTwo"]->setFactor(idleWalkFactor);
 
-    avatar->nodeo["flyForwardNodeTwo"]->setWeight(forwardFactor);
-    avatar->motiono["flyDodgeBackward"]->setWeight(backwardFactor);
-    avatar->motiono["flyDodgeLeft"]->setWeight(leftFactor);
-    avatar->motiono["flyDodgeRight"]->setWeight(rightFactor);
+    this->nodeo["flyForwardNodeTwo"]->setWeight(forwardFactor);
+    this->motiono["flyDodgeBackward"]->setWeight(backwardFactor);
+    this->motiono["flyDodgeLeft"]->setWeight(leftFactor);
+    this->motiono["flyDodgeRight"]->setWeight(rightFactor);
 
-    avatar->nodeo["idle8DFlyNodeTwo"]->setFactor(walkRunFactor);
-    avatar->nodeo["flyForwardNodeTwo"]->setFactor(flyDashFactor);
+    this->nodeo["idle8DFlyNodeTwo"]->setFactor(walkRunFactor);
+    this->nodeo["flyForwardNodeTwo"]->setFactor(flyDashFactor);
 
-    avatar->nodeo["holdNodeFunc"]->setArg(holdFactor);
-    avatar->nodeo["emoteNodeFunc"]->setArg(idleWalkFactor);
+    this->nodeo["holdNodeFunc"]->setArg(holdFactor);
+    this->nodeo["emoteNodeFunc"]->setArg(idleWalkFactor);
 
     // action end events ---
     if (landEnd) {
       if (!landWithMoving) {
-        avatar->nodeo["landNodeTwo"]->crossFadeTwo(0.05, 0);
+        this->nodeo["landNodeTwo"]->crossFadeTwo(0.05, 0);
       } else {
-        avatar->nodeo["landNodeTwo"]->crossFadeTwo(0.15, 0);
+        this->nodeo["landNodeTwo"]->crossFadeTwo(0.15, 0);
       }
     }
     
     if (fallLoopEnd) {
-      avatar->nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 0);
     }
     
     if (flyEnd) {
-      avatar->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (jumpEnd) {
-      avatar->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (doubleJumpEnd) {
-      avatar->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (narutoRunEnd) {
-      avatar->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (activateEnd) {
-      avatar->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (useEnd) {
-      avatar->nodeo["useNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["useNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (useComboEnd) {
-      avatar->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, avatar->nodeo["useNodeTwo"]);
+      this->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, this->nodeo["useNodeTwo"]);
     }
 
     if (useEnvelopeEnd) {
-      avatar->bowMotiono["bowLoose"]->play();
-      avatar->nodeo["bowDrawLooseNodoeTwo"]->setFactor(1);
-      avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 1);
+      this->bowMotiono["bowLoose"]->play();
+      this->nodeo["bowDrawLooseNodoeTwo"]->setFactor(1);
+      this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 1);
     }
 
     if (sitEnd) {
-      avatar->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (emoteEnd) {
-      avatar->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 0);
+      this->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 0);
     }
 
     if (hurtEnd) {
-      avatar->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (danceEnd) {
-      avatar->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 0);
+      this->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
     if (holdEnd) {
-      avatar->nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 0);
+      this->nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 0);
     }
 
     // action start events ---
@@ -731,36 +731,36 @@ namespace AnimationSystem
       // std::cout << "landWithMoving: " << landWithMoving << std::endl;
       // std::cout << "landWithMoving: " << (bool)(landWithMoving) << std::endl;
       if (!landWithMoving) {
-        avatar->motiono["land"]->play();
-        avatar->nodeo["landsNodeSolitary"]->crossFadeSolitary(0, avatar->motiono["land"]);
-        avatar->nodeo["landNodeTwo"]->crossFadeTwo(0, 1);
+        this->motiono["land"]->play();
+        this->nodeo["landsNodeSolitary"]->crossFadeSolitary(0, this->motiono["land"]);
+        this->nodeo["landNodeTwo"]->crossFadeTwo(0, 1);
       } else {
-        avatar->motiono["land2"]->play();
-        avatar->nodeo["landsNodeSolitary"]->crossFadeSolitary(0, avatar->motiono["land2"]);
-        avatar->nodeo["landNodeTwo"]->crossFadeTwo(0.1, 1);
+        this->motiono["land2"]->play();
+        this->nodeo["landsNodeSolitary"]->crossFadeSolitary(0, this->motiono["land2"]);
+        this->nodeo["landNodeTwo"]->crossFadeTwo(0.1, 1);
       }
     }
 
     if (fallLoopStart) {
-      avatar->nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     if (flyStart) {
-      avatar->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     if (jumpStart) {
-      avatar->motiono["jump"]->play();
-      avatar->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->motiono["jump"]->play();
+      this->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     if (doubleJumpStart) {
-      avatar->motiono["doubleJump"]->play();
-      avatar->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->motiono["doubleJump"]->play();
+      this->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     if (narutoRunStart) {
-      avatar->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // useAnimations // sword
@@ -772,10 +772,10 @@ namespace AnimationSystem
         animationName = useAnimation;
       }
       // std::string animationName = "combo"; // test
-      // AnimationNode *useMotion = avatar->useMotiono[animationName];
-      avatar->useMotiono[animationName]->play();
-      avatar->nodeo["usesNodeSolitary"]->crossFadeSolitary(0, avatar->useMotiono[animationName]);
-      avatar->nodeo["useNodeTwo"]->crossFadeTwo(0.2, 1);
+      // AnimationNode *useMotion = this->useMotiono[animationName];
+      this->useMotiono[animationName]->play();
+      this->nodeo["usesNodeSolitary"]->crossFadeSolitary(0, this->useMotiono[animationName]);
+      this->nodeo["useNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // useComboAnimations // silsword
@@ -784,82 +784,82 @@ namespace AnimationSystem
       if (dashAttacking) {
         animationName = "dashAttack";
       } else {
-        // animationName = avatar->useAnimationCombo[avatar->useAnimationIndex];
+        // animationName = this->useAnimationCombo[this->useAnimationIndex];
         // animationName = "swordSideSlash"; // test
         animationName = useAnimationCombo;
         // std::cout << "useAnimationCombo: " << useAnimationCombo << std::endl;
       }
-      avatar->useComboMotiono[animationName]->play();
-      avatar->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, avatar->useComboMotiono[animationName]);
+      this->useComboMotiono[animationName]->play();
+      this->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, this->useComboMotiono[animationName]);
     }
 
     // bow
     if (useEnvelopeStart) {
-      avatar->bowMotiono["bowDraw"]->play();
-      avatar->nodeo["bowDrawLooseNodoeTwo"]->setFactor(0);
-      avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->setFactor(1);
-      avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->bowMotiono["bowDraw"]->play();
+      this->nodeo["bowDrawLooseNodoeTwo"]->setFactor(0);
+      this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->setFactor(1);
+      this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // sitAnimations // sit
     if (sitStart) {
-      // AnimationNode *sitMotion = avatar->sitMotiono[sitAnimation == "" ? defaultSitAnimation : sitAnimation];
+      // AnimationNode *sitMotion = this->sitMotiono[sitAnimation == "" ? defaultSitAnimation : sitAnimation];
       std::string animationName = sitAnimation == "" ? defaultSitAnimation : sitAnimation;
       std::cout << "animationName: " << animationName << std::endl;
-      avatar->sitMotiono[animationName]->play();
-      avatar->nodeo["sitsNodeSolitary"]->crossFadeSolitary(0, avatar->sitMotiono[animationName]);
-      avatar->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->sitMotiono[animationName]->play();
+      this->nodeo["sitsNodeSolitary"]->crossFadeSolitary(0, this->sitMotiono[animationName]);
+      this->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // emoteAnimations // emote
     if (emoteStart) {
-      AnimationNode *emoteMotion = avatar->emoteMotiono[emoteAnimation == "" ? defaultEmoteAnimation : emoteAnimation];
+      AnimationNode *emoteMotion = this->emoteMotiono[emoteAnimation == "" ? defaultEmoteAnimation : emoteAnimation];
       emoteMotion->play();
-      avatar->nodeo["emotesNodeSolitary"]->crossFadeSolitary(0, emoteMotion);
-      avatar->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 1);
+      this->nodeo["emotesNodeSolitary"]->crossFadeSolitary(0, emoteMotion);
+      this->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 1);
     }
 
     // hurtAnimations // hurt
     if (hurtStart) {
-      AnimationNode *hurtMotion = avatar->hurtMotiono[hurtAnimation];
+      AnimationNode *hurtMotion = this->hurtMotiono[hurtAnimation];
       hurtMotion->play();
-      avatar->nodeo["hurtsNodeSolitary"]->crossFadeSolitary(0, hurtMotion);
-      avatar->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->nodeo["hurtsNodeSolitary"]->crossFadeSolitary(0, hurtMotion);
+      this->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // danceAnimations // dance
     if (danceStart) {
-      AnimationNode *danceMotion = avatar->danceMotiono[danceAnimation == "" ? defaultDanceAnimation : danceAnimation];
+      AnimationNode *danceMotion = this->danceMotiono[danceAnimation == "" ? defaultDanceAnimation : danceAnimation];
       danceMotion->play();
-      avatar->nodeo["dancesNodeSolitary"]->crossFadeSolitary(0, danceMotion);
-      avatar->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 1); // todo: check if node exists
+      this->nodeo["dancesNodeSolitary"]->crossFadeSolitary(0, danceMotion);
+      this->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 1); // todo: check if node exists
     }
 
     // holdAnimations // hold
     if (holdStart) {
-      AnimationNode *holdMotion = avatar->holdMotiono[holdAnimation == "" ? defaultHoldAnimation : holdAnimation];
+      AnimationNode *holdMotion = this->holdMotiono[holdAnimation == "" ? defaultHoldAnimation : holdAnimation];
       holdMotion->play();
-      avatar->nodeo["holdsNodeSolitary"]->crossFadeSolitary(0, holdMotion);
-      avatar->nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 1);
+      this->nodeo["holdsNodeSolitary"]->crossFadeSolitary(0, holdMotion);
+      this->nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 1);
     }
 
     // activateAnimations // activate
     if (activateStart) {
-      AnimationNode *activateMotion = avatar->activateMotiono[activateAnimation == "" ? defaultActivateAnimation : activateAnimation];
+      AnimationNode *activateMotion = this->activateMotiono[activateAnimation == "" ? defaultActivateAnimation : activateAnimation];
       activateMotion->play();
-      avatar->nodeo["activatesNodeSolitary"]->crossFadeSolitary(0, activateMotion);
-      avatar->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
+      this->nodeo["activatesNodeSolitary"]->crossFadeSolitary(0, activateMotion);
+      this->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // handle finished event ---
-    if (avatar->mixer->finishedFlag)
+    if (this->mixer->finishedFlag)
     {
-      std::string finishedMotionName = avatar->mixer->finishedMotion->name;
+      std::string finishedMotionName = this->mixer->finishedMotion->name;
       if (useEnvelopeState && finishedMotionName == "bowDraw") {
-        avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 0);
+        this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 0);
       }
       if (finishedMotionName == "bowLoose") {
-        avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 0);
+        this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 0);
       }
     }
   }
