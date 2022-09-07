@@ -144,6 +144,13 @@ namespace AnimationSystem
     bool isCrossFade = false;
     float crossFadeDuration = 0;
     float crossFadeStartTime;
+    void setWeight(float weight);
+    void setFactor(float factor);
+    void setArg(float arg);
+    float getWeight();
+    float getFactor();
+    void addChild(AnimationNode *child);
+    unsigned int getChildren(AnimationNode **scratchStack);
 
     // NodeType::LIST ---
 
@@ -207,6 +214,7 @@ namespace AnimationSystem
     unsigned int getMotionName(AnimationNode *motion, char *scratchStack);
     AnimationNode *createNode(NodeType type = NodeType::LIST, std::string name = "", unsigned int index = 0);
     AnimationNode *getNode(char *scratchStack, unsigned int nameByteLength);
+    void setRootNode(AnimationNode *node);
     float **update(float timeS);
     unsigned int getFinishedMotionName(char *scratchStack);
   };
@@ -220,20 +228,12 @@ namespace AnimationSystem
   // float createAnimation();
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
-  void addChild(AnimationNode *parent, AnimationNode *child);
-  void setRootNode(AnimationMixer *mixer, AnimationNode *node);
   void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   // float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
   // float **getAnimationValues(unsigned int animationIndex, float t);
   // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
-  void setWeight(AnimationNode *node, float weight);
-  void setFactor(AnimationNode *node, float factor);
-  void setArg(AnimationNode *node, float arg);
-  float getWeight(AnimationSystem::AnimationNode *node);
-  float getFactor(AnimationSystem::AnimationNode *node); // todo: AnimationSystem::AnimationNode -> AnimationNode.
-  unsigned int getChildren(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode **scratchStack);
 
 };
 

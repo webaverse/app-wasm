@@ -64,37 +64,37 @@ namespace AnimationSystem
   //   return weight;
   // }
 
-  void setWeight(AnimationNode *node, float weight)
+  void AnimationNode::setWeight(float weight)
   {
     // if (node == NULL) std::cout << "no node" << std::endl;
     // if (node->weight == NULL) std::cout << "no weight" << std::endl;
-    node->weight = weight;
+    this->weight = weight;
   }
 
-  void setFactor(AnimationNode *node, float factor)
+  void AnimationNode::setFactor(float factor)
   {
-    node->factor = factor;
+    this->factor = factor;
   }
 
-  void setArg(AnimationNode *node, float arg)
+  void AnimationNode::setArg(float arg)
   {
-    node->arg = arg;
+    this->arg = arg;
   }
 
-  float getWeight(AnimationSystem::AnimationNode *node)
+  float AnimationNode::getWeight()
   {
-    return node->weight;
+    return this->weight;
   }
 
-  float getFactor(AnimationSystem::AnimationNode *node)
+  float AnimationNode::getFactor()
   {
-    return node->factor;
+    return this->factor;
   }
 
-  unsigned int getChildren(AnimationNode *node, AnimationNode **scratchStack) {
-    unsigned int count = node->children.size();
+  unsigned int AnimationNode::getChildren(AnimationNode **scratchStack) {
+    unsigned int count = this->children.size();
     for (unsigned int i = 0; i < count; i++) {
-      scratchStack[i] = node->children[i];
+      scratchStack[i] = this->children[i];
     }
     return count;
   }
@@ -307,91 +307,91 @@ namespace AnimationSystem
 
     // create node ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     avatar->nodeo["_8DirectionsWalkNodeList"] = avatar->mixer->createNode(NodeType::LIST, "_8DirectionsWalkNodeList");
-    addChild(avatar->nodeo["_8DirectionsWalkNodeList"], avatar->motiono["walkForward"]);
-    addChild(avatar->nodeo["_8DirectionsWalkNodeList"], avatar->motiono["walkBackward"]);
-    addChild(avatar->nodeo["_8DirectionsWalkNodeList"], avatar->motiono["walkLeft"]);
-    addChild(avatar->nodeo["_8DirectionsWalkNodeList"], avatar->motiono["walkRight"]);
-    addChild(avatar->nodeo["_8DirectionsWalkNodeList"], avatar->motiono["walkLeftMirror"]);
-    addChild(avatar->nodeo["_8DirectionsWalkNodeList"], avatar->motiono["walkRightMirror"]);
+    avatar->nodeo["_8DirectionsWalkNodeList"]->addChild(avatar->motiono["walkForward"]);
+    avatar->nodeo["_8DirectionsWalkNodeList"]->addChild(avatar->motiono["walkBackward"]);
+    avatar->nodeo["_8DirectionsWalkNodeList"]->addChild(avatar->motiono["walkLeft"]);
+    avatar->nodeo["_8DirectionsWalkNodeList"]->addChild(avatar->motiono["walkRight"]);
+    avatar->nodeo["_8DirectionsWalkNodeList"]->addChild(avatar->motiono["walkLeftMirror"]);
+    avatar->nodeo["_8DirectionsWalkNodeList"]->addChild(avatar->motiono["walkRightMirror"]);
 
     avatar->nodeo["_8DirectionsRunNodeList"] = avatar->mixer->createNode(NodeType::LIST, "_8DirectionsRunNodeList");
-    addChild(avatar->nodeo["_8DirectionsRunNodeList"], avatar->motiono["runForward"]);
-    addChild(avatar->nodeo["_8DirectionsRunNodeList"], avatar->motiono["runBackward"]);
-    addChild(avatar->nodeo["_8DirectionsRunNodeList"], avatar->motiono["runLeft"]);
-    addChild(avatar->nodeo["_8DirectionsRunNodeList"], avatar->motiono["runRight"]);
-    addChild(avatar->nodeo["_8DirectionsRunNodeList"], avatar->motiono["runLeftMirror"]);
-    addChild(avatar->nodeo["_8DirectionsRunNodeList"], avatar->motiono["runRightMirror"]);
+    avatar->nodeo["_8DirectionsRunNodeList"]->addChild(avatar->motiono["runForward"]);
+    avatar->nodeo["_8DirectionsRunNodeList"]->addChild(avatar->motiono["runBackward"]);
+    avatar->nodeo["_8DirectionsRunNodeList"]->addChild(avatar->motiono["runLeft"]);
+    avatar->nodeo["_8DirectionsRunNodeList"]->addChild(avatar->motiono["runRight"]);
+    avatar->nodeo["_8DirectionsRunNodeList"]->addChild(avatar->motiono["runLeftMirror"]);
+    avatar->nodeo["_8DirectionsRunNodeList"]->addChild(avatar->motiono["runRightMirror"]);
 
     avatar->nodeo["_8DirectionsCrouchNodeList"] = avatar->mixer->createNode(NodeType::LIST, "_8DirectionsCrouchNodeList");
-    addChild(avatar->nodeo["_8DirectionsCrouchNodeList"], avatar->motiono["crouchForward"]);
-    addChild(avatar->nodeo["_8DirectionsCrouchNodeList"], avatar->motiono["crouchBackward"]);
-    addChild(avatar->nodeo["_8DirectionsCrouchNodeList"], avatar->motiono["crouchLeft"]);
-    addChild(avatar->nodeo["_8DirectionsCrouchNodeList"], avatar->motiono["crouchRight"]);
-    addChild(avatar->nodeo["_8DirectionsCrouchNodeList"], avatar->motiono["crouchLeftMirror"]);
-    addChild(avatar->nodeo["_8DirectionsCrouchNodeList"], avatar->motiono["crouchRightMirror"]);
+    avatar->nodeo["_8DirectionsCrouchNodeList"]->addChild(avatar->motiono["crouchForward"]);
+    avatar->nodeo["_8DirectionsCrouchNodeList"]->addChild(avatar->motiono["crouchBackward"]);
+    avatar->nodeo["_8DirectionsCrouchNodeList"]->addChild(avatar->motiono["crouchLeft"]);
+    avatar->nodeo["_8DirectionsCrouchNodeList"]->addChild(avatar->motiono["crouchRight"]);
+    avatar->nodeo["_8DirectionsCrouchNodeList"]->addChild(avatar->motiono["crouchLeftMirror"]);
+    avatar->nodeo["_8DirectionsCrouchNodeList"]->addChild(avatar->motiono["crouchRightMirror"]);
 
     avatar->nodeo["_8DirectionsBowNodeList"] = avatar->mixer->createNode(NodeType::LIST, "_8DirectionsBowNodeList");
-    addChild(avatar->nodeo["_8DirectionsBowNodeList"], avatar->motiono["bowForward"]);
-    addChild(avatar->nodeo["_8DirectionsBowNodeList"], avatar->motiono["bowBackward"]);
-    addChild(avatar->nodeo["_8DirectionsBowNodeList"], avatar->motiono["bowLeft"]);
-    addChild(avatar->nodeo["_8DirectionsBowNodeList"], avatar->motiono["bowRight"]);
-    addChild(avatar->nodeo["_8DirectionsBowNodeList"], avatar->motiono["bowLeftMirror"]);
-    addChild(avatar->nodeo["_8DirectionsBowNodeList"], avatar->motiono["bowRightMirror"]);
+    avatar->nodeo["_8DirectionsBowNodeList"]->addChild(avatar->motiono["bowForward"]);
+    avatar->nodeo["_8DirectionsBowNodeList"]->addChild(avatar->motiono["bowBackward"]);
+    avatar->nodeo["_8DirectionsBowNodeList"]->addChild(avatar->motiono["bowLeft"]);
+    avatar->nodeo["_8DirectionsBowNodeList"]->addChild(avatar->motiono["bowRight"]);
+    avatar->nodeo["_8DirectionsBowNodeList"]->addChild(avatar->motiono["bowLeftMirror"]);
+    avatar->nodeo["_8DirectionsBowNodeList"]->addChild(avatar->motiono["bowRightMirror"]);
 
     avatar->nodeo["_8DirectionsWalkRunNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "_8DirectionsWalkRunNodeTwo");
-    addChild(avatar->nodeo["_8DirectionsWalkRunNodeTwo"], avatar->nodeo["_8DirectionsWalkNodeList"]);
-    addChild(avatar->nodeo["_8DirectionsWalkRunNodeTwo"], avatar->nodeo["_8DirectionsRunNodeList"]);
+    avatar->nodeo["_8DirectionsWalkRunNodeTwo"]->addChild(avatar->nodeo["_8DirectionsWalkNodeList"]);
+    avatar->nodeo["_8DirectionsWalkRunNodeTwo"]->addChild(avatar->nodeo["_8DirectionsRunNodeList"]);
 
     avatar->nodeo["idle8DWalkRunNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "idle8DWalkRunNodeTwo");
-    addChild(avatar->nodeo["idle8DWalkRunNodeTwo"], avatar->motiono["idle"]);
-    addChild(avatar->nodeo["idle8DWalkRunNodeTwo"], avatar->nodeo["_8DirectionsWalkRunNodeTwo"]);
+    avatar->nodeo["idle8DWalkRunNodeTwo"]->addChild(avatar->motiono["idle"]);
+    avatar->nodeo["idle8DWalkRunNodeTwo"]->addChild(avatar->nodeo["_8DirectionsWalkRunNodeTwo"]);
 
     avatar->nodeo["idle8DCrouchNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "idle8DCrouchNodeTwo");
-    addChild(avatar->nodeo["idle8DCrouchNodeTwo"], avatar->motiono["crouchIdle"]);
-    addChild(avatar->nodeo["idle8DCrouchNodeTwo"], avatar->nodeo["_8DirectionsCrouchNodeList"]);
+    avatar->nodeo["idle8DCrouchNodeTwo"]->addChild(avatar->motiono["crouchIdle"]);
+    avatar->nodeo["idle8DCrouchNodeTwo"]->addChild(avatar->nodeo["_8DirectionsCrouchNodeList"]);
 
     avatar->nodeo["flyForwardNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "flyForwardNodeTwo");
-    addChild(avatar->nodeo["flyForwardNodeTwo"], avatar->motiono["flyDodgeForward"]);
-    addChild(avatar->nodeo["flyForwardNodeTwo"], avatar->motiono["flyDash"]);
+    avatar->nodeo["flyForwardNodeTwo"]->addChild(avatar->motiono["flyDodgeForward"]);
+    avatar->nodeo["flyForwardNodeTwo"]->addChild(avatar->motiono["flyDash"]);
 
     avatar->nodeo["_8DirectionsFlyNodeList"] = avatar->mixer->createNode(NodeType::LIST, "_8DirectionsFlyNodeList");
-    addChild(avatar->nodeo["_8DirectionsFlyNodeList"], avatar->nodeo["flyForwardNodeTwo"]);
-    addChild(avatar->nodeo["_8DirectionsFlyNodeList"], avatar->motiono["flyDodgeBackward"]);
-    addChild(avatar->nodeo["_8DirectionsFlyNodeList"], avatar->motiono["flyDodgeLeft"]);
-    addChild(avatar->nodeo["_8DirectionsFlyNodeList"], avatar->motiono["flyDodgeRight"]);
+    avatar->nodeo["_8DirectionsFlyNodeList"]->addChild(avatar->nodeo["flyForwardNodeTwo"]);
+    avatar->nodeo["_8DirectionsFlyNodeList"]->addChild(avatar->motiono["flyDodgeBackward"]);
+    avatar->nodeo["_8DirectionsFlyNodeList"]->addChild(avatar->motiono["flyDodgeLeft"]);
+    avatar->nodeo["_8DirectionsFlyNodeList"]->addChild(avatar->motiono["flyDodgeRight"]);
 
     avatar->nodeo["idle8DFlyNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "idle8DFlyNodeTwo");
-    addChild(avatar->nodeo["idle8DFlyNodeTwo"], avatar->motiono["flyIdle"]);
-    addChild(avatar->nodeo["idle8DFlyNodeTwo"], avatar->nodeo["_8DirectionsFlyNodeList"]);
+    avatar->nodeo["idle8DFlyNodeTwo"]->addChild(avatar->motiono["flyIdle"]);
+    avatar->nodeo["idle8DFlyNodeTwo"]->addChild(avatar->nodeo["_8DirectionsFlyNodeList"]);
 
     avatar->nodeo["idle8DBowNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "idle8DBowNodeTwo");
-    addChild(avatar->nodeo["idle8DBowNodeTwo"], avatar->bowMotiono["bowIdle"]);
-    addChild(avatar->nodeo["idle8DBowNodeTwo"], avatar->nodeo["_8DirectionsBowNodeList"]);
+    avatar->nodeo["idle8DBowNodeTwo"]->addChild(avatar->bowMotiono["bowIdle"]);
+    avatar->nodeo["idle8DBowNodeTwo"]->addChild(avatar->nodeo["_8DirectionsBowNodeList"]);
 
     avatar->nodeo["bowDrawLooseNodoeTwo"] = avatar->mixer->createNode(NodeType::TWO, "bowDrawLooseNodoeTwo");
-    addChild(avatar->nodeo["bowDrawLooseNodoeTwo"], avatar->bowMotiono["bowDraw"]);
-    addChild(avatar->nodeo["bowDrawLooseNodoeTwo"], avatar->bowMotiono["bowLoose"]);
+    avatar->nodeo["bowDrawLooseNodoeTwo"]->addChild(avatar->bowMotiono["bowDraw"]);
+    avatar->nodeo["bowDrawLooseNodoeTwo"]->addChild(avatar->bowMotiono["bowLoose"]);
 
     avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"] = avatar->mixer->createNode(NodeType::OVERWRITE, "bowIdle8DDrawLooseNodeOverwrite");
-    addChild(avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"], avatar->nodeo["idle8DBowNodeTwo"]);
-    addChild(avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"], avatar->nodeo["bowDrawLooseNodoeTwo"]);
+    avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->addChild(avatar->nodeo["idle8DBowNodeTwo"]);
+    avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->addChild(avatar->nodeo["bowDrawLooseNodoeTwo"]);
 
     avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo");
-    addChild(avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"], avatar->nodeo["idle8DWalkRunNodeTwo"]);
-    addChild(avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"], avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]);
+    avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->addChild(avatar->nodeo["idle8DWalkRunNodeTwo"]);
+    avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->addChild(avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]);
 
     avatar->nodeo["defaultNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "defaultNodeTwo");
-    addChild(avatar->nodeo["defaultNodeTwo"], avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]);
-    addChild(avatar->nodeo["defaultNodeTwo"], avatar->nodeo["idle8DCrouchNodeTwo"]);
+    avatar->nodeo["defaultNodeTwo"]->addChild(avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]);
+    avatar->nodeo["defaultNodeTwo"]->addChild(avatar->nodeo["idle8DCrouchNodeTwo"]);
 
     // hurtAnimations
     avatar->nodeo["hurtsNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "hurtsNodeSolitary");
-    addChild(avatar->nodeo["hurtsNodeSolitary"], avatar->hurtMotiono["pain_back"]);
-    addChild(avatar->nodeo["hurtsNodeSolitary"], avatar->hurtMotiono["pain_arch"]);
+    avatar->nodeo["hurtsNodeSolitary"]->addChild(avatar->hurtMotiono["pain_back"]);
+    avatar->nodeo["hurtsNodeSolitary"]->addChild(avatar->hurtMotiono["pain_arch"]);
     //
     avatar->nodeo["hurtNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "hurtNodeTwo");
-    addChild(avatar->nodeo["hurtNodeTwo"], avatar->nodeo["defaultNodeTwo"]);
-    addChild(avatar->nodeo["hurtNodeTwo"], avatar->nodeo["hurtsNodeSolitary"]);
+    avatar->nodeo["hurtNodeTwo"]->addChild(avatar->nodeo["defaultNodeTwo"]);
+    avatar->nodeo["hurtNodeTwo"]->addChild(avatar->nodeo["hurtsNodeSolitary"]);
 
     // useAnimations
     avatar->nodeo["usesNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "usesNodeSolitary");
@@ -399,116 +399,116 @@ namespace AnimationSystem
     for (auto const& x : avatar->useMotiono)
     {
       std::cout << "useMotiono: " << avatar->useMotiono[x.first]->name << std::endl;
-      addChild(avatar->nodeo["usesNodeSolitary"], avatar->useMotiono[x.first]);
+      avatar->nodeo["usesNodeSolitary"]->addChild(avatar->useMotiono[x.first]);
     }
     //
     avatar->nodeo["useNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "useNodeTwo");
-    addChild(avatar->nodeo["useNodeTwo"], avatar->nodeo["hurtNodeTwo"]);
-    addChild(avatar->nodeo["useNodeTwo"], avatar->nodeo["usesNodeSolitary"]);
+    avatar->nodeo["useNodeTwo"]->addChild(avatar->nodeo["hurtNodeTwo"]);
+    avatar->nodeo["useNodeTwo"]->addChild(avatar->nodeo["usesNodeSolitary"]);
 
     // useComboAnimations
     avatar->nodeo["useCombosNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "useCombosNodeSolitary");
     //
-    addChild(avatar->nodeo["useCombosNodeSolitary"], avatar->nodeo["useNodeTwo"]);
+    avatar->nodeo["useCombosNodeSolitary"]->addChild(avatar->nodeo["useNodeTwo"]);
     //
     for (auto const& x : avatar->useComboMotiono)
     {
-      addChild(avatar->nodeo["useCombosNodeSolitary"], avatar->useComboMotiono[x.first]);
+      avatar->nodeo["useCombosNodeSolitary"]->addChild(avatar->useComboMotiono[x.first]);
     }
 
     // emoteAnimations
     avatar->nodeo["emotesNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "emotesNodeSolitary");
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["alert"]); // todo: for loop
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["alertSoft"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["angry"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["angrySoft"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["embarrassed"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["embarrassedSoft"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["headNod"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["headNodSoft"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["headShake"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["headShakeSoft"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["sad"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["sadSoft"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["surprise"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["surpriseSoft"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["victory"]);
-    addChild(avatar->nodeo["emotesNodeSolitary"], avatar->emoteMotiono["victorySoft"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["alert"]); // todo: for loop
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["alertSoft"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["angry"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["angrySoft"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["embarrassed"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["embarrassedSoft"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["headNod"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["headNodSoft"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["headShake"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["headShakeSoft"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["sad"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["sadSoft"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["surprise"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["surpriseSoft"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["victory"]);
+    avatar->nodeo["emotesNodeSolitary"]->addChild(avatar->emoteMotiono["victorySoft"]);
     //
     avatar->nodeo["emoteNodeFunc"] = avatar->mixer->createNode(NodeType::FUNC, "emoteNodeFunc", 1);
-    addChild(avatar->nodeo["emoteNodeFunc"], avatar->nodeo["useCombosNodeSolitary"]);
-    addChild(avatar->nodeo["emoteNodeFunc"], avatar->nodeo["emotesNodeSolitary"]);
+    avatar->nodeo["emoteNodeFunc"]->addChild(avatar->nodeo["useCombosNodeSolitary"]);
+    avatar->nodeo["emoteNodeFunc"]->addChild(avatar->nodeo["emotesNodeSolitary"]);
 
     // danceAnimations
     avatar->nodeo["dancesNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "dancesNodeSolitary");
-    addChild(avatar->nodeo["dancesNodeSolitary"], avatar->danceMotiono["dansu"]);
-    addChild(avatar->nodeo["dancesNodeSolitary"], avatar->danceMotiono["powerup"]);
+    avatar->nodeo["dancesNodeSolitary"]->addChild(avatar->danceMotiono["dansu"]);
+    avatar->nodeo["dancesNodeSolitary"]->addChild(avatar->danceMotiono["powerup"]);
     //
     avatar->nodeo["danceNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "danceNodeTwo");
-    addChild(avatar->nodeo["danceNodeTwo"], avatar->nodeo["emoteNodeFunc"]);
-    addChild(avatar->nodeo["danceNodeTwo"], avatar->nodeo["dancesNodeSolitary"]);
+    avatar->nodeo["danceNodeTwo"]->addChild(avatar->nodeo["emoteNodeFunc"]);
+    avatar->nodeo["danceNodeTwo"]->addChild(avatar->nodeo["dancesNodeSolitary"]);
 
     avatar->nodeo["narutoRunNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "narutoRunNodeTwo");
-    addChild(avatar->nodeo["narutoRunNodeTwo"], avatar->nodeo["danceNodeTwo"]);
-    addChild(avatar->nodeo["narutoRunNodeTwo"], avatar->motiono["narutoRun"]);
+    avatar->nodeo["narutoRunNodeTwo"]->addChild(avatar->nodeo["danceNodeTwo"]);
+    avatar->nodeo["narutoRunNodeTwo"]->addChild(avatar->motiono["narutoRun"]);
 
     // sitAnimations
     avatar->nodeo["sitsNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "sitsNodeSolitary");
-    addChild(avatar->nodeo["sitsNodeSolitary"], avatar->sitMotiono["chair"]);
-    addChild(avatar->nodeo["sitsNodeSolitary"], avatar->sitMotiono["saddle"]);
-    addChild(avatar->nodeo["sitsNodeSolitary"], avatar->sitMotiono["stand"]);
+    avatar->nodeo["sitsNodeSolitary"]->addChild(avatar->sitMotiono["chair"]);
+    avatar->nodeo["sitsNodeSolitary"]->addChild(avatar->sitMotiono["saddle"]);
+    avatar->nodeo["sitsNodeSolitary"]->addChild(avatar->sitMotiono["stand"]);
     //
     avatar->nodeo["sitNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "sitNodeTwo");
-    addChild(avatar->nodeo["sitNodeTwo"], avatar->nodeo["narutoRunNodeTwo"]);
-    addChild(avatar->nodeo["sitNodeTwo"], avatar->nodeo["sitsNodeSolitary"]);
+    avatar->nodeo["sitNodeTwo"]->addChild(avatar->nodeo["narutoRunNodeTwo"]);
+    avatar->nodeo["sitNodeTwo"]->addChild(avatar->nodeo["sitsNodeSolitary"]);
 
     avatar->nodeo["jumpNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "jumpNodeTwo");
-    addChild(avatar->nodeo["jumpNodeTwo"], avatar->nodeo["sitNodeTwo"]);
-    addChild(avatar->nodeo["jumpNodeTwo"], avatar->motiono["jump"]);
+    avatar->nodeo["jumpNodeTwo"]->addChild(avatar->nodeo["sitNodeTwo"]);
+    avatar->nodeo["jumpNodeTwo"]->addChild(avatar->motiono["jump"]);
 
     avatar->nodeo["doubleJumpNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "doubleJumpNodeTwo");
-    addChild(avatar->nodeo["doubleJumpNodeTwo"], avatar->nodeo["jumpNodeTwo"]);
-    addChild(avatar->nodeo["doubleJumpNodeTwo"], avatar->motiono["doubleJump"]);
+    avatar->nodeo["doubleJumpNodeTwo"]->addChild(avatar->nodeo["jumpNodeTwo"]);
+    avatar->nodeo["doubleJumpNodeTwo"]->addChild(avatar->motiono["doubleJump"]);
 
     avatar->nodeo["groundFlyNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "groundFlyNodeTwo");
-    addChild(avatar->nodeo["groundFlyNodeTwo"], avatar->nodeo["doubleJumpNodeTwo"]);
-    addChild(avatar->nodeo["groundFlyNodeTwo"], avatar->nodeo["idle8DFlyNodeTwo"]);
+    avatar->nodeo["groundFlyNodeTwo"]->addChild(avatar->nodeo["doubleJumpNodeTwo"]);
+    avatar->nodeo["groundFlyNodeTwo"]->addChild(avatar->nodeo["idle8DFlyNodeTwo"]);
 
     avatar->nodeo["fallLoopNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "fallLoopNodeTwo");
-    addChild(avatar->nodeo["fallLoopNodeTwo"], avatar->nodeo["groundFlyNodeTwo"]);
-    addChild(avatar->nodeo["fallLoopNodeTwo"], avatar->motiono["fallLoop"]);
+    avatar->nodeo["fallLoopNodeTwo"]->addChild(avatar->nodeo["groundFlyNodeTwo"]);
+    avatar->nodeo["fallLoopNodeTwo"]->addChild(avatar->motiono["fallLoop"]);
 
     avatar->nodeo["landsNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "landsNodeSolitary");
-    addChild(avatar->nodeo["landsNodeSolitary"], avatar->motiono["land"]);
-    addChild(avatar->nodeo["landsNodeSolitary"], avatar->motiono["land2"]);
+    avatar->nodeo["landsNodeSolitary"]->addChild(avatar->motiono["land"]);
+    avatar->nodeo["landsNodeSolitary"]->addChild(avatar->motiono["land2"]);
     //
     avatar->nodeo["landNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "landNodeTwo");
-    addChild(avatar->nodeo["landNodeTwo"], avatar->nodeo["fallLoopNodeTwo"]);
-    addChild(avatar->nodeo["landNodeTwo"], avatar->nodeo["landsNodeSolitary"]);
+    avatar->nodeo["landNodeTwo"]->addChild(avatar->nodeo["fallLoopNodeTwo"]);
+    avatar->nodeo["landNodeTwo"]->addChild(avatar->nodeo["landsNodeSolitary"]);
 
     // activateAnimations
     avatar->nodeo["activatesNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "activatesNodeSolitary");
-    addChild(avatar->nodeo["activatesNodeSolitary"], avatar->activateMotiono["grab_forward"]);
-    addChild(avatar->nodeo["activatesNodeSolitary"], avatar->activateMotiono["grab_down"]);
-    addChild(avatar->nodeo["activatesNodeSolitary"], avatar->activateMotiono["grab_up"]);
-    addChild(avatar->nodeo["activatesNodeSolitary"], avatar->activateMotiono["grab_left"]);
-    addChild(avatar->nodeo["activatesNodeSolitary"], avatar->activateMotiono["grab_right"]);
-    addChild(avatar->nodeo["activatesNodeSolitary"], avatar->activateMotiono["pick_up"]);
+    avatar->nodeo["activatesNodeSolitary"]->addChild(avatar->activateMotiono["grab_forward"]);
+    avatar->nodeo["activatesNodeSolitary"]->addChild(avatar->activateMotiono["grab_down"]);
+    avatar->nodeo["activatesNodeSolitary"]->addChild(avatar->activateMotiono["grab_up"]);
+    avatar->nodeo["activatesNodeSolitary"]->addChild(avatar->activateMotiono["grab_left"]);
+    avatar->nodeo["activatesNodeSolitary"]->addChild(avatar->activateMotiono["grab_right"]);
+    avatar->nodeo["activatesNodeSolitary"]->addChild(avatar->activateMotiono["pick_up"]);
     //
     avatar->nodeo["activateNodeTwo"] = avatar->mixer->createNode(NodeType::TWO, "activateNodeTwo");
-    addChild(avatar->nodeo["activateNodeTwo"], avatar->nodeo["landNodeTwo"]);
-    addChild(avatar->nodeo["activateNodeTwo"], avatar->nodeo["activatesNodeSolitary"]);
+    avatar->nodeo["activateNodeTwo"]->addChild(avatar->nodeo["landNodeTwo"]);
+    avatar->nodeo["activateNodeTwo"]->addChild(avatar->nodeo["activatesNodeSolitary"]);
 
     // holdAnimations
     avatar->nodeo["holdsNodeSolitary"] = avatar->mixer->createNode(NodeType::SOLITARY, "holdsNodeSolitary");
-    addChild(avatar->nodeo["holdsNodeSolitary"], avatar->holdMotiono["pick_up_idle"]);
+    avatar->nodeo["holdsNodeSolitary"]->addChild(avatar->holdMotiono["pick_up_idle"]);
     //
     avatar->nodeo["holdNodeFunc"] = avatar->mixer->createNode(NodeType::FUNC, "holdNodeFunc", 0);
-    addChild(avatar->nodeo["holdNodeFunc"], avatar->nodeo["activateNodeTwo"]);
-    addChild(avatar->nodeo["holdNodeFunc"], avatar->nodeo["holdsNodeSolitary"]);
+    avatar->nodeo["holdNodeFunc"]->addChild(avatar->nodeo["activateNodeTwo"]);
+    avatar->nodeo["holdNodeFunc"]->addChild(avatar->nodeo["holdsNodeSolitary"]);
 
     // set root node ---
-    setRootNode(avatar->mixer, avatar->nodeo["holdNodeFunc"]);
+    avatar->mixer->setRootNode(avatar->nodeo["holdNodeFunc"]);
 
     return avatar;
   }
@@ -614,50 +614,50 @@ namespace AnimationSystem
     float useEnvelopeState = scratchStack[index++];
 
     // values ---
-    setWeight(avatar->motiono["walkForward"], forwardFactor);
-    setWeight(avatar->motiono["walkBackward"], backwardFactor);
-    setWeight(avatar->motiono["walkLeft"], mirrorLeftFactorReverse);
-    setWeight(avatar->motiono["walkLeftMirror"], mirrorLeftFactor);
-    setWeight(avatar->motiono["walkRight"], mirrorRightFactorReverse);
-    setWeight(avatar->motiono["walkRightMirror"], mirrorRightFactor);
+    avatar->motiono["walkForward"]->setWeight(forwardFactor);
+    avatar->motiono["walkBackward"]->setWeight(backwardFactor);
+    avatar->motiono["walkLeft"]->setWeight(mirrorLeftFactorReverse);
+    avatar->motiono["walkLeftMirror"]->setWeight(mirrorLeftFactor);
+    avatar->motiono["walkRight"]->setWeight(mirrorRightFactorReverse);
+    avatar->motiono["walkRightMirror"]->setWeight(mirrorRightFactor);
 
-    setWeight(avatar->motiono["runForward"], forwardFactor);
-    setWeight(avatar->motiono["runBackward"], backwardFactor);
-    setWeight(avatar->motiono["runLeft"], mirrorLeftFactorReverse);
-    setWeight(avatar->motiono["runLeftMirror"], mirrorLeftFactor);
-    setWeight(avatar->motiono["runRight"], mirrorRightFactorReverse);
-    setWeight(avatar->motiono["runRightMirror"], mirrorRightFactor);
+    avatar->motiono["runForward"]->setWeight(forwardFactor);
+    avatar->motiono["runBackward"]->setWeight(backwardFactor);
+    avatar->motiono["runLeft"]->setWeight(mirrorLeftFactorReverse);
+    avatar->motiono["runLeftMirror"]->setWeight(mirrorLeftFactor);
+    avatar->motiono["runRight"]->setWeight(mirrorRightFactorReverse);
+    avatar->motiono["runRightMirror"]->setWeight(mirrorRightFactor);
 
-    setWeight(avatar->motiono["crouchForward"], forwardFactor);
-    setWeight(avatar->motiono["crouchBackward"], backwardFactor);
-    setWeight(avatar->motiono["crouchLeft"], mirrorLeftFactorReverse);
-    setWeight(avatar->motiono["crouchLeftMirror"], mirrorLeftFactor);
-    setWeight(avatar->motiono["crouchRight"], mirrorRightFactorReverse);
-    setWeight(avatar->motiono["crouchRightMirror"], mirrorRightFactor);
+    avatar->motiono["crouchForward"]->setWeight(forwardFactor);
+    avatar->motiono["crouchBackward"]->setWeight(backwardFactor);
+    avatar->motiono["crouchLeft"]->setWeight(mirrorLeftFactorReverse);
+    avatar->motiono["crouchLeftMirror"]->setWeight(mirrorLeftFactor);
+    avatar->motiono["crouchRight"]->setWeight(mirrorRightFactorReverse);
+    avatar->motiono["crouchRightMirror"]->setWeight(mirrorRightFactor);
 
-    setWeight(avatar->motiono["bowForward"], forwardFactor);
-    setWeight(avatar->motiono["bowBackward"], backwardFactor);
-    setWeight(avatar->motiono["bowLeft"], mirrorLeftFactorReverse);
-    setWeight(avatar->motiono["bowLeftMirror"], mirrorLeftFactor);
-    setWeight(avatar->motiono["bowRight"], mirrorRightFactorReverse);
-    setWeight(avatar->motiono["bowRightMirror"], mirrorRightFactor);
+    avatar->motiono["bowForward"]->setWeight(forwardFactor);
+    avatar->motiono["bowBackward"]->setWeight(backwardFactor);
+    avatar->motiono["bowLeft"]->setWeight(mirrorLeftFactorReverse);
+    avatar->motiono["bowLeftMirror"]->setWeight(mirrorLeftFactor);
+    avatar->motiono["bowRight"]->setWeight(mirrorRightFactorReverse);
+    avatar->motiono["bowRightMirror"]->setWeight(mirrorRightFactor);
 
-    setFactor(avatar->nodeo["_8DirectionsWalkRunNodeTwo"], walkRunFactor);
-    setFactor(avatar->nodeo["idle8DWalkRunNodeTwo"], idleWalkFactor);
-    setFactor(avatar->nodeo["idle8DCrouchNodeTwo"], idleWalkFactor);
-    setFactor(avatar->nodeo["defaultNodeTwo"], crouchFactor);
-    setFactor(avatar->nodeo["idle8DBowNodeTwo"], idleWalkFactor);
+    avatar->nodeo["_8DirectionsWalkRunNodeTwo"]->setFactor(walkRunFactor);
+    avatar->nodeo["idle8DWalkRunNodeTwo"]->setFactor(idleWalkFactor);
+    avatar->nodeo["idle8DCrouchNodeTwo"]->setFactor(idleWalkFactor);
+    avatar->nodeo["defaultNodeTwo"]->setFactor(crouchFactor);
+    avatar->nodeo["idle8DBowNodeTwo"]->setFactor(idleWalkFactor);
 
-    setWeight(avatar->nodeo["flyForwardNodeTwo"], forwardFactor);
-    setWeight(avatar->motiono["flyDodgeBackward"], backwardFactor);
-    setWeight(avatar->motiono["flyDodgeLeft"], leftFactor);
-    setWeight(avatar->motiono["flyDodgeRight"], rightFactor);
+    avatar->nodeo["flyForwardNodeTwo"]->setWeight(forwardFactor);
+    avatar->motiono["flyDodgeBackward"]->setWeight(backwardFactor);
+    avatar->motiono["flyDodgeLeft"]->setWeight(leftFactor);
+    avatar->motiono["flyDodgeRight"]->setWeight(rightFactor);
 
-    setFactor(avatar->nodeo["idle8DFlyNodeTwo"], walkRunFactor);
-    setFactor(avatar->nodeo["flyForwardNodeTwo"], flyDashFactor);
+    avatar->nodeo["idle8DFlyNodeTwo"]->setFactor(walkRunFactor);
+    avatar->nodeo["flyForwardNodeTwo"]->setFactor(flyDashFactor);
 
-    setArg(avatar->nodeo["holdNodeFunc"], holdFactor);
-    setArg(avatar->nodeo["emoteNodeFunc"], idleWalkFactor);
+    avatar->nodeo["holdNodeFunc"]->setArg(holdFactor);
+    avatar->nodeo["emoteNodeFunc"]->setArg(idleWalkFactor);
 
     // action end events ---
     if (landEnd) {
@@ -702,7 +702,7 @@ namespace AnimationSystem
 
     if (useEnvelopeEnd) {
       avatar->bowMotiono["bowLoose"]->play();
-      setFactor(avatar->nodeo["bowDrawLooseNodoeTwo"], 1);
+      avatar->nodeo["bowDrawLooseNodoeTwo"]->setFactor(1);
       avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 1);
     }
 
@@ -796,8 +796,8 @@ namespace AnimationSystem
     // bow
     if (useEnvelopeStart) {
       avatar->bowMotiono["bowDraw"]->play();
-      setFactor(avatar->nodeo["bowDrawLooseNodoeTwo"], 0);
-      setFactor(avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"], 1);
+      avatar->nodeo["bowDrawLooseNodoeTwo"]->setFactor(0);
+      avatar->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->setFactor(1);
       avatar->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
@@ -817,7 +817,6 @@ namespace AnimationSystem
       emoteMotion->play();
       avatar->nodeo["emotesNodeSolitary"]->crossFadeSolitary(0, emoteMotion);
       avatar->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 1);
-      // physx.physxWorker.setFactor(avatar->emoteNodeFuncPtr, 1);
     }
 
     // hurtAnimations // hurt
@@ -899,15 +898,15 @@ namespace AnimationSystem
 
     // setRootNode(crouchNode);
   }
-  void addChild(AnimationNode *parent, AnimationNode *child) // todo: check if node exists
+  void AnimationNode::addChild(AnimationNode *child) // todo: check if node exists
   {
-    parent->children.push_back(child);
+    this->children.push_back(child);
 
-    if (parent->type == NodeType::SOLITARY)
+    if (this->type == NodeType::SOLITARY)
     {
-      if (parent->children.size() == 1)
+      if (this->children.size() == 1)
       {
-        parent->activeNode = child;
+        this->activeNode = child;
         child->weight = 1;
       }
       else
@@ -916,9 +915,9 @@ namespace AnimationSystem
       }
     }
   }
-  void setRootNode(AnimationMixer *mixer, AnimationNode *node)
+  void AnimationMixer::setRootNode(AnimationNode *node)
   {
-    mixer->rootNode = node;
+    this->rootNode = node;
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm)
   {

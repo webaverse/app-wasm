@@ -105,11 +105,11 @@ EMSCRIPTEN_KEEPALIVE unsigned int getMotionName(AnimationSystem::AnimationMixer 
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getNode(AnimationSystem::AnimationMixer *mixer, char *scratchStack, unsigned int nameByteLength) {
   return mixer->getNode(scratchStack, nameByteLength);
 }
-EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *parent, AnimationSystem::AnimationNode *child) {
-  return AnimationSystem::addChild(parent, child);
+EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode *child) {
+  return node->addChild(child);
 }
 EMSCRIPTEN_KEEPALIVE void setRootNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::AnimationNode *node) {
-  return AnimationSystem::setRootNode(mixer, node);
+  return mixer->setRootNode(node);
 }
 EMSCRIPTEN_KEEPALIVE void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return AnimationSystem::createInterpolant(scratchStack, animationNameByteLength, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
@@ -129,22 +129,22 @@ EMSCRIPTEN_KEEPALIVE void crossFadeSolitary(AnimationSystem::AnimationNode *pare
   return parentNode->crossFadeSolitary(duration, targetNode);
 }
 EMSCRIPTEN_KEEPALIVE void setWeight(AnimationSystem::AnimationNode *node, float weight) {
-  return AnimationSystem::setWeight(node, weight); // todo: run `node->weight = weight;` directly.
+  return node->setWeight(weight); // todo: run `node->weight = weight;` directly.
 }
 EMSCRIPTEN_KEEPALIVE void setFactor(AnimationSystem::AnimationNode *node, float factor) {
-  return AnimationSystem::setFactor(node, factor);
+  return node->setFactor(factor);
 }
 EMSCRIPTEN_KEEPALIVE void setArg(AnimationSystem::AnimationNode *node, float arg) {
-  return AnimationSystem::setArg(node, arg);
+  return node->setArg(arg);
 }
 EMSCRIPTEN_KEEPALIVE float getWeight(AnimationSystem::AnimationNode *node) {
-  return AnimationSystem::getWeight(node);
+  return node->getWeight();
 }
 EMSCRIPTEN_KEEPALIVE float getFactor(AnimationSystem::AnimationNode *node) {
-  return AnimationSystem::getFactor(node); // todo: node->getFactor();
+  return node->getFactor();
 }
 EMSCRIPTEN_KEEPALIVE unsigned int getChildren(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode **scratchStack) {
-  return AnimationSystem:: getChildren(node, scratchStack);
+  return node->getChildren(scratchStack);
 }
 EMSCRIPTEN_KEEPALIVE void play(AnimationSystem::AnimationNode *motion) {
   return motion->play();
