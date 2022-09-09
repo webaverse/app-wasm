@@ -96,7 +96,7 @@ namespace AnimationSystem
   struct Animation
   {
     float duration;
-    std::vector<Interpolant> interpolants; // todo: pure array?
+    std::vector<Interpolant> interpolants;
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
     std::string name;
@@ -115,7 +115,7 @@ namespace AnimationSystem
   {
   public:
     AnimationMixer *mixer;
-    std::map<std::string, AnimationNode *> motiono; // todo: duplicated with mixer.motiono ?
+    std::map<std::string, AnimationNode *> motiono;
     std::map<std::string, AnimationNode *> useMotiono;
     std::map<std::string, AnimationNode *> useComboMotiono;
     std::map<std::string, AnimationNode *> bowMotiono;
@@ -126,7 +126,7 @@ namespace AnimationSystem
     std::map<std::string, AnimationNode *> activateMotiono;
     std::map<std::string, AnimationNode *> hurtMotiono;
 
-    std::map<std::string, AnimationNode *> nodeo; // todo: duplicated with mixer.nodeo ?
+    std::map<std::string, AnimationNode *> nodeo;
     std::vector<std::string> strings;
     
     void update(float *scratchStack);
@@ -144,7 +144,7 @@ namespace AnimationSystem
     // node ------
     float weight = 1;
     std::vector<AnimationNode *> children;
-    unsigned int type = NodeType::LIST; // todo: NodeType type =.
+    unsigned int type = NodeType::LIST;
     bool isCrossFade = false;
     float crossFadeDuration = 0;
     float crossFadeStartTime;
@@ -181,7 +181,7 @@ namespace AnimationSystem
     float speed = 1;
     bool isFinished = false;
     // default values same as THREE.AnimationAction.
-    unsigned int loop = LoopType::LoopRepeat; // todo: LoopType loop =.
+    unsigned int loop = LoopType::LoopRepeat;
     bool clampWhenFinished = false;
     //
     void play();
@@ -195,18 +195,13 @@ namespace AnimationSystem
   public:
     static float timeS;
 
-    // unsigned int index;
-    AnimationNode _animationNode; // todo: rename: animationTree
+    AnimationNode _animationNode;
     AnimationNode *rootNode;
-    // std::vector<AnimationNode *> motions;
     std::map<std::string, AnimationNode *> motiono;
     std::map<std::string, AnimationNode *> nodeo;
     float finishedFlag = 0;
-    // float *finishedFlag = (float *)malloc((1) * sizeof(float));
-    // float *finishedFlag = new float();
-    // float *animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished motion pointer.
     float *animationValues[54]; // 53 bones interpolants result buffers + 1 finished event flag.
-    AnimationNode *finishedMotion; // todo: support multiple motions.
+    AnimationNode *finishedMotion;
 
     AnimationMixer()
     {
@@ -224,16 +219,12 @@ namespace AnimationSystem
   };
 
   // ------
-  Avatar *createAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
+  Avatar *createAvatar(AnimationMixer *mixer);
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
-  // float createAnimation();
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
   void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  // float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
-  // float **getAnimationValues(unsigned int animationIndex, float t);
-  // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
 
