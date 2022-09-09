@@ -570,7 +570,7 @@ namespace AnimationSystem
     float idleWalkFactor = scratchStack[index++];
     float walkRunFactor = scratchStack[index++];
     float crouchFactor = scratchStack[index++];
-    float flyDashFactor = scratchStack[index++];
+    // float flyDashFactor = scratchStack[index++];
 
     float holdFactor = scratchStack[index++];
 
@@ -654,7 +654,7 @@ namespace AnimationSystem
     this->motiono["flyDodgeRight"]->setWeight(rightFactor);
 
     this->nodeo["idle8DFlyNodeTwo"]->setFactor(walkRunFactor);
-    this->nodeo["flyForwardNodeTwo"]->setFactor(flyDashFactor);
+    // this->nodeo["flyForwardNodeTwo"]->setFactor(flyDashFactor);
 
     this->nodeo["holdNodeFunc"]->setArg(holdFactor);
     this->nodeo["emoteNodeFunc"]->setArg(idleWalkFactor);
