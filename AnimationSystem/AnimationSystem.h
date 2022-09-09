@@ -219,6 +219,8 @@ namespace AnimationSystem
     AnimationNode *createNode(NodeType type = NodeType::LIST, std::string name = "", unsigned int index = 0);
     AnimationNode *getNode(char *scratchStack, unsigned int nameByteLength);
     void setRootNode(AnimationNode *node);
+    void plotNodeTree(AnimationNode *node, unsigned int indent = 0);
+    void getNodeTreeData(AnimationNode *node);
     float **update(float timeS);
     unsigned int getFinishedMotionName(char *scratchStack);
   };

@@ -510,6 +510,11 @@ namespace AnimationSystem
     // set root node ---
     avatar->mixer->setRootNode(avatar->nodeo["holdNodeFunc"]);
 
+    //
+
+    avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
+    std::cout << std::endl; //test
+
     return avatar;
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings)
@@ -918,6 +923,27 @@ namespace AnimationSystem
   void AnimationMixer::setRootNode(AnimationNode *node)
   {
     this->rootNode = node;
+  }
+  void AnimationMixer::plotNodeTree(AnimationNode *node, unsigned int indent)
+  {
+    for (unsigned int i = 0; i < indent; i++)
+    {
+      std::cout << " ";
+    }
+    std::cout << node->name << std::endl;
+    for (unsigned int i = 0; i < node->children.size(); i++)
+    {
+      this->plotNodeTree(node->children[i], indent + 1);
+    }
+  }
+  void AnimationMixer::getNodeTreeData(AnimationNode *node)
+  {
+    std::cout << "{\"name\":\"" << node->name << "\",\"children\":[";
+    for (unsigned int i = 0; i < node->children.size(); i++)
+    {
+      this->getNodeTreeData(node->children[i]);
+    }
+    std::cout << "]},";
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm)
   {
