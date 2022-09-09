@@ -117,11 +117,14 @@ public:
   PxConvexMesh *createConvexShape(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream);
   void destroyConvexShape(PxConvexMesh *convexMesh);
   
+  PxHeightField *createHeightField(uint8_t *data, unsigned int length, PxDefaultMemoryOutputStream *releaseWriteStream);
+
   PxMaterial *createMaterial(float *mat);
   void destroyMaterial(PxMaterial *material);
 
   void addGeometry(PxTriangleMesh *triangleMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int external, PxTriangleMesh *releaseTriangleMesh);
   void addConvexGeometry(PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxConvexMesh *releaseConvexMesh);
+  void addHeightFieldGeometry(PxHeightField *heightField, float heightScale, float rowScale, float columnScale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxHeightField *releaseHeightField);
   
   void setMassAndInertia(unsigned int id, float mass, float *inertia);
   void setGravityEnabled(unsigned int id, bool enabled);

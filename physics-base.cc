@@ -6,6 +6,9 @@
 #include "physics.h"
 #include <string>
 #include <iostream>
+#include "geometry/PxHeightFieldSample.h"
+#include "geometry/PxHeightFieldDesc.h"
+#include "geometry/PxHeightFieldGeometry.h"
 
 //
 
@@ -82,6 +85,37 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   bool status = cooking->cookConvexMesh(meshDesc, **writeStream);
   if (!status) {
     std::cerr << "geometry convex mesh bake failed" << std::endl;
+  }
+
+  *data = (*writeStream)->getData();
+  *length = (*writeStream)->getSize();
+}
+void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumns, unsigned int *scratchStack, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+	PxU32 hfNumVerts = numRows * numColumns;
+
+	PxHeightFieldSample* samples = new PxHeightFieldSample[hfNumVerts];
+	memset(samples,0,hfNumVerts*sizeof(PxHeightFieldSample));
+
+  for(PxU32 z = 0; z < numColumns; z++)
+	{
+		for(PxU32 x = 0; x < numRows; x++)
+		{
+      const PxU32 Index = x + z * numRows;
+      unsigned int height = scratchStack[Index];
+			samples[Index].height = (PxI16)(height);
+		}
+	}
+
+	PxHeightFieldDesc hfDesc{};
+	hfDesc.nbRows = numRows; // rows: x axis
+	hfDesc.nbColumns = numColumns; // columns: z axis
+	hfDesc.samples.data = samples;
+	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
+
+  *writeStream = new PxDefaultMemoryOutputStream();
+  bool status = cooking->cookHeightField(hfDesc, **writeStream);
+  if (!status) {
+    std::cerr << "geometry heightfield bake failed" << std::endl;
   }
 
   *data = (*writeStream)->getData();
