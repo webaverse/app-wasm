@@ -128,6 +128,19 @@ namespace AnimationSystem
 
     std::map<std::string, AnimationNode *> nodeo; // todo: duplicated with mixer.nodeo ?
     std::vector<std::string> strings;
+
+    // action start/end events
+    bool jumpStart, jumpEnd, lastJumpState;
+    bool doubleJumpStart, doubleJumpEnd, lastDoubleJumpState;
+    bool landStart, landEnd, lastLandState;
+    bool flyStart, flyEnd, lastFlyState;
+    bool activateStart, activateEnd, lastActivateState;
+    bool narutoRunStart, narutoRunEnd, lastNarutoRunState;
+    bool sitStart, sitEnd, lastSitState;
+    bool holdStart, holdEnd, lastHoldState;
+    bool emoteStart, emoteEnd, lastEmoteState;
+    bool fallLoopStart, fallLoopEnd, lastFallLoopState;
+    bool hurtStart, hurtEnd, lastHurtState;
     
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
