@@ -601,7 +601,7 @@ namespace AnimationSystem
     // float doubleJumpEnd = scratchStack[index++];
     // float narutoRunEnd = scratchStack[index++];
     // float activateEnd = scratchStack[index++];
-    float useEnd = scratchStack[index++];
+    // float useEnd = scratchStack[index++];
     // float useComboEnd = scratchStack[index++];
     float useEnvelopeEnd = scratchStack[index++];
     // float sitEnd = scratchStack[index++];
@@ -617,7 +617,7 @@ namespace AnimationSystem
     // float jumpStart = scratchStack[index++];
     // float doubleJumpStart = scratchStack[index++];
     // float narutoRunStart = scratchStack[index++];
-    float useStart = scratchStack[index++];
+    // float useStart = scratchStack[index++];
     // float useComboStart = scratchStack[index++];
     float useEnvelopeStart = scratchStack[index++];
     // float sitStart = scratchStack[index++];
@@ -734,7 +734,19 @@ namespace AnimationSystem
 
     //
     
-    std::cout << "useAnimationComboName: " << useAnimationComboName << std::endl;
+    // std::cout << "useAnimation: " << useAnimation << std::endl;
+    this->useStart = false;
+    this->useEnd = false;
+    if (useAnimation != this->lastUseAnimation)
+    {
+      if (useAnimation.length() > 0) this->useStart = true;
+      else this->useEnd = true;
+    }
+    this->lastUseAnimation = useAnimation;
+
+    //
+    
+    // std::cout << "useAnimationComboName: " << useAnimationComboName << std::endl;
     this->useComboStart = false;
     this->useComboEnd = false;
     if (useAnimationComboName != this->lastUseAnimationComboName)
@@ -743,6 +755,13 @@ namespace AnimationSystem
       else this->useComboEnd = true;
     }
     this->lastUseAnimationComboName = useAnimationComboName;
+
+    // std::cout
+    //   << "useStart: " << useStart << ", "
+    //   << "useEnd: " << useEnd << ", "
+    //   << "useComboStart: " << useComboStart << ", "
+    //   << "useComboEnd: " << useComboEnd << ", "
+    //   << std::endl;
 
     // values ---
     this->motiono["walkForward"]->setWeight(forwardFactor);
@@ -823,7 +842,7 @@ namespace AnimationSystem
       this->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (useEnd) {
+    if (this->useEnd) {
       this->nodeo["useNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
@@ -895,7 +914,7 @@ namespace AnimationSystem
     }
 
     // useAnimations // sword
-    if (useStart) {
+    if (this->useStart) {
       std::string animationName;
       if (dashAttacking) {
         animationName = "dashAttack";
