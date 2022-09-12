@@ -592,6 +592,7 @@ namespace AnimationSystem
     bool fallLoopState = scratchStack[index++];
     bool hurtState = scratchStack[index++];
     bool danceState = scratchStack[index++];
+    bool useEnvelopeState = scratchStack[index++];
 
     // action end events ---
     // float landEnd = scratchStack[index++];
@@ -603,7 +604,7 @@ namespace AnimationSystem
     // float activateEnd = scratchStack[index++];
     // float useEnd = scratchStack[index++];
     // float useComboEnd = scratchStack[index++];
-    float useEnvelopeEnd = scratchStack[index++];
+    // float useEnvelopeEnd = scratchStack[index++];
     // float sitEnd = scratchStack[index++];
     // float emoteEnd = scratchStack[index++];
     // float hurtEnd = scratchStack[index++];
@@ -619,7 +620,7 @@ namespace AnimationSystem
     // float narutoRunStart = scratchStack[index++];
     // float useStart = scratchStack[index++];
     // float useComboStart = scratchStack[index++];
-    float useEnvelopeStart = scratchStack[index++];
+    // float useEnvelopeStart = scratchStack[index++];
     // float sitStart = scratchStack[index++];
     // float emoteStart = scratchStack[index++];
     // float hurtStart = scratchStack[index++];
@@ -630,7 +631,6 @@ namespace AnimationSystem
     // other ---
     float landWithMoving = scratchStack[index++];
     float dashAttacking = scratchStack[index++];
-    float useEnvelopeState = scratchStack[index++];
 
     // set start/end events ---
     this->jumpStart = false;
@@ -731,6 +731,15 @@ namespace AnimationSystem
       else this->danceEnd = true;
     }
     this->lastDanceState = danceState;
+    
+    this->useEnvelopeStart = false;
+    this->useEnvelopeEnd = false;
+    if (useEnvelopeState != this->lastUseEnvelopeState)
+    {
+      if (useEnvelopeState) this->useEnvelopeStart = true;
+      else this->useEnvelopeEnd = true;
+    }
+    this->lastUseEnvelopeState = useEnvelopeState;
 
     //
     
@@ -850,7 +859,7 @@ namespace AnimationSystem
       this->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, this->nodeo["useNodeTwo"]);
     }
 
-    if (useEnvelopeEnd) {
+    if (this->useEnvelopeEnd) {
       this->bowMotiono["bowLoose"]->play();
       this->nodeo["bowDrawLooseNodoeTwo"]->setFactor(1);
       this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 1);
@@ -944,7 +953,7 @@ namespace AnimationSystem
     }
 
     // bow
-    if (useEnvelopeStart) {
+    if (this->useEnvelopeStart) {
       this->bowMotiono["bowDraw"]->play();
       this->nodeo["bowDrawLooseNodoeTwo"]->setFactor(0);
       this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->setFactor(1);

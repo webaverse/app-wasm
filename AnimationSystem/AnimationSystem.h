@@ -142,6 +142,7 @@ namespace AnimationSystem
     bool fallLoopStart, fallLoopEnd, lastFallLoopState;
     bool hurtStart, hurtEnd, lastHurtState;
     bool danceStart, danceEnd, lastDanceState;
+    bool useEnvelopeStart, useEnvelopeEnd, lastUseEnvelopeState;
     //
     bool useStart, useEnd;
     std::string lastUseAnimation;
