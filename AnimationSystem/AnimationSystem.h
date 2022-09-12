@@ -128,6 +128,27 @@ namespace AnimationSystem
 
     std::map<std::string, AnimationNode *> nodeo;
     std::vector<std::string> strings;
+
+    // action start/end events
+    bool jumpStart, jumpEnd, lastJumpState;
+    bool doubleJumpStart, doubleJumpEnd, lastDoubleJumpState;
+    bool landStart, landEnd, lastLandState;
+    bool flyStart, flyEnd, lastFlyState;
+    bool activateStart, activateEnd, lastActivateState;
+    bool narutoRunStart, narutoRunEnd, lastNarutoRunState;
+    bool sitStart, sitEnd, lastSitState;
+    bool holdStart, holdEnd, lastHoldState;
+    bool emoteStart, emoteEnd, lastEmoteState;
+    bool fallLoopStart, fallLoopEnd, lastFallLoopState;
+    bool hurtStart, hurtEnd, lastHurtState;
+    bool danceStart, danceEnd, lastDanceState;
+    bool useEnvelopeStart, useEnvelopeEnd, lastUseEnvelopeState;
+    //
+    bool useStart, useEnd;
+    std::string lastUseAnimation;
+    //
+    bool useComboStart, useComboEnd;
+    std::string lastUseAnimationComboName;
     
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
@@ -214,6 +235,8 @@ namespace AnimationSystem
     AnimationNode *createNode(NodeType type = NodeType::LIST, std::string name = "", unsigned int index = 0);
     AnimationNode *getNode(char *scratchStack, unsigned int nameByteLength);
     void setRootNode(AnimationNode *node);
+    void plotNodeTree(AnimationNode *node, unsigned int indent = 0);
+    void getNodeTreeData(AnimationNode *node);
     float **update(float timeS);
     unsigned int getFinishedMotionName(char *scratchStack);
   };

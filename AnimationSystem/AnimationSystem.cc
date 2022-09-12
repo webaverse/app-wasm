@@ -469,6 +469,11 @@ namespace AnimationSystem
     // set root node ---
     avatar->mixer->setRootNode(avatar->nodeo["holdNodeFunc"]);
 
+    //
+
+    avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
+    std::cout << std::endl; //test
+
     return avatar;
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings)
@@ -498,7 +503,7 @@ namespace AnimationSystem
     std::string defaultActivateAnimation = this->strings[index++];
     // ---
     std::string useAnimation = this->strings[index++];
-    std::string useAnimationCombo = this->strings[index++];
+    std::string useAnimationComboName = this->strings[index++];
     std::string sitAnimation = this->strings[index++];
     std::string emoteAnimation = this->strings[index++];
     std::string danceAnimation = this->strings[index++];
@@ -526,44 +531,198 @@ namespace AnimationSystem
 
     float holdFactor = scratchStack[index++];
 
+    // action states ---
+    bool jumpState = scratchStack[index++];
+    bool doubleJumpState = scratchStack[index++];
+    bool landState = scratchStack[index++];
+    bool flyState = scratchStack[index++];
+    bool activateState = scratchStack[index++];
+    bool narutoRunState = scratchStack[index++];
+    bool sitState = scratchStack[index++];
+    bool holdState = scratchStack[index++];
+    bool emoteState = scratchStack[index++];
+    bool fallLoopState = scratchStack[index++];
+    bool hurtState = scratchStack[index++];
+    bool danceState = scratchStack[index++];
+    bool useEnvelopeState = scratchStack[index++];
+
     // action end events ---
-    float landEnd = scratchStack[index++];
-    float fallLoopEnd = scratchStack[index++];
-    float flyEnd = scratchStack[index++];
-    float jumpEnd = scratchStack[index++];
-    float doubleJumpEnd = scratchStack[index++];
-    float narutoRunEnd = scratchStack[index++];
-    float activateEnd = scratchStack[index++];
-    float useEnd = scratchStack[index++];
-    float useComboEnd = scratchStack[index++];
-    float useEnvelopeEnd = scratchStack[index++];
-    float sitEnd = scratchStack[index++];
-    float emoteEnd = scratchStack[index++];
-    float hurtEnd = scratchStack[index++];
-    float danceEnd = scratchStack[index++];
-    float holdEnd = scratchStack[index++];
+    // float landEnd = scratchStack[index++];
+    // float fallLoopEnd = scratchStack[index++];
+    // float flyEnd = scratchStack[index++];
+    // float jumpEnd = scratchStack[index++];
+    // float doubleJumpEnd = scratchStack[index++];
+    // float narutoRunEnd = scratchStack[index++];
+    // float activateEnd = scratchStack[index++];
+    // float useEnd = scratchStack[index++];
+    // float useComboEnd = scratchStack[index++];
+    // float useEnvelopeEnd = scratchStack[index++];
+    // float sitEnd = scratchStack[index++];
+    // float emoteEnd = scratchStack[index++];
+    // float hurtEnd = scratchStack[index++];
+    // float danceEnd = scratchStack[index++];
+    // float holdEnd = scratchStack[index++];
 
     // action start events ---
-    float landStart = scratchStack[index++];
-    float fallLoopStart = scratchStack[index++];
-    float flyStart = scratchStack[index++];
-    float jumpStart = scratchStack[index++];
-    float doubleJumpStart = scratchStack[index++];
-    float narutoRunStart = scratchStack[index++];
-    float useStart = scratchStack[index++];
-    float useComboStart = scratchStack[index++];
-    float useEnvelopeStart = scratchStack[index++];
-    float sitStart = scratchStack[index++];
-    float emoteStart = scratchStack[index++];
-    float hurtStart = scratchStack[index++];
-    float danceStart = scratchStack[index++];
-    float holdStart = scratchStack[index++];
-    float activateStart = scratchStack[index++];
+    // float landStart = scratchStack[index++];
+    // float fallLoopStart = scratchStack[index++];
+    // float flyStart = scratchStack[index++];
+    // float jumpStart = scratchStack[index++];
+    // float doubleJumpStart = scratchStack[index++];
+    // float narutoRunStart = scratchStack[index++];
+    // float useStart = scratchStack[index++];
+    // float useComboStart = scratchStack[index++];
+    // float useEnvelopeStart = scratchStack[index++];
+    // float sitStart = scratchStack[index++];
+    // float emoteStart = scratchStack[index++];
+    // float hurtStart = scratchStack[index++];
+    // float danceStart = scratchStack[index++];
+    // float holdStart = scratchStack[index++];
+    // float activateStart = scratchStack[index++];
 
     // other ---
     float landWithMoving = scratchStack[index++];
     float dashAttacking = scratchStack[index++];
-    float useEnvelopeState = scratchStack[index++];
+
+    // set start/end events ---
+    this->jumpStart = false;
+    this->jumpEnd = false;
+    if (jumpState != this->lastJumpState)
+    {
+      if (jumpState) this->jumpStart = true;
+      else this->jumpEnd = true;
+    }
+    this->lastJumpState = jumpState;
+    
+    this->doubleJumpStart = false;
+    this->doubleJumpEnd = false;
+    if (doubleJumpState != this->lastDoubleJumpState)
+    {
+      if (doubleJumpState) this->doubleJumpStart = true;
+      else this->doubleJumpEnd = true;
+    }
+    this->lastDoubleJumpState = doubleJumpState;
+    
+    this->landStart = false;
+    this->landEnd = false;
+    if (landState != this->lastLandState)
+    {
+      if (landState) this->landStart = true;
+      else this->landEnd = true;
+    }
+    this->lastLandState = landState;
+    
+    this->flyStart = false;
+    this->flyEnd = false;
+    if (flyState != this->lastFlyState)
+    {
+      if (flyState) this->flyStart = true;
+      else this->flyEnd = true;
+    }
+    this->lastFlyState = flyState;
+    
+    this->activateStart = false;
+    this->activateEnd = false;
+    if (activateState != this->lastActivateState)
+    {
+      if (activateState) this->activateStart = true;
+      else this->activateEnd = true;
+    }
+    this->lastActivateState = activateState;
+    
+    this->narutoRunStart = false;
+    this->narutoRunEnd = false;
+    if (narutoRunState != this->lastNarutoRunState)
+    {
+      if (narutoRunState) this->narutoRunStart = true;
+      else this->narutoRunEnd = true;
+    }
+    this->lastNarutoRunState = narutoRunState;
+    
+    this->sitStart = false;
+    this->sitEnd = false;
+    if (sitState != this->lastSitState)
+    {
+      if (sitState) this->sitStart = true;
+      else this->sitEnd = true;
+    }
+    this->lastSitState = sitState;
+    
+    this->holdStart = false;
+    this->holdEnd = false;
+    if (holdState != this->lastHoldState)
+    {
+      if (holdState) this->holdStart = true;
+      else this->holdEnd = true;
+    }
+    this->lastHoldState = holdState;
+    
+    this->emoteStart = false;
+    this->emoteEnd = false;
+    if (emoteState != this->lastEmoteState)
+    {
+      if (emoteState) this->emoteStart = true;
+      else this->emoteEnd = true;
+    }
+    this->lastEmoteState = emoteState;
+    
+    this->fallLoopStart = false;
+    this->fallLoopEnd = false;
+    if (fallLoopState != this->lastFallLoopState)
+    {
+      if (fallLoopState) this->fallLoopStart = true;
+      else this->fallLoopEnd = true;
+    }
+    this->lastFallLoopState = fallLoopState;
+    
+    this->danceStart = false;
+    this->danceEnd = false;
+    if (danceState != this->lastDanceState)
+    {
+      if (danceState) this->danceStart = true;
+      else this->danceEnd = true;
+    }
+    this->lastDanceState = danceState;
+    
+    this->useEnvelopeStart = false;
+    this->useEnvelopeEnd = false;
+    if (useEnvelopeState != this->lastUseEnvelopeState)
+    {
+      if (useEnvelopeState) this->useEnvelopeStart = true;
+      else this->useEnvelopeEnd = true;
+    }
+    this->lastUseEnvelopeState = useEnvelopeState;
+
+    //
+    
+    // std::cout << "useAnimation: " << useAnimation << std::endl;
+    this->useStart = false;
+    this->useEnd = false;
+    if (useAnimation != this->lastUseAnimation)
+    {
+      if (useAnimation.length() > 0) this->useStart = true;
+      else this->useEnd = true;
+    }
+    this->lastUseAnimation = useAnimation;
+
+    //
+    
+    // std::cout << "useAnimationComboName: " << useAnimationComboName << std::endl;
+    this->useComboStart = false;
+    this->useComboEnd = false;
+    if (useAnimationComboName != this->lastUseAnimationComboName)
+    {
+      if (useAnimationComboName.length() > 0) this->useComboStart = true;
+      else this->useComboEnd = true;
+    }
+    this->lastUseAnimationComboName = useAnimationComboName;
+
+    // std::cout
+    //   << "useStart: " << useStart << ", "
+    //   << "useEnd: " << useEnd << ", "
+    //   << "useComboStart: " << useComboStart << ", "
+    //   << "useComboEnd: " << useComboEnd << ", "
+    //   << std::endl;
 
     // values ---
     this->motiono["walkForward"]->setWeight(forwardFactor);
@@ -611,7 +770,7 @@ namespace AnimationSystem
     this->nodeo["emoteNodeFunc"]->setArg(idleWalkFactor);
 
     // action end events ---
-    if (landEnd) {
+    if (this->landEnd) {
       if (!landWithMoving) {
         this->nodeo["landNodeTwo"]->crossFadeTwo(0.05, 0);
       } else {
@@ -619,66 +778,66 @@ namespace AnimationSystem
       }
     }
     
-    if (fallLoopEnd) {
+    if (this->fallLoopEnd) {
       this->nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 0);
     }
     
-    if (flyEnd) {
+    if (this->flyEnd) {
       this->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (jumpEnd) {
+    if (this->jumpEnd) {
       this->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (doubleJumpEnd) {
+    if (this->doubleJumpEnd) {
       this->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (narutoRunEnd) {
+    if (this->narutoRunEnd) {
       this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (activateEnd) {
+    if (this->activateEnd) {
       this->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (useEnd) {
+    if (this->useEnd) {
       this->nodeo["useNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (useComboEnd) {
+    if (this->useComboEnd) {
       this->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, this->nodeo["useNodeTwo"]);
     }
 
-    if (useEnvelopeEnd) {
+    if (this->useEnvelopeEnd) {
       this->bowMotiono["bowLoose"]->play();
       this->nodeo["bowDrawLooseNodoeTwo"]->setFactor(1);
       this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 1);
     }
 
-    if (sitEnd) {
+    if (this->sitEnd) {
       this->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (emoteEnd) {
+    if (this->emoteEnd) {
       this->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 0);
     }
 
-    if (hurtEnd) {
+    if (this->hurtEnd) {
       this->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (danceEnd) {
+    if (this->danceEnd) {
       this->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (holdEnd) {
+    if (this->holdEnd) {
       this->nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 0);
     }
 
     // action start events ---
-    if (landStart) {
+    if (this->landStart) {
       if (!landWithMoving) {
         this->motiono["land"]->play();
         this->nodeo["landsNodeSolitary"]->crossFadeSolitary(0, this->motiono["land"]);
@@ -690,30 +849,30 @@ namespace AnimationSystem
       }
     }
 
-    if (fallLoopStart) {
+    if (this->fallLoopStart) {
       this->nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
-    if (flyStart) {
+    if (this->flyStart) {
       this->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
-    if (jumpStart) {
+    if (this->jumpStart) {
       this->motiono["jump"]->play();
       this->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
-    if (doubleJumpStart) {
+    if (this->doubleJumpStart) {
       this->motiono["doubleJump"]->play();
       this->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
-    if (narutoRunStart) {
+    if (this->narutoRunStart) {
       this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // useAnimations // sword
-    if (useStart) {
+    if (this->useStart) {
       std::string animationName;
       if (dashAttacking) {
         animationName = "dashAttack";
@@ -726,19 +885,19 @@ namespace AnimationSystem
     }
 
     // useComboAnimations // silsword
-    if (useComboStart) {
+    if (this->useComboStart) {
       std::string animationName;
       if (dashAttacking) {
         animationName = "dashAttack";
       } else {
-        animationName = useAnimationCombo;
+        animationName = useAnimationComboName;
       }
       this->useComboMotiono[animationName]->play();
       this->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, this->useComboMotiono[animationName]);
     }
 
     // bow
-    if (useEnvelopeStart) {
+    if (this->useEnvelopeStart) {
       this->bowMotiono["bowDraw"]->play();
       this->nodeo["bowDrawLooseNodoeTwo"]->setFactor(0);
       this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->setFactor(1);
@@ -746,7 +905,7 @@ namespace AnimationSystem
     }
 
     // sitAnimations // sit
-    if (sitStart) {
+    if (this->sitStart) {
       std::string animationName = sitAnimation == "" ? defaultSitAnimation : sitAnimation;
       std::cout << "animationName: " << animationName << std::endl;
       this->sitMotiono[animationName]->play();
@@ -755,7 +914,7 @@ namespace AnimationSystem
     }
 
     // emoteAnimations // emote
-    if (emoteStart) {
+    if (this->emoteStart) {
       AnimationNode *emoteMotion = this->emoteMotiono[emoteAnimation == "" ? defaultEmoteAnimation : emoteAnimation];
       emoteMotion->play();
       this->nodeo["emotesNodeSolitary"]->crossFadeSolitary(0, emoteMotion);
@@ -763,7 +922,7 @@ namespace AnimationSystem
     }
 
     // hurtAnimations // hurt
-    if (hurtStart) {
+    if (this->hurtStart) {
       AnimationNode *hurtMotion = this->hurtMotiono[hurtAnimation];
       hurtMotion->play();
       this->nodeo["hurtsNodeSolitary"]->crossFadeSolitary(0, hurtMotion);
@@ -771,7 +930,7 @@ namespace AnimationSystem
     }
 
     // danceAnimations // dance
-    if (danceStart) {
+    if (this->danceStart) {
       AnimationNode *danceMotion = this->danceMotiono[danceAnimation == "" ? defaultDanceAnimation : danceAnimation];
       danceMotion->play();
       this->nodeo["dancesNodeSolitary"]->crossFadeSolitary(0, danceMotion);
@@ -779,7 +938,7 @@ namespace AnimationSystem
     }
 
     // holdAnimations // hold
-    if (holdStart) {
+    if (this->holdStart) {
       AnimationNode *holdMotion = this->holdMotiono[holdAnimation == "" ? defaultHoldAnimation : holdAnimation];
       holdMotion->play();
       this->nodeo["holdsNodeSolitary"]->crossFadeSolitary(0, holdMotion);
@@ -787,7 +946,7 @@ namespace AnimationSystem
     }
 
     // activateAnimations // activate
-    if (activateStart) {
+    if (this->activateStart) {
       AnimationNode *activateMotion = this->activateMotiono[activateAnimation == "" ? defaultActivateAnimation : activateAnimation];
       activateMotion->play();
       this->nodeo["activatesNodeSolitary"]->crossFadeSolitary(0, activateMotion);
@@ -832,6 +991,27 @@ namespace AnimationSystem
   void AnimationMixer::setRootNode(AnimationNode *node)
   {
     this->rootNode = node;
+  }
+  void AnimationMixer::plotNodeTree(AnimationNode *node, unsigned int indent)
+  {
+    for (unsigned int i = 0; i < indent; i++)
+    {
+      std::cout << " ";
+    }
+    std::cout << node->name << std::endl;
+    for (unsigned int i = 0; i < node->children.size(); i++)
+    {
+      this->plotNodeTree(node->children[i], indent + 1);
+    }
+  }
+  void AnimationMixer::getNodeTreeData(AnimationNode *node)
+  {
+    std::cout << "{\"name\":\"" << node->name << "\",\"children\":[";
+    for (unsigned int i = 0; i < node->children.size(); i++)
+    {
+      this->getNodeTreeData(node->children[i]);
+    }
+    std::cout << "]},";
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm)
   {
