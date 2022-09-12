@@ -548,7 +548,7 @@ namespace AnimationSystem
     std::string defaultActivateAnimation = this->strings[index++];
     // ---
     std::string useAnimation = this->strings[index++];
-    std::string useAnimationCombo = this->strings[index++];
+    std::string useAnimationComboName = this->strings[index++];
     std::string sitAnimation = this->strings[index++];
     std::string emoteAnimation = this->strings[index++];
     std::string danceAnimation = this->strings[index++];
@@ -591,6 +591,7 @@ namespace AnimationSystem
     bool emoteState = scratchStack[index++];
     bool fallLoopState = scratchStack[index++];
     bool hurtState = scratchStack[index++];
+    bool danceState = scratchStack[index++];
 
     // action end events ---
     // float landEnd = scratchStack[index++];
@@ -601,12 +602,12 @@ namespace AnimationSystem
     // float narutoRunEnd = scratchStack[index++];
     // float activateEnd = scratchStack[index++];
     float useEnd = scratchStack[index++];
-    float useComboEnd = scratchStack[index++];
+    // float useComboEnd = scratchStack[index++];
     float useEnvelopeEnd = scratchStack[index++];
     // float sitEnd = scratchStack[index++];
     // float emoteEnd = scratchStack[index++];
     // float hurtEnd = scratchStack[index++];
-    float danceEnd = scratchStack[index++];
+    // float danceEnd = scratchStack[index++];
     // float holdEnd = scratchStack[index++];
 
     // action start events ---
@@ -617,12 +618,12 @@ namespace AnimationSystem
     // float doubleJumpStart = scratchStack[index++];
     // float narutoRunStart = scratchStack[index++];
     float useStart = scratchStack[index++];
-    float useComboStart = scratchStack[index++];
+    // float useComboStart = scratchStack[index++];
     float useEnvelopeStart = scratchStack[index++];
     // float sitStart = scratchStack[index++];
     // float emoteStart = scratchStack[index++];
     // float hurtStart = scratchStack[index++];
-    float danceStart = scratchStack[index++];
+    // float danceStart = scratchStack[index++];
     // float holdStart = scratchStack[index++];
     // float activateStart = scratchStack[index++];
 
@@ -721,6 +722,27 @@ namespace AnimationSystem
       else this->fallLoopEnd = true;
     }
     this->lastFallLoopState = fallLoopState;
+    
+    this->danceStart = false;
+    this->danceEnd = false;
+    if (danceState != this->lastDanceState)
+    {
+      if (danceState) this->danceStart = true;
+      else this->danceEnd = true;
+    }
+    this->lastDanceState = danceState;
+
+    //
+    
+    std::cout << "useAnimationComboName: " << useAnimationComboName << std::endl;
+    this->useComboStart = false;
+    this->useComboEnd = false;
+    if (useAnimationComboName != this->lastUseAnimationComboName)
+    {
+      if (useAnimationComboName.length() > 0) this->useComboStart = true;
+      else this->useComboEnd = true;
+    }
+    this->lastUseAnimationComboName = useAnimationComboName;
 
     // values ---
     this->motiono["walkForward"]->setWeight(forwardFactor);
@@ -805,7 +827,7 @@ namespace AnimationSystem
       this->nodeo["useNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (useComboEnd) {
+    if (this->useComboEnd) {
       this->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, this->nodeo["useNodeTwo"]);
     }
 
@@ -827,7 +849,7 @@ namespace AnimationSystem
       this->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (danceEnd) {
+    if (this->danceEnd) {
       this->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
@@ -888,15 +910,15 @@ namespace AnimationSystem
     }
 
     // useComboAnimations // silsword
-    if (useComboStart) {
+    if (this->useComboStart) {
       std::string animationName;
       if (dashAttacking) {
         animationName = "dashAttack";
       } else {
-        // animationName = this->useAnimationCombo[this->useAnimationIndex];
+        // animationName = this->useAnimationComboName[this->useAnimationIndex];
         // animationName = "swordSideSlash"; // test
-        animationName = useAnimationCombo;
-        // std::cout << "useAnimationCombo: " << useAnimationCombo << std::endl;
+        animationName = useAnimationComboName;
+        // std::cout << "useAnimationComboName: " << useAnimationComboName << std::endl;
       }
       this->useComboMotiono[animationName]->play();
       this->nodeo["useCombosNodeSolitary"]->crossFadeSolitary(0.2, this->useComboMotiono[animationName]);
@@ -937,7 +959,7 @@ namespace AnimationSystem
     }
 
     // danceAnimations // dance
-    if (danceStart) {
+    if (this->danceStart) {
       AnimationNode *danceMotion = this->danceMotiono[danceAnimation == "" ? defaultDanceAnimation : danceAnimation];
       danceMotion->play();
       this->nodeo["dancesNodeSolitary"]->crossFadeSolitary(0, danceMotion);

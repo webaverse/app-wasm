@@ -141,6 +141,10 @@ namespace AnimationSystem
     bool emoteStart, emoteEnd, lastEmoteState;
     bool fallLoopStart, fallLoopEnd, lastFallLoopState;
     bool hurtStart, hurtEnd, lastHurtState;
+    bool danceStart, danceEnd, lastDanceState;
+    //
+    bool useComboStart, useComboEnd;
+    std::string lastUseAnimationComboName;
     
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
