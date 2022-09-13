@@ -398,7 +398,7 @@ namespace AnimationSystem
     // https://stackoverflow.com/questions/26281979/c-loop-through-map
     for (auto const& x : avatar->useMotiono)
     {
-      std::cout << "useMotiono: " << avatar->useMotiono[x.first]->name << std::endl;
+      // std::cout << "useMotiono: " << avatar->useMotiono[x.first]->name << std::endl;
       avatar->nodeo["usesNodeSolitary"]->addChild(avatar->useMotiono[x.first]);
     }
     //
@@ -512,8 +512,8 @@ namespace AnimationSystem
 
     //
 
-    avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
-    std::cout << std::endl; //test
+    // avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
+    // std::cout << std::endl; //test
 
     return avatar;
   }
@@ -964,7 +964,7 @@ namespace AnimationSystem
     if (this->sitStart) {
       // AnimationNode *sitMotion = this->sitMotiono[sitAnimation == "" ? defaultSitAnimation : sitAnimation];
       std::string animationName = sitAnimation == "" ? defaultSitAnimation : sitAnimation;
-      std::cout << "animationName: " << animationName << std::endl;
+      // std::cout << "animationName: " << animationName << std::endl;
       this->sitMotiono[animationName]->play();
       this->nodeo["sitsNodeSolitary"]->crossFadeSolitary(0, this->sitMotiono[animationName]);
       this->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 1);
@@ -1778,7 +1778,7 @@ namespace AnimationSystem
   void AnimationNode::play()
   {
     // todo: check if motion exists
-    std::cout << "play name: " << this->name << std::endl;
+    // std::cout << "play name: " << this->name << std::endl;
     this->weight = abs(this->weight);
     this->startTime = AnimationMixer::timeS;
     this->isFinished = false;
