@@ -176,6 +176,7 @@ namespace AnimationSystem
     //
     void play();
     void stop();
+    // Note: Variables has corresponding setXXX() function means can be changed outside, such as `timeBias` `speed` `loop`. Otherwise can't, such as `startTime`.
     void setTimeBias(float timeBias);
     void setSpeed(float speed);
     void setLoop(LoopType loopType);
