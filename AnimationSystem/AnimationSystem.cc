@@ -119,7 +119,6 @@ namespace AnimationSystem
 
     avatar->createMotions();
     avatar->createNodes();
-    avatar->mixer->setRootNode(avatar->nodeo["holdNodeFunc"]);
 
     //
 
@@ -518,6 +517,10 @@ namespace AnimationSystem
     this->nodeo["holdNodeFunc"] = this->mixer->createNode(NodeType::FUNC, "holdNodeFunc", 0);
     this->nodeo["holdNodeFunc"]->addChild(this->nodeo["activateNodeTwo"]);
     this->nodeo["holdNodeFunc"]->addChild(this->nodeo["holdsNodeSolitary"]);
+
+    // set root node ---
+
+    this->mixer->setRootNode(this->nodeo["holdNodeFunc"]);
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings)
   {
