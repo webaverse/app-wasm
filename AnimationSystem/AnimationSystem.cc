@@ -314,6 +314,11 @@ namespace AnimationSystem
     // this->motiono[] = this->mixer->createMotion(animationo[]);
     // this->motiono[] = this->mixer->createMotion(animationo[]);
     // this->motiono[] = this->mixer->createMotion(animationo[]);
+
+    this->motiono["magicStandingIdle"] = this->mixer->createMotion(animationo["magic standing idle.fbx"], "magicStandingIdle");
+    // this->motiono["magicStandingIdle"]->setLoop(LoopType::LoopOnce);
+    // this->motiono["magicStandingIdle"]->stop();
+    // this->motiono["magicStandingIdle"]->setSpeed(1.7);
   }
   void Avatar::createNodes()
   {
@@ -518,9 +523,14 @@ namespace AnimationSystem
     this->nodeo["holdNodeFunc"]->addChild(this->nodeo["activateNodeTwo"]);
     this->nodeo["holdNodeFunc"]->addChild(this->nodeo["holdsNodeSolitary"]);
 
+    this->nodeo["magicNodeTwo"] = this->mixer->createNode(NodeType::TWO, "magicNodeTwo");
+    this->nodeo["magicNodeTwo"]->addChild(this->nodeo["holdNodeFunc"]);
+    this->nodeo["magicNodeTwo"]->addChild(this->motiono["magicStandingIdle"]);
+
     // set root node ---
 
-    this->mixer->setRootNode(avatar->nodeo["holdNodeFunc"]);
+    // this->mixer->setRootNode(this->nodeo["holdNodeFunc"]);
+    this->mixer->setRootNode(this->nodeo["magicNodeTwo"]);
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings)
   {
@@ -598,6 +608,7 @@ namespace AnimationSystem
     bool hurtState = scratchStack[index++];
     bool danceState = scratchStack[index++];
     bool useEnvelopeState = scratchStack[index++];
+    bool magicState = scratchStack[index++];
 
     // action end events ---
     // float landEnd = scratchStack[index++];
@@ -745,6 +756,15 @@ namespace AnimationSystem
       else this->useEnvelopeEnd = true;
     }
     this->lastUseEnvelopeState = useEnvelopeState;
+    
+    this->magicStart = false;
+    this->magicEnd = false;
+    if (magicState != this->lastMagicState)
+    {
+      if (magicState) this->magicStart = true;
+      else this->magicEnd = true;
+    }
+    this->lastMagicState = magicState;
 
     //
     
@@ -890,6 +910,10 @@ namespace AnimationSystem
       this->nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 0);
     }
 
+    if (this->magicEnd) {
+      this->nodeo["magicNodeTwo"]->crossFadeTwo(0.2, 0);
+    }
+
     // action start events ---
     if (this->landStart) {
       // std::cout << "landWithMoving: " << landWithMoving << std::endl;
@@ -925,6 +949,10 @@ namespace AnimationSystem
 
     if (this->narutoRunStart) {
       this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 1);
+    }
+
+    if (this->magicStart) {
+      this->nodeo["magicNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
     // useAnimations // sword

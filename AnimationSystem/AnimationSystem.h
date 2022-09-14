@@ -143,6 +143,7 @@ namespace AnimationSystem
     bool hurtStart, hurtEnd, lastHurtState;
     bool danceStart, danceEnd, lastDanceState;
     bool useEnvelopeStart, useEnvelopeEnd, lastUseEnvelopeState;
+    bool magicStart, magicEnd, lastMagicState;
     //
     bool useStart, useEnd;
     std::string lastUseAnimation;
