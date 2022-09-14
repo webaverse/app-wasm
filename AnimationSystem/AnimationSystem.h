@@ -150,6 +150,8 @@ namespace AnimationSystem
     bool useComboStart, useComboEnd;
     std::string lastUseAnimationComboName;
     
+    void createMotions();
+    void createNodes();
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
   };
