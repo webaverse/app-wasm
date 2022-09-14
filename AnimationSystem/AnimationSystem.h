@@ -164,6 +164,22 @@ namespace AnimationSystem
     float *update(AnimationMapping &spec);
     std::string name;
 
+    // motion ------
+    Animation *animation;
+    float startTime;
+    float timeBias = 0;
+    float speed = 1;
+    bool isFinished = false;
+    // default values same as THREE.AnimationAction.
+    unsigned int loop = LoopType::LoopRepeat; // todo: LoopType loop =.
+    bool clampWhenFinished = false;
+    //
+    void play();
+    void stop();
+    void setTimeBias(float timeBias);
+    void setSpeed(float speed);
+    void setLoop(LoopType loopType);
+
     // node ------
     float weight = 1;
     std::vector<AnimationNode *> children;
@@ -196,22 +212,6 @@ namespace AnimationSystem
     float arg = 0;
     // factor
     // void crossFadeTwo(float duration, float factor);
-
-    // motion ------
-    Animation *animation;
-    float startTime;
-    float timeBias = 0;
-    float speed = 1;
-    bool isFinished = false;
-    // default values same as THREE.AnimationAction.
-    unsigned int loop = LoopType::LoopRepeat; // todo: LoopType loop =.
-    bool clampWhenFinished = false;
-    //
-    void play();
-    void stop();
-    void setTimeBias(float timeBias);
-    void setSpeed(float speed);
-    void setLoop(LoopType loopType);
   };
   class AnimationMixer // note: mixer can't aware of avatar.
   {
