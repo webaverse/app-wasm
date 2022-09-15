@@ -124,58 +124,86 @@ namespace AnimationSystem
       ]}
     */
     json tree = json::parse(R"(
-      {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "children": [
-        {"name": "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo", "type": "node", "nodeType": "TWO", "children": [
-          {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "children": [
-            {"name": "idle", "type": "motion"},
-            {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "children": [
-              {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "children": [
-                {"name": "walkForward", "type": "motion"},
-                {"name": "walkBackward", "type": "motion"},
-                {"name": "walkLeft", "type": "motion"},
-                {"name": "walkRight", "type": "motion"},
-                {"name": "walkLeftMirror", "type": "motion"},
-                {"name": "walkRightMirror", "type": "motion"}
+      {"name": "useCombosNodeSolitary", "type": "node", "nodeType": "SOLITARY", "children": [
+        {"name": "useNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+          {"name": "hurtNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+            {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+              {"name": "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+                {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+                  {"name": "idle", "type": "motion"},
+                  {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+                    {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "children": [
+                      {"name": "walkForward", "type": "motion"},
+                      {"name": "walkBackward", "type": "motion"},
+                      {"name": "walkLeft", "type": "motion"},
+                      {"name": "walkRight", "type": "motion"},
+                      {"name": "walkLeftMirror", "type": "motion"},
+                      {"name": "walkRightMirror", "type": "motion"}
+                    ]},
+                    {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "children": [
+                      {"name": "runForward", "type": "motion"},
+                      {"name": "runBackward", "type": "motion"},
+                      {"name": "runLeft", "type": "motion"},
+                      {"name": "runRight", "type": "motion"},
+                      {"name": "runLeftMirror", "type": "motion"},
+                      {"name": "runRightMirror", "type": "motion"}
+                    ]}
+                  ]}
+                ]},
+                {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "OVERWRITE", "children": [
+                  {"name": "idle8DBowNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+                    {"name": "bowIdle", "type": "motion"},
+                    {"name": "_8DirectionsBowNodeList", "type": "node", "nodeType": "LIST", "children": [
+                      {"name": "bowForward", "type": "motion"},
+                      {"name": "bowBackward", "type": "motion"},
+                      {"name": "bowLeft", "type": "motion"},
+                      {"name": "bowRight", "type": "motion"},
+                      {"name": "bowLeftMirror", "type": "motion"},
+                      {"name": "bowRightMirror", "type": "motion"}
+                    ]}
+                  ]},
+                  {"name": "bowDrawLooseNodoeTwo", "type": "node", "nodeType": "TWO", "children": [
+                    {"name": "bowDraw", "type": "motion"},
+                    {"name": "bowLoose", "type": "motion"}
+                  ]}
+                ]}
               ]},
-              {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "children": [
-                {"name": "runForward", "type": "motion"},
-                {"name": "runBackward", "type": "motion"},
-                {"name": "runLeft", "type": "motion"},
-                {"name": "runRight", "type": "motion"},
-                {"name": "runLeftMirror", "type": "motion"},
-                {"name": "runRightMirror", "type": "motion"}
-              ]}
-            ]}
-          ]},
-          {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "OVERWRITE", "children": [
-            {"name": "idle8DBowNodeTwo", "type": "node", "nodeType": "TWO", "children": [
-              {"name": "bowIdle", "type": "motion"},
-              {"name": "_8DirectionsBowNodeList", "type": "node", "nodeType": "LIST", "children": [
-                {"name": "bowForward", "type": "motion"},
-                {"name": "bowBackward", "type": "motion"},
-                {"name": "bowLeft", "type": "motion"},
-                {"name": "bowRight", "type": "motion"},
-                {"name": "bowLeftMirror", "type": "motion"},
-                {"name": "bowRightMirror", "type": "motion"}
+              {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+                {"name": "crouchIdle", "type": "motion"},
+                {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "children": [
+                  {"name": "crouchForward", "type": "motion"},
+                  {"name": "crouchBackward", "type": "motion"},
+                  {"name": "crouchLeft", "type": "motion"},
+                  {"name": "crouchRight", "type": "motion"},
+                  {"name": "crouchLeftMirror", "type": "motion"},
+                  {"name": "crouchRightMirror", "type": "motion"}
+                ]}
               ]}
             ]},
-            {"name": "bowDrawLooseNodoeTwo", "type": "node", "nodeType": "TWO", "children": [
-              {"name": "bowDraw", "type": "motion"},
-              {"name": "bowLoose", "type": "motion"}
+            {"name": "hurtsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "children": [
+              {"name": "pain_back", "type": "motion"},
+              {"name": "pain_arch", "type": "motion"}
             ]}
+          ]},
+          {"name": "usesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "children": [
+            {"name": "combo", "type": "motion"},
+            {"name": "dashAttack", "type": "motion"},
+            {"name": "drink", "type": "motion"},
+            {"name": "eat", "type": "motion"},
+            {"name": "magic", "type": "motion"},
+            {"name": "pickUpThrow", "type": "motion"},
+            {"name": "pistol", "type": "motion"},
+            {"name": "rifle", "type": "motion"},
+            {"name": "slash", "type": "motion"},
+            {"name": "throw", "type": "motion"}
           ]}
         ]},
-        {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "children": [
-          {"name": "crouchIdle", "type": "motion"},
-          {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "children": [
-            {"name": "crouchForward", "type": "motion"},
-            {"name": "crouchBackward", "type": "motion"},
-            {"name": "crouchLeft", "type": "motion"},
-            {"name": "crouchRight", "type": "motion"},
-            {"name": "crouchLeftMirror", "type": "motion"},
-            {"name": "crouchRightMirror", "type": "motion"}
-          ]}
-        ]}
+        {"name": "swordSideIdle", "type": "motion"},
+        {"name": "swordSideSlash", "type": "motion"},
+        {"name": "swordSideSlashStep", "type": "motion"},
+        {"name": "swordTopDownSlash", "type": "motion"},
+        {"name": "swordTopDownSlashStep", "type": "motion"},
+        {"name": "dashAttack", "type": "motion"}
       ]}
     )");
 
@@ -545,36 +573,36 @@ namespace AnimationSystem
     // this->nodeo["defaultNodeTwo"]->addChild(this->nodeo["idle8DCrouchNodeTwo"]);
 
     // hurtAnimations
-    this->nodeo["hurtsNodeSolitary"] = this->mixer->createNode(NodeType::SOLITARY, "hurtsNodeSolitary");
-    this->nodeo["hurtsNodeSolitary"]->addChild(this->hurtMotiono["pain_back"]);
-    this->nodeo["hurtsNodeSolitary"]->addChild(this->hurtMotiono["pain_arch"]);
+    // this->nodeo["hurtsNodeSolitary"] = this->mixer->createNode(NodeType::SOLITARY, "hurtsNodeSolitary");
+    // this->nodeo["hurtsNodeSolitary"]->addChild(this->hurtMotiono["pain_back"]);
+    // this->nodeo["hurtsNodeSolitary"]->addChild(this->hurtMotiono["pain_arch"]);
     //
-    this->nodeo["hurtNodeTwo"] = this->mixer->createNode(NodeType::TWO, "hurtNodeTwo");
-    this->nodeo["hurtNodeTwo"]->addChild(this->nodeo["defaultNodeTwo"]);
-    this->nodeo["hurtNodeTwo"]->addChild(this->nodeo["hurtsNodeSolitary"]);
+    // this->nodeo["hurtNodeTwo"] = this->mixer->createNode(NodeType::TWO, "hurtNodeTwo");
+    // this->nodeo["hurtNodeTwo"]->addChild(this->nodeo["defaultNodeTwo"]);
+    // this->nodeo["hurtNodeTwo"]->addChild(this->nodeo["hurtsNodeSolitary"]);
 
     // useAnimations
-    this->nodeo["usesNodeSolitary"] = this->mixer->createNode(NodeType::SOLITARY, "usesNodeSolitary");
+    // this->nodeo["usesNodeSolitary"] = this->mixer->createNode(NodeType::SOLITARY, "usesNodeSolitary");
     // https://stackoverflow.com/questions/26281979/c-loop-through-map
-    for (auto const& x : this->useMotiono)
-    {
-      // std::cout << "useMotiono: " << this->useMotiono[x.first]->name << std::endl;
-      this->nodeo["usesNodeSolitary"]->addChild(this->useMotiono[x.first]);
-    }
+    // for (auto const& x : this->useMotiono)
+    // {
+    //   // std::cout << "useMotiono: " << this->useMotiono[x.first]->name << std::endl;
+    //   // this->nodeo["usesNodeSolitary"]->addChild(this->useMotiono[x.first]);
+    // }
     //
-    this->nodeo["useNodeTwo"] = this->mixer->createNode(NodeType::TWO, "useNodeTwo");
-    this->nodeo["useNodeTwo"]->addChild(this->nodeo["hurtNodeTwo"]);
-    this->nodeo["useNodeTwo"]->addChild(this->nodeo["usesNodeSolitary"]);
+    // this->nodeo["useNodeTwo"] = this->mixer->createNode(NodeType::TWO, "useNodeTwo");
+    // this->nodeo["useNodeTwo"]->addChild(this->nodeo["hurtNodeTwo"]);
+    // this->nodeo["useNodeTwo"]->addChild(this->nodeo["usesNodeSolitary"]);
 
     // useComboAnimations
-    this->nodeo["useCombosNodeSolitary"] = this->mixer->createNode(NodeType::SOLITARY, "useCombosNodeSolitary");
+    // this->nodeo["useCombosNodeSolitary"] = this->mixer->createNode(NodeType::SOLITARY, "useCombosNodeSolitary");
     //
-    this->nodeo["useCombosNodeSolitary"]->addChild(this->nodeo["useNodeTwo"]);
-    //
-    for (auto const& x : this->useComboMotiono)
-    {
-      this->nodeo["useCombosNodeSolitary"]->addChild(this->useComboMotiono[x.first]);
-    }
+    // this->nodeo["useCombosNodeSolitary"]->addChild(this->nodeo["useNodeTwo"]);
+    // //
+    // for (auto const& x : this->useComboMotiono)
+    // {
+    //   this->nodeo["useCombosNodeSolitary"]->addChild(this->useComboMotiono[x.first]);
+    // }
 
     // emoteAnimations
     this->nodeo["emotesNodeSolitary"] = this->mixer->createNode(NodeType::SOLITARY, "emotesNodeSolitary");
