@@ -159,7 +159,36 @@ namespace AnimationSystem
     }
     else if(jsonNode["type"] == "node")
     {
-      AnimationNode *node = this->mixer->createNode(NodeType::LIST, jsonNode["name"]);
+      unsigned int nodeType;
+      // switch(jsonNode["nodeType"])
+      // {
+      //   case "LIST": nodeType = NodeType::LIST; break;
+      //   case "TWO": nodeType = NodeType::TWO; break;
+      //   case "SOLITARY": nodeType = NodeType::SOLITARY; break;
+      //   case "OVERWRITE": nodeType = NodeType::OVERWRITE; break;
+      //   case "FUNC": nodeType = NodeType::FUNC; break;
+      // }
+      if (jsonNode["nodeType"] == "LIST")
+      {
+        nodeType = NodeType::LIST;
+      }
+      else if (jsonNode["nodeType"] == "TWO")
+      {
+        nodeType = NodeType::TWO;
+      }
+      else if (jsonNode["nodeType"] == "SOLITARY")
+      {
+        nodeType = NodeType::SOLITARY;
+      }
+      else if (jsonNode["nodeType"] == "OVERWRITE")
+      {
+        nodeType = NodeType::OVERWRITE;
+      }
+      else if (jsonNode["nodeType"] == "FUNC")
+      {
+        nodeType = NodeType::FUNC;
+      }
+      AnimationNode *node = this->mixer->createNode((NodeType)nodeType, jsonNode["name"]);
       this->nodeo[jsonNode["name"]] = node;
       if (parentNode)
       {
