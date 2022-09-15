@@ -344,6 +344,7 @@ namespace AnimationSystem
     this->useMotiono["throw"] = this->mixer->createMotion(animationo["pick_up_throw.fbx"], "throw");
     for (auto const& x : this->useMotiono)
     {
+      this->motiono[x.first] = this->useMotiono[x.first];
       this->useMotiono[x.first]->setLoop(LoopType::LoopOnce);
       this->useMotiono[x.first]->stop();
     }
@@ -358,6 +359,7 @@ namespace AnimationSystem
     this->useComboMotiono["dashAttack"] = this->mixer->createMotion(animationo["sword_dash.fbx"], "dashAttack");
     for (auto const& x : this->useComboMotiono)
     {
+      this->motiono[x.first] = this->useComboMotiono[x.first];
       this->useComboMotiono[x.first]->setLoop(LoopType::LoopOnce);
       this->useComboMotiono[x.first]->stop();
     }
@@ -368,9 +370,9 @@ namespace AnimationSystem
     this->bowMotiono["bowLoose"] = this->mixer->createMotion(animationo["bow loose.fbx"], "bowLoose");
     for (auto const& x : this->bowMotiono)
     {
+      this->motiono[x.first] = this->bowMotiono[x.first];
       this->bowMotiono[x.first]->setLoop(LoopType::LoopOnce);
       this->bowMotiono[x.first]->stop();
-      this->motiono[x.first] = this->bowMotiono[x.first];
     }
 
     // sitAnimations
@@ -379,6 +381,7 @@ namespace AnimationSystem
     this->sitMotiono["stand"] = this->mixer->createMotion(animationo["Skateboarding.fbx"], "stand");
     for (auto const& x : this->sitMotiono)
     {
+      this->motiono[x.first] = this->sitMotiono[x.first];
       this->sitMotiono[x.first]->setLoop(LoopType::LoopOnce);
       this->sitMotiono[x.first]->stop();
     }
@@ -388,6 +391,7 @@ namespace AnimationSystem
     this->hurtMotiono["pain_arch"] = this->mixer->createMotion(animationo["pain_arch.fbx"], "pain_arch");
     for (auto const& x : this->hurtMotiono)
     {
+      this->motiono[x.first] = this->hurtMotiono[x.first];
       this->hurtMotiono[x.first]->setLoop(LoopType::LoopOnce);
       this->hurtMotiono[x.first]->stop();
     }
@@ -411,6 +415,7 @@ namespace AnimationSystem
     this->emoteMotiono["victorySoft"] = this->mixer->createMotion(animationo["victory_soft.fbx"], "victorySoft");
     for (auto const& x : this->emoteMotiono)
     {
+      this->motiono[x.first] = this->emoteMotiono[x.first];
       this->emoteMotiono[x.first]->setLoop(LoopType::LoopOnce);
       this->emoteMotiono[x.first]->stop();
     }
@@ -431,6 +436,7 @@ namespace AnimationSystem
     this->activateMotiono["pick_up"] = this->mixer->createMotion(animationo["pick_up.fbx"], "pick_up");
     for (auto const& x : this->activateMotiono)
     {
+      this->motiono[x.first] = this->activateMotiono[x.first];
       this->activateMotiono[x.first]->setLoop(LoopType::LoopOnce);
       this->activateMotiono[x.first]->stop();
     }
