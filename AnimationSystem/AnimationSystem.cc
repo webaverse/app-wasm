@@ -1,4 +1,6 @@
 #include "AnimationSystem.h"
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
 
 namespace AnimationSystem
 {
@@ -116,6 +118,78 @@ namespace AnimationSystem
     Avatar *avatar = new Avatar();
     avatars.push_back(avatar);
     avatar->mixer = mixer;
+
+    // ----------------------------------------------------------------------------------------------------------
+
+    json ex1 = json::parse(R"(
+      {
+        "pi": 3.141,
+        "happy": true
+      }
+    )");
+    std::cout << "ex1: " << ex1 << std::endl; // ex1: {"happy":true,"pi":3.141}
+    std::cout << "pi: " << ex1["pi"] << std::endl; // pi: 3.141
+    std::cout << "happy: " << ex1["happy"] << std::endl; // happy: true
+
+    // std::cout << ex1 << '\n';
+    // std::cout << *ex1.first << " " << std::boolalpha << ex1.second << '\n'; // wrong
+
+    for (json::iterator it = ex1.begin(); it != ex1.end(); ++it) {
+      std::cout << *it << '\n';
+    }
+    // true
+    // 3.141
+
+    // special iterator member functions for objects
+    for (json::iterator it = ex1.begin(); it != ex1.end(); ++it) {
+      std::cout << it.key() << " : " << it.value() << "\n";
+    }
+
+    // for (auto& element : ex1) {
+    //   std::cout << element.first << " " << element.second << '\n'; // wrong
+    // }
+
+    // ----------------------------------------------------------------------------------------------------------
+
+    // create an array using push_back
+    json j;
+    j.push_back("foo");
+    j.push_back(1);
+    j.push_back(true);
+
+    // also use emplace_back
+    j.emplace_back(1.78);
+
+    // iterate the array
+    for (json::iterator it = j.begin(); it != j.end(); ++it) {
+      std::cout << *it << '\n';
+    }
+
+    // range-based for
+    for (auto& element : j) {
+      std::cout << element << '\n';
+    }
+
+    // getter/setter
+    const auto tmp = j[0].get<std::string>();
+    j[1] = 42;
+    bool foo = j.at(2);
+
+    // comparison
+    bool aaa = j == R"(["foo", 1, true, 1.78])"_json;  // true
+    std::cout << aaa << '\n';
+
+    // "foo"
+    // 1
+    // true
+    // 1.78
+    // "foo"
+    // 1
+    // true
+    // 1.78
+    // 0
+
+    // ----------------------------------------------------------------------------------------------------------
 
     avatar->createMotions();
     avatar->createNodes();
