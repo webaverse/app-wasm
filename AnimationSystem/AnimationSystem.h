@@ -2,6 +2,8 @@
 #define _ANIMATIONSYSTEM_H
 #include "physics.h"
 #include <iostream>
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
 
 namespace AnimationSystem
 {
@@ -152,6 +154,7 @@ namespace AnimationSystem
     
     void createMotions();
     void createNodes();
+    void createNodesFromJson(json &tree);
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
   };
