@@ -118,24 +118,36 @@ namespace AnimationSystem
     avatar->mixer = mixer;
 
     json tree = json::parse(R"(
-      {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "children": [
-        {"name": "walkForward", "type": "motion"},
-        {"name": "walkBackward", "type": "motion"},
-        {"name": "walkLeft", "type": "motion"},
-        {"name": "walkRight", "type": "motion"},
-        {"name": "walkLeftMirror", "type": "motion"},
-        {"name": "walkRightMirror", "type": "motion"}
+      {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+        {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "children": [
+          {"name": "walkForward", "type": "motion"},
+          {"name": "walkBackward", "type": "motion"},
+          {"name": "walkLeft", "type": "motion"},
+          {"name": "walkRight", "type": "motion"},
+          {"name": "walkLeftMirror", "type": "motion"},
+          {"name": "walkRightMirror", "type": "motion"}
+        ]},
+        {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "children": [
+          {"name": "runForward", "type": "motion"},
+          {"name": "runBackward", "type": "motion"},
+          {"name": "runLeft", "type": "motion"},
+          {"name": "runRight", "type": "motion"},
+          {"name": "runLeftMirror", "type": "motion"},
+          {"name": "runRightMirror", "type": "motion"}
+        ]}
       ]}
     )");
 
     avatar->createMotions();
     // avatar->createNodes();
+    std::cout << "createNodesFromJson ------" << std::endl;
     avatar->createNodesFromJson(tree);
+    std::cout << "root node: " << avatar->mixer->rootNode->name << std::endl;
 
     //
 
-    // avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
-    // std::cout << std::endl; //test
+    avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
+    std::cout << std::endl; //test
 
     return avatar;
   }
@@ -189,12 +201,17 @@ namespace AnimationSystem
         nodeType = NodeType::FUNC;
       }
       AnimationNode *node = this->mixer->createNode((NodeType)nodeType, jsonNode["name"]);
+      std::cout << "node name: " << node->name << std::endl;
+      std::cout << "node type: " << node->type << std::endl;
       this->nodeo[jsonNode["name"]] = node;
       if (parentNode)
       {
+        std::cout << "parent node: " << parentNode->name << std::endl;
         parentNode->addChild(node);
       }
+      else
       {
+        std::cout << "set root node: " << node->name << std::endl;
         this->mixer->setRootNode(node);
       }
 
