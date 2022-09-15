@@ -535,16 +535,35 @@ namespace AnimationSystem
     // this->mixer->setRootNode(this->nodeo["holdNodeFunc"]);
     this->mixer->setRootNode(this->nodeo["_8DirectionsWalkNodeList"]);
   }
-  void Avatar::createNodesFromJson(json &tree)
+  void Avatar::createNodesFromJson(json &jsonNode)
   {
-    std::cout << tree["children"] << std::endl;
-    // for (json::iterator it = tree.begin(); it != tree.end(); ++it) {
+    // std::cout << jsonNode["children"] << std::endl;
+    // for (json::iterator it = jsonNode.begin(); it != jsonNode.end(); ++it) {
     //   std::cout << it.key() << " : " << it.value() << "\n";
     // }
-    for (unsigned int i = 0; i < tree["children"].size(); i++)
+
+    // unsigned int nodeType;
+    // switch(jsonNode["nodeType"])
+    // {
+      
+    // }
+
+    // if (jsonNode["type"] == "motion")
+    // {
+
+    // }
+    // else if(jsonNode["type"] == "node")
+    // {
+      this->nodeo[jsonNode["name"]] = this->mixer->createNode(NodeType::TWO, jsonNode["name"]);
+    // }
+
+    for (unsigned int i = 0; i < jsonNode["children"].size(); i++)
     {
-      std::cout << tree["children"][i]["name"] << std::endl;
+      // std::cout << jsonNode["children"][i]["name"] << std::endl;
+      this->nodeo[jsonNode["name"]]->addChild(this->motiono[jsonNode["children"][i]["name"]]);
     }
+
+    this->mixer->setRootNode(this->nodeo[jsonNode["name"]]);
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings)
   {
