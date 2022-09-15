@@ -117,23 +117,64 @@ namespace AnimationSystem
     avatars.push_back(avatar);
     avatar->mixer = mixer;
 
+    /*
+      {"name": "crouchForward", "type": "motion"}
+
+      {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "TWO", "children": [
+      ]}
+    */
     json tree = json::parse(R"(
-      {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "children": [
-        {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "children": [
-          {"name": "walkForward", "type": "motion"},
-          {"name": "walkBackward", "type": "motion"},
-          {"name": "walkLeft", "type": "motion"},
-          {"name": "walkRight", "type": "motion"},
-          {"name": "walkLeftMirror", "type": "motion"},
-          {"name": "walkRightMirror", "type": "motion"}
+      {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+        {"name": "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+          {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+            {"name": "idle", "type": "motion"},
+            {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+              {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "children": [
+                {"name": "walkForward", "type": "motion"},
+                {"name": "walkBackward", "type": "motion"},
+                {"name": "walkLeft", "type": "motion"},
+                {"name": "walkRight", "type": "motion"},
+                {"name": "walkLeftMirror", "type": "motion"},
+                {"name": "walkRightMirror", "type": "motion"}
+              ]},
+              {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "children": [
+                {"name": "runForward", "type": "motion"},
+                {"name": "runBackward", "type": "motion"},
+                {"name": "runLeft", "type": "motion"},
+                {"name": "runRight", "type": "motion"},
+                {"name": "runLeftMirror", "type": "motion"},
+                {"name": "runRightMirror", "type": "motion"}
+              ]}
+            ]}
+          ]},
+          {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "OVERWRITE", "children": [
+            {"name": "idle8DBowNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+              {"name": "bowIdle", "type": "motion"},
+              {"name": "_8DirectionsBowNodeList", "type": "node", "nodeType": "LIST", "children": [
+                {"name": "bowForward", "type": "motion"},
+                {"name": "bowBackward", "type": "motion"},
+                {"name": "bowLeft", "type": "motion"},
+                {"name": "bowRight", "type": "motion"},
+                {"name": "bowLeftMirror", "type": "motion"},
+                {"name": "bowRightMirror", "type": "motion"}
+              ]}
+            ]},
+            {"name": "bowDrawLooseNodoeTwo", "type": "node", "nodeType": "TWO", "children": [
+              {"name": "bowDraw", "type": "motion"},
+              {"name": "bowLoose", "type": "motion"}
+            ]}
+          ]}
         ]},
-        {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "children": [
-          {"name": "runForward", "type": "motion"},
-          {"name": "runBackward", "type": "motion"},
-          {"name": "runLeft", "type": "motion"},
-          {"name": "runRight", "type": "motion"},
-          {"name": "runLeftMirror", "type": "motion"},
-          {"name": "runRightMirror", "type": "motion"}
+        {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "children": [
+          {"name": "crouchIdle", "type": "motion"},
+          {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "children": [
+            {"name": "crouchForward", "type": "motion"},
+            {"name": "crouchBackward", "type": "motion"},
+            {"name": "crouchLeft", "type": "motion"},
+            {"name": "crouchRight", "type": "motion"},
+            {"name": "crouchLeftMirror", "type": "motion"},
+            {"name": "crouchRightMirror", "type": "motion"}
+          ]}
         ]}
       ]}
     )");
@@ -329,6 +370,7 @@ namespace AnimationSystem
     {
       this->bowMotiono[x.first]->setLoop(LoopType::LoopOnce);
       this->bowMotiono[x.first]->stop();
+      this->motiono[x.first] = this->bowMotiono[x.first];
     }
 
     // sitAnimations
@@ -418,49 +460,49 @@ namespace AnimationSystem
   }
   void Avatar::createNodes()
   {
-    this->nodeo["_8DirectionsWalkNodeList"] = this->mixer->createNode(NodeType::LIST, "_8DirectionsWalkNodeList");
-    this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkForward"]);
-    this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkBackward"]);
-    this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkLeft"]);
-    this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkRight"]);
-    this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkLeftMirror"]);
-    this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkRightMirror"]);
+    // this->nodeo["_8DirectionsWalkNodeList"] = this->mixer->createNode(NodeType::LIST, "_8DirectionsWalkNodeList");
+    // this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkForward"]);
+    // this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkBackward"]);
+    // this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkLeft"]);
+    // this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkRight"]);
+    // this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkLeftMirror"]);
+    // this->nodeo["_8DirectionsWalkNodeList"]->addChild(this->motiono["walkRightMirror"]);
 
-    this->nodeo["_8DirectionsRunNodeList"] = this->mixer->createNode(NodeType::LIST, "_8DirectionsRunNodeList");
-    this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runForward"]);
-    this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runBackward"]);
-    this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runLeft"]);
-    this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runRight"]);
-    this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runLeftMirror"]);
-    this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runRightMirror"]);
+    // this->nodeo["_8DirectionsRunNodeList"] = this->mixer->createNode(NodeType::LIST, "_8DirectionsRunNodeList");
+    // this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runForward"]);
+    // this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runBackward"]);
+    // this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runLeft"]);
+    // this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runRight"]);
+    // this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runLeftMirror"]);
+    // this->nodeo["_8DirectionsRunNodeList"]->addChild(this->motiono["runRightMirror"]);
 
-    this->nodeo["_8DirectionsCrouchNodeList"] = this->mixer->createNode(NodeType::LIST, "_8DirectionsCrouchNodeList");
-    this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchForward"]);
-    this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchBackward"]);
-    this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchLeft"]);
-    this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchRight"]);
-    this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchLeftMirror"]);
-    this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchRightMirror"]);
+    // this->nodeo["_8DirectionsCrouchNodeList"] = this->mixer->createNode(NodeType::LIST, "_8DirectionsCrouchNodeList");
+    // this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchForward"]);
+    // this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchBackward"]);
+    // this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchLeft"]);
+    // this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchRight"]);
+    // this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchLeftMirror"]);
+    // this->nodeo["_8DirectionsCrouchNodeList"]->addChild(this->motiono["crouchRightMirror"]);
 
-    this->nodeo["_8DirectionsBowNodeList"] = this->mixer->createNode(NodeType::LIST, "_8DirectionsBowNodeList");
-    this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowForward"]);
-    this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowBackward"]);
-    this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowLeft"]);
-    this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowRight"]);
-    this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowLeftMirror"]);
-    this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowRightMirror"]);
+    // this->nodeo["_8DirectionsBowNodeList"] = this->mixer->createNode(NodeType::LIST, "_8DirectionsBowNodeList");
+    // this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowForward"]);
+    // this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowBackward"]);
+    // this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowLeft"]);
+    // this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowRight"]);
+    // this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowLeftMirror"]);
+    // this->nodeo["_8DirectionsBowNodeList"]->addChild(this->motiono["bowRightMirror"]);
 
-    this->nodeo["_8DirectionsWalkRunNodeTwo"] = this->mixer->createNode(NodeType::TWO, "_8DirectionsWalkRunNodeTwo");
-    this->nodeo["_8DirectionsWalkRunNodeTwo"]->addChild(this->nodeo["_8DirectionsWalkNodeList"]);
-    this->nodeo["_8DirectionsWalkRunNodeTwo"]->addChild(this->nodeo["_8DirectionsRunNodeList"]);
+    // this->nodeo["_8DirectionsWalkRunNodeTwo"] = this->mixer->createNode(NodeType::TWO, "_8DirectionsWalkRunNodeTwo");
+    // this->nodeo["_8DirectionsWalkRunNodeTwo"]->addChild(this->nodeo["_8DirectionsWalkNodeList"]);
+    // this->nodeo["_8DirectionsWalkRunNodeTwo"]->addChild(this->nodeo["_8DirectionsRunNodeList"]);
 
-    this->nodeo["idle8DWalkRunNodeTwo"] = this->mixer->createNode(NodeType::TWO, "idle8DWalkRunNodeTwo");
-    this->nodeo["idle8DWalkRunNodeTwo"]->addChild(this->motiono["idle"]);
-    this->nodeo["idle8DWalkRunNodeTwo"]->addChild(this->nodeo["_8DirectionsWalkRunNodeTwo"]);
+    // this->nodeo["idle8DWalkRunNodeTwo"] = this->mixer->createNode(NodeType::TWO, "idle8DWalkRunNodeTwo");
+    // this->nodeo["idle8DWalkRunNodeTwo"]->addChild(this->motiono["idle"]);
+    // this->nodeo["idle8DWalkRunNodeTwo"]->addChild(this->nodeo["_8DirectionsWalkRunNodeTwo"]);
 
-    this->nodeo["idle8DCrouchNodeTwo"] = this->mixer->createNode(NodeType::TWO, "idle8DCrouchNodeTwo");
-    this->nodeo["idle8DCrouchNodeTwo"]->addChild(this->motiono["crouchIdle"]);
-    this->nodeo["idle8DCrouchNodeTwo"]->addChild(this->nodeo["_8DirectionsCrouchNodeList"]);
+    // this->nodeo["idle8DCrouchNodeTwo"] = this->mixer->createNode(NodeType::TWO, "idle8DCrouchNodeTwo");
+    // this->nodeo["idle8DCrouchNodeTwo"]->addChild(this->motiono["crouchIdle"]);
+    // this->nodeo["idle8DCrouchNodeTwo"]->addChild(this->nodeo["_8DirectionsCrouchNodeList"]);
 
     this->nodeo["flyForwardNodeTwo"] = this->mixer->createNode(NodeType::TWO, "flyForwardNodeTwo");
     this->nodeo["flyForwardNodeTwo"]->addChild(this->motiono["flyDodgeForward"]);
@@ -476,25 +518,25 @@ namespace AnimationSystem
     this->nodeo["idle8DFlyNodeTwo"]->addChild(this->motiono["flyIdle"]);
     this->nodeo["idle8DFlyNodeTwo"]->addChild(this->nodeo["_8DirectionsFlyNodeList"]);
 
-    this->nodeo["idle8DBowNodeTwo"] = this->mixer->createNode(NodeType::TWO, "idle8DBowNodeTwo");
-    this->nodeo["idle8DBowNodeTwo"]->addChild(this->bowMotiono["bowIdle"]);
-    this->nodeo["idle8DBowNodeTwo"]->addChild(this->nodeo["_8DirectionsBowNodeList"]);
+    // this->nodeo["idle8DBowNodeTwo"] = this->mixer->createNode(NodeType::TWO, "idle8DBowNodeTwo");
+    // this->nodeo["idle8DBowNodeTwo"]->addChild(this->bowMotiono["bowIdle"]);
+    // this->nodeo["idle8DBowNodeTwo"]->addChild(this->nodeo["_8DirectionsBowNodeList"]);
 
-    this->nodeo["bowDrawLooseNodoeTwo"] = this->mixer->createNode(NodeType::TWO, "bowDrawLooseNodoeTwo");
-    this->nodeo["bowDrawLooseNodoeTwo"]->addChild(this->bowMotiono["bowDraw"]);
-    this->nodeo["bowDrawLooseNodoeTwo"]->addChild(this->bowMotiono["bowLoose"]);
+    // this->nodeo["bowDrawLooseNodoeTwo"] = this->mixer->createNode(NodeType::TWO, "bowDrawLooseNodoeTwo");
+    // this->nodeo["bowDrawLooseNodoeTwo"]->addChild(this->bowMotiono["bowDraw"]);
+    // this->nodeo["bowDrawLooseNodoeTwo"]->addChild(this->bowMotiono["bowLoose"]);
 
-    this->nodeo["bowIdle8DDrawLooseNodeOverwrite"] = this->mixer->createNode(NodeType::OVERWRITE, "bowIdle8DDrawLooseNodeOverwrite");
-    this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->addChild(this->nodeo["idle8DBowNodeTwo"]);
-    this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->addChild(this->nodeo["bowDrawLooseNodoeTwo"]);
+    // this->nodeo["bowIdle8DDrawLooseNodeOverwrite"] = this->mixer->createNode(NodeType::OVERWRITE, "bowIdle8DDrawLooseNodeOverwrite");
+    // this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->addChild(this->nodeo["idle8DBowNodeTwo"]);
+    // this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->addChild(this->nodeo["bowDrawLooseNodoeTwo"]);
 
-    this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"] = this->mixer->createNode(NodeType::TWO, "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo");
-    this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->addChild(this->nodeo["idle8DWalkRunNodeTwo"]);
-    this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->addChild(this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]);
+    // this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"] = this->mixer->createNode(NodeType::TWO, "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo");
+    // this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->addChild(this->nodeo["idle8DWalkRunNodeTwo"]);
+    // this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->addChild(this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]);
 
-    this->nodeo["defaultNodeTwo"] = this->mixer->createNode(NodeType::TWO, "defaultNodeTwo");
-    this->nodeo["defaultNodeTwo"]->addChild(this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]);
-    this->nodeo["defaultNodeTwo"]->addChild(this->nodeo["idle8DCrouchNodeTwo"]);
+    // this->nodeo["defaultNodeTwo"] = this->mixer->createNode(NodeType::TWO, "defaultNodeTwo");
+    // this->nodeo["defaultNodeTwo"]->addChild(this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]);
+    // this->nodeo["defaultNodeTwo"]->addChild(this->nodeo["idle8DCrouchNodeTwo"]);
 
     // hurtAnimations
     this->nodeo["hurtsNodeSolitary"] = this->mixer->createNode(NodeType::SOLITARY, "hurtsNodeSolitary");
