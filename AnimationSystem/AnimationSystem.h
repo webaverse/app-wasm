@@ -154,7 +154,7 @@ namespace AnimationSystem
     
     void createMotions();
     void createNodes();
-    void createNodesFromJson(json &tree);
+    void createNodesFromJson(json &jsonNode, AnimationNode *parentNode = nullptr);
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
   };

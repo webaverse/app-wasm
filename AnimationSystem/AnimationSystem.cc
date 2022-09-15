@@ -139,6 +139,49 @@ namespace AnimationSystem
 
     return avatar;
   }
+  void Avatar::createNodesFromJson(json &jsonNode, AnimationNode *parentNode)
+  {
+    // std::cout << jsonNode["children"] << std::endl;
+    // for (json::iterator it = jsonNode.begin(); it != jsonNode.end(); ++it) {
+    //   std::cout << it.key() << " : " << it.value() << "\n";
+    // }
+
+    // unsigned int nodeType;
+    // switch(jsonNode["nodeType"])
+    // {
+      
+    // }
+
+    if (jsonNode["type"] == "motion")
+    {
+      AnimationNode *motion = this->motiono[jsonNode["name"]];
+      parentNode->addChild(motion);
+    }
+    else if(jsonNode["type"] == "node")
+    {
+      AnimationNode *node = this->mixer->createNode(NodeType::LIST, jsonNode["name"]);
+      this->nodeo[jsonNode["name"]] = node;
+      if (parentNode)
+      {
+        parentNode->addChild(node);
+      }
+      {
+        this->mixer->setRootNode(node);
+      }
+
+      // if (jsonNode["children"]) // wrong
+      // {
+        for (unsigned int i = 0; i < jsonNode["children"].size(); i++)
+        {
+          // std::cout << jsonNode["children"][i]["name"] << std::endl;
+          // this->nodeo[jsonNode["name"]]->addChild();
+          json childJsonNode = jsonNode["children"][i];
+          std::cout << childJsonNode["name"] << std::endl;
+          this->createNodesFromJson(childJsonNode, node);
+        }
+      }
+    // }
+  }
   void Avatar::createMotions()
   {
     this->motiono["idle"] = this->mixer->createMotion(animationo["idle.fbx"], "idle"); // todo: don't need `this->`
@@ -534,36 +577,6 @@ namespace AnimationSystem
 
     // this->mixer->setRootNode(this->nodeo["holdNodeFunc"]);
     this->mixer->setRootNode(this->nodeo["_8DirectionsWalkNodeList"]);
-  }
-  void Avatar::createNodesFromJson(json &jsonNode)
-  {
-    // std::cout << jsonNode["children"] << std::endl;
-    // for (json::iterator it = jsonNode.begin(); it != jsonNode.end(); ++it) {
-    //   std::cout << it.key() << " : " << it.value() << "\n";
-    // }
-
-    // unsigned int nodeType;
-    // switch(jsonNode["nodeType"])
-    // {
-      
-    // }
-
-    // if (jsonNode["type"] == "motion")
-    // {
-
-    // }
-    // else if(jsonNode["type"] == "node")
-    // {
-      this->nodeo[jsonNode["name"]] = this->mixer->createNode(NodeType::TWO, jsonNode["name"]);
-    // }
-
-    for (unsigned int i = 0; i < jsonNode["children"].size(); i++)
-    {
-      // std::cout << jsonNode["children"][i]["name"] << std::endl;
-      this->nodeo[jsonNode["name"]]->addChild(this->motiono[jsonNode["children"][i]["name"]]);
-    }
-
-    this->mixer->setRootNode(this->nodeo[jsonNode["name"]]);
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings)
   {
