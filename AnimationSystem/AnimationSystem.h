@@ -10,7 +10,7 @@ namespace AnimationSystem
   struct Interpolant;
   struct Animation;
   struct AnimationMapping;
-  struct Avatar;
+  class Avatar;
   class AnimationNode;
   class AnimationMixer;
 
@@ -105,6 +105,7 @@ namespace AnimationSystem
   };
   struct AnimationMapping // spec
   {
+    float *dst =  (float *)malloc((4) * sizeof(float));
     bool isPosition;
     unsigned int index;
     bool isFirstBone;
@@ -130,6 +131,10 @@ namespace AnimationSystem
 
     std::map<std::string, AnimationNode *> nodeo; // todo: duplicated with mixer.nodeo ?
     std::vector<std::string> strings;
+
+    // values
+    float activateTime;
+    std::string activateAnimationName;
 
     // action start/end events
     bool jumpStart, jumpEnd, lastJumpState;
@@ -222,6 +227,7 @@ namespace AnimationSystem
   public:
     static float timeS;
 
+    Avatar *avatar; // todo: delete this ?
     // unsigned int index;
     AnimationNode _animationNode; // todo: rename: animationTree
     AnimationNode *rootNode;

@@ -9,6 +9,7 @@ namespace AnimationSystem
   std::vector<AnimationMapping> _animationMappings;
   // std::vector<Animation *> _animations;
   std::map<std::string, Animation *> animationo;
+  std::map<std::string, Animation *> animationo2; // todo: delete
   // float finishedFlag = 0;
   // std::vector<float> _finishedFlags;
   // float _finishedFlags[100];
@@ -116,6 +117,7 @@ namespace AnimationSystem
     Avatar *avatar = new Avatar();
     avatars.push_back(avatar);
     avatar->mixer = mixer;
+    mixer->avatar = avatar; // todo: prevent set `mixer->avatar = avatar` ?
 
     /*
       {"name": "crouchForward", "type": "motion"}
@@ -282,6 +284,13 @@ namespace AnimationSystem
 
     avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
     // std::cout << std::endl; //test
+
+    //
+
+    for (auto const& x : avatar->motiono) // todo: only run once.
+    {
+      animationo2[x.first] = avatar->motiono[x.first]->animation;
+    }
 
     return avatar;
   }
@@ -805,7 +814,7 @@ namespace AnimationSystem
     std::string defaultEmoteAnimation = this->strings[index++];
     std::string defaultDanceAnimation = this->strings[index++];
     std::string defaultHoldAnimation = this->strings[index++];
-    std::string defaultActivateAnimation = this->strings[index++];
+    std::string defaultActivateAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
     // ---
     std::string useAnimation = this->strings[index++];
     std::string useAnimationComboName = this->strings[index++];
@@ -813,7 +822,7 @@ namespace AnimationSystem
     std::string emoteAnimation = this->strings[index++];
     std::string danceAnimation = this->strings[index++];
     std::string holdAnimation = this->strings[index++];
-    std::string activateAnimation = this->strings[index++];
+    this->activateAnimationName = this->strings[index++];
     std::string hurtAnimation = this->strings[index++];
 
     // std::cout << "sitAnimation: " << sitAnimation << std::endl;
@@ -838,6 +847,8 @@ namespace AnimationSystem
     // float flyDashFactor = scratchStack[index++];
 
     float holdFactor = scratchStack[index++];
+
+    this->activateTime = scratchStack[index++];
 
     // action states ---
     bool jumpState = scratchStack[index++];
@@ -1262,13 +1273,13 @@ namespace AnimationSystem
       this->nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 1);
     }
 
-    // activateAnimations // activate
-    if (this->activateStart) {
-      AnimationNode *activateMotion = this->activateMotiono[activateAnimation == "" ? defaultActivateAnimation : activateAnimation];
-      activateMotion->play();
-      this->nodeo["activatesNodeSolitary"]->crossFadeSolitary(0, activateMotion);
-      this->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
-    }
+    // // activateAnimations // activate
+    // if (this->activateStart) {
+    //   AnimationNode *activateMotion = this->activateMotiono[activateAnimation == "" ? defaultActivateAnimation : activateAnimation];
+    //   activateMotion->play();
+    //   this->nodeo["activatesNodeSolitary"]->crossFadeSolitary(0, activateMotion);
+    //   this->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 1);
+    // }
 
     // handle finished event ---
     if (this->mixer->finishedFlag)
@@ -1715,6 +1726,31 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _blendActivateAction(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (avatar->activateTime > 0)
+    {
+      // if (spec.isPosition) std::cout << "activateAnimationName: " << avatar->activateAnimationName << std::endl;
+      Animation *activateAnimation = animationo2[avatar->activateAnimationName]; // todo: animationo
+      // Interpolant *src2 = activateAnimation->interpolants[spec.index];
+      // const t2 = ((avatar.activateTime / 1000) * activateAnimations[defaultAnimation].speedFactor) % activateAnimation.duration; // todo: speedFactor
+      float t2 = fmod((avatar->activateTime / 1000), activateAnimation->duration);
+      // const v2 = src2.evaluate(t2);
+      float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2); // todo: src2->evaluate(t2);
+
+      // const f = avatar.activateTime > 0 ? Math.min(cubicBezier(t2), 1) : (1 - Math.min(cubicBezier(t2), 1));
+      float f = 1; // test: todo:
+
+      // lerpFn
+      //   .call(
+      //     dst,
+      //     localQuaternion.fromArray(v2),
+      //     f,
+      //   );
+
+      interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 1, f, spec.isPosition);
+    }
+  }
   float **AnimationMixer::update(float timeS)
   {
     AnimationMixer::timeS = timeS;
@@ -1734,7 +1770,18 @@ namespace AnimationSystem
       AnimationMapping spec = _animationMappings[i];
 
       // float * aaa = rootNode.update(spec);
-      animationValues[i] = rootNode->update(spec);
+      animationValues[i] = rootNode->update(spec); // todo: set to spec.dst directly.
+      spec.dst[0] = animationValues[i][1];
+      spec.dst[1] = animationValues[i][2];
+      spec.dst[2] = animationValues[i][3];
+      if (!spec.isPosition) spec.dst[3] = animationValues[i][4];
+
+      _blendActivateAction(spec, this->avatar);
+
+      animationValues[i][1] = spec.dst[0];
+      animationValues[i][2] = spec.dst[1];
+      animationValues[i][3] = spec.dst[2];
+      if (!spec.isPosition) animationValues[i][4] = spec.dst[3];
     }
 
     // animationValues[53] = &finishedFlag;
