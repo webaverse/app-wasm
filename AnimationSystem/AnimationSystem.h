@@ -153,6 +153,7 @@ namespace AnimationSystem
     std::string lastUseAnimationComboName;
     
     void createMotions();
+    void createMotionsFromJson(json &jsonMotion);
     void createNodes();
     void createNodesFromJson(json &jsonNode, AnimationNode *parentNode = nullptr);
     void update(float *scratchStack);

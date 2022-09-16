@@ -123,174 +123,180 @@ namespace AnimationSystem
       {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
       ]}
     */
-    json tree = json::parse(R"(
-      {"name": "holdNodeFunc", "type": "node", "nodeType": "FUNC", "funcIndex": 0, "children": [
-        {"name": "activateNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-          {"name": "landNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-            {"name": "fallLoopNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-              {"name": "groundFlyNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                {"name": "doubleJumpNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                  {"name": "jumpNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                    {"name": "sitNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                      {"name": "narutoRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                        {"name": "danceNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                          {"name": "emoteNodeFunc", "type": "node", "nodeType": "FUNC", "funcIndex": 1, "children": [
-                            {"name": "useCombosNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                              {"name": "useNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                {"name": "hurtNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                  {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                    {"name": "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                      {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                        {"name": "idle", "type": "motion"},
-                                        {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                          {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                                            {"name": "walkForward", "type": "motion"},
-                                            {"name": "walkBackward", "type": "motion"},
-                                            {"name": "walkLeft", "type": "motion"},
-                                            {"name": "walkRight", "type": "motion"},
-                                            {"name": "walkLeftMirror", "type": "motion"},
-                                            {"name": "walkRightMirror", "type": "motion"}
+    json jsonConfig = json::parse(R"(
+      {
+        "motions": [
+
+        ],
+        "tree": {"name": "holdNodeFunc", "type": "node", "nodeType": "FUNC", "funcIndex": 0, "children": [
+          {"name": "activateNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+            {"name": "landNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+              {"name": "fallLoopNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                {"name": "groundFlyNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                  {"name": "doubleJumpNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                    {"name": "jumpNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                      {"name": "sitNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                        {"name": "narutoRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                          {"name": "danceNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                            {"name": "emoteNodeFunc", "type": "node", "nodeType": "FUNC", "funcIndex": 1, "children": [
+                              {"name": "useCombosNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+                                {"name": "useNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                  {"name": "hurtNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                    {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                      {"name": "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                        {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                          {"name": "idle", "type": "motion"},
+                                          {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                            {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                                              {"name": "walkForward", "type": "motion"},
+                                              {"name": "walkBackward", "type": "motion"},
+                                              {"name": "walkLeft", "type": "motion"},
+                                              {"name": "walkRight", "type": "motion"},
+                                              {"name": "walkLeftMirror", "type": "motion"},
+                                              {"name": "walkRightMirror", "type": "motion"}
+                                            ]},
+                                            {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                                              {"name": "runForward", "type": "motion"},
+                                              {"name": "runBackward", "type": "motion"},
+                                              {"name": "runLeft", "type": "motion"},
+                                              {"name": "runRight", "type": "motion"},
+                                              {"name": "runLeftMirror", "type": "motion"},
+                                              {"name": "runRightMirror", "type": "motion"}
+                                            ]}
+                                          ]}
+                                        ]},
+                                        {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "OVERWRITE", "funcIndex": 0, "children": [
+                                          {"name": "idle8DBowNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                            {"name": "bowIdle", "type": "motion"},
+                                            {"name": "_8DirectionsBowNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                                              {"name": "bowForward", "type": "motion"},
+                                              {"name": "bowBackward", "type": "motion"},
+                                              {"name": "bowLeft", "type": "motion"},
+                                              {"name": "bowRight", "type": "motion"},
+                                              {"name": "bowLeftMirror", "type": "motion"},
+                                              {"name": "bowRightMirror", "type": "motion"}
+                                            ]}
                                           ]},
-                                          {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                                            {"name": "runForward", "type": "motion"},
-                                            {"name": "runBackward", "type": "motion"},
-                                            {"name": "runLeft", "type": "motion"},
-                                            {"name": "runRight", "type": "motion"},
-                                            {"name": "runLeftMirror", "type": "motion"},
-                                            {"name": "runRightMirror", "type": "motion"}
+                                          {"name": "bowDrawLooseNodoeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                            {"name": "bowDraw", "type": "motion"},
+                                            {"name": "bowLoose", "type": "motion"}
                                           ]}
                                         ]}
                                       ]},
-                                      {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "OVERWRITE", "funcIndex": 0, "children": [
-                                        {"name": "idle8DBowNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                          {"name": "bowIdle", "type": "motion"},
-                                          {"name": "_8DirectionsBowNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                                            {"name": "bowForward", "type": "motion"},
-                                            {"name": "bowBackward", "type": "motion"},
-                                            {"name": "bowLeft", "type": "motion"},
-                                            {"name": "bowRight", "type": "motion"},
-                                            {"name": "bowLeftMirror", "type": "motion"},
-                                            {"name": "bowRightMirror", "type": "motion"}
-                                          ]}
-                                        ]},
-                                        {"name": "bowDrawLooseNodoeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                          {"name": "bowDraw", "type": "motion"},
-                                          {"name": "bowLoose", "type": "motion"}
+                                      {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                                        {"name": "crouchIdle", "type": "motion"},
+                                        {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                                          {"name": "crouchForward", "type": "motion"},
+                                          {"name": "crouchBackward", "type": "motion"},
+                                          {"name": "crouchLeft", "type": "motion"},
+                                          {"name": "crouchRight", "type": "motion"},
+                                          {"name": "crouchLeftMirror", "type": "motion"},
+                                          {"name": "crouchRightMirror", "type": "motion"}
                                         ]}
                                       ]}
                                     ]},
-                                    {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                      {"name": "crouchIdle", "type": "motion"},
-                                      {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                                        {"name": "crouchForward", "type": "motion"},
-                                        {"name": "crouchBackward", "type": "motion"},
-                                        {"name": "crouchLeft", "type": "motion"},
-                                        {"name": "crouchRight", "type": "motion"},
-                                        {"name": "crouchLeftMirror", "type": "motion"},
-                                        {"name": "crouchRightMirror", "type": "motion"}
-                                      ]}
+                                    {"name": "hurtsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+                                      {"name": "pain_back", "type": "motion"},
+                                      {"name": "pain_arch", "type": "motion"}
                                     ]}
                                   ]},
-                                  {"name": "hurtsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                                    {"name": "pain_back", "type": "motion"},
-                                    {"name": "pain_arch", "type": "motion"}
+                                  {"name": "usesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+                                    {"name": "combo", "type": "motion"},
+                                    {"name": "dashAttack", "type": "motion"},
+                                    {"name": "drink", "type": "motion"},
+                                    {"name": "eat", "type": "motion"},
+                                    {"name": "magic", "type": "motion"},
+                                    {"name": "pickUpThrow", "type": "motion"},
+                                    {"name": "pistol", "type": "motion"},
+                                    {"name": "rifle", "type": "motion"},
+                                    {"name": "slash", "type": "motion"},
+                                    {"name": "throw", "type": "motion"}
                                   ]}
                                 ]},
-                                {"name": "usesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                                  {"name": "combo", "type": "motion"},
-                                  {"name": "dashAttack", "type": "motion"},
-                                  {"name": "drink", "type": "motion"},
-                                  {"name": "eat", "type": "motion"},
-                                  {"name": "magic", "type": "motion"},
-                                  {"name": "pickUpThrow", "type": "motion"},
-                                  {"name": "pistol", "type": "motion"},
-                                  {"name": "rifle", "type": "motion"},
-                                  {"name": "slash", "type": "motion"},
-                                  {"name": "throw", "type": "motion"}
-                                ]}
+                                {"name": "swordSideIdle", "type": "motion"},
+                                {"name": "swordSideSlash", "type": "motion"},
+                                {"name": "swordSideSlashStep", "type": "motion"},
+                                {"name": "swordTopDownSlash", "type": "motion"},
+                                {"name": "swordTopDownSlashStep", "type": "motion"},
+                                {"name": "dashAttack", "type": "motion"}
                               ]},
-                              {"name": "swordSideIdle", "type": "motion"},
-                              {"name": "swordSideSlash", "type": "motion"},
-                              {"name": "swordSideSlashStep", "type": "motion"},
-                              {"name": "swordTopDownSlash", "type": "motion"},
-                              {"name": "swordTopDownSlashStep", "type": "motion"},
-                              {"name": "dashAttack", "type": "motion"}
+                              {"name": "emotesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+                                {"name": "alert", "type": "motion"},
+                                {"name": "alertSoft", "type": "motion"},
+                                {"name": "angry", "type": "motion"},
+                                {"name": "angrySoft", "type": "motion"},
+                                {"name": "embarrassed", "type": "motion"},
+                                {"name": "embarrassedSoft", "type": "motion"},
+                                {"name": "headNod", "type": "motion"},
+                                {"name": "headNodSoft", "type": "motion"},
+                                {"name": "headShake", "type": "motion"},
+                                {"name": "headShakeSoft", "type": "motion"},
+                                {"name": "sad", "type": "motion"},
+                                {"name": "sadSoft", "type": "motion"},
+                                {"name": "surprise", "type": "motion"},
+                                {"name": "surpriseSoft", "type": "motion"},
+                                {"name": "victory", "type": "motion"},
+                                {"name": "victorySoft", "type": "motion"}
+                              ]}
                             ]},
-                            {"name": "emotesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                              {"name": "alert", "type": "motion"},
-                              {"name": "alertSoft", "type": "motion"},
-                              {"name": "angry", "type": "motion"},
-                              {"name": "angrySoft", "type": "motion"},
-                              {"name": "embarrassed", "type": "motion"},
-                              {"name": "embarrassedSoft", "type": "motion"},
-                              {"name": "headNod", "type": "motion"},
-                              {"name": "headNodSoft", "type": "motion"},
-                              {"name": "headShake", "type": "motion"},
-                              {"name": "headShakeSoft", "type": "motion"},
-                              {"name": "sad", "type": "motion"},
-                              {"name": "sadSoft", "type": "motion"},
-                              {"name": "surprise", "type": "motion"},
-                              {"name": "surpriseSoft", "type": "motion"},
-                              {"name": "victory", "type": "motion"},
-                              {"name": "victorySoft", "type": "motion"}
+                            {"name": "dancesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+                              {"name": "dansu", "type": "motion"},
+                              {"name": "powerup", "type": "motion"}
                             ]}
                           ]},
-                          {"name": "dancesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                            {"name": "dansu", "type": "motion"},
-                            {"name": "powerup", "type": "motion"}
-                          ]}
+                          {"name": "narutoRun", "type": "motion"}
                         ]},
-                        {"name": "narutoRun", "type": "motion"}
+                        {"name": "sitsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+                          {"name": "chair", "type": "motion"},
+                          {"name": "saddle", "type": "motion"},
+                          {"name": "stand", "type": "motion"}
+                        ]}
                       ]},
-                      {"name": "sitsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                        {"name": "chair", "type": "motion"},
-                        {"name": "saddle", "type": "motion"},
-                        {"name": "stand", "type": "motion"}
-                      ]}
+                      {"name": "jump", "type": "motion"}
                     ]},
-                    {"name": "jump", "type": "motion"}
+                    {"name": "doubleJump", "type": "motion"}
                   ]},
-                  {"name": "doubleJump", "type": "motion"}
-                ]},
-                {"name": "idle8DFlyNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                  {"name": "flyIdle", "type": "motion"},
-                  {"name": "_8DirectionsFlyNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                    {"name": "flyForwardNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                      {"name": "flyDodgeForward", "type": "motion"},
-                      {"name": "flyDash", "type": "motion"}
-                    ]},
-                    {"name": "flyDodgeBackward", "type": "motion"},
-                    {"name": "flyDodgeLeft", "type": "motion"},
-                    {"name": "flyDodgeRight", "type": "motion"}
+                  {"name": "idle8DFlyNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                    {"name": "flyIdle", "type": "motion"},
+                    {"name": "_8DirectionsFlyNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                      {"name": "flyForwardNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                        {"name": "flyDodgeForward", "type": "motion"},
+                        {"name": "flyDash", "type": "motion"}
+                      ]},
+                      {"name": "flyDodgeBackward", "type": "motion"},
+                      {"name": "flyDodgeLeft", "type": "motion"},
+                      {"name": "flyDodgeRight", "type": "motion"}
+                    ]}
                   ]}
-                ]}
+                ]},
+                {"name": "fallLoop", "type": "motion"}
               ]},
-              {"name": "fallLoop", "type": "motion"}
+              {"name": "landsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+                {"name": "land", "type": "motion"},
+                {"name": "land2", "type": "motion"}
+              ]}
             ]},
-            {"name": "landsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-              {"name": "land", "type": "motion"},
-              {"name": "land2", "type": "motion"}
+            {"name": "activatesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+              {"name": "grab_forward", "type": "motion"},
+              {"name": "grab_down", "type": "motion"},
+              {"name": "grab_up", "type": "motion"},
+              {"name": "grab_left", "type": "motion"},
+              {"name": "grab_right", "type": "motion"},
+              {"name": "pick_up", "type": "motion"}
             ]}
           ]},
-          {"name": "activatesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-            {"name": "grab_forward", "type": "motion"},
-            {"name": "grab_down", "type": "motion"},
-            {"name": "grab_up", "type": "motion"},
-            {"name": "grab_left", "type": "motion"},
-            {"name": "grab_right", "type": "motion"},
-            {"name": "pick_up", "type": "motion"}
+          {"name": "holdsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+            {"name": "pick_up_idle", "type": "motion"}
           ]}
-        ]},
-        {"name": "holdsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-          {"name": "pick_up_idle", "type": "motion"}
         ]}
-      ]}
+      }
     )");
 
     avatar->createMotions();
+    // avatar->createMotionsFromJson(jsonConfig["motions"]);
     // avatar->createNodes();
     std::cout << "createNodesFromJson ------" << std::endl;
-    avatar->createNodesFromJson(tree);
+    avatar->createNodesFromJson(jsonConfig["tree"]);
     std::cout << "root node: " << avatar->mixer->rootNode->name << std::endl;
 
     //
@@ -299,6 +305,10 @@ namespace AnimationSystem
     std::cout << std::endl; //test
 
     return avatar;
+  }
+  void Avatar::createMotionsFromJson(json &jsonMotion)
+  {
+
   }
   void Avatar::createNodesFromJson(json &jsonNode, AnimationNode *parentNode)
   {
