@@ -135,6 +135,8 @@ namespace AnimationSystem
     // values
     float activateTime;
     std::string activateAnimationName;
+    bool landWithMoving;
+    float landTime;
 
     // action start/end events
     bool jumpStart, jumpEnd, lastJumpState;
