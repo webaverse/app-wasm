@@ -66,7 +66,6 @@ EMSCRIPTEN_KEEPALIVE void meshoptSimplify(
   constexpr unsigned int options = 0;
   float result_error;
   *numDestinations = meshopt_simplify(*destination, indices, index_count, vertex_positions, vertex_count, vertex_positions_stride, target_index_count, target_error, options, &result_error);
-  std::cout << "simplify wasm " << *destination << " " << *numDestinations << std::endl;
 }
 
 // MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float* result_error);
@@ -93,7 +92,6 @@ EMSCRIPTEN_KEEPALIVE void meshoptSimplifySloppy(
   constexpr size_t vertex_positions_stride = 3 * sizeof(float);
   float result_error;
   *numDestinations = meshopt_simplifySloppy(*destination, indices, index_count, vertex_positions, vertex_count, vertex_positions_stride, target_index_count, target_error, &result_error);
-  std::cout << "simplify sloppy wasm " << *destination << " " << *numDestinations << std::endl;
 }
 
 } // extern "C"
