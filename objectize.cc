@@ -75,8 +75,8 @@ EMSCRIPTEN_KEEPALIVE void updateAvatarString(AnimationSystem::Avatar *avatar, ch
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }
-EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(AnimationSystem::AnimationMixer *mixer, float timeS) {
-  return mixer->update(timeS);
+EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(AnimationSystem::AnimationMixer *mixer, float now, float nowS) {
+  return mixer->update(now, nowS);
 }
 EMSCRIPTEN_KEEPALIVE unsigned int getFinishedMotionName(AnimationSystem::AnimationMixer *mixer, char *scratchStack) {
   return mixer->getFinishedMotionName(scratchStack);

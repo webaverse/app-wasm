@@ -24,6 +24,9 @@ namespace AnimationSystem
   // Animation **testAnimation3 = &testAnimation2;
 
   Animation *fallLoopAnimation;
+  Animation *floatAnimation;
+  Animation *doubleJumpAnimation;
+  Animation *jumpAnimation;
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
@@ -147,142 +150,86 @@ namespace AnimationSystem
       ]}
     */
     json tree = json::parse(R"(
-      {"name": "groundFlyNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-        {"name": "doubleJumpNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-          {"name": "jumpNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-            {"name": "sitNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-              {"name": "narutoRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                {"name": "danceNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                  {"name": "emoteNodeFunc", "type": "node", "nodeType": "FUNC", "funcIndex": 1, "children": [
-                    {"name": "useCombosNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                      {"name": "useNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                        {"name": "hurtNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                          {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                            {"name": "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                              {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                {"name": "idle", "type": "motion"},
-                                {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                  {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                                    {"name": "walkForward", "type": "motion"},
-                                    {"name": "walkBackward", "type": "motion"},
-                                    {"name": "walkLeft", "type": "motion"},
-                                    {"name": "walkRight", "type": "motion"},
-                                    {"name": "walkLeftMirror", "type": "motion"},
-                                    {"name": "walkRightMirror", "type": "motion"}
-                                  ]},
-                                  {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                                    {"name": "runForward", "type": "motion"},
-                                    {"name": "runBackward", "type": "motion"},
-                                    {"name": "runLeft", "type": "motion"},
-                                    {"name": "runRight", "type": "motion"},
-                                    {"name": "runLeftMirror", "type": "motion"},
-                                    {"name": "runRightMirror", "type": "motion"}
-                                  ]}
-                                ]}
-                              ]},
-                              {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "OVERWRITE", "funcIndex": 0, "children": [
-                                {"name": "idle8DBowNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                  {"name": "bowIdle", "type": "motion"},
-                                  {"name": "_8DirectionsBowNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                                    {"name": "bowForward", "type": "motion"},
-                                    {"name": "bowBackward", "type": "motion"},
-                                    {"name": "bowLeft", "type": "motion"},
-                                    {"name": "bowRight", "type": "motion"},
-                                    {"name": "bowLeftMirror", "type": "motion"},
-                                    {"name": "bowRightMirror", "type": "motion"}
-                                  ]}
-                                ]},
-                                {"name": "bowDrawLooseNodoeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                                  {"name": "bowDraw", "type": "motion"},
-                                  {"name": "bowLoose", "type": "motion"}
-                                ]}
-                              ]}
-                            ]},
-                            {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-                              {"name": "crouchIdle", "type": "motion"},
-                              {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                                {"name": "crouchForward", "type": "motion"},
-                                {"name": "crouchBackward", "type": "motion"},
-                                {"name": "crouchLeft", "type": "motion"},
-                                {"name": "crouchRight", "type": "motion"},
-                                {"name": "crouchLeftMirror", "type": "motion"},
-                                {"name": "crouchRightMirror", "type": "motion"}
-                              ]}
-                            ]}
-                          ]},
-                          {"name": "hurtsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                            {"name": "pain_back", "type": "motion"},
-                            {"name": "pain_arch", "type": "motion"}
-                          ]}
-                        ]},
-                        {"name": "usesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                          {"name": "combo", "type": "motion"},
-                          {"name": "dashAttack", "type": "motion"},
-                          {"name": "drink", "type": "motion"},
-                          {"name": "eat", "type": "motion"},
-                          {"name": "magic", "type": "motion"},
-                          {"name": "pickUpThrow", "type": "motion"},
-                          {"name": "pistol", "type": "motion"},
-                          {"name": "rifle", "type": "motion"},
-                          {"name": "slash", "type": "motion"},
-                          {"name": "throw", "type": "motion"}
-                        ]}
-                      ]},
-                      {"name": "swordSideIdle", "type": "motion"},
-                      {"name": "swordSideSlash", "type": "motion"},
-                      {"name": "swordSideSlashStep", "type": "motion"},
-                      {"name": "swordTopDownSlash", "type": "motion"},
-                      {"name": "swordTopDownSlashStep", "type": "motion"},
-                      {"name": "dashAttack", "type": "motion"}
+      {"name": "useCombosNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+        {"name": "useNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+          {"name": "hurtNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+            {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+              {"name": "idle8DWalkRun_BowIdle8DDrawLooseNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                  {"name": "idle", "type": "motion"},
+                  {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                    {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                      {"name": "walkForward", "type": "motion"},
+                      {"name": "walkBackward", "type": "motion"},
+                      {"name": "walkLeft", "type": "motion"},
+                      {"name": "walkRight", "type": "motion"},
+                      {"name": "walkLeftMirror", "type": "motion"},
+                      {"name": "walkRightMirror", "type": "motion"}
                     ]},
-                    {"name": "emotesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                      {"name": "alert", "type": "motion"},
-                      {"name": "alertSoft", "type": "motion"},
-                      {"name": "angry", "type": "motion"},
-                      {"name": "angrySoft", "type": "motion"},
-                      {"name": "embarrassed", "type": "motion"},
-                      {"name": "embarrassedSoft", "type": "motion"},
-                      {"name": "headNod", "type": "motion"},
-                      {"name": "headNodSoft", "type": "motion"},
-                      {"name": "headShake", "type": "motion"},
-                      {"name": "headShakeSoft", "type": "motion"},
-                      {"name": "sad", "type": "motion"},
-                      {"name": "sadSoft", "type": "motion"},
-                      {"name": "surprise", "type": "motion"},
-                      {"name": "surpriseSoft", "type": "motion"},
-                      {"name": "victory", "type": "motion"},
-                      {"name": "victorySoft", "type": "motion"}
+                    {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                      {"name": "runForward", "type": "motion"},
+                      {"name": "runBackward", "type": "motion"},
+                      {"name": "runLeft", "type": "motion"},
+                      {"name": "runRight", "type": "motion"},
+                      {"name": "runLeftMirror", "type": "motion"},
+                      {"name": "runRightMirror", "type": "motion"}
                     ]}
-                  ]},
-                  {"name": "dancesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                    {"name": "dansu", "type": "motion"},
-                    {"name": "powerup", "type": "motion"}
                   ]}
                 ]},
-                {"name": "narutoRun", "type": "motion"}
+                {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "OVERWRITE", "funcIndex": 0, "children": [
+                  {"name": "idle8DBowNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                    {"name": "bowIdle", "type": "motion"},
+                    {"name": "_8DirectionsBowNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                      {"name": "bowForward", "type": "motion"},
+                      {"name": "bowBackward", "type": "motion"},
+                      {"name": "bowLeft", "type": "motion"},
+                      {"name": "bowRight", "type": "motion"},
+                      {"name": "bowLeftMirror", "type": "motion"},
+                      {"name": "bowRightMirror", "type": "motion"}
+                    ]}
+                  ]},
+                  {"name": "bowDrawLooseNodoeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                    {"name": "bowDraw", "type": "motion"},
+                    {"name": "bowLoose", "type": "motion"}
+                  ]}
+                ]}
               ]},
-              {"name": "sitsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-                {"name": "chair", "type": "motion"},
-                {"name": "saddle", "type": "motion"},
-                {"name": "stand", "type": "motion"}
+              {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+                {"name": "crouchIdle", "type": "motion"},
+                {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+                  {"name": "crouchForward", "type": "motion"},
+                  {"name": "crouchBackward", "type": "motion"},
+                  {"name": "crouchLeft", "type": "motion"},
+                  {"name": "crouchRight", "type": "motion"},
+                  {"name": "crouchLeftMirror", "type": "motion"},
+                  {"name": "crouchRightMirror", "type": "motion"}
+                ]}
               ]}
             ]},
-            {"name": "jump", "type": "motion"}
+            {"name": "hurtsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+              {"name": "pain_back", "type": "motion"},
+              {"name": "pain_arch", "type": "motion"}
+            ]}
           ]},
-          {"name": "doubleJump", "type": "motion"}
-        ]},
-        {"name": "idle8DFlyNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-          {"name": "flyIdle", "type": "motion"},
-          {"name": "_8DirectionsFlyNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-            {"name": "flyForwardNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-              {"name": "flyDodgeForward", "type": "motion"},
-              {"name": "flyDash", "type": "motion"}
-            ]},
-            {"name": "flyDodgeBackward", "type": "motion"},
-            {"name": "flyDodgeLeft", "type": "motion"},
-            {"name": "flyDodgeRight", "type": "motion"}
+          {"name": "usesNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
+            {"name": "combo", "type": "motion"},
+            {"name": "dashAttack", "type": "motion"},
+            {"name": "drink", "type": "motion"},
+            {"name": "eat", "type": "motion"},
+            {"name": "magic", "type": "motion"},
+            {"name": "pickUpThrow", "type": "motion"},
+            {"name": "pistol", "type": "motion"},
+            {"name": "rifle", "type": "motion"},
+            {"name": "slash", "type": "motion"},
+            {"name": "throw", "type": "motion"}
           ]}
-        ]}
+        ]},
+        {"name": "swordSideIdle", "type": "motion"},
+        {"name": "swordSideSlash", "type": "motion"},
+        {"name": "swordSideSlashStep", "type": "motion"},
+        {"name": "swordTopDownSlash", "type": "motion"},
+        {"name": "swordTopDownSlashStep", "type": "motion"},
+        {"name": "dashAttack", "type": "motion"}
       ]}
     )");
 
@@ -398,6 +345,9 @@ namespace AnimationSystem
   void Avatar::setAnimations()
   {
     fallLoopAnimation = animationo["falling.fbx"];
+    floatAnimation = animationo["treading water.fbx"]; // todo: animations.find(a => a.isFloat);
+    doubleJumpAnimation = animationo["jump_double.fbx"];
+    jumpAnimation = animationo["jump.fbx"];
   }
   void Avatar::createMotions()
   {
@@ -827,17 +777,18 @@ namespace AnimationSystem
     unsigned int index = 0;
 
     // strings ----
-    std::string defaultSitAnimation = this->strings[index++];
-    std::string defaultEmoteAnimation = this->strings[index++];
-    std::string defaultDanceAnimation = this->strings[index++];
+    this->defaultSitAnimation = this->strings[index++]; // todo: defaultSitAnimationName, only rename on wasm side.
+    this->defaultEmoteAnimationName = this->strings[index++];
+    this->defaultDanceAnimationName = this->strings[index++];
     std::string defaultHoldAnimation = this->strings[index++];
     std::string defaultActivateAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
+    this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
     // ---
     std::string useAnimation = this->strings[index++];
     std::string useAnimationComboName = this->strings[index++];
-    std::string sitAnimation = this->strings[index++];
-    std::string emoteAnimation = this->strings[index++];
-    std::string danceAnimation = this->strings[index++];
+    this->sitAnimation = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
+    this->emoteAnimationName = this->strings[index++];
+    this->danceAnimationName = this->strings[index++];
     std::string holdAnimation = this->strings[index++];
     this->activateAnimationName = this->strings[index++];
     std::string hurtAnimation = this->strings[index++];
@@ -860,7 +811,7 @@ namespace AnimationSystem
     float mirrorRightFactorReverse = scratchStack[index++];
     float mirrorRightFactor = scratchStack[index++];
 
-    float idleWalkFactor = scratchStack[index++];
+    this->idleWalkFactor = scratchStack[index++];
     float walkRunFactor = scratchStack[index++];
     float crouchFactor = scratchStack[index++];
     // float flyDashFactor = scratchStack[index++];
@@ -870,13 +821,13 @@ namespace AnimationSystem
     this->activateTime = scratchStack[index++];
 
     // action states ---
-    bool jumpState = scratchStack[index++];
-    bool doubleJumpState = scratchStack[index++];
+    this->jumpState = scratchStack[index++];
+    this->doubleJumpState = scratchStack[index++];
     bool landState = scratchStack[index++];
-    bool flyState = scratchStack[index++];
+    this->flyState = scratchStack[index++];
     bool activateState = scratchStack[index++];
-    bool narutoRunState = scratchStack[index++];
-    bool sitState = scratchStack[index++];
+    this->narutoRunState = scratchStack[index++];
+    this->sitState = scratchStack[index++];
     bool holdState = scratchStack[index++];
     bool emoteState = scratchStack[index++];
     bool fallLoopState = scratchStack[index++];
@@ -924,25 +875,34 @@ namespace AnimationSystem
     this->landTime = scratchStack[index++];
     this->fallLoopFactor = scratchStack[index++];
     this->fallLoopTime = scratchStack[index++];
+    this->flyTime = scratchStack[index++];
+    this->doubleJumpTime = scratchStack[index++];
+    this->jumpTime = scratchStack[index++];
+    this->narutoRunTime = scratchStack[index++];
+    this->narutoRunTimeFactor = scratchStack[index++];
+    this->danceFactor = scratchStack[index++];
+    this->crouchMaxTime = scratchStack[index++];
+    this->emoteFactor = scratchStack[index++];
+    this->lastEmoteTime = scratchStack[index++];
 
-    // set start/end events ---
-    this->jumpStart = false;
-    this->jumpEnd = false;
-    if (jumpState != this->lastJumpState)
-    {
-      if (jumpState) this->jumpStart = true;
-      else this->jumpEnd = true;
-    }
-    this->lastJumpState = jumpState;
+    // // set start/end events ---
+    // this->jumpStart = false;
+    // this->jumpEnd = false;
+    // if (jumpState != this->lastJumpState)
+    // {
+    //   if (jumpState) this->jumpStart = true;
+    //   else this->jumpEnd = true;
+    // }
+    // this->lastJumpState = jumpState;
     
-    this->doubleJumpStart = false;
-    this->doubleJumpEnd = false;
-    if (doubleJumpState != this->lastDoubleJumpState)
-    {
-      if (doubleJumpState) this->doubleJumpStart = true;
-      else this->doubleJumpEnd = true;
-    }
-    this->lastDoubleJumpState = doubleJumpState;
+    // this->doubleJumpStart = false;
+    // this->doubleJumpEnd = false;
+    // if (doubleJumpState != this->lastDoubleJumpState)
+    // {
+    //   if (doubleJumpState) this->doubleJumpStart = true;
+    //   else this->doubleJumpEnd = true;
+    // }
+    // this->lastDoubleJumpState = doubleJumpState;
     
     this->landStart = false;
     this->landEnd = false;
@@ -953,14 +913,14 @@ namespace AnimationSystem
     }
     this->lastLandState = landState;
     
-    this->flyStart = false;
-    this->flyEnd = false;
-    if (flyState != this->lastFlyState)
-    {
-      if (flyState) this->flyStart = true;
-      else this->flyEnd = true;
-    }
-    this->lastFlyState = flyState;
+    // this->flyStart = false;
+    // this->flyEnd = false;
+    // if (flyState != this->lastFlyState)
+    // {
+    //   if (flyState) this->flyStart = true;
+    //   else this->flyEnd = true;
+    // }
+    // this->lastFlyState = flyState;
     
     this->activateStart = false;
     this->activateEnd = false;
@@ -971,23 +931,23 @@ namespace AnimationSystem
     }
     this->lastActivateState = activateState;
     
-    this->narutoRunStart = false;
-    this->narutoRunEnd = false;
-    if (narutoRunState != this->lastNarutoRunState)
-    {
-      if (narutoRunState) this->narutoRunStart = true;
-      else this->narutoRunEnd = true;
-    }
-    this->lastNarutoRunState = narutoRunState;
+    // this->narutoRunStart = false;
+    // this->narutoRunEnd = false;
+    // if (narutoRunState != this->lastNarutoRunState)
+    // {
+    //   if (narutoRunState) this->narutoRunStart = true;
+    //   else this->narutoRunEnd = true;
+    // }
+    // this->lastNarutoRunState = narutoRunState;
     
-    this->sitStart = false;
-    this->sitEnd = false;
-    if (sitState != this->lastSitState)
-    {
-      if (sitState) this->sitStart = true;
-      else this->sitEnd = true;
-    }
-    this->lastSitState = sitState;
+    // this->sitStart = false;
+    // this->sitEnd = false;
+    // if (sitState != this->lastSitState)
+    // {
+    //   if (sitState) this->sitStart = true;
+    //   else this->sitEnd = true;
+    // }
+    // this->lastSitState = sitState;
     
     this->holdStart = false;
     this->holdEnd = false;
@@ -998,14 +958,14 @@ namespace AnimationSystem
     }
     this->lastHoldState = holdState;
     
-    this->emoteStart = false;
-    this->emoteEnd = false;
-    if (emoteState != this->lastEmoteState)
-    {
-      if (emoteState) this->emoteStart = true;
-      else this->emoteEnd = true;
-    }
-    this->lastEmoteState = emoteState;
+    // this->emoteStart = false;
+    // this->emoteEnd = false;
+    // if (emoteState != this->lastEmoteState)
+    // {
+    //   if (emoteState) this->emoteStart = true;
+    //   else this->emoteEnd = true;
+    // }
+    // this->lastEmoteState = emoteState;
     
     this->fallLoopStart = false;
     this->fallLoopEnd = false;
@@ -1016,14 +976,14 @@ namespace AnimationSystem
     }
     this->lastFallLoopState = fallLoopState;
     
-    this->danceStart = false;
-    this->danceEnd = false;
-    if (danceState != this->lastDanceState)
-    {
-      if (danceState) this->danceStart = true;
-      else this->danceEnd = true;
-    }
-    this->lastDanceState = danceState;
+    // this->danceStart = false;
+    // this->danceEnd = false;
+    // if (danceState != this->lastDanceState)
+    // {
+    //   if (danceState) this->danceStart = true;
+    //   else this->danceEnd = true;
+    // }
+    // this->lastDanceState = danceState;
     
     this->useEnvelopeStart = false;
     this->useEnvelopeEnd = false;
@@ -1095,10 +1055,10 @@ namespace AnimationSystem
     this->motiono["bowRightMirror"]->setWeight(mirrorRightFactor);
 
     this->nodeo["_8DirectionsWalkRunNodeTwo"]->setFactor(walkRunFactor);
-    this->nodeo["idle8DWalkRunNodeTwo"]->setFactor(idleWalkFactor);
-    this->nodeo["idle8DCrouchNodeTwo"]->setFactor(idleWalkFactor);
+    this->nodeo["idle8DWalkRunNodeTwo"]->setFactor(this->idleWalkFactor);
+    this->nodeo["idle8DCrouchNodeTwo"]->setFactor(this->idleWalkFactor);
     this->nodeo["defaultNodeTwo"]->setFactor(crouchFactor);
-    this->nodeo["idle8DBowNodeTwo"]->setFactor(idleWalkFactor);
+    this->nodeo["idle8DBowNodeTwo"]->setFactor(this->idleWalkFactor);
 
     this->nodeo["flyForwardNodeTwo"]->setWeight(forwardFactor);
     this->motiono["flyDodgeBackward"]->setWeight(backwardFactor);
@@ -1109,7 +1069,7 @@ namespace AnimationSystem
     // this->nodeo["flyForwardNodeTwo"]->setFactor(flyDashFactor);
 
     this->nodeo["holdNodeFunc"]->setArg(holdFactor);
-    this->nodeo["emoteNodeFunc"]->setArg(idleWalkFactor);
+    // this->nodeo["emoteNodeFunc"]->setArg(this->idleWalkFactor); // todo: del
 
     // // action end events ---
     // if (this->landEnd) {
@@ -1124,21 +1084,21 @@ namespace AnimationSystem
     //   this->nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 0);
     // }
     
-    if (this->flyEnd) {
-      this->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 0);
-    }
+    // if (this->flyEnd) {
+    //   this->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 0);
+    // }
 
-    if (this->jumpEnd) {
-      this->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 0);
-    }
+    // if (this->jumpEnd) {
+    //   this->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 0);
+    // }
 
-    if (this->doubleJumpEnd) {
-      this->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 0);
-    }
+    // if (this->doubleJumpEnd) {
+    //   this->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 0);
+    // }
 
-    if (this->narutoRunEnd) {
-      this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 0);
-    }
+    // if (this->narutoRunEnd) {
+    //   this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 0);
+    // }
 
     if (this->activateEnd) {
       this->nodeo["activateNodeTwo"]->crossFadeTwo(0.2, 0);
@@ -1158,21 +1118,21 @@ namespace AnimationSystem
       this->nodeo["bowIdle8DDrawLooseNodeOverwrite"]->crossFadeTwo(0.2, 1);
     }
 
-    if (this->sitEnd) {
-      this->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 0);
-    }
+    // if (this->sitEnd) {
+    //   this->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 0);
+    // }
 
-    if (this->emoteEnd) {
-      this->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 0);
-    }
+    // if (this->emoteEnd) {
+    //   this->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 0);
+    // }
 
     if (this->hurtEnd) {
       this->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 0);
     }
 
-    if (this->danceEnd) {
-      this->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 0);
-    }
+    // if (this->danceEnd) {
+    //   this->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 0);
+    // }
 
     if (this->holdEnd) {
       this->nodeo["holdNodeFunc"]->crossFadeTwo(0.2, 0);
@@ -1197,23 +1157,23 @@ namespace AnimationSystem
     //   this->nodeo["fallLoopNodeTwo"]->crossFadeTwo(0.2, 1);
     // }
 
-    if (this->flyStart) {
-      this->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 1);
-    }
+    // if (this->flyStart) {
+    //   this->nodeo["groundFlyNodeTwo"]->crossFadeTwo(0.2, 1);
+    // }
 
-    if (this->jumpStart) {
-      this->motiono["jump"]->play();
-      this->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 1);
-    }
+    // if (this->jumpStart) {
+    //   this->motiono["jump"]->play();
+    //   this->nodeo["jumpNodeTwo"]->crossFadeTwo(0.2, 1);
+    // }
 
-    if (this->doubleJumpStart) {
-      this->motiono["doubleJump"]->play();
-      this->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 1);
-    }
+    // if (this->doubleJumpStart) {
+    //   this->motiono["doubleJump"]->play();
+    //   this->nodeo["doubleJumpNodeTwo"]->crossFadeTwo(0.2, 1);
+    // }
 
-    if (this->narutoRunStart) {
-      this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 1);
-    }
+    // if (this->narutoRunStart) {
+    //   this->nodeo["narutoRunNodeTwo"]->crossFadeTwo(0.2, 1);
+    // }
 
     // useAnimations // sword
     if (this->useStart) {
@@ -1253,23 +1213,23 @@ namespace AnimationSystem
       this->nodeo["idle8DWalkRun_BowIdle8DDrawLooseNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
-    // sitAnimations // sit
-    if (this->sitStart) {
-      // AnimationNode *sitMotion = this->sitMotiono[sitAnimation == "" ? defaultSitAnimation : sitAnimation];
-      std::string animationName = sitAnimation == "" ? defaultSitAnimation : sitAnimation;
-      // std::cout << "animationName: " << animationName << std::endl;
-      this->sitMotiono[animationName]->play();
-      this->nodeo["sitsNodeSolitary"]->crossFadeSolitary(0, this->sitMotiono[animationName]);
-      this->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 1);
-    }
+    // // sitAnimations // sit
+    // if (this->sitStart) {
+    //   // AnimationNode *sitMotion = this->sitMotiono[sitAnimation == "" ? defaultSitAnimation : sitAnimation];
+    //   std::string animationName = sitAnimation == "" ? defaultSitAnimation : sitAnimation;
+    //   // std::cout << "animationName: " << animationName << std::endl;
+    //   this->sitMotiono[animationName]->play();
+    //   this->nodeo["sitsNodeSolitary"]->crossFadeSolitary(0, this->sitMotiono[animationName]);
+    //   this->nodeo["sitNodeTwo"]->crossFadeTwo(0.2, 1);
+    // }
 
-    // emoteAnimations // emote
-    if (this->emoteStart) {
-      AnimationNode *emoteMotion = this->emoteMotiono[emoteAnimation == "" ? defaultEmoteAnimation : emoteAnimation];
-      emoteMotion->play();
-      this->nodeo["emotesNodeSolitary"]->crossFadeSolitary(0, emoteMotion);
-      this->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 1);
-    }
+    // // emoteAnimations // emote
+    // if (this->emoteStart) {
+    //   AnimationNode *emoteMotion = this->emoteMotiono[emoteAnimation == "" ? defaultEmoteAnimation : emoteAnimation];
+    //   emoteMotion->play();
+    //   this->nodeo["emotesNodeSolitary"]->crossFadeSolitary(0, emoteMotion);
+    //   this->nodeo["emoteNodeFunc"]->crossFadeTwo(0.2, 1);
+    // }
 
     // hurtAnimations // hurt
     if (this->hurtStart) {
@@ -1279,13 +1239,13 @@ namespace AnimationSystem
       this->nodeo["hurtNodeTwo"]->crossFadeTwo(0.2, 1);
     }
 
-    // danceAnimations // dance
-    if (this->danceStart) {
-      AnimationNode *danceMotion = this->danceMotiono[danceAnimation == "" ? defaultDanceAnimation : danceAnimation];
-      danceMotion->play();
-      this->nodeo["dancesNodeSolitary"]->crossFadeSolitary(0, danceMotion);
-      this->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 1); // todo: check if node exists
-    }
+    // // danceAnimations // dance
+    // if (this->danceStart) {
+    //   AnimationNode *danceMotion = this->danceMotiono[danceAnimation == "" ? defaultDanceAnimation : danceAnimation];
+    //   danceMotion->play();
+    //   this->nodeo["dancesNodeSolitary"]->crossFadeSolitary(0, danceMotion);
+    //   this->nodeo["danceNodeTwo"]->crossFadeTwo(0.2, 1); // todo: check if node exists
+    // }
 
     // holdAnimations // hold
     if (this->holdStart) {
@@ -1744,6 +1704,157 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _blendEmote(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (avatar->emoteFactor > 0) {
+      // _handleDefault(spec); // todo: prevent run forever ?
+
+      // const emoteAnimation = emoteAnimations[avatar->emoteAnimation || defaultEmoteAnimation];
+      Animation *emoteAnimation = avatar->emoteMotiono[avatar->emoteAnimationName == "" ? avatar->defaultEmoteAnimationName : avatar->emoteAnimationName]->animation;
+      // const src2 = emoteAnimation.interpolants[k];
+      float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime; // todo: use now.
+      // float emoteTime = 0; // test
+      float t2 = min(emoteTime / 1000, emoteAnimation->duration);
+      // const v2 = src2.evaluate(t2);
+      float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
+      // if (spec.isPosition) std::cout << " t2: " << t2 << std::endl;
+
+      float emoteFactorS = avatar->emoteFactor / avatar->crouchMaxTime;
+      float f = min(max(emoteFactorS, 0), 1);
+
+      if (spec.index == BoneName::Spine || spec.index == BoneName::Chest || spec.index == BoneName::UpperChest || spec.index == BoneName::Neck || spec.index == BoneName::Head) {
+        if (!spec.isPosition) {
+          // dst.premultiply(localQuaternion.fromArray(v2));
+          // todo: premultiplyFlat()
+          Quat quat0(spec.dst[0], spec.dst[1], spec.dst[2], spec.dst[3]);
+          Quat quat1(v2[0], v2[1], v2[2], v2[3]);
+          quat0.premultiply(quat1);
+          spec.dst[0] = quat0.x;
+          spec.dst[1] = quat0.y;
+          spec.dst[2] = quat0.z;
+          spec.dst[3] = quat0.w;
+        } else {
+          // dst.lerp(localVector.fromArray(v2), f);
+          interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+        }
+      } else {
+        if (!spec.isTop) {
+          f *= (1 - avatar->idleWalkFactor);
+        }
+
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+      }
+
+      _clearXZ(spec.dst, spec.isPosition);
+    }
+  }
+  void _blendDance(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (avatar->danceFactor > 0) {
+      Animation *danceAnimation = avatar->danceMotiono[avatar->danceAnimationName == "" ? avatar->defaultDanceAnimationName : avatar->danceAnimationName]->animation;
+      // const src2 = danceAnimation.interpolants[k];
+      float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
+      // const v2 = src2.evaluate(t2);
+      float *v2 = evaluateInterpolant(danceAnimation, spec.index, t2);
+
+      float danceFactorS = avatar->danceFactor / avatar->crouchMaxTime;
+      float f = min(max(danceFactorS, 0), 1);
+      
+      interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+
+      _clearXZ(spec.dst, spec.isPosition);
+    }
+  }
+  void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (avatar->narutoRunState) {
+      // const narutoRunAnimation = narutoRunAnimations[defaultNarutoRunAnimation];
+      Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animatin.nam and add animation.fileName.
+      // const src2 = narutoRunAnimation.interpolants[k];
+      float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
+      // std::cout << " narutoRunTime: " << avatar->narutoRunTime  << " narutoRunTimeFactor: " << avatar->narutoRunTimeFactor << " duration: " << narutoRunAnimation->duration  << " t2: " << t2 << std::endl;
+      // const v2 = src2.evaluate(t2);
+      float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
+
+      copyValue(spec.dst, v2, spec.isPosition);
+
+      _clearXZ(spec.dst, spec.isPosition);
+    };
+  }
+  void _blendSit(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (avatar->sitState) {
+      // const sitAnimation = sitAnimations[avatar.sitAnimation || defaultSitAnimation];
+      Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animatin.nam and add animation.fileName.
+      // const src2 = sitAnimation.interpolants[k];
+      // const v2 = src2.evaluate(1);
+      float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
+
+      copyValue(spec.dst, v2, spec.isPosition);
+    }
+  }
+  void _blendJump(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (avatar->jumpState) {
+      float t2 = avatar->jumpTime / 1000;
+      // const src2 = jumpAnimation.interpolants[k];
+      // const v2 = src2.evaluate(t2);
+      float *v2 = evaluateInterpolant(jumpAnimation, spec.index, t2);
+
+      copyValue(spec.dst, v2, spec.isPosition);
+
+      _clearXZ(spec.dst, spec.isPosition);
+
+      // if (avatar->holdState && isArm) {
+      //   const holdAnimation = holdAnimations['pick_up_idle'];
+      //   const src2 = holdAnimation.interpolants[k];
+      //   const t2 = (now / 1000) % holdAnimation.duration;
+      //   const v2 = src2.evaluate(t2);
+      //   dst.fromArray(v2);
+      // }
+    }
+  }
+  void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (avatar->doubleJumpState) {
+      float t2 = avatar->doubleJumpTime / 1000;
+      // const src2 = doubleJumpAnimation.interpolants[k];
+      // const v2 = src2.evaluate(t2);
+      float *v2 = evaluateInterpolant(doubleJumpAnimation, spec.index, t2);
+
+      copyValue(spec.dst, v2, spec.isPosition);
+
+      _clearXZ(spec.dst, spec.isPosition);
+    }
+  }
+  void _blendFly(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (avatar->flyState || (avatar->flyTime >= 0 && avatar->flyTime < 1000)) {
+      float t2 = avatar->flyTime / 1000;
+      // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
+      float f = 1;
+      // const src2 = floatAnimation.interpolants[k];
+      // const v2 = src2.evaluate(t2 % floatAnimation.duration);
+      float *v2 = evaluateInterpolant(floatAnimation, spec.index, fmod(t2, floatAnimation->duration));
+
+      // lerpFn
+      //   .call(
+      //     dst,
+      //     localQuaternion.fromArray(v2),
+      //     f,
+      //   );
+      interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+
+      // todo: exact reimplement or _blendHold();
+      // if (avatar->holdState && isArm) {
+      //   const holdAnimation = holdAnimations['pick_up_idle'];
+      //   const src2 = holdAnimation.interpolants[k];
+      //   const t2 = (now / 1000) % holdAnimation.duration;
+      //   const v2 = src2.evaluate(t2);
+      //   dst.fromArray(v2);
+      // }
+    }
+  };
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->fallLoopFactor > 0) {
@@ -1826,7 +1937,7 @@ namespace AnimationSystem
       }
     }
   }
-  void _blendActivateAction(AnimationMapping &spec, Avatar *avatar) // todo: full port
+  void _blendActivate(AnimationMapping &spec, Avatar *avatar) // todo: full port
   {
     if (avatar->activateTime > 0)
     {
@@ -1851,9 +1962,10 @@ namespace AnimationSystem
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
     }
   }
-  float **AnimationMixer::update(float timeS)
+  float **AnimationMixer::update(float now, float nowS)
   {
-    AnimationMixer::timeS = timeS;
+    // AnimationMixer::now = now; // why can't set, cause idle and dance animatios play very fast ? use file variale instead ?
+    AnimationMixer::nowS = nowS;
 
     // reset
     // reset animation finished event.
@@ -1876,9 +1988,17 @@ namespace AnimationSystem
       spec.dst[2] = animationValues[i][2];
       if (!spec.isPosition) spec.dst[3] = animationValues[i][3];
 
+      _blendEmote(spec, this->avatar);
+      _blendDance(spec, this->avatar);
+      _blendNarutoRun(spec, this->avatar);
+      _blendSit(spec, this->avatar);
+      _blendJump(spec, this->avatar);
+      _blendDoubleJump(spec, this->avatar);
+      _blendFly(spec, this->avatar);
       _blendFallLoop(spec, this->avatar);
       _blendLand(spec, this->avatar);
-      _blendActivateAction(spec, this->avatar);
+      _blendActivate(spec, this->avatar);
+      // _blendHurt(spec, this->avatar); // todo
 
       animationValues[i][0] = spec.dst[0];
       animationValues[i][1] = spec.dst[1];
@@ -1919,7 +2039,7 @@ namespace AnimationSystem
       // std::cout << "loop: " << this->loop << std::endl;
       if (this->loop == LoopType::LoopOnce)
       {
-        evaluateTimeS = (AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias;
+        evaluateTimeS = (AnimationMixer::nowS - this->startTime) * this->speed + this->timeBias;
         // if (spec.isPosition && this->name == "jump") std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
         // if (spec.isPosition && this->name == "swordSideSlash") std::cout << "evaluateTimeS: " << evaluateTimeS << std::endl;
         value = evaluateInterpolant(this->animation, spec.index, evaluateTimeS);
@@ -1963,7 +2083,7 @@ namespace AnimationSystem
       }
       else
       {
-        evaluateTimeS = fmod((AnimationMixer::timeS - this->startTime) * this->speed + this->timeBias, this->animation->duration);
+        evaluateTimeS = fmod((AnimationMixer::nowS - this->startTime) * this->speed + this->timeBias, this->animation->duration);
         value = evaluateInterpolant(this->animation, spec.index, evaluateTimeS);
       }
       this->results[spec.index] = value;
@@ -1976,7 +2096,7 @@ namespace AnimationSystem
       {
         if (this->isCrossFade)
         {
-          this->factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+          this->factor = (AnimationMixer::nowS - this->crossFadeStartTime) / this->crossFadeDuration;
           this->factor = min(max(this->factor, 0), 1);
           if (this->crossFadeTargetFactor == 0)
           {
@@ -1992,7 +2112,7 @@ namespace AnimationSystem
       {
         if (this->isCrossFade)
         {
-          float factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+          float factor = (AnimationMixer::nowS - this->crossFadeStartTime) / this->crossFadeDuration;
           factor = min(max(factor, 0), 1);
           float factorReverse = 1 - factor;
 
@@ -2027,7 +2147,7 @@ namespace AnimationSystem
         {
           if (this->isCrossFade)
           {
-            this->factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+            this->factor = (AnimationMixer::nowS - this->crossFadeStartTime) / this->crossFadeDuration;
             this->factor = min(max(this->factor, 0), 1);
             if (this->crossFadeTargetFactor == 0)
             {
@@ -2050,7 +2170,7 @@ namespace AnimationSystem
         
         if (this->isCrossFade)
         {
-          this->factor = (AnimationMixer::timeS - this->crossFadeStartTime) / this->crossFadeDuration;
+          this->factor = (AnimationMixer::nowS - this->crossFadeStartTime) / this->crossFadeDuration;
           this->factor = min(max(this->factor, 0), 1);
           if (this->crossFadeTargetFactor == 0)
           {
@@ -2173,14 +2293,14 @@ namespace AnimationSystem
   void AnimationNode::crossFadeTwo(float duration, float factor)
   {
     this->isCrossFade = true;
-    this->crossFadeStartTime = AnimationMixer::timeS;
+    this->crossFadeStartTime = AnimationMixer::nowS;
     this->crossFadeDuration = duration;
     this->crossFadeTargetFactor = factor;
   }
   void AnimationNode::crossFadeSolitary(float duration, AnimationNode *targetNode)
   {
     this->isCrossFade = true;
-    this->crossFadeStartTime = AnimationMixer::timeS;
+    this->crossFadeStartTime = AnimationMixer::nowS;
     this->crossFadeDuration = duration;
     this->activeNode = targetNode;
   }
@@ -2189,7 +2309,7 @@ namespace AnimationSystem
     // todo: check if motion exists
     // std::cout << "play name: " << this->name << std::endl;
     this->weight = abs(this->weight);
-    this->startTime = AnimationMixer::timeS;
+    this->startTime = AnimationMixer::nowS;
     this->isFinished = false;
   }
   void AnimationNode::stop()

@@ -133,9 +133,9 @@ namespace AnimationSystem
     std::vector<std::string> strings;
 
     // values
-    std::string activateAnimationName, fallLoopFrom;
-    float activateTime, landTime, fallLoopFactor, fallLoopTime;
-    bool landWithMoving;
+    std::string activateAnimationName, fallLoopFrom, sitAnimation, defaultSitAnimation, defaultNarutoRunAnimation, danceAnimationName, defaultDanceAnimationName, emoteAnimationName, defaultEmoteAnimationName;
+    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor;
+    bool landWithMoving, flyState, doubleJumpState, jumpState, sitState, narutoRunState;
 
     // action start/end events
     bool jumpStart, jumpEnd, lastJumpState;
@@ -227,7 +227,8 @@ namespace AnimationSystem
   class AnimationMixer // note: mixer can't aware of avatar.
   {
   public:
-    static float timeS;
+    static float now;
+    static float nowS;
 
     Avatar *avatar; // todo: delete this ?
     // unsigned int index;
@@ -256,7 +257,7 @@ namespace AnimationSystem
     void setRootNode(AnimationNode *node);
     void plotNodeTree(AnimationNode *node, unsigned int indent = 0);
     void getNodeTreeData(AnimationNode *node);
-    float **update(float timeS);
+    float **update(float now, float nowS);
     unsigned int getFinishedMotionName(char *scratchStack);
   };
 
