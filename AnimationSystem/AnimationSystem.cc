@@ -17,7 +17,7 @@ namespace AnimationSystem
   // float **animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
 
-  float *localQuaternion = (float *)malloc(5 * sizeof(float));
+  float *localQuaternion = (float *)malloc(4 * sizeof(float));
 
   // Animation testAnimation = Animation();
   // Animation *testAnimation2 = &testAnimation;
@@ -65,12 +65,12 @@ namespace AnimationSystem
       dst[2] = 0;
     }
   }
-  void copyValue4From5(float *dst, float *src, bool isPosition) // todo: delete first value size element.
+  void copyValue(float *dst, float *src, bool isPosition) // todo: delete first value size element.
   {
-    dst[0] = src[1];
-    dst[1] = src[2];
-    dst[2] = src[3];
-    if (!isPosition) dst[3] = src[4];
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = src[2];
+    if (!isPosition) dst[3] = src[3];
   }
 
   // Main ------
@@ -1499,7 +1499,8 @@ namespace AnimationSystem
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;
     interpolant.parameterPositions = parameterPositions;
-    interpolant.resultBuffer = (float *)malloc((1 + valueSize) * sizeof(float)); // 1 len for valueSize self ( 3 or 4 ). 3 len or 4 len for values.
+    // interpolant.resultBuffer = (float *)malloc((1 + valueSize) * sizeof(float)); // 1 len for valueSize self ( 3 or 4 ). 3 len or 4 len for values.
+    interpolant.resultBuffer = (float *)malloc(valueSize * sizeof(float));
     interpolant.numSampleValues = numSampleValues;
     interpolant.sampleValues = sampleValues;
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
@@ -1531,13 +1532,12 @@ namespace AnimationSystem
 
     if (interpolant.numParameterPositions == 1)
     {
-      interpolant.resultBuffer[0] = interpolant.valueSize;
-      interpolant.resultBuffer[1] = interpolant.sampleValues[0];
-      interpolant.resultBuffer[2] = interpolant.sampleValues[1];
-      interpolant.resultBuffer[3] = interpolant.sampleValues[2];
+      interpolant.resultBuffer[0] = interpolant.sampleValues[0];
+      interpolant.resultBuffer[1] = interpolant.sampleValues[1];
+      interpolant.resultBuffer[2] = interpolant.sampleValues[2];
       if (interpolant.valueSize == 4)
       {
-        interpolant.resultBuffer[4] = interpolant.sampleValues[3];
+        interpolant.resultBuffer[3] = interpolant.sampleValues[3];
       }
     }
     else
@@ -1558,25 +1558,23 @@ namespace AnimationSystem
 
       if (index == 0)
       { // Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0].
-        interpolant.resultBuffer[0] = interpolant.valueSize;
-        interpolant.resultBuffer[1] = interpolant.sampleValues[0];
-        interpolant.resultBuffer[2] = interpolant.sampleValues[1];
-        interpolant.resultBuffer[3] = interpolant.sampleValues[2];
+        interpolant.resultBuffer[0] = interpolant.sampleValues[0];
+        interpolant.resultBuffer[1] = interpolant.sampleValues[1];
+        interpolant.resultBuffer[2] = interpolant.sampleValues[2];
         if (interpolant.valueSize == 4)
         {
-          interpolant.resultBuffer[4] = interpolant.sampleValues[3];
+          interpolant.resultBuffer[3] = interpolant.sampleValues[3];
         }
       }
       else if (index > interpolant.numParameterPositions - 1)
       { // Handle situation that, t > max parameterPosition.
         unsigned int maxIndex = interpolant.numParameterPositions - 1;
-        interpolant.resultBuffer[0] = interpolant.valueSize;
-        interpolant.resultBuffer[1] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 0];
-        interpolant.resultBuffer[2] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 1];
-        interpolant.resultBuffer[3] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 2];
+        interpolant.resultBuffer[0] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 0];
+        interpolant.resultBuffer[1] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 1];
+        interpolant.resultBuffer[2] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 2];
         if (interpolant.valueSize == 4)
         {
-          interpolant.resultBuffer[4] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 3];
+          interpolant.resultBuffer[3] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 3];
         }
       }
       else
@@ -1612,18 +1610,16 @@ namespace AnimationSystem
 
         if (interpolant.valueSize == 3) // todo: use interpolateFlat
         {
-          interpolant.resultBuffer[0] = 3;
           lerpFlat(
-              interpolant.resultBuffer, 1,
+              interpolant.resultBuffer, 0,
               interpolant.sampleValues, index0 * interpolant.valueSize,
               interpolant.sampleValues, index1 * interpolant.valueSize,
               f);
         }
         else
         {
-          interpolant.resultBuffer[0] = 4;
           slerpFlat(
-              interpolant.resultBuffer, 1,
+              interpolant.resultBuffer, 0,
               interpolant.sampleValues, index0 * interpolant.valueSize,
               interpolant.sampleValues, index1 * interpolant.valueSize,
               f);
@@ -1758,9 +1754,9 @@ namespace AnimationSystem
       float f = clamp(t2 / 0.3, 0, 1);
 
       if (avatar->fallLoopFrom == "jump") {
-        copyValue4From5(spec.dst, v2, spec.isPosition);
+        copyValue(spec.dst, v2, spec.isPosition);
       } else {
-        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 1, f, spec.isPosition);
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
       }
 
       _clearXZ(spec.dst, spec.isPosition);
@@ -1792,7 +1788,7 @@ namespace AnimationSystem
         //   _clearXZ(localVector, spec.isPosition);
         //   dst.lerp(localVector, f);
         // }
-        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 1, f, spec.isPosition);
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
       }
     } else {
       float animationSpeed = 0.95;
@@ -1825,7 +1821,7 @@ namespace AnimationSystem
         //   dst.lerp(localVector2, f);
         //   _clearXZ(dst, spec.isPosition);
         // }
-        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 1, f, spec.isPosition);
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
         _clearXZ(spec.dst, spec.isPosition);
       }
     }
@@ -1852,7 +1848,7 @@ namespace AnimationSystem
       //     f,
       //   );
 
-      interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 1, f, spec.isPosition);
+      interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
     }
   }
   float **AnimationMixer::update(float timeS)
@@ -1875,19 +1871,19 @@ namespace AnimationSystem
 
       // float * aaa = rootNode.update(spec);
       animationValues[i] = rootNode->update(spec); // todo: set to spec.dst directly.
-      spec.dst[0] = animationValues[i][1];
-      spec.dst[1] = animationValues[i][2];
-      spec.dst[2] = animationValues[i][3];
-      if (!spec.isPosition) spec.dst[3] = animationValues[i][4];
+      spec.dst[0] = animationValues[i][0];
+      spec.dst[1] = animationValues[i][1];
+      spec.dst[2] = animationValues[i][2];
+      if (!spec.isPosition) spec.dst[3] = animationValues[i][3];
 
       _blendFallLoop(spec, this->avatar);
       _blendLand(spec, this->avatar);
       _blendActivateAction(spec, this->avatar);
 
-      animationValues[i][1] = spec.dst[0];
-      animationValues[i][2] = spec.dst[1];
-      animationValues[i][3] = spec.dst[2];
-      if (!spec.isPosition) animationValues[i][4] = spec.dst[3];
+      animationValues[i][0] = spec.dst[0];
+      animationValues[i][1] = spec.dst[1];
+      animationValues[i][2] = spec.dst[2];
+      if (!spec.isPosition) animationValues[i][3] = spec.dst[3];
     }
 
     // animationValues[53] = &finishedFlag;
@@ -2079,45 +2075,45 @@ namespace AnimationSystem
               }
               else
               {
+                localQuaternion[0] = value0[0];
                 localQuaternion[1] = value0[1];
                 localQuaternion[2] = value0[2];
                 localQuaternion[3] = value0[3];
-                localQuaternion[4] = value0[4];
                 if (spec.isArm)
                 {
-                  interpolateFlat(localQuaternion, 1, localQuaternion, 1, identityQuaternion, 0, this->arg, spec.isPosition);
+                  interpolateFlat(localQuaternion, 0, localQuaternion, 0, identityQuaternion, 0, this->arg, spec.isPosition);
                 }
 
-                Quat quat0(localQuaternion[1], localQuaternion[2], localQuaternion[3], localQuaternion[4]);
-                Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+                Quat quat0(localQuaternion[0], localQuaternion[1], localQuaternion[2], localQuaternion[3]);
+                Quat quat1(value1[0], value1[1], value1[2], value1[3]);
                 quat0.premultiply(quat1);
-                value1[1] = quat0.x;
-                value1[2] = quat0.y;
-                value1[3] = quat0.z;
-                value1[4] = quat0.w;
+                value1[0] = quat0.x;
+                value1[1] = quat0.y;
+                value1[2] = quat0.z;
+                value1[3] = quat0.w;
               }
             }
             else
             {
+              value1[0] = value0[0];
               value1[1] = value0[1];
               value1[2] = value0[2];
               value1[3] = value0[3];
-              value1[4] = value0[4];
             }
           }
           else if (this->index == 1) // emote animation
           {
             if (spec.index == BoneName::Spine || spec.index == BoneName::Chest || spec.index == BoneName::UpperChest || spec.index == BoneName::Neck || spec.index == BoneName::Head) {
               if (!spec.isPosition) {
-                Quat quat0(value0[1], value0[2], value0[3], value0[4]);
-                Quat quat1(value1[1], value1[2], value1[3], value1[4]);
+                Quat quat0(value0[0], value0[1], value0[2], value0[3]);
+                Quat quat1(value1[0], value1[1], value1[2], value1[3]);
                 quat0.premultiply(quat1);
-                value1[1] = quat0.x;
-                value1[2] = quat0.y;
-                value1[3] = quat0.z;
-                value1[4] = quat0.w;
+                value1[0] = quat0.x;
+                value1[1] = quat0.y;
+                value1[2] = quat0.z;
+                value1[3] = quat0.w;
               } else {
-                interpolateFlat(value1, 1, value0, 1, value1, 1, this->factor, spec.isPosition);
+                interpolateFlat(value1, 0, value0, 0, value1, 0, this->factor, spec.isPosition);
               }
             } else {
               float f = this->factor;
@@ -2125,7 +2121,7 @@ namespace AnimationSystem
                 f *= (1 - this->arg); // arg: idleWalkFactor
               }
 
-              interpolateFlat(value1, 1, value0, 1, value1, 1, f, spec.isPosition);
+              interpolateFlat(value1, 0, value0, 0, value1, 0, f, spec.isPosition);
             }
           }
         }
@@ -2163,7 +2159,7 @@ namespace AnimationSystem
           else
           {
             float t = childNode->weight / (currentWeight + childNode->weight);
-            interpolateFlat(result, 1, result, 1, value, 1, t, spec.isPosition);
+            interpolateFlat(result, 0, result, 0, value, 0, t, spec.isPosition);
 
             nodeIndex++;
             currentWeight += childNode->weight;
