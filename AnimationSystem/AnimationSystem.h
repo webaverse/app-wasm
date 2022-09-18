@@ -133,10 +133,9 @@ namespace AnimationSystem
     std::vector<std::string> strings;
 
     // values
-    float activateTime;
-    std::string activateAnimationName;
+    std::string activateAnimationName, fallLoopFrom;
+    float activateTime, landTime, fallLoopFactor, fallLoopTime;
     bool landWithMoving;
-    float landTime;
 
     // action start/end events
     bool jumpStart, jumpEnd, lastJumpState;
@@ -159,6 +158,7 @@ namespace AnimationSystem
     bool useComboStart, useComboEnd;
     std::string lastUseAnimationComboName;
     
+    void setAnimations();
     void createMotions();
     void createNodes();
     void createNodesFromJson(json &jsonNode, AnimationNode *parentNode = nullptr);
