@@ -768,31 +768,6 @@ namespace AnimationSystem
 
     unsigned int index = 0;
 
-    // strings ----
-    this->defaultSitAnimation = this->strings[index++]; // todo: defaultSitAnimationName, only rename on wasm side.
-    this->defaultEmoteAnimationName = this->strings[index++];
-    this->defaultDanceAnimationName = this->strings[index++];
-    std::string defaultHoldAnimation = this->strings[index++];
-    std::string defaultActivateAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
-    this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
-    // ---
-    this->useAnimationName = this->strings[index++];
-    this->useAnimationComboName = this->strings[index++];
-    this->sitAnimation = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
-    this->emoteAnimationName = this->strings[index++];
-    this->danceAnimationName = this->strings[index++];
-    std::string holdAnimation = this->strings[index++];
-    this->activateAnimationName = this->strings[index++];
-    std::string hurtAnimation = this->strings[index++];
-    // ---
-    this->fallLoopFrom = this->strings[index++];
-
-    // std::cout << "sitAnimation: " << sitAnimation << std::endl;
-
-    // ---------------------------------------------------------------------------------------------------
-
-    index = 0;
-
     // values ---
     float forwardFactor = scratchStack[index++];
     float backwardFactor = scratchStack[index++];
@@ -877,6 +852,40 @@ namespace AnimationSystem
     this->emoteFactor = scratchStack[index++];
     this->lastEmoteTime = scratchStack[index++];
     this->useTime = scratchStack[index++];
+    this->useAnimationEnvelopeLength = scratchStack[index++];
+
+    // ---------------------------------------------------------------------------------------------------
+
+    index = 0;
+
+    // strings ----
+    this->defaultSitAnimation = this->strings[index++]; // todo: defaultSitAnimationName, only rename on wasm side.
+    this->defaultEmoteAnimationName = this->strings[index++];
+    this->defaultDanceAnimationName = this->strings[index++];
+    std::string defaultHoldAnimation = this->strings[index++];
+    std::string defaultActivateAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
+    this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
+    // ---
+    this->useAnimationName = this->strings[index++];
+    this->useAnimationComboName = this->strings[index++];
+    this->sitAnimation = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
+    this->emoteAnimationName = this->strings[index++];
+    this->danceAnimationName = this->strings[index++];
+    std::string holdAnimation = this->strings[index++];
+    this->activateAnimationName = this->strings[index++];
+    std::string hurtAnimation = this->strings[index++];
+    // ---
+    this->fallLoopFrom = this->strings[index++];
+
+    useAnimationEnvelopeNames.clear();
+    for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
+      // std::cout << this->strings[index] << std::endl;
+      useAnimationEnvelopeNames.push_back(this->strings[index++]);
+    }
+
+    // std::cout << "sitAnimation: " << sitAnimation << std::endl;
+
+    // ---------------------------------------------------------------------------------------------------
 
     // // set start/end events ---
     // this->jumpStart = false;
@@ -1701,10 +1710,11 @@ namespace AnimationSystem
   {
     if (
       avatar->useAnimationName != "" ||
-      avatar->useAnimationComboName != ""
+      avatar->useAnimationComboName != "" ||
+      avatar->useAnimationEnvelopeNames.size() > 0
     ) {
       // std::cout << "useAnimationName" << std::endl;
-      Animation *useAnimation;
+      Animation *useAnimation = nullptr;
       float t2;
       float useTimeS = avatar->useTime / 1000;
       if (avatar->useAnimationName != "") {
@@ -1713,7 +1723,34 @@ namespace AnimationSystem
       } else if(avatar->useAnimationComboName != "") {
         useAnimation = avatar->motiono[avatar->useAnimationComboName]->animation;
         t2 = min(useTimeS, useAnimation->duration);
-      }
+      } else if (avatar->useAnimationEnvelopeNames.size() > 0) { // todo: why not bowLoose and transition animations in the end ?
+          float totalTime = 0;
+          for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
+            std::string animationName = avatar->useAnimationEnvelopeNames[i];
+            Animation *animation = avatar->motiono[animationName]->animation;
+            totalTime += animation->duration;
+          }
+
+          if (totalTime > 0) {
+            float animationTimeBase = 0;
+            for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
+              std::string animationName = avatar->useAnimationEnvelopeNames[i];
+              Animation *animation = avatar->motiono[animationName]->animation;
+              if (useTimeS < (animationTimeBase + animation->duration)) {
+                useAnimation = animation;
+                break;
+              }
+              animationTimeBase += animation->duration;
+            }
+            if (useAnimation != nullptr) { // first iteration
+              t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
+            } else { // loop
+              std::string secondLastAnimationName = avatar->useAnimationEnvelopeNames[avatar->useAnimationEnvelopeNames.size() - 2];
+              useAnimation = avatar->motiono[secondLastAnimationName]->animation;
+              t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
+            }
+          }
+        }
 
       if (useAnimation) {
         if (!spec.isPosition) {
