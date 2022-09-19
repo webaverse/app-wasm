@@ -75,6 +75,51 @@ namespace AnimationSystem
     dst[2] = src[2];
     if (!isPosition) dst[3] = src[3];
   }
+  void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition) // todo: del offsets.
+  {
+    if (isPosition)
+    {
+      lerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
+    }
+    else
+    {
+      slerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
+    }
+  }
+  void multiplyQuaternionsFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1) {
+    float x0 = src0[ srcOffset0 ];
+    float y0 = src0[ srcOffset0 + 1 ];
+    float z0 = src0[ srcOffset0 + 2 ];
+    float w0 = src0[ srcOffset0 + 3 ];
+
+    float x1 = src1[ srcOffset1 ];
+    float y1 = src1[ srcOffset1 + 1 ];
+    float z1 = src1[ srcOffset1 + 2 ];
+    float w1 = src1[ srcOffset1 + 3 ];
+
+    dst[ dstOffset ] = x0 * w1 + w0 * x1 + y0 * z1 - z0 * y1;
+    dst[ dstOffset + 1 ] = y0 * w1 + w0 * y1 + z0 * x1 - x0 * z1;
+    dst[ dstOffset + 2 ] = z0 * w1 + w0 * z1 + x0 * y1 - y0 * x1;
+    dst[ dstOffset + 3 ] = w0 * w1 - x0 * x1 - y0 * y1 - z0 * z1;
+  }
+  void invertQuaternionFlat(float *dst, unsigned int dstOffset)
+  {
+    dst[ dstOffset ] *= -1;
+    dst[ dstOffset + 1 ] *= -1;
+    dst[ dstOffset + 2 ] *= -1;
+  }
+  void addVectorsFlat(float *dst, float *src0, float *src1)
+  {
+    dst[0] = src0[0] + src1[0];
+    dst[1] = src0[1] + src1[1];
+    dst[2] = src0[2] + src1[2];
+  }
+  void subVectorsFlat(float *dst, float *src0, float *src1)
+  {
+    dst[0] = src0[0] - src1[0];
+    dst[1] = src0[1] - src1[1];
+    dst[2] = src0[2] - src1[2];
+  }
 
   // Main ------
 
@@ -122,18 +167,6 @@ namespace AnimationSystem
       scratchStack[i] = this->children[i];
     }
     return count;
-  }
-
-  void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition)
-  {
-    if (isPosition)
-    {
-      lerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
-    }
-    else
-    {
-      slerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
-    }
   }
 
   Avatar *createAvatar(AnimationMixer *mixer) {
@@ -743,7 +776,7 @@ namespace AnimationSystem
     std::string defaultActivateAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
     this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
     // ---
-    std::string useAnimation = this->strings[index++];
+    this->useAnimationName = this->strings[index++];
     std::string useAnimationComboName = this->strings[index++];
     this->sitAnimation = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
     this->emoteAnimationName = this->strings[index++];
@@ -843,6 +876,7 @@ namespace AnimationSystem
     this->crouchMaxTime = scratchStack[index++];
     this->emoteFactor = scratchStack[index++];
     this->lastEmoteTime = scratchStack[index++];
+    this->useTime = scratchStack[index++];
 
     // // set start/end events ---
     // this->jumpStart = false;
@@ -1663,6 +1697,43 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _blendUse(AnimationMapping &spec, Avatar *avatar)
+  {
+    if (
+      avatar->useAnimationName != ""
+    ) {
+      std::cout << "useAnimationName" << std::endl;
+      Animation *useAnimation;
+      float t2;
+      float useTimeS = avatar->useTime / 1000;
+      useAnimation = avatar->motiono[avatar->useAnimationName]->animation;
+      t2 = min(useTimeS, useAnimation->duration);
+
+      if (useAnimation) {
+        if (!spec.isPosition) {
+          float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+
+          Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+          float t3 = 0;
+          float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+          invertQuaternionFlat(v3, 0);
+          multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        } else {
+          float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+          _clearXZ(v2, spec.isPosition);
+
+          Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+          float t3 = 0;
+          float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+          subVectorsFlat(spec.dst, spec.dst, v3);
+          addVectorsFlat(spec.dst, spec.dst, v2);
+        }
+      }
+    }
+  }
   void _blendEmote(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->emoteFactor > 0) {
@@ -1683,15 +1754,7 @@ namespace AnimationSystem
 
       if (spec.index == BoneName::Spine || spec.index == BoneName::Chest || spec.index == BoneName::UpperChest || spec.index == BoneName::Neck || spec.index == BoneName::Head) {
         if (!spec.isPosition) {
-          // dst.premultiply(localQuaternion.fromArray(v2));
-          // todo: premultiplyFlat()
-          Quat quat0(spec.dst[0], spec.dst[1], spec.dst[2], spec.dst[3]);
-          Quat quat1(v2[0], v2[1], v2[2], v2[3]);
-          quat0.premultiply(quat1);
-          spec.dst[0] = quat0.x;
-          spec.dst[1] = quat0.y;
-          spec.dst[2] = quat0.z;
-          spec.dst[3] = quat0.w;
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
         } else {
           // dst.lerp(localVector.fromArray(v2), f);
           interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
@@ -1728,7 +1791,7 @@ namespace AnimationSystem
   {
     if (avatar->narutoRunState) {
       // const narutoRunAnimation = narutoRunAnimations[defaultNarutoRunAnimation];
-      Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animatin.nam and add animation.fileName.
+      Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
       // const src2 = narutoRunAnimation.interpolants[k];
       float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
       // std::cout << " narutoRunTime: " << avatar->narutoRunTime  << " narutoRunTimeFactor: " << avatar->narutoRunTimeFactor << " duration: " << narutoRunAnimation->duration  << " t2: " << t2 << std::endl;
@@ -1744,7 +1807,7 @@ namespace AnimationSystem
   {
     if (avatar->sitState) {
       // const sitAnimation = sitAnimations[avatar.sitAnimation || defaultSitAnimation];
-      Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animatin.nam and add animation.fileName.
+      Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
       // const src2 = sitAnimation.interpolants[k];
       // const v2 = src2.evaluate(1);
       float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
@@ -1948,6 +2011,7 @@ namespace AnimationSystem
       spec.dst[2] = animationValues[i][2];
       if (!spec.isPosition) spec.dst[3] = animationValues[i][3];
 
+      _blendUse(spec, this->avatar);
       _blendEmote(spec, this->avatar);
       _blendDance(spec, this->avatar);
       _blendNarutoRun(spec, this->avatar);
