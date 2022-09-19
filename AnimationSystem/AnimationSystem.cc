@@ -17,7 +17,11 @@ namespace AnimationSystem
   // float **animationValues = (float **)malloc(53 * sizeof(float)); // ok too
   // Interpolant _interpolant;
 
+  float *localVector = (float *)malloc(3 * sizeof(float));
+  // float *localVector2 = (float *)malloc(3 * sizeof(float));
+
   float *localQuaternion = (float *)malloc(4 * sizeof(float));
+  // float *localQuaternion2 = (float *)malloc(4 * sizeof(float));
 
   // Animation testAnimation = Animation();
   // Animation *testAnimation2 = &testAnimation;
@@ -848,6 +852,7 @@ namespace AnimationSystem
     this->useTime = scratchStack[index++];
     this->useAnimationEnvelopeLength = scratchStack[index++];
     this->hurtTime = scratchStack[index++];
+    this->unuseTime = scratchStack[index++];
 
     // ---------------------------------------------------------------------------------------------------
 
@@ -869,6 +874,7 @@ namespace AnimationSystem
     std::string holdAnimation = this->strings[index++];
     this->activateAnimationName = this->strings[index++];
     this->hurtAnimationName = this->strings[index++];
+    this->unuseAnimationName = this->strings[index++];
     // ---
     this->fallLoopFrom = this->strings[index++];
 
@@ -1701,8 +1707,64 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _blendUnuse(AnimationMapping &spec, Avatar *avatar) {
+    if (
+      avatar->useAnimationName != "" ||
+      avatar->useAnimationComboName != "" || // todo: useAnimationComboNames, same logic as useAnimationEnvelopeNames.
+      avatar->useAnimationEnvelopeNames.size() > 0
+    ) {
+      return;
+    }
+    if (avatar->unuseAnimationName != "" && avatar->unuseTime >= 0) {
+      if (spec.isPosition) avatar->testString += "_blendUnuse, "; // test
+      float unuseTimeS = avatar->unuseTime / 1000;
+      std::string unuseAnimationName = avatar->unuseAnimationName; // todo: performance: use avatar->unuseAnimationName directly.
+      Animation *unuseAnimation = avatar->motiono[unuseAnimationName]->animation;
+      float t2 = min(unuseTimeS, unuseAnimation->duration);
+      float f = min(max(unuseTimeS / unuseAnimation->duration, 0), 1);
+      float f2 = std::pow(1 - f, 2);
+      // std::cout << " f2: " << f2 << std::endl;
+
+      // copyValue(spec.dst, evaluateInterpolant(unuseAnimation, spec.index, t2), spec.isPosition); // test
+
+      // return;
+
+      if (!spec.isPosition) {
+        float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
+
+        Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        float t3 = 0;
+        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+          
+        copyValue(localQuaternion, spec.dst, spec.isPosition);
+        invertQuaternionFlat(v3, 0);
+        multiplyQuaternionsFlat(localQuaternion, 0, v3, 0, localQuaternion, 0);
+        multiplyQuaternionsFlat(localQuaternion, 0, v2, 0, localQuaternion, 0);
+
+        interpolateFlat(spec.dst, 0, spec.dst, 0, localQuaternion, 0, f2, spec.isPosition);
+      } else {
+        float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
+
+        Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        float t3 = 0;
+        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+        
+        copyValue(localVector, spec.dst, spec.isPosition);
+        subVectorsFlat(localVector, localVector, v3);
+        addVectorsFlat(localVector, localVector, v2);
+
+        interpolateFlat(spec.dst, 0, spec.dst, 0, localVector, 0, f2, spec.isPosition);
+      }
+
+      // todo: don't need ?
+      // if (f >= 1) {
+      //   avatar.useAnimation = ''; // todo: need feedback to js side ?
+      // }
+    }
+  }
   void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->hurtAnimationName != "") {
+      if (spec.isPosition) avatar->testString += "_blendHurt, "; // test
       Animation *hurtAnimation = avatar->motiono[avatar->hurtAnimationName]->animation;
       float hurtTimeS = avatar->hurtTime / 1000;
       float t2 = min(hurtTimeS, hurtAnimation->duration);
@@ -1741,6 +1803,7 @@ namespace AnimationSystem
       avatar->useAnimationComboName != "" || // todo: useAnimationComboNames, same logic as useAnimationEnvelopeNames.
       avatar->useAnimationEnvelopeNames.size() > 0
     ) {
+      if (spec.isPosition) avatar->testString += "_blendUse, "; // test
       // std::cout << "useAnimationName" << std::endl;
       Animation *useAnimation = nullptr;
       float t2;
@@ -1808,6 +1871,7 @@ namespace AnimationSystem
   void _blendEmote(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->emoteFactor > 0) {
+      if (spec.isPosition) avatar->testString += "_blendEmote, "; // test
       // _handleDefault(spec); // todo: prevent run forever ?
 
       // const emoteAnimation = emoteAnimations[avatar->emoteAnimation || defaultEmoteAnimation];
@@ -1844,6 +1908,7 @@ namespace AnimationSystem
   void _blendDance(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->danceFactor > 0) {
+      if (spec.isPosition) avatar->testString += "_blendDance, "; // test
       Animation *danceAnimation = avatar->danceMotiono[avatar->danceAnimationName == "" ? avatar->defaultDanceAnimationName : avatar->danceAnimationName]->animation;
       // const src2 = danceAnimation.interpolants[k];
       float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
@@ -1861,6 +1926,7 @@ namespace AnimationSystem
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->narutoRunState) {
+      if (spec.isPosition) avatar->testString += "_blendNarutoRun, "; // test
       // const narutoRunAnimation = narutoRunAnimations[defaultNarutoRunAnimation];
       Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
       // const src2 = narutoRunAnimation.interpolants[k];
@@ -1877,6 +1943,7 @@ namespace AnimationSystem
   void _blendSit(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->sitState) {
+      if (spec.isPosition) avatar->testString += "_blendSit, "; // test
       // const sitAnimation = sitAnimations[avatar.sitAnimation || defaultSitAnimation];
       Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
       // const src2 = sitAnimation.interpolants[k];
@@ -1889,6 +1956,7 @@ namespace AnimationSystem
   void _blendJump(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->jumpState) {
+      if (spec.isPosition) avatar->testString += "_blendJump, "; // test
       float t2 = avatar->jumpTime / 1000;
       // const src2 = jumpAnimation.interpolants[k];
       // const v2 = src2.evaluate(t2);
@@ -1910,6 +1978,7 @@ namespace AnimationSystem
   void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->doubleJumpState) {
+      if (spec.isPosition) avatar->testString += "_blendDoubleJump, "; // test
       float t2 = avatar->doubleJumpTime / 1000;
       // const src2 = doubleJumpAnimation.interpolants[k];
       // const v2 = src2.evaluate(t2);
@@ -1923,6 +1992,7 @@ namespace AnimationSystem
   void _blendFly(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->flyState || (avatar->flyTime >= 0 && avatar->flyTime < 1000)) {
+      if (spec.isPosition) avatar->testString += "_blendFly, "; // test
       float t2 = avatar->flyTime / 1000;
       // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
       float f = 1;
@@ -1951,6 +2021,7 @@ namespace AnimationSystem
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->fallLoopFactor > 0) {
+      if (spec.isPosition) avatar->testString += "_blendFallLoop, "; // test
       float t2 = (avatar->fallLoopTime / 1000);
       // const src2 = fallLoopAnimation.interpolants[k];
       // const v2 = src2.evaluate(t2);
@@ -1976,6 +2047,7 @@ namespace AnimationSystem
       float landFactor = landTimeS / landingAnimationDuration;
 
       if (landFactor > 0 && landFactor <= 1) {
+        if (spec.isPosition) avatar->testString += "_blendLandMoveOff, "; // test
         float t2 = landTimeS * animationSpeed;
         // const src2 = landingAnimation->interpolants[k];
         // const v2 = src2.evaluate(t2);
@@ -1995,6 +2067,7 @@ namespace AnimationSystem
         interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
       }
     } else {
+      if (spec.isPosition) avatar->testString += "_blendLandMoveOn, "; // test
       float animationSpeed = 0.95;
       float landTimeS = avatar->landTime / 1000;
       Animation *landingAnimation = animationo["landing 2.fbx"];
@@ -2034,6 +2107,7 @@ namespace AnimationSystem
   {
     if (avatar->activateTime > 0)
     {
+      if (spec.isPosition) avatar->testString += "_blendActivate, "; // test
       // if (spec.isPosition) std::cout << "activateAnimationName: " << avatar->activateAnimationName << std::endl;
       // Animation *activateAnimation = animationo2[avatar->activateAnimationName]; // todo: animationo
       Animation *activateAnimation = avatar->motiono[avatar->activateAnimationName]->animation;
@@ -2082,6 +2156,8 @@ namespace AnimationSystem
       spec.dst[2] = animationValues[i][2];
       if (!spec.isPosition) spec.dst[3] = animationValues[i][3];
 
+      if (spec.isPosition) avatar->testString = "";
+      _blendUnuse(spec, this->avatar);
       _blendUse(spec, this->avatar);
       _blendEmote(spec, this->avatar);
       _blendDance(spec, this->avatar);
@@ -2094,6 +2170,7 @@ namespace AnimationSystem
       _blendLand(spec, this->avatar);
       // _blendActivate(spec, this->avatar);
       _blendHurt(spec, this->avatar);
+      if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl;
 
       animationValues[i][0] = spec.dst[0];
       animationValues[i][1] = spec.dst[1];
