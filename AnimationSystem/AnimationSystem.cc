@@ -777,7 +777,7 @@ namespace AnimationSystem
     this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
     // ---
     this->useAnimationName = this->strings[index++];
-    std::string useAnimationComboName = this->strings[index++];
+    this->useAnimationComboName = this->strings[index++];
     this->sitAnimation = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
     this->emoteAnimationName = this->strings[index++];
     this->danceAnimationName = this->strings[index++];
@@ -1700,14 +1700,20 @@ namespace AnimationSystem
   void _blendUse(AnimationMapping &spec, Avatar *avatar)
   {
     if (
-      avatar->useAnimationName != ""
+      avatar->useAnimationName != "" ||
+      avatar->useAnimationComboName != ""
     ) {
-      std::cout << "useAnimationName" << std::endl;
+      // std::cout << "useAnimationName" << std::endl;
       Animation *useAnimation;
       float t2;
       float useTimeS = avatar->useTime / 1000;
-      useAnimation = avatar->motiono[avatar->useAnimationName]->animation;
-      t2 = min(useTimeS, useAnimation->duration);
+      if (avatar->useAnimationName != "") {
+        useAnimation = avatar->motiono[avatar->useAnimationName]->animation;
+        t2 = min(useTimeS, useAnimation->duration);
+      } else if(avatar->useAnimationComboName != "") {
+        useAnimation = avatar->motiono[avatar->useAnimationComboName]->animation;
+        t2 = min(useTimeS, useAnimation->duration);
+      }
 
       if (useAnimation) {
         if (!spec.isPosition) {
