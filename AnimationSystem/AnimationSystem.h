@@ -133,9 +133,9 @@ namespace AnimationSystem
     std::vector<std::string> strings;
 
     // values
-    std::string activateAnimationName, fallLoopFrom, sitAnimation, defaultSitAnimation, defaultNarutoRunAnimation, danceAnimationName, defaultDanceAnimationName, emoteAnimationName, defaultEmoteAnimationName, useAnimationName, useAnimationComboName;
+    std::string activateAnimationName, fallLoopFrom, sitAnimation, defaultSitAnimation, defaultNarutoRunAnimation, danceAnimationName, defaultDanceAnimationName, emoteAnimationName, defaultEmoteAnimationName, useAnimationName, useAnimationComboName, hurtAnimationName;
     std::vector<std::string> useAnimationEnvelopeNames;
-    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength;
+    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength, hurtTime;
     bool landWithMoving, flyState, doubleJumpState, jumpState, sitState, narutoRunState;
 
     // action start/end events

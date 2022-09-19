@@ -183,44 +183,38 @@ namespace AnimationSystem
       ]}
     */
     json tree = json::parse(R"(
-      {"name": "hurtNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-        {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-          {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-            {"name": "idle", "type": "motion"},
-            {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-              {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                {"name": "walkForward", "type": "motion"},
-                {"name": "walkBackward", "type": "motion"},
-                {"name": "walkLeft", "type": "motion"},
-                {"name": "walkRight", "type": "motion"},
-                {"name": "walkLeftMirror", "type": "motion"},
-                {"name": "walkRightMirror", "type": "motion"}
-              ]},
-              {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-                {"name": "runForward", "type": "motion"},
-                {"name": "runBackward", "type": "motion"},
-                {"name": "runLeft", "type": "motion"},
-                {"name": "runRight", "type": "motion"},
-                {"name": "runLeftMirror", "type": "motion"},
-                {"name": "runRightMirror", "type": "motion"}
-              ]}
-            ]}
-          ]},
-          {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-            {"name": "crouchIdle", "type": "motion"},
-            {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-              {"name": "crouchForward", "type": "motion"},
-              {"name": "crouchBackward", "type": "motion"},
-              {"name": "crouchLeft", "type": "motion"},
-              {"name": "crouchRight", "type": "motion"},
-              {"name": "crouchLeftMirror", "type": "motion"},
-              {"name": "crouchRightMirror", "type": "motion"}
+      {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+        {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+          {"name": "idle", "type": "motion"},
+          {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+            {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+              {"name": "walkForward", "type": "motion"},
+              {"name": "walkBackward", "type": "motion"},
+              {"name": "walkLeft", "type": "motion"},
+              {"name": "walkRight", "type": "motion"},
+              {"name": "walkLeftMirror", "type": "motion"},
+              {"name": "walkRightMirror", "type": "motion"}
+            ]},
+            {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+              {"name": "runForward", "type": "motion"},
+              {"name": "runBackward", "type": "motion"},
+              {"name": "runLeft", "type": "motion"},
+              {"name": "runRight", "type": "motion"},
+              {"name": "runLeftMirror", "type": "motion"},
+              {"name": "runRightMirror", "type": "motion"}
             ]}
           ]}
         ]},
-        {"name": "hurtsNodeSolitary", "type": "node", "nodeType": "SOLITARY", "funcIndex": 0, "children": [
-          {"name": "pain_back", "type": "motion"},
-          {"name": "pain_arch", "type": "motion"}
+        {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+          {"name": "crouchIdle", "type": "motion"},
+          {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+            {"name": "crouchForward", "type": "motion"},
+            {"name": "crouchBackward", "type": "motion"},
+            {"name": "crouchLeft", "type": "motion"},
+            {"name": "crouchRight", "type": "motion"},
+            {"name": "crouchLeftMirror", "type": "motion"},
+            {"name": "crouchRightMirror", "type": "motion"}
+          ]}
         ]}
       ]}
     )");
@@ -853,6 +847,7 @@ namespace AnimationSystem
     this->lastEmoteTime = scratchStack[index++];
     this->useTime = scratchStack[index++];
     this->useAnimationEnvelopeLength = scratchStack[index++];
+    this->hurtTime = scratchStack[index++];
 
     // ---------------------------------------------------------------------------------------------------
 
@@ -873,7 +868,7 @@ namespace AnimationSystem
     this->danceAnimationName = this->strings[index++];
     std::string holdAnimation = this->strings[index++];
     this->activateAnimationName = this->strings[index++];
-    std::string hurtAnimation = this->strings[index++];
+    this->hurtAnimationName = this->strings[index++];
     // ---
     this->fallLoopFrom = this->strings[index++];
 
@@ -1706,11 +1701,44 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
+    if (avatar->hurtAnimationName != "") {
+      Animation *hurtAnimation = avatar->motiono[avatar->hurtAnimationName]->animation;
+      float hurtTimeS = avatar->hurtTime / 1000;
+      float t2 = min(hurtTimeS, hurtAnimation->duration);
+      if (!spec.isPosition) {
+        if (hurtAnimation) {
+          // const src2 = hurtAnimation.interpolants[k];
+          // const v2 = src2.evaluate(t2);
+          float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
+
+          Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+          float t3 = 0;
+          float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+          
+          invertQuaternionFlat(v3, 0);
+          multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        }
+      } else {
+        // const src2 = hurtAnimation.interpolants[k];
+        // const v2 = src2.evaluate(t2);
+        float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
+
+        Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        float t3 = 0;
+        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+        subVectorsFlat(spec.dst, spec.dst, v3);
+        addVectorsFlat(spec.dst, spec.dst, v2);
+      }
+    }
+  }
   void _blendUse(AnimationMapping &spec, Avatar *avatar)
   {
     if (
       avatar->useAnimationName != "" ||
-      avatar->useAnimationComboName != "" ||
+      avatar->useAnimationComboName != "" || // todo: useAnimationComboNames, same logic as useAnimationEnvelopeNames.
       avatar->useAnimationEnvelopeNames.size() > 0
     ) {
       // std::cout << "useAnimationName" << std::endl;
@@ -2065,7 +2093,7 @@ namespace AnimationSystem
       _blendFallLoop(spec, this->avatar);
       _blendLand(spec, this->avatar);
       // _blendActivate(spec, this->avatar);
-      // _blendHurt(spec, this->avatar); // todo
+      _blendHurt(spec, this->avatar);
 
       animationValues[i][0] = spec.dst[0];
       animationValues[i][1] = spec.dst[1];
