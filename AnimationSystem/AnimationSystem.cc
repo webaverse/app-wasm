@@ -2011,13 +2011,12 @@ namespace AnimationSystem
 
     _clearXZ(spec.dst, spec.isPosition);
 
-    // if (avatar->holdState && isArm) {
-    //   const holdAnimation = holdAnimations['pick_up_idle'];
-    //   const src2 = holdAnimation.interpolants[k];
-    //   const t2 = (now / 1000) % holdAnimation.duration;
-    //   const v2 = src2.evaluate(t2);
-    //   dst.fromArray(v2);
-    // }
+    if (avatar->holdState && spec.isArm) {
+      Animation *holdAnimation = avatar->motiono["pick_up_idle"]->animation;
+      float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
+      float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
+      copyValue(spec.dst, v2, spec.isPosition);
+    }
   }
   void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar)
   {
@@ -2050,14 +2049,12 @@ namespace AnimationSystem
       //   );
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
 
-      // todo: exact reimplement or _blendHold();
-      // if (avatar->holdState && isArm) {
-      //   const holdAnimation = holdAnimations['pick_up_idle'];
-      //   const src2 = holdAnimation.interpolants[k];
-      //   const t2 = (now / 1000) % holdAnimation.duration;
-      //   const v2 = src2.evaluate(t2);
-      //   dst.fromArray(v2);
-      // }
+      if (avatar->holdState && spec.isArm) {
+        Animation *holdAnimation = avatar->motiono["pick_up_idle"]->animation;
+        float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
+        float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
+        copyValue(spec.dst, v2, spec.isPosition);
+      }
     }
   };
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar)
