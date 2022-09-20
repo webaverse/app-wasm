@@ -29,7 +29,7 @@ namespace AnimationSystem
     LoopRepeat = 2201,
     LoopPingPong = 2202
   };
-  enum BoneName
+  enum BoneName // todo: rename boneIndex
   {
     // Hips = 0, // position
     Hips = 1, // quaternion
@@ -135,8 +135,8 @@ namespace AnimationSystem
     // values
     std::string activateAnimationName, fallLoopFrom, sitAnimation, defaultSitAnimation, defaultNarutoRunAnimation, danceAnimationName, defaultDanceAnimationName, emoteAnimationName, defaultEmoteAnimationName, useAnimationName, useAnimationComboName, hurtAnimationName, unuseAnimationName, aimAnimationName;
     std::vector<std::string> useAnimationEnvelopeNames;
-    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength, hurtTime, unuseTime, aimTime, aimMaxTime;
-    bool landWithMoving, flyState, doubleJumpState, jumpState, sitState, narutoRunState;
+    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength, hurtTime, unuseTime, aimTime, aimMaxTime, walkRunFactor, crouchFactor;
+    bool landWithMoving, flyState, doubleJumpState, jumpState, sitState, narutoRunState, holdState;
 
     // action start/end events
     bool jumpStart, jumpEnd, lastJumpState;
@@ -230,7 +230,7 @@ namespace AnimationSystem
   class AnimationMixer // note: mixer can't aware of avatar.
   {
   public:
-    static float now;
+    // static float now;
     static float nowS;
 
     Avatar *avatar; // todo: delete this ?

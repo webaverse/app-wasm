@@ -777,8 +777,8 @@ namespace AnimationSystem
     float mirrorRightFactor = scratchStack[index++];
 
     this->idleWalkFactor = scratchStack[index++];
-    float walkRunFactor = scratchStack[index++];
-    float crouchFactor = scratchStack[index++];
+    this->walkRunFactor = scratchStack[index++];
+    this->crouchFactor = scratchStack[index++];
     // float flyDashFactor = scratchStack[index++];
 
     float holdFactor = scratchStack[index++];
@@ -793,7 +793,7 @@ namespace AnimationSystem
     bool activateState = scratchStack[index++];
     this->narutoRunState = scratchStack[index++];
     this->sitState = scratchStack[index++];
-    bool holdState = scratchStack[index++];
+    this->holdState = scratchStack[index++];
     bool emoteState = scratchStack[index++];
     bool fallLoopState = scratchStack[index++];
     bool hurtState = scratchStack[index++];
@@ -1060,10 +1060,10 @@ namespace AnimationSystem
     // this->motiono["bowRight"]->setWeight(mirrorRightFactorReverse);
     // this->motiono["bowRightMirror"]->setWeight(mirrorRightFactor);
 
-    this->nodeo["_8DirectionsWalkRunNodeTwo"]->setFactor(walkRunFactor);
+    this->nodeo["_8DirectionsWalkRunNodeTwo"]->setFactor(this->walkRunFactor);
     this->nodeo["idle8DWalkRunNodeTwo"]->setFactor(this->idleWalkFactor);
     this->nodeo["idle8DCrouchNodeTwo"]->setFactor(this->idleWalkFactor);
-    this->nodeo["defaultNodeTwo"]->setFactor(crouchFactor);
+    this->nodeo["defaultNodeTwo"]->setFactor(this->crouchFactor);
     // this->nodeo["idle8DBowNodeTwo"]->setFactor(this->idleWalkFactor);
 
     // this->nodeo["flyForwardNodeTwo"]->setWeight(forwardFactor);
@@ -1710,6 +1710,27 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _blendHold(AnimationMapping &spec, Avatar *avatar) {
+    // _handleDefault(spec);
+
+    Animation *holdAnimation = avatar->motiono["pick_up_idle"]->animation;
+    float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
+    float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
+
+    if (spec.isTop) {
+      if (spec.index == BoneName::Left_arm || spec.index == BoneName::Right_arm) {
+        copyValue(spec.dst, v2, spec.isPosition);
+      } else {
+        if (spec.isArm) {
+          float f = avatar->walkRunFactor * 0.7 + avatar->crouchFactor * (1 - avatar->idleWalkFactor) * 0.5;
+          interpolateFlat(spec.dst, 0, spec.dst, 0, identityQuaternion, 0, f, spec.isPosition);
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        } else {
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        }
+      }
+    }
+  }
   void _blendAim(AnimationMapping &spec, Avatar *avatar) {
     Animation *aimAnimation = avatar->motiono[avatar->aimAnimationName]->animation;
     // std::cout << "aimAnimationName: " << avatar->aimAnimationName << std::endl;
@@ -2185,6 +2206,8 @@ namespace AnimationSystem
         _blendAim(spec, this->avatar);
       } else if (avatar->unuseAnimationName != "" && avatar->unuseTime >= 0) {
         _blendUnuse(spec, this->avatar);
+      } else if (avatar->holdState) {
+        _blendHold(spec, this->avatar);
       }
 
       // cascading blending, in order to do transition between all kinds of aniamtions.
