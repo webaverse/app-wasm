@@ -23,6 +23,8 @@ namespace AnimationSystem
   float *localQuaternion = (float *)malloc(4 * sizeof(float));
   // float *localQuaternion2 = (float *)malloc(4 * sizeof(float));
 
+  float *localVecQuat = (float *)malloc(4 * sizeof(float));
+
   // Animation testAnimation = Animation();
   // Animation *testAnimation2 = &testAnimation;
   // Animation **testAnimation3 = &testAnimation2;
@@ -186,53 +188,53 @@ namespace AnimationSystem
       {"name": "bowIdle8DDrawLooseNodeOverwrite", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
       ]}
     */
-    json tree = json::parse(R"(
-      {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-        {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-          {"name": "idle", "type": "motion"},
-          {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-            {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-              {"name": "walkForward", "type": "motion"},
-              {"name": "walkBackward", "type": "motion"},
-              {"name": "walkLeft", "type": "motion"},
-              {"name": "walkRight", "type": "motion"},
-              {"name": "walkLeftMirror", "type": "motion"},
-              {"name": "walkRightMirror", "type": "motion"}
-            ]},
-            {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-              {"name": "runForward", "type": "motion"},
-              {"name": "runBackward", "type": "motion"},
-              {"name": "runLeft", "type": "motion"},
-              {"name": "runRight", "type": "motion"},
-              {"name": "runLeftMirror", "type": "motion"},
-              {"name": "runRightMirror", "type": "motion"}
-            ]}
-          ]}
-        ]},
-        {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
-          {"name": "crouchIdle", "type": "motion"},
-          {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
-            {"name": "crouchForward", "type": "motion"},
-            {"name": "crouchBackward", "type": "motion"},
-            {"name": "crouchLeft", "type": "motion"},
-            {"name": "crouchRight", "type": "motion"},
-            {"name": "crouchLeftMirror", "type": "motion"},
-            {"name": "crouchRightMirror", "type": "motion"}
-          ]}
-        ]}
-      ]}
-    )");
+    // json tree = json::parse(R"(
+    //   {"name": "defaultNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+    //     {"name": "idle8DWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+    //       {"name": "idle", "type": "motion"},
+    //       {"name": "_8DirectionsWalkRunNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+    //         {"name": "_8DirectionsWalkNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+    //           {"name": "walkForward", "type": "motion"},
+    //           {"name": "walkBackward", "type": "motion"},
+    //           {"name": "walkLeft", "type": "motion"},
+    //           {"name": "walkRight", "type": "motion"},
+    //           {"name": "walkLeftMirror", "type": "motion"},
+    //           {"name": "walkRightMirror", "type": "motion"}
+    //         ]},
+    //         {"name": "_8DirectionsRunNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+    //           {"name": "runForward", "type": "motion"},
+    //           {"name": "runBackward", "type": "motion"},
+    //           {"name": "runLeft", "type": "motion"},
+    //           {"name": "runRight", "type": "motion"},
+    //           {"name": "runLeftMirror", "type": "motion"},
+    //           {"name": "runRightMirror", "type": "motion"}
+    //         ]}
+    //       ]}
+    //     ]},
+    //     {"name": "idle8DCrouchNodeTwo", "type": "node", "nodeType": "TWO", "funcIndex": 0, "children": [
+    //       {"name": "crouchIdle", "type": "motion"},
+    //       {"name": "_8DirectionsCrouchNodeList", "type": "node", "nodeType": "LIST", "funcIndex": 0, "children": [
+    //         {"name": "crouchForward", "type": "motion"},
+    //         {"name": "crouchBackward", "type": "motion"},
+    //         {"name": "crouchLeft", "type": "motion"},
+    //         {"name": "crouchRight", "type": "motion"},
+    //         {"name": "crouchLeftMirror", "type": "motion"},
+    //         {"name": "crouchRightMirror", "type": "motion"}
+    //       ]}
+    //     ]}
+    //   ]}
+    // )");
 
     avatar->setAnimations();
     avatar->createMotions();
     // avatar->createNodes();
     // std::cout << "createNodesFromJson ------" << std::endl;
-    avatar->createNodesFromJson(tree);
+    // avatar->createNodesFromJson(tree);
     // std::cout << "root node: " << avatar->mixer->rootNode->name << std::endl;
 
     //
 
-    avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
+    // avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
     // std::cout << std::endl; //test
 
     //
@@ -1750,6 +1752,7 @@ namespace AnimationSystem
     // spec.dst[2] = avatar->mixer->animationValues[spec.index][2];
     // if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
 
+    // 8 directions walk values ---
     std::vector<Animation *> animations; // todo: use localAnimations instead ?
     animations.push_back(avatar->motiono["walkForward"]->animation);
     animations.push_back(avatar->motiono["walkBackward"]->animation);
@@ -1766,13 +1769,52 @@ namespace AnimationSystem
     weights.push_back(avatar->mirrorRightFactorReverse);
     weights.push_back(avatar->mirrorRightFactor);
 
-    // float *vecQuat = doBlendList(spec, animations, weights);
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, animations, weights);
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, animations, weights); // only need init `avatar->mixer->animationValues[spec.index]` once.
 
     spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
     spec.dst[1] = avatar->mixer->animationValues[spec.index][1];
     spec.dst[2] = avatar->mixer->animationValues[spec.index][2];
     if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
+
+    // 8 directions run values ---
+    animations.clear();
+    animations.push_back(avatar->motiono["runForward"]->animation);
+    animations.push_back(avatar->motiono["runBackward"]->animation);
+    animations.push_back(avatar->motiono["runLeft"]->animation);
+    animations.push_back(avatar->motiono["runLeftMirror"]->animation);
+    animations.push_back(avatar->motiono["runRight"]->animation);
+    animations.push_back(avatar->motiono["runRightMirror"]->animation);
+
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, animations, weights);
+
+    interpolateFlat(spec.dst, 0, spec.dst, 0, avatar->mixer->animationValues[spec.index], 0, avatar->walkRunFactor, spec.isPosition);
+
+    // blend idle ---
+    float *vecQuat = evaluateInterpolant(avatar->motiono["idle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["idle"]->animation->duration));
+    interpolateFlat(spec.dst, 0, spec.dst, 0, vecQuat, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+
+    // 8 directions crouch values ---
+    animations.clear();
+    animations.push_back(avatar->motiono["crouchForward"]->animation);
+    animations.push_back(avatar->motiono["crouchBackward"]->animation);
+    animations.push_back(avatar->motiono["crouchLeft"]->animation);
+    animations.push_back(avatar->motiono["crouchLeftMirror"]->animation);
+    animations.push_back(avatar->motiono["crouchRight"]->animation);
+    animations.push_back(avatar->motiono["crouchRightMirror"]->animation);
+
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, animations, weights);
+
+    localVecQuat[0] = avatar->mixer->animationValues[spec.index][0];
+    localVecQuat[1] = avatar->mixer->animationValues[spec.index][1];
+    localVecQuat[2] = avatar->mixer->animationValues[spec.index][2];
+    if (!spec.isPosition) localVecQuat[3] = avatar->mixer->animationValues[spec.index][3];
+
+    // blend crouch idle ---
+    vecQuat = evaluateInterpolant(avatar->motiono["crouchIdle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["crouchIdle"]->animation->duration));
+    interpolateFlat(localVecQuat, 0, localVecQuat, 0, vecQuat, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+
+    // blend walkRun and crouch
+    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuat, 0, avatar->crouchFactor, spec.isPosition);
   }
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
     if (spec.isPosition) avatar->testString += "_blendPickUp, "; // test
@@ -2193,7 +2235,7 @@ namespace AnimationSystem
       }
     } else {
       if (spec.isPosition) avatar->testString += "_blendLand, "; // test
-      
+
       float animationSpeed = 0.95;
       float landTimeS = avatar->landTime / 1000;
       Animation *landingAnimation = animationo["landing 2.fbx"];
