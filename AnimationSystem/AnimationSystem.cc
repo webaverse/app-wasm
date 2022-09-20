@@ -518,6 +518,9 @@ namespace AnimationSystem
     this->activateMotiono["grab_right"]->setSpeed(1.2);
     this->activateMotiono["pick_up"]->setSpeed(1);
 
+    this->motiono["pickUpZelda"] = this->mixer->createMotion(animationo["pick_up_zelda.fbx"]);
+    this->motiono["pickUpIdleZelda"] = this->mixer->createMotion(animationo["pick_up_idle_zelda.fbx"]);
+
     //
     // this->motiono[] = this->mixer->createMotion(animationo[]);
     // this->motiono[] = this->mixer->createMotion(animationo[]);
@@ -798,7 +801,8 @@ namespace AnimationSystem
     bool fallLoopState = scratchStack[index++];
     bool hurtState = scratchStack[index++];
     bool danceState = scratchStack[index++];
-    bool useEnvelopeState = scratchStack[index++];
+    bool useEnvelopeState = scratchStack[index++]; // todo: clean this and other unused.
+    this->pickUpState = scratchStack[index++];
 
     // action end events ---
     // float landEnd = scratchStack[index++];
@@ -855,6 +859,7 @@ namespace AnimationSystem
     this->unuseTime = scratchStack[index++];
     this->aimTime = scratchStack[index++];
     this->aimMaxTime = scratchStack[index++];
+    this->pickUpTime = scratchStack[index++];
 
     // ---------------------------------------------------------------------------------------------------
 
@@ -1710,6 +1715,20 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
+    Animation *pickUpAnimation = avatar->motiono["pickUpZelda"]->animation;
+    Animation *pickUpIdleAnimation = avatar->motiono["pickUpIdleZelda"]->animation;
+
+    float t2 = avatar->pickUpTime / 1000;
+    if (t2 < pickUpAnimation->duration) {
+      float *v2 = evaluateInterpolant(pickUpAnimation, spec.index, t2);
+      copyValue(spec.dst, v2, spec.isPosition);
+    } else {
+      float t3 = fmod((t2 - pickUpAnimation->duration), pickUpIdleAnimation->duration);
+      float *v2 = evaluateInterpolant(pickUpIdleAnimation, spec.index, t3);
+      copyValue(spec.dst, v2, spec.isPosition);
+    }
+  }
   void _blendHold(AnimationMapping &spec, Avatar *avatar) {
     // _handleDefault(spec);
 
@@ -2208,7 +2227,11 @@ namespace AnimationSystem
         _blendUnuse(spec, this->avatar);
       } else if (avatar->holdState) {
         _blendHold(spec, this->avatar);
-      }
+      } else if (avatar->pickUpState) {
+        _blendPickUp(spec, this->avatar);
+      }/*  else {
+        _handleDefault(spec, this->avatar); // todo:
+      } */
 
       // cascading blending, in order to do transition between all kinds of aniamtions.
       _blendFly(spec, this->avatar);
