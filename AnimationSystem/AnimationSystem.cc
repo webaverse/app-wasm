@@ -1715,6 +1715,13 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
+    avatar->mixer->animationValues[spec.index] = avatar->mixer->rootNode->update(spec); // todo: set to spec.dst directly.
+    spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
+    spec.dst[1] = avatar->mixer->animationValues[spec.index][1];
+    spec.dst[2] = avatar->mixer->animationValues[spec.index][2];
+    if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
+  }
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
     Animation *pickUpAnimation = avatar->motiono["pickUpZelda"]->animation;
     Animation *pickUpIdleAnimation = avatar->motiono["pickUpIdleZelda"]->animation;
@@ -1730,7 +1737,7 @@ namespace AnimationSystem
     }
   }
   void _blendHold(AnimationMapping &spec, Avatar *avatar) {
-    // _handleDefault(spec);
+    _handleDefault(spec, avatar);
 
     Animation *holdAnimation = avatar->motiono["pick_up_idle"]->animation;
     float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
@@ -1751,9 +1758,10 @@ namespace AnimationSystem
     }
   }
   void _blendAim(AnimationMapping &spec, Avatar *avatar) {
+    _handleDefault(spec, avatar);
+
     Animation *aimAnimation = avatar->motiono[avatar->aimAnimationName]->animation;
     // std::cout << "aimAnimationName: " << avatar->aimAnimationName << std::endl;
-    // _handleDefault(spec); // todo: restore _handleDefault() instead of blendList.
     float t2 = fmod((avatar->aimTime / avatar->aimMaxTime), aimAnimation->duration);
     if (!spec.isPosition) {
       if (aimAnimation) {
@@ -1780,6 +1788,9 @@ namespace AnimationSystem
   }
   void _blendUnuse(AnimationMapping &spec, Avatar *avatar) {
     if (spec.isPosition) avatar->testString += "_blendUnuse, "; // test
+    
+    _handleDefault(spec, avatar);
+
     float unuseTimeS = avatar->unuseTime / 1000;
     std::string unuseAnimationName = avatar->unuseAnimationName; // todo: performance: use avatar->unuseAnimationName directly.
     Animation *unuseAnimation = avatar->motiono[unuseAnimationName]->animation;
@@ -1826,6 +1837,9 @@ namespace AnimationSystem
   }
   void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
     if (spec.isPosition) avatar->testString += "_blendHurt, "; // test
+
+    _handleDefault(spec, avatar);
+
     Animation *hurtAnimation = avatar->motiono[avatar->hurtAnimationName]->animation;
     float hurtTimeS = avatar->hurtTime / 1000;
     float t2 = min(hurtTimeS, hurtAnimation->duration);
@@ -1870,33 +1884,35 @@ namespace AnimationSystem
       useAnimation = avatar->motiono[avatar->useAnimationComboName]->animation;
       t2 = min(useTimeS, useAnimation->duration);
     } else if (avatar->useAnimationEnvelopeNames.size() > 0) { // todo: why not bowLoose and transition animations in the end ?
-        float totalTime = 0;
+      float totalTime = 0;
+      for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
+        std::string animationName = avatar->useAnimationEnvelopeNames[i];
+        Animation *animation = avatar->motiono[animationName]->animation;
+        totalTime += animation->duration;
+      }
+
+      if (totalTime > 0) {
+        float animationTimeBase = 0;
         for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
           std::string animationName = avatar->useAnimationEnvelopeNames[i];
           Animation *animation = avatar->motiono[animationName]->animation;
-          totalTime += animation->duration;
+          if (useTimeS < (animationTimeBase + animation->duration)) {
+            useAnimation = animation;
+            break;
+          }
+          animationTimeBase += animation->duration;
         }
-
-        if (totalTime > 0) {
-          float animationTimeBase = 0;
-          for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
-            std::string animationName = avatar->useAnimationEnvelopeNames[i];
-            Animation *animation = avatar->motiono[animationName]->animation;
-            if (useTimeS < (animationTimeBase + animation->duration)) {
-              useAnimation = animation;
-              break;
-            }
-            animationTimeBase += animation->duration;
-          }
-          if (useAnimation != nullptr) { // first iteration
-            t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
-          } else { // loop
-            std::string secondLastAnimationName = avatar->useAnimationEnvelopeNames[avatar->useAnimationEnvelopeNames.size() - 2];
-            useAnimation = avatar->motiono[secondLastAnimationName]->animation;
-            t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
-          }
+        if (useAnimation != nullptr) { // first iteration
+          t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
+        } else { // loop
+          std::string secondLastAnimationName = avatar->useAnimationEnvelopeNames[avatar->useAnimationEnvelopeNames.size() - 2];
+          useAnimation = avatar->motiono[secondLastAnimationName]->animation;
+          t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
         }
       }
+    }
+    
+    _handleDefault(spec, avatar);
 
     if (useAnimation) {
       if (!spec.isPosition) {
@@ -1925,7 +1941,8 @@ namespace AnimationSystem
   void _blendEmote(AnimationMapping &spec, Avatar *avatar)
   {
     if (spec.isPosition) avatar->testString += "_blendEmote, "; // test
-    // _handleDefault(spec); // todo: prevent run forever ?
+
+    _handleDefault(spec, avatar);
 
     // const emoteAnimation = emoteAnimations[avatar->emoteAnimation || defaultEmoteAnimation];
     Animation *emoteAnimation = avatar->emoteMotiono[avatar->emoteAnimationName == "" ? avatar->defaultEmoteAnimationName : avatar->emoteAnimationName]->animation;
@@ -1960,6 +1977,9 @@ namespace AnimationSystem
   void _blendDance(AnimationMapping &spec, Avatar *avatar)
   {
     if (spec.isPosition) avatar->testString += "_blendDance, "; // test
+
+    _handleDefault(spec, avatar);
+
     Animation *danceAnimation = avatar->danceMotiono[avatar->danceAnimationName == "" ? avatar->defaultDanceAnimationName : avatar->danceAnimationName]->animation;
     // const src2 = danceAnimation.interpolants[k];
     float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
@@ -2190,13 +2210,6 @@ namespace AnimationSystem
     {
       AnimationMapping spec = _animationMappings[i];
 
-      // float * aaa = rootNode.update(spec);
-      animationValues[i] = rootNode->update(spec); // todo: set to spec.dst directly.
-      spec.dst[0] = animationValues[i][0];
-      spec.dst[1] = animationValues[i][1];
-      spec.dst[2] = animationValues[i][2];
-      if (!spec.isPosition) spec.dst[3] = animationValues[i][3];
-
       if (spec.isPosition) avatar->testString = ""; // test
 
       // note: Use exaclty same early return logic as js version, instead of all cascading, to prevent some bugs. But still want to use all cascading afterwards.
@@ -2228,9 +2241,9 @@ namespace AnimationSystem
         _blendHold(spec, this->avatar);
       } else if (avatar->pickUpState) {
         _blendPickUp(spec, this->avatar);
-      }/*  else {
-        _handleDefault(spec, this->avatar); // todo:
-      } */
+      } else {
+        _handleDefault(spec, this->avatar);
+      }
 
       // cascading blending, in order to do transition between all kinds of aniamtions.
       _blendFly(spec, this->avatar);
