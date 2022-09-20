@@ -235,7 +235,7 @@ namespace AnimationSystem
     //
 
     // avatar->mixer->getNodeTreeData(avatar->mixer->rootNode); // test
-    // std::cout << std::endl; //test
+    // std::cout << std::endl; // test
 
     //
 
@@ -1744,7 +1744,7 @@ namespace AnimationSystem
   }
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
     // return;
-    if (spec.isPosition) avatar->testString += "_handleDefault, "; // test
+    // if (spec.isPosition) avatar->testString += "_handleDefault, "; // test
 
     // avatar->mixer->animationValues[spec.index] = avatar->mixer->rootNode->update(spec); // todo: set to spec.dst directly.
     // spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
@@ -1817,7 +1817,7 @@ namespace AnimationSystem
     interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuat, 0, avatar->crouchFactor, spec.isPosition);
   }
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testString += "_blendPickUp, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendPickUp, "; // test
 
     Animation *pickUpAnimation = avatar->motiono["pickUpZelda"]->animation;
     Animation *pickUpIdleAnimation = avatar->motiono["pickUpIdleZelda"]->animation;
@@ -1833,7 +1833,7 @@ namespace AnimationSystem
     }
   }
   void _blendHold(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testString += "_blendHold, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendHold, "; // test
     
     _handleDefault(spec, avatar);
 
@@ -1856,7 +1856,7 @@ namespace AnimationSystem
     }
   }
   void _blendAim(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testString += "_blendAim, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendAim, "; // test
     
     _handleDefault(spec, avatar);
 
@@ -1887,7 +1887,7 @@ namespace AnimationSystem
     }
   }
   void _blendUnuse(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testString += "_blendUnuse, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendUnuse, "; // test
     
     _handleDefault(spec, avatar);
 
@@ -1936,7 +1936,7 @@ namespace AnimationSystem
     // }
   }
   void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testString += "_blendHurt, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendHurt, "; // test
 
     _handleDefault(spec, avatar);
 
@@ -1972,7 +1972,7 @@ namespace AnimationSystem
   }
   void _blendUse(AnimationMapping &spec, Avatar *avatar)
   {
-    if (spec.isPosition) avatar->testString += "_blendUse, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendUse, "; // test
 
     // std::cout << "useAnimationName" << std::endl;
     Animation *useAnimation = nullptr;
@@ -2041,7 +2041,7 @@ namespace AnimationSystem
   }
   void _blendEmote(AnimationMapping &spec, Avatar *avatar)
   {
-    if (spec.isPosition) avatar->testString += "_blendEmote, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendEmote, "; // test
 
     _handleDefault(spec, avatar);
 
@@ -2077,7 +2077,7 @@ namespace AnimationSystem
   }
   void _blendDance(AnimationMapping &spec, Avatar *avatar)
   {
-    if (spec.isPosition) avatar->testString += "_blendDance, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendDance, "; // test
 
     _handleDefault(spec, avatar);
 
@@ -2096,7 +2096,7 @@ namespace AnimationSystem
   }
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar)
   {
-    if (spec.isPosition) avatar->testString += "_blendNarutoRun, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendNarutoRun, "; // test
 
     // const narutoRunAnimation = narutoRunAnimations[defaultNarutoRunAnimation];
     Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
@@ -2112,7 +2112,7 @@ namespace AnimationSystem
   }
   void _blendSit(AnimationMapping &spec, Avatar *avatar)
   {
-    if (spec.isPosition) avatar->testString += "_blendSit, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendSit, "; // test
 
     // const sitAnimation = sitAnimations[avatar.sitAnimation || defaultSitAnimation];
     Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
@@ -2124,7 +2124,7 @@ namespace AnimationSystem
   }
   void _blendJump(AnimationMapping &spec, Avatar *avatar)
   {
-    if (spec.isPosition) avatar->testString += "_blendJump, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendJump, "; // test
 
     float t2 = avatar->jumpTime / 1000;
     // const src2 = jumpAnimation.interpolants[k];
@@ -2144,7 +2144,7 @@ namespace AnimationSystem
   }
   void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar)
   {
-    if (spec.isPosition) avatar->testString += "_blendDoubleJump, "; // test
+    // if (spec.isPosition) avatar->testString += "_blendDoubleJump, "; // test
 
     float t2 = avatar->doubleJumpTime / 1000;
     // const src2 = doubleJumpAnimation.interpolants[k];
@@ -2158,7 +2158,7 @@ namespace AnimationSystem
   void _blendFly(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->flyState || (avatar->flyTime >= 0 && avatar->flyTime < 1000)) {
-      if (spec.isPosition) avatar->testString += "_blendFly, "; // test
+      // if (spec.isPosition) avatar->testString += "_blendFly, "; // test
 
       float t2 = avatar->flyTime / 1000;
       // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
@@ -2186,7 +2186,7 @@ namespace AnimationSystem
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar)
   {
     if (avatar->fallLoopFactor > 0) {
-      if (spec.isPosition) avatar->testString += "_blendFallLoop, "; // test
+      // if (spec.isPosition) avatar->testString += "_blendFallLoop, "; // test
 
       float t2 = (avatar->fallLoopTime / 1000);
       // const src2 = fallLoopAnimation.interpolants[k];
@@ -2213,7 +2213,7 @@ namespace AnimationSystem
       float landFactor = landTimeS / landingAnimationDuration;
 
       if (landFactor > 0 && landFactor <= 1) {
-        if (spec.isPosition) avatar->testString += "_blendLand, "; // test
+        // if (spec.isPosition) avatar->testString += "_blendLand, "; // test
 
         float t2 = landTimeS * animationSpeed;
         // const src2 = landingAnimation->interpolants[k];
@@ -2234,8 +2234,6 @@ namespace AnimationSystem
         interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
       }
     } else {
-      if (spec.isPosition) avatar->testString += "_blendLand, "; // test
-
       float animationSpeed = 0.95;
       float landTimeS = avatar->landTime / 1000;
       Animation *landingAnimation = animationo["landing 2.fbx"];
@@ -2243,6 +2241,8 @@ namespace AnimationSystem
       float landFactor = landTimeS / landingAnimationDuration;
 
       if (landFactor > 0 && landFactor <= 1) {
+        // if (spec.isPosition) avatar->testString += "_blendLand, "; // test
+
         float t2 = landTimeS * animationSpeed;
         // const src2 = landingAnimation->interpolants[k];
         // const v2 = src2.evaluate(t2);
@@ -2275,7 +2275,7 @@ namespace AnimationSystem
   {
     if (avatar->activateTime > 0)
     {
-      if (spec.isPosition) avatar->testString += "_blendActivate, "; // test
+      // if (spec.isPosition) avatar->testString += "_blendActivate, "; // test
 
       // if (spec.isPosition) std::cout << "activateAnimationName: " << avatar->activateAnimationName << std::endl;
       // Animation *activateAnimation = animationo2[avatar->activateAnimationName]; // todo: animationo
@@ -2320,7 +2320,7 @@ namespace AnimationSystem
     {
       AnimationMapping spec = _animationMappings[i];
 
-      if (spec.isPosition) avatar->testString = ""; // test
+      // if (spec.isPosition) avatar->testString = ""; // test
 
       // note: Use exaclty same early return logic as js version, instead of all cascading, to prevent some bugs. But still want to use all cascading afterwards.
       if (avatar->doubleJumpState) {
@@ -2361,7 +2361,7 @@ namespace AnimationSystem
       _blendLand(spec, this->avatar);
       _blendActivate(spec, this->avatar);
 
-      if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl; // test
+      // if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl; // test
 
       animationValues[i][0] = spec.dst[0];
       animationValues[i][1] = spec.dst[1];
