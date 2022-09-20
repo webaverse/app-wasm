@@ -770,14 +770,14 @@ namespace AnimationSystem
     unsigned int index = 0;
 
     // values ---
-    float forwardFactor = scratchStack[index++];
-    float backwardFactor = scratchStack[index++];
-    float leftFactor = scratchStack[index++];
-    float rightFactor = scratchStack[index++];
-    float mirrorLeftFactorReverse = scratchStack[index++];
-    float mirrorLeftFactor = scratchStack[index++];
-    float mirrorRightFactorReverse = scratchStack[index++];
-    float mirrorRightFactor = scratchStack[index++];
+    this->forwardFactor = scratchStack[index++];
+    this->backwardFactor = scratchStack[index++];
+    this->leftFactor = scratchStack[index++];
+    this->rightFactor = scratchStack[index++];
+    this->mirrorLeftFactorReverse = scratchStack[index++];
+    this->mirrorLeftFactor = scratchStack[index++];
+    this->mirrorRightFactorReverse = scratchStack[index++];
+    this->mirrorRightFactor = scratchStack[index++];
 
     this->idleWalkFactor = scratchStack[index++];
     this->walkRunFactor = scratchStack[index++];
@@ -1037,26 +1037,26 @@ namespace AnimationSystem
     //   << std::endl;
 
     // values ---
-    this->motiono["walkForward"]->setWeight(forwardFactor);
-    this->motiono["walkBackward"]->setWeight(backwardFactor);
-    this->motiono["walkLeft"]->setWeight(mirrorLeftFactorReverse);
-    this->motiono["walkLeftMirror"]->setWeight(mirrorLeftFactor);
-    this->motiono["walkRight"]->setWeight(mirrorRightFactorReverse);
-    this->motiono["walkRightMirror"]->setWeight(mirrorRightFactor);
+    // this->motiono["walkForward"]->setWeight(forwardFactor);
+    // this->motiono["walkBackward"]->setWeight(backwardFactor);
+    // this->motiono["walkLeft"]->setWeight(mirrorLeftFactorReverse);
+    // this->motiono["walkLeftMirror"]->setWeight(mirrorLeftFactor);
+    // this->motiono["walkRight"]->setWeight(mirrorRightFactorReverse);
+    // this->motiono["walkRightMirror"]->setWeight(mirrorRightFactor);
 
-    this->motiono["runForward"]->setWeight(forwardFactor);
-    this->motiono["runBackward"]->setWeight(backwardFactor);
-    this->motiono["runLeft"]->setWeight(mirrorLeftFactorReverse);
-    this->motiono["runLeftMirror"]->setWeight(mirrorLeftFactor);
-    this->motiono["runRight"]->setWeight(mirrorRightFactorReverse);
-    this->motiono["runRightMirror"]->setWeight(mirrorRightFactor);
+    // this->motiono["runForward"]->setWeight(forwardFactor);
+    // this->motiono["runBackward"]->setWeight(backwardFactor);
+    // this->motiono["runLeft"]->setWeight(mirrorLeftFactorReverse);
+    // this->motiono["runLeftMirror"]->setWeight(mirrorLeftFactor);
+    // this->motiono["runRight"]->setWeight(mirrorRightFactorReverse);
+    // this->motiono["runRightMirror"]->setWeight(mirrorRightFactor);
 
-    this->motiono["crouchForward"]->setWeight(forwardFactor);
-    this->motiono["crouchBackward"]->setWeight(backwardFactor);
-    this->motiono["crouchLeft"]->setWeight(mirrorLeftFactorReverse);
-    this->motiono["crouchLeftMirror"]->setWeight(mirrorLeftFactor);
-    this->motiono["crouchRight"]->setWeight(mirrorRightFactorReverse);
-    this->motiono["crouchRightMirror"]->setWeight(mirrorRightFactor);
+    // this->motiono["crouchForward"]->setWeight(forwardFactor);
+    // this->motiono["crouchBackward"]->setWeight(backwardFactor);
+    // this->motiono["crouchLeft"]->setWeight(mirrorLeftFactorReverse);
+    // this->motiono["crouchLeftMirror"]->setWeight(mirrorLeftFactor);
+    // this->motiono["crouchRight"]->setWeight(mirrorRightFactorReverse);
+    // this->motiono["crouchRightMirror"]->setWeight(mirrorRightFactor);
 
     // this->motiono["bowForward"]->setWeight(forwardFactor);
     // this->motiono["bowBackward"]->setWeight(backwardFactor);
@@ -1715,14 +1715,68 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  float *doBlendList(AnimationMapping &spec, std::vector<Animation *> animations, std::vector<float> weights) {
+    float *resultVecQuat;
+    unsigned int nodeIndex = 0;
+    float currentWeight = 0;
+    for (int i = 0; i < animations.size(); i++) {
+      float weight = weights[i];
+      if (weight > 0) {
+        Animation *animation = animations[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+        float *vecQuat = evaluateInterpolant(animation, spec.index, fmod(AnimationMixer::nowS, animation->duration));
+        if (nodeIndex == 0) {
+          resultVecQuat = vecQuat;
+
+          nodeIndex++;
+          currentWeight = weight;
+        } else {
+          float t = weight / (currentWeight + weight);
+          interpolateFlat(resultVecQuat, 0, resultVecQuat, 0, vecQuat, 0, t, spec.isPosition);
+
+          nodeIndex++;
+          currentWeight += weight;
+        }
+      }
+    }
+    return resultVecQuat;
+  }
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
-    avatar->mixer->animationValues[spec.index] = avatar->mixer->rootNode->update(spec); // todo: set to spec.dst directly.
+    // return;
+    if (spec.isPosition) avatar->testString += "_handleDefault, "; // test
+
+    // avatar->mixer->animationValues[spec.index] = avatar->mixer->rootNode->update(spec); // todo: set to spec.dst directly.
+    // spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
+    // spec.dst[1] = avatar->mixer->animationValues[spec.index][1];
+    // spec.dst[2] = avatar->mixer->animationValues[spec.index][2];
+    // if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
+
+    std::vector<Animation *> animations; // todo: use localAnimations instead ?
+    animations.push_back(avatar->motiono["walkForward"]->animation);
+    animations.push_back(avatar->motiono["walkBackward"]->animation);
+    animations.push_back(avatar->motiono["walkLeft"]->animation);
+    animations.push_back(avatar->motiono["walkLeftMirror"]->animation);
+    animations.push_back(avatar->motiono["walkRight"]->animation);
+    animations.push_back(avatar->motiono["walkRightMirror"]->animation);
+
+    std::vector<float> weights; // todo: use localWeights instead ?
+    weights.push_back(avatar->forwardFactor);
+    weights.push_back(avatar->backwardFactor);
+    weights.push_back(avatar->mirrorLeftFactorReverse);
+    weights.push_back(avatar->mirrorLeftFactor);
+    weights.push_back(avatar->mirrorRightFactorReverse);
+    weights.push_back(avatar->mirrorRightFactor);
+
+    // float *vecQuat = doBlendList(spec, animations, weights);
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, animations, weights);
+
     spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
     spec.dst[1] = avatar->mixer->animationValues[spec.index][1];
     spec.dst[2] = avatar->mixer->animationValues[spec.index][2];
     if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
   }
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
+    if (spec.isPosition) avatar->testString += "_blendPickUp, "; // test
+
     Animation *pickUpAnimation = avatar->motiono["pickUpZelda"]->animation;
     Animation *pickUpIdleAnimation = avatar->motiono["pickUpIdleZelda"]->animation;
 
@@ -1737,6 +1791,8 @@ namespace AnimationSystem
     }
   }
   void _blendHold(AnimationMapping &spec, Avatar *avatar) {
+    if (spec.isPosition) avatar->testString += "_blendHold, "; // test
+    
     _handleDefault(spec, avatar);
 
     Animation *holdAnimation = avatar->motiono["pick_up_idle"]->animation;
@@ -1758,6 +1814,8 @@ namespace AnimationSystem
     }
   }
   void _blendAim(AnimationMapping &spec, Avatar *avatar) {
+    if (spec.isPosition) avatar->testString += "_blendAim, "; // test
+    
     _handleDefault(spec, avatar);
 
     Animation *aimAnimation = avatar->motiono[avatar->aimAnimationName]->animation;
@@ -1873,6 +1931,7 @@ namespace AnimationSystem
   void _blendUse(AnimationMapping &spec, Avatar *avatar)
   {
     if (spec.isPosition) avatar->testString += "_blendUse, "; // test
+
     // std::cout << "useAnimationName" << std::endl;
     Animation *useAnimation = nullptr;
     float t2;
@@ -1996,6 +2055,7 @@ namespace AnimationSystem
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar)
   {
     if (spec.isPosition) avatar->testString += "_blendNarutoRun, "; // test
+
     // const narutoRunAnimation = narutoRunAnimations[defaultNarutoRunAnimation];
     Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
     // const src2 = narutoRunAnimation.interpolants[k];
@@ -2011,6 +2071,7 @@ namespace AnimationSystem
   void _blendSit(AnimationMapping &spec, Avatar *avatar)
   {
     if (spec.isPosition) avatar->testString += "_blendSit, "; // test
+
     // const sitAnimation = sitAnimations[avatar.sitAnimation || defaultSitAnimation];
     Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
     // const src2 = sitAnimation.interpolants[k];
@@ -2022,6 +2083,7 @@ namespace AnimationSystem
   void _blendJump(AnimationMapping &spec, Avatar *avatar)
   {
     if (spec.isPosition) avatar->testString += "_blendJump, "; // test
+
     float t2 = avatar->jumpTime / 1000;
     // const src2 = jumpAnimation.interpolants[k];
     // const v2 = src2.evaluate(t2);
@@ -2041,6 +2103,7 @@ namespace AnimationSystem
   void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar)
   {
     if (spec.isPosition) avatar->testString += "_blendDoubleJump, "; // test
+
     float t2 = avatar->doubleJumpTime / 1000;
     // const src2 = doubleJumpAnimation.interpolants[k];
     // const v2 = src2.evaluate(t2);
@@ -2054,6 +2117,7 @@ namespace AnimationSystem
   {
     if (avatar->flyState || (avatar->flyTime >= 0 && avatar->flyTime < 1000)) {
       if (spec.isPosition) avatar->testString += "_blendFly, "; // test
+
       float t2 = avatar->flyTime / 1000;
       // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
       float f = 1;
@@ -2081,6 +2145,7 @@ namespace AnimationSystem
   {
     if (avatar->fallLoopFactor > 0) {
       if (spec.isPosition) avatar->testString += "_blendFallLoop, "; // test
+
       float t2 = (avatar->fallLoopTime / 1000);
       // const src2 = fallLoopAnimation.interpolants[k];
       // const v2 = src2.evaluate(t2);
@@ -2106,7 +2171,8 @@ namespace AnimationSystem
       float landFactor = landTimeS / landingAnimationDuration;
 
       if (landFactor > 0 && landFactor <= 1) {
-        if (spec.isPosition) avatar->testString += "_blendLandMoveOff, "; // test
+        if (spec.isPosition) avatar->testString += "_blendLand, "; // test
+
         float t2 = landTimeS * animationSpeed;
         // const src2 = landingAnimation->interpolants[k];
         // const v2 = src2.evaluate(t2);
@@ -2126,7 +2192,8 @@ namespace AnimationSystem
         interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
       }
     } else {
-      if (spec.isPosition) avatar->testString += "_blendLandMoveOn, "; // test
+      if (spec.isPosition) avatar->testString += "_blendLand, "; // test
+      
       float animationSpeed = 0.95;
       float landTimeS = avatar->landTime / 1000;
       Animation *landingAnimation = animationo["landing 2.fbx"];
@@ -2167,6 +2234,7 @@ namespace AnimationSystem
     if (avatar->activateTime > 0)
     {
       if (spec.isPosition) avatar->testString += "_blendActivate, "; // test
+
       // if (spec.isPosition) std::cout << "activateAnimationName: " << avatar->activateAnimationName << std::endl;
       // Animation *activateAnimation = animationo2[avatar->activateAnimationName]; // todo: animationo
       // std::cout << "avatar->activateAnimationName: " << avatar->activateAnimationName << std::endl;
@@ -2251,7 +2319,7 @@ namespace AnimationSystem
       _blendLand(spec, this->avatar);
       _blendActivate(spec, this->avatar);
 
-      // if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl; // test
+      if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl; // test
 
       animationValues[i][0] = spec.dst[0];
       animationValues[i][1] = spec.dst[1];
