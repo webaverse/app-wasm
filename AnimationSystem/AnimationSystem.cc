@@ -853,6 +853,8 @@ namespace AnimationSystem
     this->useAnimationEnvelopeLength = scratchStack[index++];
     this->hurtTime = scratchStack[index++];
     this->unuseTime = scratchStack[index++];
+    this->aimTime = scratchStack[index++];
+    this->aimMaxTime = scratchStack[index++];
 
     // ---------------------------------------------------------------------------------------------------
 
@@ -875,6 +877,7 @@ namespace AnimationSystem
     this->activateAnimationName = this->strings[index++];
     this->hurtAnimationName = this->strings[index++];
     this->unuseAnimationName = this->strings[index++];
+    this->aimAnimationName = this->strings[index++];
     // ---
     this->fallLoopFrom = this->strings[index++];
 
@@ -1707,6 +1710,34 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
+  void _blendAim(AnimationMapping &spec, Avatar *avatar) {
+    Animation *aimAnimation = avatar->motiono[avatar->aimAnimationName]->animation;
+    // std::cout << "aimAnimationName: " << avatar->aimAnimationName << std::endl;
+    // _handleDefault(spec); // todo: restore _handleDefault() instead of blendList.
+    float t2 = fmod((avatar->aimTime / avatar->aimMaxTime), aimAnimation->duration);
+    if (!spec.isPosition) {
+      if (aimAnimation) {
+        float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
+
+        Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        float t3 = 0;
+        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+        invertQuaternionFlat(v3, 0);
+        multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
+        multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+      }
+    } else {
+      float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
+
+      Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      float t3 = 0;
+      float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+      subVectorsFlat(spec.dst, spec.dst, v3);
+      addVectorsFlat(spec.dst, spec.dst, v2);
+    }
+  }
   void _blendUnuse(AnimationMapping &spec, Avatar *avatar) {
     if (spec.isPosition) avatar->testString += "_blendUnuse, "; // test
     float unuseTimeS = avatar->unuseTime / 1000;
@@ -2127,7 +2158,7 @@ namespace AnimationSystem
       spec.dst[2] = animationValues[i][2];
       if (!spec.isPosition) spec.dst[3] = animationValues[i][3];
 
-      if (spec.isPosition) avatar->testString = "";
+      if (spec.isPosition) avatar->testString = ""; // test
 
       // note: Use exaclty same early return logic as js version, instead of all cascading, to prevent some bugs. But still want to use all cascading afterwards.
       if (avatar->doubleJumpState) {
@@ -2150,6 +2181,8 @@ namespace AnimationSystem
         _blendUse(spec, this->avatar);
       } else if (avatar->hurtAnimationName != "") {
         _blendHurt(spec, this->avatar); // todo: move to highest priority.
+      } else if (avatar->aimAnimationName != "") {
+        _blendAim(spec, this->avatar);
       } else if (avatar->unuseAnimationName != "" && avatar->unuseTime >= 0) {
         _blendUnuse(spec, this->avatar);
       }
@@ -2160,7 +2193,7 @@ namespace AnimationSystem
       _blendLand(spec, this->avatar);
       // _blendActivate(spec, this->avatar);
 
-      if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl;
+      // if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl; // test
 
       animationValues[i][0] = spec.dst[0];
       animationValues[i][1] = spec.dst[1];
