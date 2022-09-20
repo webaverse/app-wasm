@@ -1717,7 +1717,7 @@ namespace AnimationSystem
     dst[dstOffset + 3] = w0;
   }
 
-  float *doBlendList(AnimationMapping &spec, std::vector<Animation *> animations, std::vector<float> weights) {
+  float *doBlendList(AnimationMapping &spec, std::vector<Animation *> animations, std::vector<float> weights) { // todo: different times.
     float *resultVecQuat;
     unsigned int nodeIndex = 0;
     float currentWeight = 0;
