@@ -14,15 +14,6 @@ namespace AnimationSystem
   class AnimationNode;
   class AnimationMixer;
 
-
-  enum NodeType
-  {
-    LIST = 1,
-    TWO = 2,
-    SOLITARY = 3,
-    OVERWRITE = 4,
-    FUNC = 5
-  };
   enum LoopType
   {
     LoopOnce = 2200,
@@ -129,7 +120,6 @@ namespace AnimationSystem
     std::map<std::string, AnimationNode *> activateMotiono;
     std::map<std::string, AnimationNode *> hurtMotiono;
 
-    std::map<std::string, AnimationNode *> nodeo; // todo: duplicated with mixer.nodeo ?
     std::vector<std::string> strings;
 
     // values
@@ -163,8 +153,6 @@ namespace AnimationSystem
     
     void setAnimations();
     void createMotions();
-    void createNodes();
-    void createNodesFromJson(json &jsonNode, AnimationNode *parentNode = nullptr);
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
   };
@@ -172,60 +160,11 @@ namespace AnimationSystem
   {
   public:
     // node & motion ------
-    AnimationMixer *mixer;
-    float *results[53];
-    float *update(AnimationMapping &spec);
+    // AnimationMixer *mixer;
     std::string name;
 
     // motion ------
     Animation *animation;
-    float startTime;
-    float timeBias = 0;
-    float speed = 1;
-    bool isFinished = false;
-    // default values same as THREE.AnimationAction.
-    unsigned int loop = LoopType::LoopRepeat; // todo: LoopType loop =.
-    bool clampWhenFinished = false;
-    //
-    void play();
-    void stop();
-    // Note: Variables has corresponding setXXX() function means can be changed outside, such as `timeBias` `speed` `loop`. Otherwise can't, such as `startTime`.
-    void setTimeBias(float timeBias);
-    void setSpeed(float speed);
-    void setLoop(LoopType loopType);
-
-    // node ------
-    float weight = 1;
-    std::vector<AnimationNode *> children;
-    unsigned int type = NodeType::LIST; // todo: NodeType type =.
-    bool isCrossFade = false;
-    float crossFadeDuration = 0;
-    float crossFadeStartTime;
-    void setWeight(float weight);
-    void setFactor(float factor);
-    void setArg(float arg);
-    float getWeight();
-    float getFactor();
-    void addChild(AnimationNode *child);
-    unsigned int getChildren(AnimationNode **scratchStack);
-
-    // NodeType::LIST ---
-
-    // NodeType::TWO ---
-    // NodeType::OVERWRITE ---
-    float factor = 0; // [0, 1]
-    float crossFadeTargetFactor;
-    void crossFadeTwo(float duration, float factor);
-
-    // NodeType::SOLITARY ---
-    AnimationNode *activeNode;
-    void crossFadeSolitary(float duration, AnimationNode *targetNode);
-
-    // NodeType::FUNC ---
-    unsigned int index;
-    float arg = 0;
-    // factor
-    // void crossFadeTwo(float duration, float factor);
   };
   class AnimationMixer // note: mixer can't aware of avatar.
   {
@@ -234,47 +173,20 @@ namespace AnimationSystem
     static float nowS;
 
     Avatar *avatar; // todo: delete this ?
-    // unsigned int index;
-    AnimationNode _animationNode; // todo: rename: animationTree
-    AnimationNode *rootNode;
-    // std::vector<AnimationNode *> motions;
     std::map<std::string, AnimationNode *> motiono;
-    std::map<std::string, AnimationNode *> nodeo;
-    float finishedFlag = 0;
-    // float *finishedFlag = (float *)malloc((1) * sizeof(float));
-    // float *finishedFlag = new float();
-    // float *animationValues[55]; // 53 bones interpolants result buffers + 1 finished event flag + 1 finished motion pointer.
-    float *animationValues[54]; // 53 bones interpolants result buffers + 1 finished event flag.
-    AnimationNode *finishedMotion; // todo: support multiple motions.
-
-    AnimationMixer()
-    {
-      animationValues[53] = &finishedFlag;
-    }
+    float *animationValues[53]; // 53 bones interpolants result buffers.
 
     AnimationNode *createMotion(Animation *animation, std::string name = "");
-    AnimationNode *getMotion(char *scratchStack, unsigned int nameByteLength);
-    unsigned int getMotionName(AnimationNode *motion, char *scratchStack);
-    AnimationNode *createNode(NodeType type = NodeType::LIST, std::string name = "", unsigned int index = 0);
-    AnimationNode *getNode(char *scratchStack, unsigned int nameByteLength);
-    void setRootNode(AnimationNode *node);
-    void plotNodeTree(AnimationNode *node, unsigned int indent = 0);
-    void getNodeTreeData(AnimationNode *node);
     float **update(float now, float nowS);
-    unsigned int getFinishedMotionName(char *scratchStack);
   };
 
   // ------
   Avatar *createAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
   AnimationMixer *createAnimationMixer();
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
-  // float createAnimation();
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
   void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  // float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t);
-  // float **getAnimationValues(unsigned int animationIndex, float t);
-  // void crossFade(AnimationNode *parentNode, float duration, AnimationNode *targetNode);
   void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
 
