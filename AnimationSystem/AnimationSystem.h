@@ -5,8 +5,7 @@
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
-namespace AnimationSystem
-{
+namespace AnimationSystem {
   struct Interpolant;
   struct Animation;
   struct AnimationMapping;
@@ -14,14 +13,12 @@ namespace AnimationSystem
   class AnimationNode;
   class AnimationMixer;
 
-  enum LoopType
-  {
+  enum LoopType {
     LoopOnce = 2200,
     LoopRepeat = 2201,
     LoopPingPong = 2202
   };
-  enum BoneName // todo: rename boneIndex
-  {
+  enum BoneName { // todo: rename boneIndex
     // Hips = 0, // position
     Hips = 1, // quaternion
     Spine = 2,
@@ -77,8 +74,7 @@ namespace AnimationSystem
     Left_toe = 52
   };
 
-  struct Interpolant
-  {
+  struct Interpolant {
     unsigned int numParameterPositions;
     float *parameterPositions;
     float *resultBuffer;
@@ -86,16 +82,14 @@ namespace AnimationSystem
     float *sampleValues;
     unsigned int valueSize;
   };
-  struct Animation
-  {
+  struct Animation {
     float duration;
     std::vector<Interpolant> interpolants; // todo: pure array?
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
     std::string name;
   };
-  struct AnimationMapping // spec
-  {
+  struct AnimationMapping { // spec
     float *dst =  (float *)malloc((4) * sizeof(float));
     bool isPosition;
     unsigned int index;
@@ -105,8 +99,7 @@ namespace AnimationSystem
     bool isArm;
   };
 
-  class Avatar
-  {
+  class Avatar {
   public:
     AnimationMixer *mixer;
     std::map<std::string, AnimationNode *> motiono; // todo: duplicated with mixer.motiono ?
@@ -156,8 +149,7 @@ namespace AnimationSystem
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
   };
-  class AnimationNode
-  {
+  class AnimationNode {
   public:
     // node & motion ------
     // AnimationMixer *mixer;
@@ -166,8 +158,7 @@ namespace AnimationSystem
     // motion ------
     Animation *animation;
   };
-  class AnimationMixer // note: mixer can't aware of avatar.
-  {
+  class AnimationMixer { // note: mixer can't aware of avatar.
   public:
     // static float now;
     static float nowS;

@@ -1,7 +1,6 @@
 #include "AnimationSystem.h"
 
-namespace AnimationSystem
-{
+namespace AnimationSystem {
   std::vector<Avatar *> avatars;
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
@@ -24,55 +23,39 @@ namespace AnimationSystem
 
   // Utils ------
 
-  float min(float a, float b)
-  {
-    if (a > b)
-    {
+  float min(float a, float b) {
+    if (a > b) {
       return b;
-    }
-    else
-    {
+    } else {
       return a;
     }
   }
-  float max(float a, float b)
-  {
-    if (a > b)
-    {
+  float max(float a, float b) {
+    if (a > b) {
       return a;
-    }
-    else
-    {
+    } else {
       return b;
     }
   }
-  float clamp(float value, float minValue, float maxValue)
-  {
+  float clamp(float value, float minValue, float maxValue) {
     return max( minValue, min( maxValue, value ) );
   }
-  void _clearXZ(float *dst, bool isPosition)
-  {
-    if (isPosition)
-    {
+  void _clearXZ(float *dst, bool isPosition) {
+    if (isPosition) {
       dst[0] = 0;
       dst[2] = 0;
     }
   }
-  void copyValue(float *dst, float *src, bool isPosition)
-  {
+  void copyValue(float *dst, float *src, bool isPosition) {
     dst[0] = src[0];
     dst[1] = src[1];
     dst[2] = src[2];
     if (!isPosition) dst[3] = src[3];
   }
-  void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition) // todo: del offsets.
-  {
-    if (isPosition)
-    {
+  void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition) { // todo: del offsets.
+    if (isPosition) {
       lerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
-    }
-    else
-    {
+    } else {
       slerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
     }
   }
@@ -92,20 +75,17 @@ namespace AnimationSystem
     dst[ dstOffset + 2 ] = z0 * w1 + w0 * z1 + x0 * y1 - y0 * x1;
     dst[ dstOffset + 3 ] = w0 * w1 - x0 * x1 - y0 * y1 - z0 * z1;
   }
-  void invertQuaternionFlat(float *dst, unsigned int dstOffset)
-  {
+  void invertQuaternionFlat(float *dst, unsigned int dstOffset) {
     dst[ dstOffset ] *= -1;
     dst[ dstOffset + 1 ] *= -1;
     dst[ dstOffset + 2 ] *= -1;
   }
-  void addVectorsFlat(float *dst, float *src0, float *src1)
-  {
+  void addVectorsFlat(float *dst, float *src0, float *src1) {
     dst[0] = src0[0] + src1[0];
     dst[1] = src0[1] + src1[1];
     dst[2] = src0[2] + src1[2];
   }
-  void subVectorsFlat(float *dst, float *src0, float *src1)
-  {
+  void subVectorsFlat(float *dst, float *src0, float *src1) {
     dst[0] = src0[0] - src1[0];
     dst[1] = src0[1] - src1[1];
     dst[2] = src0[2] - src1[2];
@@ -125,15 +105,13 @@ namespace AnimationSystem
 
     return avatar;
   }
-  void Avatar::setAnimations()
-  {
+  void Avatar::setAnimations() {
     fallLoopAnimation = animationo["falling.fbx"];
     floatAnimation = animationo["treading water.fbx"]; // todo: animations.find(a => a.isFloat);
     doubleJumpAnimation = animationo["jump_double.fbx"];
     jumpAnimation = animationo["jump.fbx"];
   }
-  void Avatar::createMotions()
-  {
+  void Avatar::createMotions() {
     this->motiono["idle"] = this->mixer->createMotion(animationo["idle.fbx"], "idle"); // todo: don't need `this->`
 
     this->motiono["walkForward"] = this->mixer->createMotion(animationo["walking.fbx"], "walkForward");
@@ -195,8 +173,7 @@ namespace AnimationSystem
     this->useMotiono["rifle"] = this->mixer->createMotion(animationo["Rifle Aiming Idle.fbx"], "rifle");
     this->useMotiono["slash"] = this->mixer->createMotion(animationo["sword and shield slash.fbx"], "slash");
     this->useMotiono["throw"] = this->mixer->createMotion(animationo["pick_up_throw.fbx"], "throw");
-    for (auto const& x : this->useMotiono)
-    {
+    for (auto const& x : this->useMotiono) {
       this->motiono[x.first] = this->useMotiono[x.first];
     }
     
@@ -207,8 +184,7 @@ namespace AnimationSystem
     this->useComboMotiono["swordTopDownSlash"] = this->mixer->createMotion(animationo["sword_topdown_slash.fbx"], "swordTopDownSlash");
     this->useComboMotiono["swordTopDownSlashStep"] = this->mixer->createMotion(animationo["sword_topdown_slash_step.fbx"], "swordTopDownSlashStep");
     // this->useComboMotiono["dashAttack"] = this->mixer->createMotion(animationo["sword_dash.fbx"], "dashAttack");
-    for (auto const& x : this->useComboMotiono)
-    {
+    for (auto const& x : this->useComboMotiono) {
       this->motiono[x.first] = this->useComboMotiono[x.first];
     }
 
@@ -216,8 +192,7 @@ namespace AnimationSystem
     this->bowMotiono["bowDraw"] = this->mixer->createMotion(animationo["bow draw.fbx"], "bowDraw");
     this->bowMotiono["bowIdle"] = this->mixer->createMotion(animationo["bow idle.fbx"], "bowIdle");
     this->bowMotiono["bowLoose"] = this->mixer->createMotion(animationo["bow loose.fbx"], "bowLoose");
-    for (auto const& x : this->bowMotiono)
-    {
+    for (auto const& x : this->bowMotiono) {
       this->motiono[x.first] = this->bowMotiono[x.first];
     }
 
@@ -225,16 +200,14 @@ namespace AnimationSystem
     this->sitMotiono["chair"] = this->mixer->createMotion(animationo["sitting idle.fbx"], "chair");
     this->sitMotiono["saddle"] = this->mixer->createMotion(animationo["sitting idle.fbx"], "saddle");
     this->sitMotiono["stand"] = this->mixer->createMotion(animationo["Skateboarding.fbx"], "stand");
-    for (auto const& x : this->sitMotiono)
-    {
+    for (auto const& x : this->sitMotiono) {
       this->motiono[x.first] = this->sitMotiono[x.first];
     }
 
     // hurtAnimations
     this->hurtMotiono["pain_back"] = this->mixer->createMotion(animationo["pain_back.fbx"], "pain_back");
     this->hurtMotiono["pain_arch"] = this->mixer->createMotion(animationo["pain_arch.fbx"], "pain_arch");
-    for (auto const& x : this->hurtMotiono)
-    {
+    for (auto const& x : this->hurtMotiono) {
       this->motiono[x.first] = this->hurtMotiono[x.first];
     }
 
@@ -255,8 +228,7 @@ namespace AnimationSystem
     this->emoteMotiono["surpriseSoft"] = this->mixer->createMotion(animationo["surprise_soft.fbx"], "surpriseSoft");
     this->emoteMotiono["victory"] = this->mixer->createMotion(animationo["victory.fbx"], "victory");
     this->emoteMotiono["victorySoft"] = this->mixer->createMotion(animationo["victory_soft.fbx"], "victorySoft");
-    for (auto const& x : this->emoteMotiono)
-    {
+    for (auto const& x : this->emoteMotiono) {
       this->motiono[x.first] = this->emoteMotiono[x.first];
     }
 
@@ -275,8 +247,7 @@ namespace AnimationSystem
     this->activateMotiono["grab_left"] = this->mixer->createMotion(animationo["grab_left.fbx"], "grab_left");
     this->activateMotiono["grab_right"] = this->mixer->createMotion(animationo["grab_right.fbx"], "grab_right");
     this->activateMotiono["pick_up"] = this->mixer->createMotion(animationo["pick_up.fbx"], "pick_up");
-    for (auto const& x : this->activateMotiono)
-    {
+    for (auto const& x : this->activateMotiono) {
       this->motiono[x.first] = this->activateMotiono[x.first];
     }
 
@@ -300,23 +271,19 @@ namespace AnimationSystem
     // this->motiono[] = this->mixer->createMotion(animationo[]);
     // this->motiono[] = this->mixer->createMotion(animationo[]);
   }
-  void Avatar::updateString(char *scratchStack, unsigned int numStrings)
-  {
+  void Avatar::updateString(char *scratchStack, unsigned int numStrings) {
     this->strings.clear();
     unsigned int index = 0;
-    for (unsigned int stringIndex = 0; stringIndex < numStrings; stringIndex++)
-    {
+    for (unsigned int stringIndex = 0; stringIndex < numStrings; stringIndex++) {
       unsigned int stringByteLength = (unsigned int)(scratchStack[index++]);
       std::string string = "";
-      for (unsigned int charIndex = 0; charIndex < stringByteLength; charIndex++)
-      {
+      for (unsigned int charIndex = 0; charIndex < stringByteLength; charIndex++) {
         string += scratchStack[index++];
       }
       this->strings.push_back(string);
     }
   }
-  void Avatar::update(float *scratchStack)
-  {
+  void Avatar::update(float *scratchStack) {
     unsigned int index = 0;
 
     // values ---
@@ -406,14 +373,12 @@ namespace AnimationSystem
       useAnimationEnvelopeNames.push_back(this->strings[index++]);
     }
   }
-  AnimationMixer *createAnimationMixer()
-  {
+  AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
     return animationMixer;
   }
-  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm)
-  {
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm) {
     AnimationMapping animationMapping;
     animationMapping.isPosition = isPosition;
     animationMapping.index = index;
@@ -423,13 +388,11 @@ namespace AnimationSystem
     animationMapping.isArm = isArm;
     _animationMappings.push_back(animationMapping);
   }
-  Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration)
-  {
+  Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration) {
     Animation *animation = new Animation();
     animation->duration = duration;
     std::string name = "";
-    for (unsigned int i = 0; i < nameByteLength; i++)
-    {
+    for (unsigned int i = 0; i < nameByteLength; i++) {
       name += scratchStack[i];
     }
     animation->name = name; // todo: don't need ?
@@ -438,18 +401,15 @@ namespace AnimationSystem
 
     return animation;
   }
-  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength)
-  {
+  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
     std::string name = "";
-    for (unsigned int i = 0; i < nameByteLength; i++)
-    {
+    for (unsigned int i = 0; i < nameByteLength; i++) {
       name += scratchStack[i];
     }
 
     return animationo[name];
   }
-  AnimationNode *AnimationMixer::createMotion(Animation *animation, std::string name)
-  {
+  AnimationNode *AnimationMixer::createMotion(Animation *animation, std::string name) {
     AnimationNode *motion = new AnimationNode();
     motion->animation = animation;
     motion->name = name;
@@ -458,8 +418,7 @@ namespace AnimationSystem
 
     return motion;
   }
-  void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize)
-  {
+  void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;
     interpolant.parameterPositions = parameterPositions;
@@ -469,60 +428,45 @@ namespace AnimationSystem
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
     std::string name = "";
-    for (unsigned int i = 0; i < animationNameByteLength; i++)
-    {
+    for (unsigned int i = 0; i < animationNameByteLength; i++) {
       name += scratchStack[i];
     }
     animationo[name]->interpolants.push_back(interpolant);
   }
-  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t)
-  {
+  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) {
     Interpolant interpolant = animation->interpolants[interpolantIndex];
 
-    if (interpolant.numParameterPositions == 1)
-    {
+    if (interpolant.numParameterPositions == 1) {
       interpolant.resultBuffer[0] = interpolant.sampleValues[0];
       interpolant.resultBuffer[1] = interpolant.sampleValues[1];
       interpolant.resultBuffer[2] = interpolant.sampleValues[2];
-      if (interpolant.valueSize == 4)
-      {
+      if (interpolant.valueSize == 4) {
         interpolant.resultBuffer[3] = interpolant.sampleValues[3];
       }
-    }
-    else
-    {
+    } else {
       int index = 0;
-      for (; index < interpolant.numParameterPositions; index++)
-      {
-        if (interpolant.parameterPositions[index] > t)
-        {
+      for (; index < interpolant.numParameterPositions; index++) {
+        if (interpolant.parameterPositions[index] > t) {
           break;
         }
       }
 
-      if (index == 0)
-      { // note: Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0].
+      if (index == 0) { // note: Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0].
         interpolant.resultBuffer[0] = interpolant.sampleValues[0];
         interpolant.resultBuffer[1] = interpolant.sampleValues[1];
         interpolant.resultBuffer[2] = interpolant.sampleValues[2];
-        if (interpolant.valueSize == 4)
-        {
+        if (interpolant.valueSize == 4) {
           interpolant.resultBuffer[3] = interpolant.sampleValues[3];
         }
-      }
-      else if (index > interpolant.numParameterPositions - 1)
-      { // note: Handle situation that, t > max parameterPosition.
+      } else if (index > interpolant.numParameterPositions - 1) { // note: Handle situation that, t > max parameterPosition.
         unsigned int maxIndex = interpolant.numParameterPositions - 1;
         interpolant.resultBuffer[0] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 0];
         interpolant.resultBuffer[1] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 1];
         interpolant.resultBuffer[2] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 2];
-        if (interpolant.valueSize == 4)
-        {
+        if (interpolant.valueSize == 4) {
           interpolant.resultBuffer[3] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 3];
         }
-      }
-      else
-      {
+      } else {
         unsigned int index0 = index - 1;
         unsigned int index1 = index;
 
@@ -530,29 +474,27 @@ namespace AnimationSystem
         float time1 = interpolant.parameterPositions[index1];
         float f = (t - time0) / (time1 - time0);
 
-        if (interpolant.valueSize == 3) // todo: use interpolateFlat
-        {
+        if (interpolant.valueSize == 3) { // todo: use interpolateFlat
           lerpFlat(
-              interpolant.resultBuffer, 0,
-              interpolant.sampleValues, index0 * interpolant.valueSize,
-              interpolant.sampleValues, index1 * interpolant.valueSize,
-              f);
-        }
-        else
-        {
+            interpolant.resultBuffer, 0,
+            interpolant.sampleValues, index0 * interpolant.valueSize,
+            interpolant.sampleValues, index1 * interpolant.valueSize,
+            f
+          );
+        } else {
           slerpFlat(
-              interpolant.resultBuffer, 0,
-              interpolant.sampleValues, index0 * interpolant.valueSize,
-              interpolant.sampleValues, index1 * interpolant.valueSize,
-              f);
+            interpolant.resultBuffer, 0,
+            interpolant.sampleValues, index0 * interpolant.valueSize,
+            interpolant.sampleValues, index1 * interpolant.valueSize,
+            f
+          );
         }
       }
     }
 
     return interpolant.resultBuffer;
   }
-  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t)
-  {
+  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
     float x0 = src0[srcOffset0 + 0];
     float y0 = src0[srcOffset0 + 1];
     float z0 = src0[srcOffset0 + 2];
@@ -565,8 +507,7 @@ namespace AnimationSystem
     dst[dstOffset + 1] = y0 + (y1 - y0) * t;
     dst[dstOffset + 2] = z0 + (z1 - z0) * t;
   };
-  void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t)
-  {
+  void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
 
     // fuzz-free, array-based Quaternion SLERP operation
 
@@ -580,8 +521,7 @@ namespace AnimationSystem
           z1 = src1[srcOffset1 + 2],
           w1 = src1[srcOffset1 + 3];
 
-    if (t == 0)
-    {
+    if (t == 0) {
 
       dst[dstOffset + 0] = x0;
       dst[dstOffset + 1] = y0;
@@ -590,8 +530,7 @@ namespace AnimationSystem
       return;
     }
 
-    if (t == 1)
-    {
+    if (t == 1) {
 
       dst[dstOffset + 0] = x1;
       dst[dstOffset + 1] = y1;
@@ -600,8 +539,7 @@ namespace AnimationSystem
       return;
     }
 
-    if (w0 != w1 || x0 != x1 || y0 != y1 || z0 != z1)
-    {
+    if (w0 != w1 || x0 != x1 || y0 != y1 || z0 != z1) {
 
       float s = 1 - t;
       float cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
@@ -610,8 +548,7 @@ namespace AnimationSystem
 
       // Skip the Slerp for tiny steps to avoid numeric problems:
       float EPSILON = 2.220446049250313e-16;
-      if (sqrSin > EPSILON)
-      {
+      if (sqrSin > EPSILON) {
 
         float sinVal = sqrt(sqrSin),
               len = atan2(sinVal, cos * dir);
@@ -628,8 +565,7 @@ namespace AnimationSystem
       w0 = w0 * s + w1 * tDir;
 
       // Normalize in case we just did a lerp:
-      if (s == 1 - t)
-      {
+      if (s == 1 - t) {
 
         float f = 1 / sqrt(x0 * x0 + y0 * y0 + z0 * z0 + w0 * w0);
 
@@ -882,8 +818,7 @@ namespace AnimationSystem
       addVectorsFlat(spec.dst, spec.dst, v2);
     }
   }
-  void _blendUse(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendUse(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendUse, "; // test
 
     Animation *useAnimation = nullptr;
@@ -950,8 +885,7 @@ namespace AnimationSystem
       }
     }
   }
-  void _blendEmote(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendEmote(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendEmote, "; // test
 
     _handleDefault(spec, avatar);
@@ -980,8 +914,7 @@ namespace AnimationSystem
 
     _clearXZ(spec.dst, spec.isPosition);
   }
-  void _blendDance(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendDance(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendDance, "; // test
 
     _handleDefault(spec, avatar);
@@ -997,8 +930,7 @@ namespace AnimationSystem
 
     _clearXZ(spec.dst, spec.isPosition);
   }
-  void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendNarutoRun, "; // test
 
     Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
@@ -1009,8 +941,7 @@ namespace AnimationSystem
 
     _clearXZ(spec.dst, spec.isPosition);
   }
-  void _blendSit(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendSit(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendSit, "; // test
 
     Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
@@ -1018,8 +949,7 @@ namespace AnimationSystem
 
     copyValue(spec.dst, v2, spec.isPosition);
   }
-  void _blendJump(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendJump(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendJump, "; // test
 
     float t2 = avatar->jumpTime / 1000;
@@ -1036,8 +966,7 @@ namespace AnimationSystem
       copyValue(spec.dst, v2, spec.isPosition);
     }
   }
-  void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendDoubleJump, "; // test
 
     float t2 = avatar->doubleJumpTime / 1000;
@@ -1047,8 +976,7 @@ namespace AnimationSystem
 
     _clearXZ(spec.dst, spec.isPosition);
   }
-  void _blendFly(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendFly(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->flyState || (avatar->flyTime >= 0 && avatar->flyTime < 1000)) {
       // if (spec.isPosition) avatar->testString += "_blendFly, "; // test
 
@@ -1067,8 +995,7 @@ namespace AnimationSystem
       }
     }
   };
-  void _blendFallLoop(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->fallLoopFactor > 0) {
       // if (spec.isPosition) avatar->testString += "_blendFallLoop, "; // test
 
@@ -1085,8 +1012,7 @@ namespace AnimationSystem
       _clearXZ(spec.dst, spec.isPosition);
     }
   }
-  void _blendLand(AnimationMapping &spec, Avatar *avatar)
-  {
+  void _blendLand(AnimationMapping &spec, Avatar *avatar) {
     if (!avatar->landWithMoving) {
       float animationSpeed = 0.75;
       float landTimeS = avatar->landTime / 1000;
@@ -1133,10 +1059,8 @@ namespace AnimationSystem
       }
     }
   }
-  void _blendActivate(AnimationMapping &spec, Avatar *avatar) // todo: full port
-  {
-    if (avatar->activateTime > 0)
-    {
+  void _blendActivate(AnimationMapping &spec, Avatar *avatar) { // todo: full port
+    if (avatar->activateTime > 0) {
       // if (spec.isPosition) avatar->testString += "_blendActivate, "; // test
 
       std::string activateAnimationName = avatar->activateAnimationName == "" ? avatar->defaultActivateAnimationName : avatar->activateAnimationName;
@@ -1153,13 +1077,11 @@ namespace AnimationSystem
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
     }
   }
-  float **AnimationMixer::update(float now, float nowS)
-  {
+  float **AnimationMixer::update(float now, float nowS) {
     // AnimationMixer::now = now; // why can't set, cause idle and dance animatios play very fast ? use file variale instead ?
     AnimationMixer::nowS = nowS;
 
-    for (int i = 0; i < 53; i++)
-    {
+    for (int i = 0; i < 53; i++) {
       AnimationMapping spec = _animationMappings[i];
 
       // if (spec.isPosition) avatar->testString = ""; // test
