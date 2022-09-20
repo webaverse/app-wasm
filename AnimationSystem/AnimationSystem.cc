@@ -870,8 +870,8 @@ namespace AnimationSystem
     this->defaultEmoteAnimationName = this->strings[index++];
     this->defaultDanceAnimationName = this->strings[index++];
     std::string defaultHoldAnimation = this->strings[index++];
-    std::string defaultActivateAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
-    this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultActivateAnimationName
+    this->defaultActivateAnimationName = this->strings[index++];
+    this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultNarutoRunAnimationName
     // ---
     this->useAnimationName = this->strings[index++];
     this->useAnimationComboName = this->strings[index++];
@@ -2149,7 +2149,9 @@ namespace AnimationSystem
       if (spec.isPosition) avatar->testString += "_blendActivate, "; // test
       // if (spec.isPosition) std::cout << "activateAnimationName: " << avatar->activateAnimationName << std::endl;
       // Animation *activateAnimation = animationo2[avatar->activateAnimationName]; // todo: animationo
-      Animation *activateAnimation = avatar->motiono[avatar->activateAnimationName]->animation;
+      // std::cout << "avatar->activateAnimationName: " << avatar->activateAnimationName << std::endl;
+      std::string activateAnimationName = avatar->activateAnimationName == "" ? avatar->defaultActivateAnimationName : avatar->activateAnimationName;
+      Animation *activateAnimation = avatar->motiono[activateAnimationName]->animation;
       // Interpolant *src2 = activateAnimation->interpolants[spec.index];
       // const t2 = ((avatar.activateTime / 1000) * activateAnimations[defaultAnimation].speedFactor) % activateAnimation.duration; // todo: speedFactor
       float t2 = fmod((avatar->activateTime / 1000), activateAnimation->duration);
@@ -2234,7 +2236,7 @@ namespace AnimationSystem
       _blendFly(spec, this->avatar);
       _blendFallLoop(spec, this->avatar);
       _blendLand(spec, this->avatar);
-      // _blendActivate(spec, this->avatar);
+      _blendActivate(spec, this->avatar);
 
       // if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl; // test
 
