@@ -13,6 +13,7 @@ namespace AnimationSystem {
   float localVecQuatArr[4];
 
   float *localVecQuatPtr;
+  float *localVecQuatPtr2;
 
   // Animation *localAnimations6[6];
   Animation *walkAnimations[6];
@@ -649,27 +650,19 @@ namespace AnimationSystem {
     localWeightsArr6[4] = avatar->mirrorRightFactorReverse;
     localWeightsArr6[5] = avatar->mirrorRightFactor;
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, walkAnimations, localWeightsArr6); // note: todo: only need init `avatar->mixer->animationValues[spec.index]` once.
+    localVecQuatPtr2 = doBlendList(spec, 6, walkAnimations, localWeightsArr6);
+    copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
-    spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
-    spec.dst[1] = avatar->mixer->animationValues[spec.index][1];
-    spec.dst[2] = avatar->mixer->animationValues[spec.index][2];
-    if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
+    localVecQuatPtr2 = doBlendList(spec, 6, runAnimations, localWeightsArr6);
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, runAnimations, localWeightsArr6);
-
-    interpolateFlat(spec.dst, 0, spec.dst, 0, avatar->mixer->animationValues[spec.index], 0, avatar->walkRunFactor, spec.isPosition);
+    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
 
     // blend idle ---
     localVecQuatPtr = evaluateInterpolant(avatar->motiono["idle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["idle"]->animation->duration));
     interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, crouchAnimations, localWeightsArr6);
-
-    localVecQuatArr[0] = avatar->mixer->animationValues[spec.index][0];
-    localVecQuatArr[1] = avatar->mixer->animationValues[spec.index][1];
-    localVecQuatArr[2] = avatar->mixer->animationValues[spec.index][2];
-    if (!spec.isPosition) localVecQuatArr[3] = avatar->mixer->animationValues[spec.index][3];
+    localVecQuatPtr2 = doBlendList(spec, 6, crouchAnimations, localWeightsArr6);
+    copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
 
     // blend crouch idle ---
     localVecQuatPtr = evaluateInterpolant(avatar->motiono["crouchIdle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["crouchIdle"]->animation->duration));
@@ -1131,10 +1124,11 @@ namespace AnimationSystem {
 
       // if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl; // test
 
-      animationValues[i][0] = spec.dst[0];
-      animationValues[i][1] = spec.dst[1];
-      animationValues[i][2] = spec.dst[2];
-      if (!spec.isPosition) animationValues[i][3] = spec.dst[3];
+      // animationValues[i][0] = spec.dst[0];
+      // animationValues[i][1] = spec.dst[1];
+      // animationValues[i][2] = spec.dst[2];
+      // if (!spec.isPosition) animationValues[i][3] = spec.dst[3];
+      animationValues[i] = spec.dst;
     }
 
     return animationValues;
