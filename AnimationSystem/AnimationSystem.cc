@@ -163,8 +163,31 @@ namespace AnimationSystem {
     // hurtAnimations
     animationNames.push_back("pain_back");
     animationNames.push_back("pain_arch");
-    // 
-    // animationNames.push_back("");
+    // useComboAnimations
+    animationNames.push_back("swordSideIdle");
+    animationNames.push_back("swordSideIdleStatic");
+    animationNames.push_back("swordSideSlash");
+    animationNames.push_back("swordSideSlashStep");
+    animationNames.push_back("swordTopDownSlash");
+    animationNames.push_back("swordTopDownSlashStep");
+    animationNames.push_back("swordUndraw");
+    animationNames.push_back("dashAttack");
+    // bowAnimations
+    animationNames.push_back("bowDraw");
+    animationNames.push_back("bowIdle");
+    animationNames.push_back("bowLoose");
+    // pickUpAnimations
+    animationNames.push_back("pickUp");
+    animationNames.push_back("pickUpIdle");
+    animationNames.push_back("pickUpThrow");
+    animationNames.push_back("putDown");
+    animationNames.push_back("pickUpZelda");
+    animationNames.push_back("pickUpIdleZelda");
+    animationNames.push_back("putDownZelda");
+    // narutoRunAnimations
+    animationNames.push_back("narutoRun");
+    // holdAnimations
+    animationNames.push_back("pick_up_idle");
     for (unsigned int i = 0; i < animationNames.size(); i++) {
       AnimationName[i] = animationNames[i];
     }
@@ -370,7 +393,7 @@ namespace AnimationSystem {
     // this->motiono[] = this->mixer->createMotion(animationo[]);
     // this->motiono[] = this->mixer->createMotion(animationo[]);
   }
-  void Avatar::updateString(char *scratchStack, unsigned int numStrings) {
+  void Avatar::updateString(char *scratchStack, unsigned int numStrings) { // todo: del
     this->strings.clear();
     unsigned int index = 0;
     for (unsigned int stringIndex = 0; stringIndex < numStrings; stringIndex++) {
@@ -447,35 +470,50 @@ namespace AnimationSystem {
     this->danceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
     this->activateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
     this->hurtAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->defaultSitAnimation = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->defaultEmoteAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->defaultDanceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->defaultHoldAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->defaultActivateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->defaultNarutoRunAnimation = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->useAnimationComboName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->unuseAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->aimAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->fallLoopFrom = (unsigned int)(scratchStack[index++]) == 1 ? "jump" : "";
+
+    useAnimationEnvelopeNames.clear();
+    for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
+      useAnimationEnvelopeNames.push_back(AnimationName[(unsigned int)(scratchStack[index++])]);
+    }
 
     // ---------------------------------------------------------------------------------------------------
 
-    index = 0;
+    // index = 0;
 
     // strings ----
-    this->defaultSitAnimation = this->strings[index++]; // todo: defaultSitAnimationName, only rename on wasm side.
-    this->defaultEmoteAnimationName = this->strings[index++];
-    this->defaultDanceAnimationName = this->strings[index++];
-    std::string defaultHoldAnimation = this->strings[index++];
-    this->defaultActivateAnimationName = this->strings[index++];
-    this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultNarutoRunAnimationName
+    // this->defaultSitAnimation = this->strings[index++]; // todo: defaultSitAnimationName, only rename on wasm side.
+    // this->defaultEmoteAnimationName = this->strings[index++];
+    // this->defaultDanceAnimationName = this->strings[index++];
+    // std::string defaultHoldAnimationName = this->strings[index++];
+    // this->defaultActivateAnimationName = this->strings[index++];
+    // this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultNarutoRunAnimationName
     // ---
     // this->useAnimationName = this->strings[index++];
-    this->useAnimationComboName = this->strings[index++];
+    // this->useAnimationComboName = this->strings[index++];
     // this->sitAnimationName = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
     // this->emoteAnimationName = this->strings[index++];
     // this->danceAnimationName = this->strings[index++];
     // this->activateAnimationName = this->strings[index++];
     // this->hurtAnimationName = this->strings[index++];
-    this->unuseAnimationName = this->strings[index++];
-    this->aimAnimationName = this->strings[index++];
+    // this->unuseAnimationName = this->strings[index++];
+    // this->aimAnimationName = this->strings[index++];
     // ---
-    this->fallLoopFrom = this->strings[index++];
+    // this->fallLoopFrom = this->strings[index++];
 
-    useAnimationEnvelopeNames.clear();
-    for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
-      useAnimationEnvelopeNames.push_back(this->strings[index++]);
-    }
+    // useAnimationEnvelopeNames.clear();
+    // for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
+    //   useAnimationEnvelopeNames.push_back(this->strings[index++]);
+    // }
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
