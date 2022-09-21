@@ -12,7 +12,10 @@ namespace AnimationSystem {
 
   float *localVecQuat = (float *)malloc(4 * sizeof(float));
 
-  Animation *localAnimations6[6];
+  // Animation *localAnimations6[6];
+  Animation *walkAnimations[6];
+  Animation *runAnimations[6];
+  Animation *crouchAnimations[6];
   float localWeights6[6];
 
   Animation *fallLoopAnimation;
@@ -105,6 +108,30 @@ namespace AnimationSystem {
 
     avatar->setAnimations();
     avatar->createMotions();
+    
+    // 8 directions walk animations ---
+    walkAnimations[0] = avatar->motiono["walkForward"]->animation;
+    walkAnimations[1] = avatar->motiono["walkBackward"]->animation;
+    walkAnimations[2] = avatar->motiono["walkLeft"]->animation;
+    walkAnimations[3] = avatar->motiono["walkLeftMirror"]->animation;
+    walkAnimations[4] = avatar->motiono["walkRight"]->animation;
+    walkAnimations[5] = avatar->motiono["walkRightMirror"]->animation;
+
+    // 8 directions run animations ---
+    runAnimations[0] = avatar->motiono["runForward"]->animation;
+    runAnimations[1] = avatar->motiono["runBackward"]->animation;
+    runAnimations[2] = avatar->motiono["runLeft"]->animation;
+    runAnimations[3] = avatar->motiono["runLeftMirror"]->animation;
+    runAnimations[4] = avatar->motiono["runRight"]->animation;
+    runAnimations[5] = avatar->motiono["runRightMirror"]->animation;
+
+    // 8 directions crouch animations ---
+    crouchAnimations[0] = avatar->motiono["crouchForward"]->animation;
+    crouchAnimations[1] = avatar->motiono["crouchBackward"]->animation;
+    crouchAnimations[2] = avatar->motiono["crouchLeft"]->animation;
+    crouchAnimations[3] = avatar->motiono["crouchLeftMirror"]->animation;
+    crouchAnimations[4] = avatar->motiono["crouchRight"]->animation;
+    crouchAnimations[5] = avatar->motiono["crouchRightMirror"]->animation;
 
     return avatar;
   }
@@ -613,14 +640,6 @@ namespace AnimationSystem {
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_handleDefault, "; // test
 
-    // 8 directions walk values ---
-    localAnimations6[0] = avatar->motiono["walkForward"]->animation;
-    localAnimations6[1] = avatar->motiono["walkBackward"]->animation;
-    localAnimations6[2] = avatar->motiono["walkLeft"]->animation;
-    localAnimations6[3] = avatar->motiono["walkLeftMirror"]->animation;
-    localAnimations6[4] = avatar->motiono["walkRight"]->animation;
-    localAnimations6[5] = avatar->motiono["walkRightMirror"]->animation;
-
     localWeights6[0] = avatar->forwardFactor;
     localWeights6[1] = avatar->backwardFactor;
     localWeights6[2] = avatar->mirrorLeftFactorReverse;
@@ -628,22 +647,14 @@ namespace AnimationSystem {
     localWeights6[4] = avatar->mirrorRightFactorReverse;
     localWeights6[5] = avatar->mirrorRightFactor;
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, localAnimations6, localWeights6); // note: todo: only need init `avatar->mixer->animationValues[spec.index]` once.
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, walkAnimations, localWeights6); // note: todo: only need init `avatar->mixer->animationValues[spec.index]` once.
 
     spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
     spec.dst[1] = avatar->mixer->animationValues[spec.index][1];
     spec.dst[2] = avatar->mixer->animationValues[spec.index][2];
     if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
 
-    // 8 directions run values ---
-    localAnimations6[0] = avatar->motiono["runForward"]->animation;
-    localAnimations6[1] = avatar->motiono["runBackward"]->animation;
-    localAnimations6[2] = avatar->motiono["runLeft"]->animation;
-    localAnimations6[3] = avatar->motiono["runLeftMirror"]->animation;
-    localAnimations6[4] = avatar->motiono["runRight"]->animation;
-    localAnimations6[5] = avatar->motiono["runRightMirror"]->animation;
-
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, localAnimations6, localWeights6);
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, runAnimations, localWeights6);
 
     interpolateFlat(spec.dst, 0, spec.dst, 0, avatar->mixer->animationValues[spec.index], 0, avatar->walkRunFactor, spec.isPosition);
 
@@ -651,15 +662,7 @@ namespace AnimationSystem {
     float *vecQuat = evaluateInterpolant(avatar->motiono["idle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["idle"]->animation->duration));
     interpolateFlat(spec.dst, 0, spec.dst, 0, vecQuat, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
-    // 8 directions crouch values ---
-    localAnimations6[0] = avatar->motiono["crouchForward"]->animation;
-    localAnimations6[1] = avatar->motiono["crouchBackward"]->animation;
-    localAnimations6[2] = avatar->motiono["crouchLeft"]->animation;
-    localAnimations6[3] = avatar->motiono["crouchLeftMirror"]->animation;
-    localAnimations6[4] = avatar->motiono["crouchRight"]->animation;
-    localAnimations6[5] = avatar->motiono["crouchRightMirror"]->animation;
-
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, localAnimations6, localWeights6);
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, crouchAnimations, localWeights6);
 
     localVecQuat[0] = avatar->mixer->animationValues[spec.index][0];
     localVecQuat[1] = avatar->mixer->animationValues[spec.index][1];
@@ -1086,43 +1089,43 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testString = ""; // test
 
       // note: Use exaclty same early return logic as js version, instead of all cascading, to prevent some bugs. But still want to use all cascading afterwards.
-      if (avatar->doubleJumpState) {
-        _blendDoubleJump(spec, this->avatar);
-      } else if (avatar->jumpState) {
-        _blendJump(spec, this->avatar);
-      } else if (avatar->sitState) {
-        _blendSit(spec, this->avatar);
-      } else if (avatar->narutoRunState) {
-        _blendNarutoRun(spec, this->avatar);
-      } else if (avatar->danceFactor > 0) {
-        _blendDance(spec, this->avatar);
-      } else if (avatar->emoteFactor > 0) {
-        _blendEmote(spec, this->avatar);
-      } else if (
-        avatar->useAnimationName != "" ||
-        avatar->useAnimationComboName != "" || // todo: useAnimationComboNames, same logic as useAnimationEnvelopeNames.
-        avatar->useAnimationEnvelopeNames.size() > 0
-      ) {
-        _blendUse(spec, this->avatar);
-      } else if (avatar->hurtAnimationName != "") {
-        _blendHurt(spec, this->avatar); // todo: move to highest priority.
-      } else if (avatar->aimAnimationName != "") {
-        _blendAim(spec, this->avatar);
-      } else if (avatar->unuseAnimationName != "" && avatar->unuseTime >= 0) {
-        _blendUnuse(spec, this->avatar);
-      } else if (avatar->holdState) {
-        _blendHold(spec, this->avatar);
-      } else if (avatar->pickUpState) {
-        _blendPickUp(spec, this->avatar);
-      } else {
+      // if (avatar->doubleJumpState) {
+      //   _blendDoubleJump(spec, this->avatar);
+      // } else if (avatar->jumpState) {
+      //   _blendJump(spec, this->avatar);
+      // } else if (avatar->sitState) {
+      //   _blendSit(spec, this->avatar);
+      // } else if (avatar->narutoRunState) {
+      //   _blendNarutoRun(spec, this->avatar);
+      // } else if (avatar->danceFactor > 0) {
+      //   _blendDance(spec, this->avatar);
+      // } else if (avatar->emoteFactor > 0) {
+      //   _blendEmote(spec, this->avatar);
+      // } else if (
+      //   avatar->useAnimationName != "" ||
+      //   avatar->useAnimationComboName != "" || // todo: useAnimationComboNames, same logic as useAnimationEnvelopeNames.
+      //   avatar->useAnimationEnvelopeNames.size() > 0
+      // ) {
+      //   _blendUse(spec, this->avatar);
+      // } else if (avatar->hurtAnimationName != "") {
+      //   _blendHurt(spec, this->avatar); // todo: move to highest priority.
+      // } else if (avatar->aimAnimationName != "") {
+      //   _blendAim(spec, this->avatar);
+      // } else if (avatar->unuseAnimationName != "" && avatar->unuseTime >= 0) {
+      //   _blendUnuse(spec, this->avatar);
+      // } else if (avatar->holdState) {
+      //   _blendHold(spec, this->avatar);
+      // } else if (avatar->pickUpState) {
+      //   _blendPickUp(spec, this->avatar);
+      // } else {
         _handleDefault(spec, this->avatar);
-      }
+      // }
 
       // note: cascading blending, in order to do transition between all kinds of aniamtions.
-      _blendFly(spec, this->avatar);
-      _blendFallLoop(spec, this->avatar);
-      _blendLand(spec, this->avatar);
-      _blendActivate(spec, this->avatar);
+      // _blendFly(spec, this->avatar);
+      // _blendFallLoop(spec, this->avatar);
+      // _blendLand(spec, this->avatar);
+      // _blendActivate(spec, this->avatar);
 
       // if (spec.isPosition) std::cout << "testString: " << avatar->testString << std::endl; // test
 
