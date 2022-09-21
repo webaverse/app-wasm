@@ -103,6 +103,17 @@ namespace AnimationSystem {
   // Main ------
 
   Avatar *createAvatar(AnimationMixer *mixer) {
+    // std::cout << "AnimationName::Combo: " << AnimationName::Combo << std::endl;
+    // std::cout << "AnimationName::Slash: " << AnimationName::Slash << std::endl;
+    // std::cout << "AnimationName::DashAttack: " << AnimationName::DashAttack << std::endl;
+    // std::cout << "AnimationName::Rifle: " << AnimationName::Rifle << std::endl;
+    // std::cout << "AnimationName::Pistol: " << AnimationName::Pistol << std::endl;
+    // std::cout << "AnimationName::Magic: " << AnimationName::Magic << std::endl;
+    // std::cout << "AnimationName::Eat: " << AnimationName::Eat << std::endl;
+    // std::cout << "AnimationName::Drink: " << AnimationName::Drink << std::endl;
+    // std::cout << "AnimationName::Throw: " << AnimationName::Throw << std::endl;
+    // std::cout << "AnimationName::PickUpThrow: " << AnimationName::PickUpThrow << std::endl;
+
     // avatar->mixer = createAnimationMixer();
     Avatar *avatar = new Avatar();
     avatars.push_back(avatar);
@@ -388,7 +399,7 @@ namespace AnimationSystem {
     this->defaultActivateAnimationName = this->strings[index++];
     this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultNarutoRunAnimationName
     // ---
-    this->useAnimationName = this->strings[index++];
+    // this->useAnimationName = this->strings[index++];
     this->useAnimationComboName = this->strings[index++];
     this->sitAnimation = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
     this->emoteAnimationName = this->strings[index++];
@@ -641,7 +652,7 @@ namespace AnimationSystem {
     return resultVecQuat;
   }
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_handleDefault, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_handleDefault, "; // test: blend strings.
 
     localWeightsArr6[0] = avatar->forwardFactor;
     localWeightsArr6[1] = avatar->backwardFactor;
@@ -684,7 +695,7 @@ namespace AnimationSystem {
     // }
   }
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendPickUp, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendPickUp, "; // test: blend strings.
 
     Animation *pickUpAnimation = avatar->motiono["pickUpZelda"]->animation;
     Animation *pickUpIdleAnimation = avatar->motiono["pickUpIdleZelda"]->animation;
@@ -700,7 +711,7 @@ namespace AnimationSystem {
     }
   }
   void _blendHold(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendHold, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendHold, "; // test: blend strings.
     
     _handleDefault(spec, avatar);
 
@@ -723,7 +734,7 @@ namespace AnimationSystem {
     }
   }
   void _blendAim(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendAim, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendAim, "; // test: blend strings.
     
     _handleDefault(spec, avatar);
 
@@ -753,7 +764,7 @@ namespace AnimationSystem {
     }
   }
   void _blendUnuse(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendUnuse, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendUnuse, "; // test: blend strings.
     
     _handleDefault(spec, avatar);
 
@@ -797,7 +808,7 @@ namespace AnimationSystem {
     // }
   }
   void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendHurt, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendHurt, "; // test: blend strings.
 
     _handleDefault(spec, avatar);
 
@@ -828,7 +839,7 @@ namespace AnimationSystem {
     }
   }
   void _blendUse(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendUse, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendUse, "; // test: blend strings.
 
     Animation *useAnimation = nullptr;
     float t2;
@@ -895,7 +906,7 @@ namespace AnimationSystem {
     }
   }
   void _blendEmote(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendEmote, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendEmote, "; // test: blend strings.
 
     _handleDefault(spec, avatar);
 
@@ -924,7 +935,7 @@ namespace AnimationSystem {
     _clearXZ(spec.dst, spec.isPosition);
   }
   void _blendDance(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendDance, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendDance, "; // test: blend strings.
 
     _handleDefault(spec, avatar);
 
@@ -940,7 +951,7 @@ namespace AnimationSystem {
     _clearXZ(spec.dst, spec.isPosition);
   }
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
 
     Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
     float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
@@ -951,7 +962,7 @@ namespace AnimationSystem {
     _clearXZ(spec.dst, spec.isPosition);
   }
   void _blendSit(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
 
     Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
     float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
@@ -959,7 +970,7 @@ namespace AnimationSystem {
     copyValue(spec.dst, v2, spec.isPosition);
   }
   void _blendJump(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendJump, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendJump, "; // test: blend strings.
 
     float t2 = avatar->jumpTime / 1000;
     float *v2 = evaluateInterpolant(jumpAnimation, spec.index, t2);
@@ -976,7 +987,7 @@ namespace AnimationSystem {
     }
   }
   void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar) {
-    if (spec.isPosition) avatar->testBlendStrings += "_blendDoubleJump, "; // test: blend strings.
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendDoubleJump, "; // test: blend strings.
 
     float t2 = avatar->doubleJumpTime / 1000;
     float *v2 = evaluateInterpolant(doubleJumpAnimation, spec.index, t2);
@@ -987,7 +998,7 @@ namespace AnimationSystem {
   }
   void _blendFly(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->flyState || (avatar->flyTime >= 0 && avatar->flyTime < 1000)) {
-      if (spec.isPosition) avatar->testBlendStrings += "_blendFly, "; // test: blend strings.
+      // if (spec.isPosition) avatar->testBlendStrings += "_blendFly, "; // test: blend strings.
 
       float t2 = avatar->flyTime / 1000;
       // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
@@ -1006,7 +1017,7 @@ namespace AnimationSystem {
   };
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->fallLoopFactor > 0) {
-      if (spec.isPosition) avatar->testBlendStrings += "_blendFallLoop, "; // test: blend strings.
+      // if (spec.isPosition) avatar->testBlendStrings += "_blendFallLoop, "; // test: blend strings.
 
       float t2 = (avatar->fallLoopTime / 1000);
       float *v2 = evaluateInterpolant(fallLoopAnimation, spec.index, t2);
@@ -1030,7 +1041,7 @@ namespace AnimationSystem {
       float landFactor = landTimeS / landingAnimationDuration;
 
       if (landFactor > 0 && landFactor <= 1) {
-        if (spec.isPosition) avatar->testBlendStrings += "_blendLand, "; // test: blend strings.
+        // if (spec.isPosition) avatar->testBlendStrings += "_blendLand, "; // test: blend strings.
 
         float t2 = landTimeS * animationSpeed;
         float *v2 = evaluateInterpolant(landingAnimation, spec.index, t2);
@@ -1048,7 +1059,7 @@ namespace AnimationSystem {
       float landFactor = landTimeS / landingAnimationDuration;
 
       if (landFactor > 0 && landFactor <= 1) {
-        if (spec.isPosition) avatar->testBlendStrings += "_blendLand, "; // test: blend strings.
+        // if (spec.isPosition) avatar->testBlendStrings += "_blendLand, "; // test: blend strings.
 
         float t2 = landTimeS * animationSpeed;
         float *v2 = evaluateInterpolant(landingAnimation, spec.index, t2);
@@ -1070,7 +1081,7 @@ namespace AnimationSystem {
   }
   void _blendActivate(AnimationMapping &spec, Avatar *avatar) { // todo: full port
     if (avatar->activateTime > 0) {
-      if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
+      // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
 
       std::string activateAnimationName = avatar->activateAnimationName == "" ? avatar->defaultActivateAnimationName : avatar->activateAnimationName;
       Animation *activateAnimation = avatar->motiono[activateAnimationName]->animation; // todo: animationo
@@ -1093,7 +1104,7 @@ namespace AnimationSystem {
     for (int i = 0; i < 53; i++) {
       AnimationMapping spec = _animationMappings[i];
 
-      if (spec.isPosition) avatar->testBlendStrings = ""; // test: blend strings.
+      // if (spec.isPosition) avatar->testBlendStrings = ""; // test: blend strings.
 
       // note: Use exaclty same early return logic as js version, instead of all cascading, to prevent some bugs. But still want to use all cascading afterwards.
       if (avatar->doubleJumpState) {
@@ -1134,7 +1145,7 @@ namespace AnimationSystem {
       _blendLand(spec, this->avatar);
       _blendActivate(spec, this->avatar);
 
-      if (spec.isPosition) std::cout << "testBlendStrings: " << avatar->testBlendStrings << std::endl; // test: blend strings.
+      // if (spec.isPosition) std::cout << "testBlendStrings: " << avatar->testBlendStrings << std::endl; // test: blend strings.
 
       // animationValues[i][0] = spec.dst[0];
       // animationValues[i][1] = spec.dst[1];
