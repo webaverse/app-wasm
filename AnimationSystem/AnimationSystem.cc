@@ -6,17 +6,19 @@ namespace AnimationSystem {
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationo;
 
-  float *localVector = (float *)malloc(3 * sizeof(float));
+  float localVectorArr[3];
 
-  float *localQuaternion = (float *)malloc(4 * sizeof(float));
+  float localQuaternionArr[4];
 
-  float *localVecQuat = (float *)malloc(4 * sizeof(float));
+  float localVecQuatArr[4];
+
+  float *localVecQuatPtr;
 
   // Animation *localAnimations6[6];
   Animation *walkAnimations[6];
   Animation *runAnimations[6];
   Animation *crouchAnimations[6];
-  float localWeights6[6];
+  float localWeightsArr6[6];
 
   Animation *fallLoopAnimation;
   Animation *floatAnimation;
@@ -640,41 +642,41 @@ namespace AnimationSystem {
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_handleDefault, "; // test
 
-    localWeights6[0] = avatar->forwardFactor;
-    localWeights6[1] = avatar->backwardFactor;
-    localWeights6[2] = avatar->mirrorLeftFactorReverse;
-    localWeights6[3] = avatar->mirrorLeftFactor;
-    localWeights6[4] = avatar->mirrorRightFactorReverse;
-    localWeights6[5] = avatar->mirrorRightFactor;
+    localWeightsArr6[0] = avatar->forwardFactor;
+    localWeightsArr6[1] = avatar->backwardFactor;
+    localWeightsArr6[2] = avatar->mirrorLeftFactorReverse;
+    localWeightsArr6[3] = avatar->mirrorLeftFactor;
+    localWeightsArr6[4] = avatar->mirrorRightFactorReverse;
+    localWeightsArr6[5] = avatar->mirrorRightFactor;
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, walkAnimations, localWeights6); // note: todo: only need init `avatar->mixer->animationValues[spec.index]` once.
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, walkAnimations, localWeightsArr6); // note: todo: only need init `avatar->mixer->animationValues[spec.index]` once.
 
     spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
     spec.dst[1] = avatar->mixer->animationValues[spec.index][1];
     spec.dst[2] = avatar->mixer->animationValues[spec.index][2];
     if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, runAnimations, localWeights6);
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, runAnimations, localWeightsArr6);
 
     interpolateFlat(spec.dst, 0, spec.dst, 0, avatar->mixer->animationValues[spec.index], 0, avatar->walkRunFactor, spec.isPosition);
 
     // blend idle ---
-    float *vecQuat = evaluateInterpolant(avatar->motiono["idle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["idle"]->animation->duration));
-    interpolateFlat(spec.dst, 0, spec.dst, 0, vecQuat, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+    localVecQuatPtr = evaluateInterpolant(avatar->motiono["idle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["idle"]->animation->duration));
+    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, crouchAnimations, localWeights6);
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, crouchAnimations, localWeightsArr6);
 
-    localVecQuat[0] = avatar->mixer->animationValues[spec.index][0];
-    localVecQuat[1] = avatar->mixer->animationValues[spec.index][1];
-    localVecQuat[2] = avatar->mixer->animationValues[spec.index][2];
-    if (!spec.isPosition) localVecQuat[3] = avatar->mixer->animationValues[spec.index][3];
+    localVecQuatArr[0] = avatar->mixer->animationValues[spec.index][0];
+    localVecQuatArr[1] = avatar->mixer->animationValues[spec.index][1];
+    localVecQuatArr[2] = avatar->mixer->animationValues[spec.index][2];
+    if (!spec.isPosition) localVecQuatArr[3] = avatar->mixer->animationValues[spec.index][3];
 
     // blend crouch idle ---
-    vecQuat = evaluateInterpolant(avatar->motiono["crouchIdle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["crouchIdle"]->animation->duration));
-    interpolateFlat(localVecQuat, 0, localVecQuat, 0, vecQuat, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+    localVecQuatPtr = evaluateInterpolant(avatar->motiono["crouchIdle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["crouchIdle"]->animation->duration));
+    interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
     // blend walkRun and crouch
-    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuat, 0, avatar->crouchFactor, spec.isPosition);
+    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatArr, 0, avatar->crouchFactor, spec.isPosition);
   }
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendPickUp, "; // test
@@ -764,12 +766,12 @@ namespace AnimationSystem {
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
-      copyValue(localQuaternion, spec.dst, spec.isPosition);
+      copyValue(localQuaternionArr, spec.dst, spec.isPosition);
       invertQuaternionFlat(v3, 0);
-      multiplyQuaternionsFlat(localQuaternion, 0, v3, 0, localQuaternion, 0);
-      multiplyQuaternionsFlat(localQuaternion, 0, v2, 0, localQuaternion, 0);
+      multiplyQuaternionsFlat(localQuaternionArr, 0, v3, 0, localQuaternionArr, 0);
+      multiplyQuaternionsFlat(localQuaternionArr, 0, v2, 0, localQuaternionArr, 0);
 
-      interpolateFlat(spec.dst, 0, spec.dst, 0, localQuaternion, 0, f2, spec.isPosition);
+      interpolateFlat(spec.dst, 0, spec.dst, 0, localQuaternionArr, 0, f2, spec.isPosition);
     } else {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
@@ -777,11 +779,11 @@ namespace AnimationSystem {
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
       
-      copyValue(localVector, spec.dst, spec.isPosition);
-      subVectorsFlat(localVector, localVector, v3);
-      addVectorsFlat(localVector, localVector, v2);
+      copyValue(localVectorArr, spec.dst, spec.isPosition);
+      subVectorsFlat(localVectorArr, localVectorArr, v3);
+      addVectorsFlat(localVectorArr, localVectorArr, v2);
 
-      interpolateFlat(spec.dst, 0, spec.dst, 0, localVector, 0, f2, spec.isPosition);
+      interpolateFlat(spec.dst, 0, spec.dst, 0, localVectorArr, 0, f2, spec.isPosition);
     }
 
     // todo: don't need ?
