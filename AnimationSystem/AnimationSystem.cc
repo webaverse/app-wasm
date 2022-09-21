@@ -117,6 +117,7 @@ namespace AnimationSystem {
     
     // todo: init only once globally.
     std::vector<std::string> animationNames;
+    // useAnimations
     animationNames.push_back("");
     animationNames.push_back("combo");
     animationNames.push_back("slash");
@@ -128,6 +129,42 @@ namespace AnimationSystem {
     animationNames.push_back("drink");
     animationNames.push_back("throw");
     animationNames.push_back("pickUpThrow");
+    // emoteAnimations
+    animationNames.push_back("alert");
+    animationNames.push_back("alertSoft");
+    animationNames.push_back("angry");
+    animationNames.push_back("angrySoft");
+    animationNames.push_back("embarrassed");
+    animationNames.push_back("embarrassedSoft");
+    animationNames.push_back("headNod");
+    animationNames.push_back("headNodSoft");
+    animationNames.push_back("headShake");
+    animationNames.push_back("headShakeSoft");
+    animationNames.push_back("sad");
+    animationNames.push_back("sadSoft");
+    animationNames.push_back("surprise");
+    animationNames.push_back("surpriseSoft");
+    animationNames.push_back("victory");
+    animationNames.push_back("victorySoft");
+    // sitAnimations
+    animationNames.push_back("chair");
+    animationNames.push_back("saddle");
+    animationNames.push_back("stand");
+    // danceAnimations
+    animationNames.push_back("dansu");
+    animationNames.push_back("powerup");
+    // activateAnimations
+    animationNames.push_back("grab_forward");
+    animationNames.push_back("grab_down");
+    animationNames.push_back("grab_up");
+    animationNames.push_back("grab_left");
+    animationNames.push_back("grab_right");
+    animationNames.push_back("pick_up");
+    // hurtAnimations
+    animationNames.push_back("pain_back");
+    animationNames.push_back("pain_arch");
+    // 
+    // animationNames.push_back("");
     for (unsigned int i = 0; i < animationNames.size(); i++) {
       AnimationName[i] = animationNames[i];
     }
@@ -405,6 +442,11 @@ namespace AnimationSystem {
     this->aimMaxTime = scratchStack[index++];
     this->pickUpTime = scratchStack[index++];
     this->useAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->emoteAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->sitAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->danceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->activateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    this->hurtAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
 
     // ---------------------------------------------------------------------------------------------------
 
@@ -420,12 +462,11 @@ namespace AnimationSystem {
     // ---
     // this->useAnimationName = this->strings[index++];
     this->useAnimationComboName = this->strings[index++];
-    this->sitAnimation = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
-    this->emoteAnimationName = this->strings[index++];
-    this->danceAnimationName = this->strings[index++];
-    std::string holdAnimation = this->strings[index++];
-    this->activateAnimationName = this->strings[index++];
-    this->hurtAnimationName = this->strings[index++];
+    // this->sitAnimationName = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
+    // this->emoteAnimationName = this->strings[index++];
+    // this->danceAnimationName = this->strings[index++];
+    // this->activateAnimationName = this->strings[index++];
+    // this->hurtAnimationName = this->strings[index++];
     this->unuseAnimationName = this->strings[index++];
     this->aimAnimationName = this->strings[index++];
     // ---
@@ -983,7 +1024,7 @@ namespace AnimationSystem {
   void _blendSit(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
 
-    Animation *sitAnimation = avatar->motiono[avatar->sitAnimation == "" ? avatar->defaultSitAnimation : avatar->sitAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
+    Animation *sitAnimation = avatar->motiono[avatar->sitAnimationName == "" ? avatar->defaultSitAnimation : avatar->sitAnimationName]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
     float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
 
     copyValue(spec.dst, v2, spec.isPosition);
