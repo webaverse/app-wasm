@@ -116,17 +116,21 @@ namespace AnimationSystem {
     // std::cout << "AnimationName::PickUpThrow: " << AnimationName::PickUpThrow << std::endl;
     
     // todo: init only once globally.
-    AnimationName[0] = "";
-    AnimationName[1] = "combo";
-    AnimationName[2] = "slash";
-    AnimationName[3] = "dashAttack";
-    AnimationName[4] = "rifle";
-    AnimationName[5] = "pistol";
-    AnimationName[6] = "magic";
-    AnimationName[7] = "eat";
-    AnimationName[8] = "drink";
-    AnimationName[9] = "throw";
-    AnimationName[10] = "pickUpThrow";
+    std::vector<std::string> animationNames;
+    animationNames.push_back("");
+    animationNames.push_back("combo");
+    animationNames.push_back("slash");
+    animationNames.push_back("dashAttack");
+    animationNames.push_back("rifle");
+    animationNames.push_back("pistol");
+    animationNames.push_back("magic");
+    animationNames.push_back("eat");
+    animationNames.push_back("drink");
+    animationNames.push_back("throw");
+    animationNames.push_back("pickUpThrow");
+    for (unsigned int i = 0; i < animationNames.size(); i++) {
+      AnimationName[i] = animationNames[i];
+    }
 
     // avatar->mixer = createAnimationMixer();
     Avatar *avatar = new Avatar();
