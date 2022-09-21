@@ -142,7 +142,7 @@ namespace AnimationSystem {
     bool useComboStart, useComboEnd;
     std::string lastUseAnimationComboName;
 
-    std::string testString; // test
+    std::string testBlendStrings; // test
     
     void setAnimations();
     void createMotions();
