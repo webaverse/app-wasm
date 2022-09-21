@@ -73,6 +73,18 @@ namespace AnimationSystem {
     Left_ankle = 51,
     Left_toe = 52
   };
+  // enum AnimationName { // todo: use this enum instead of std::map.
+  //   Combo,
+  //   Slash,
+  //   DashAttack,
+  //   Rifle,
+  //   Pistol,
+  //   Magic,
+  //   Eat,
+  //   Drink,
+  //   Throw,
+  //   PickUpThrow
+  // };
 
   struct Interpolant {
     unsigned int numParameterPositions;

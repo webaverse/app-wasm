@@ -5,6 +5,7 @@ namespace AnimationSystem {
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationo;
+  std::map<unsigned int, std::string> AnimationName;
 
   float localVectorArr[3];
 
@@ -113,6 +114,19 @@ namespace AnimationSystem {
     // std::cout << "AnimationName::Drink: " << AnimationName::Drink << std::endl;
     // std::cout << "AnimationName::Throw: " << AnimationName::Throw << std::endl;
     // std::cout << "AnimationName::PickUpThrow: " << AnimationName::PickUpThrow << std::endl;
+    
+    // todo: init only once globally.
+    AnimationName[0] = "";
+    AnimationName[1] = "combo";
+    AnimationName[2] = "slash";
+    AnimationName[3] = "dashAttack";
+    AnimationName[4] = "rifle";
+    AnimationName[5] = "pistol";
+    AnimationName[6] = "magic";
+    AnimationName[7] = "eat";
+    AnimationName[8] = "drink";
+    AnimationName[9] = "throw";
+    AnimationName[10] = "pickUpThrow";
 
     // avatar->mixer = createAnimationMixer();
     Avatar *avatar = new Avatar();
@@ -386,6 +400,7 @@ namespace AnimationSystem {
     this->aimTime = scratchStack[index++];
     this->aimMaxTime = scratchStack[index++];
     this->pickUpTime = scratchStack[index++];
+    this->useAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
 
     // ---------------------------------------------------------------------------------------------------
 
