@@ -650,26 +650,38 @@ namespace AnimationSystem {
     localWeightsArr6[4] = avatar->mirrorRightFactorReverse;
     localWeightsArr6[5] = avatar->mirrorRightFactor;
 
+    // walkAnimations
     localVecQuatPtr2 = doBlendList(spec, 6, walkAnimations, localWeightsArr6);
     copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
-    localVecQuatPtr2 = doBlendList(spec, 6, runAnimations, localWeightsArr6);
+    // if (avatar->walkRunFactor > 0) {
+      // runAnimations
+      localVecQuatPtr2 = doBlendList(spec, 6, runAnimations, localWeightsArr6);
 
-    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
+      // blend walk run
+      interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
+    // }
 
     // blend idle ---
-    localVecQuatPtr = evaluateInterpolant(avatar->motiono["idle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["idle"]->animation->duration));
-    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+    // if (avatar->idleWalkFactor < 1) {
+      localVecQuatPtr = evaluateInterpolant(avatar->motiono["idle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["idle"]->animation->duration));
+      interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+    // }
 
-    localVecQuatPtr2 = doBlendList(spec, 6, crouchAnimations, localWeightsArr6);
-    copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
+    // if (avatar->crouchFactor > 0) {
+      // crouchAnimations
+      localVecQuatPtr2 = doBlendList(spec, 6, crouchAnimations, localWeightsArr6);
+      copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
 
-    // blend crouch idle ---
-    localVecQuatPtr = evaluateInterpolant(avatar->motiono["crouchIdle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["crouchIdle"]->animation->duration));
-    interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+      // blend crouch idle ---
+      // if (avatar->idleWalkFactor < 1) {
+        localVecQuatPtr = evaluateInterpolant(avatar->motiono["crouchIdle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["crouchIdle"]->animation->duration));
+        interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+      // }
 
-    // blend walkRun and crouch
-    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatArr, 0, avatar->crouchFactor, spec.isPosition);
+      // blend walkRun and crouch
+      interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatArr, 0, avatar->crouchFactor, spec.isPosition);
+    // }
   }
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testString += "_blendPickUp, "; // test
