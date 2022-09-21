@@ -12,6 +12,9 @@ namespace AnimationSystem {
 
   float *localVecQuat = (float *)malloc(4 * sizeof(float));
 
+  Animation *localAnimations6[6];
+  float localWeights6[6];
+
   Animation *fallLoopAnimation;
   Animation *floatAnimation;
   Animation *doubleJumpAnimation;
@@ -582,11 +585,11 @@ namespace AnimationSystem {
     dst[dstOffset + 3] = w0;
   }
 
-  float *doBlendList(AnimationMapping &spec, std::vector<Animation *> animations, std::vector<float> weights) { // todo: different times.
+  float *doBlendList(AnimationMapping &spec, unsigned int numAnimations, Animation **animations, float *weights) { // todo: different times.
     float *resultVecQuat;
     unsigned int nodeIndex = 0;
     float currentWeight = 0;
-    for (int i = 0; i < animations.size(); i++) {
+    for (int i = 0; i < numAnimations; i++) {
       float weight = weights[i];
       if (weight > 0) {
         Animation *animation = animations[i]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
@@ -611,23 +614,21 @@ namespace AnimationSystem {
     // if (spec.isPosition) avatar->testString += "_handleDefault, "; // test
 
     // 8 directions walk values ---
-    std::vector<Animation *> animations; // todo: use localAnimations instead ?
-    animations.push_back(avatar->motiono["walkForward"]->animation);
-    animations.push_back(avatar->motiono["walkBackward"]->animation);
-    animations.push_back(avatar->motiono["walkLeft"]->animation);
-    animations.push_back(avatar->motiono["walkLeftMirror"]->animation);
-    animations.push_back(avatar->motiono["walkRight"]->animation);
-    animations.push_back(avatar->motiono["walkRightMirror"]->animation);
+    localAnimations6[0] = avatar->motiono["walkForward"]->animation;
+    localAnimations6[1] = avatar->motiono["walkBackward"]->animation;
+    localAnimations6[2] = avatar->motiono["walkLeft"]->animation;
+    localAnimations6[3] = avatar->motiono["walkLeftMirror"]->animation;
+    localAnimations6[4] = avatar->motiono["walkRight"]->animation;
+    localAnimations6[5] = avatar->motiono["walkRightMirror"]->animation;
 
-    std::vector<float> weights; // todo: use localWeights instead ?
-    weights.push_back(avatar->forwardFactor);
-    weights.push_back(avatar->backwardFactor);
-    weights.push_back(avatar->mirrorLeftFactorReverse);
-    weights.push_back(avatar->mirrorLeftFactor);
-    weights.push_back(avatar->mirrorRightFactorReverse);
-    weights.push_back(avatar->mirrorRightFactor);
+    localWeights6[0] = avatar->forwardFactor;
+    localWeights6[1] = avatar->backwardFactor;
+    localWeights6[2] = avatar->mirrorLeftFactorReverse;
+    localWeights6[3] = avatar->mirrorLeftFactor;
+    localWeights6[4] = avatar->mirrorRightFactorReverse;
+    localWeights6[5] = avatar->mirrorRightFactor;
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, animations, weights); // note: todo: only need init `avatar->mixer->animationValues[spec.index]` once.
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, localAnimations6, localWeights6); // note: todo: only need init `avatar->mixer->animationValues[spec.index]` once.
 
     spec.dst[0] = avatar->mixer->animationValues[spec.index][0];
     spec.dst[1] = avatar->mixer->animationValues[spec.index][1];
@@ -635,15 +636,14 @@ namespace AnimationSystem {
     if (!spec.isPosition) spec.dst[3] = avatar->mixer->animationValues[spec.index][3];
 
     // 8 directions run values ---
-    animations.clear();
-    animations.push_back(avatar->motiono["runForward"]->animation);
-    animations.push_back(avatar->motiono["runBackward"]->animation);
-    animations.push_back(avatar->motiono["runLeft"]->animation);
-    animations.push_back(avatar->motiono["runLeftMirror"]->animation);
-    animations.push_back(avatar->motiono["runRight"]->animation);
-    animations.push_back(avatar->motiono["runRightMirror"]->animation);
+    localAnimations6[0] = avatar->motiono["runForward"]->animation;
+    localAnimations6[1] = avatar->motiono["runBackward"]->animation;
+    localAnimations6[2] = avatar->motiono["runLeft"]->animation;
+    localAnimations6[3] = avatar->motiono["runLeftMirror"]->animation;
+    localAnimations6[4] = avatar->motiono["runRight"]->animation;
+    localAnimations6[5] = avatar->motiono["runRightMirror"]->animation;
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, animations, weights);
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, localAnimations6, localWeights6);
 
     interpolateFlat(spec.dst, 0, spec.dst, 0, avatar->mixer->animationValues[spec.index], 0, avatar->walkRunFactor, spec.isPosition);
 
@@ -652,15 +652,14 @@ namespace AnimationSystem {
     interpolateFlat(spec.dst, 0, spec.dst, 0, vecQuat, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
     // 8 directions crouch values ---
-    animations.clear();
-    animations.push_back(avatar->motiono["crouchForward"]->animation);
-    animations.push_back(avatar->motiono["crouchBackward"]->animation);
-    animations.push_back(avatar->motiono["crouchLeft"]->animation);
-    animations.push_back(avatar->motiono["crouchLeftMirror"]->animation);
-    animations.push_back(avatar->motiono["crouchRight"]->animation);
-    animations.push_back(avatar->motiono["crouchRightMirror"]->animation);
+    localAnimations6[0] = avatar->motiono["crouchForward"]->animation;
+    localAnimations6[1] = avatar->motiono["crouchBackward"]->animation;
+    localAnimations6[2] = avatar->motiono["crouchLeft"]->animation;
+    localAnimations6[3] = avatar->motiono["crouchLeftMirror"]->animation;
+    localAnimations6[4] = avatar->motiono["crouchRight"]->animation;
+    localAnimations6[5] = avatar->motiono["crouchRightMirror"]->animation;
 
-    avatar->mixer->animationValues[spec.index] = doBlendList(spec, animations, weights);
+    avatar->mixer->animationValues[spec.index] = doBlendList(spec, 6, localAnimations6, localWeights6);
 
     localVecQuat[0] = avatar->mixer->animationValues[spec.index][0];
     localVecQuat[1] = avatar->mixer->animationValues[spec.index][1];
