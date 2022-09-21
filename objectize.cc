@@ -78,9 +78,6 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
 EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(AnimationSystem::AnimationMixer *mixer, float now, float nowS) {
   return mixer->update(now, nowS);
 }
-EMSCRIPTEN_KEEPALIVE unsigned int getFinishedMotionName(AnimationSystem::AnimationMixer *mixer, char *scratchStack) {
-  return mixer->getFinishedMotionName(scratchStack);
-}
 EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm) {
   return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone, isTop, isArm);
 }
@@ -90,76 +87,8 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchSt
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
   return AnimationSystem::getAnimation(scratchStack, nameByteLength);
 }
-// EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createMotion(AnimationSystem::AnimationMixer *mixer, AnimationSystem::Animation *animation) {
-//   return mixer->createMotion(animation);
-// }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getMotion(AnimationSystem::AnimationMixer *mixer, char *scratchStack, unsigned int nameByteLength) {
-  return mixer->getMotion(scratchStack, nameByteLength);
-}
-EMSCRIPTEN_KEEPALIVE unsigned int getMotionName(AnimationSystem::AnimationMixer *mixer, AnimationSystem::AnimationNode *motion, char *scratchStack) {
-  return mixer->getMotionName(motion, scratchStack);
-}
-// EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *createNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::NodeType type = AnimationSystem::NodeType::LIST, unsigned int index = 0) {
-//   return mixer->createNode(type, index);
-// }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationNode *getNode(AnimationSystem::AnimationMixer *mixer, char *scratchStack, unsigned int nameByteLength) {
-  return mixer->getNode(scratchStack, nameByteLength);
-}
-EMSCRIPTEN_KEEPALIVE void addChild(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode *child) {
-  return node->addChild(child);
-}
-EMSCRIPTEN_KEEPALIVE void setRootNode(AnimationSystem::AnimationMixer *mixer, AnimationSystem::AnimationNode *node) {
-  return mixer->setRootNode(node);
-}
 EMSCRIPTEN_KEEPALIVE void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return AnimationSystem::createInterpolant(scratchStack, animationNameByteLength, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
-}
-// EMSCRIPTEN_KEEPALIVE float *evaluateInterpolant(unsigned int animationIndex, unsigned int interpolantIndex, float t) {
-//   return AnimationSystem::evaluateInterpolant(animationIndex, interpolantIndex, t);
-// }
-// EMSCRIPTEN_KEEPALIVE float **getAnimationValues(unsigned int animationIndex, float t) {
-//   return AnimationSystem::getAnimationValues(animationIndex, t);
-// }
-EMSCRIPTEN_KEEPALIVE void crossFadeTwo(AnimationSystem::AnimationNode *parentNode, float duration, float targetFactor) {
-  // return AnimationSystem::crossFadeTwo(parentNode, duration, targetFactor);
-  return parentNode->crossFadeTwo(duration, targetFactor);
-}
-EMSCRIPTEN_KEEPALIVE void crossFadeSolitary(AnimationSystem::AnimationNode *parentNode, float duration, AnimationSystem::AnimationNode *targetNode) {
-  // return AnimationSystem::crossFadeSolitary(parentNode, duration, targetNode);
-  return parentNode->crossFadeSolitary(duration, targetNode);
-}
-EMSCRIPTEN_KEEPALIVE void setWeight(AnimationSystem::AnimationNode *node, float weight) {
-  return node->setWeight(weight); // todo: run `node->weight = weight;` directly.
-}
-EMSCRIPTEN_KEEPALIVE void setFactor(AnimationSystem::AnimationNode *node, float factor) {
-  return node->setFactor(factor);
-}
-EMSCRIPTEN_KEEPALIVE void setArg(AnimationSystem::AnimationNode *node, float arg) {
-  return node->setArg(arg);
-}
-EMSCRIPTEN_KEEPALIVE float getWeight(AnimationSystem::AnimationNode *node) {
-  return node->getWeight();
-}
-EMSCRIPTEN_KEEPALIVE float getFactor(AnimationSystem::AnimationNode *node) {
-  return node->getFactor();
-}
-EMSCRIPTEN_KEEPALIVE unsigned int getChildren(AnimationSystem::AnimationNode *node, AnimationSystem::AnimationNode **scratchStack) {
-  return node->getChildren(scratchStack);
-}
-EMSCRIPTEN_KEEPALIVE void play(AnimationSystem::AnimationNode *motion) {
-  return motion->play();
-}
-EMSCRIPTEN_KEEPALIVE void stop(AnimationSystem::AnimationNode *motion) {
-  return motion->stop();
-}
-EMSCRIPTEN_KEEPALIVE void setTimeBias(AnimationSystem::AnimationNode *motion, float timeBias) {
-  return motion->setTimeBias(timeBias);
-}
-EMSCRIPTEN_KEEPALIVE void setSpeed(AnimationSystem::AnimationNode *motion, float speed) {
-  return motion->setSpeed(speed);
-}
-EMSCRIPTEN_KEEPALIVE void setLoop(AnimationSystem::AnimationNode *motion, AnimationSystem::LoopType loopType) {
-  return motion->setLoop(loopType);
 }
 
 // End AnimationSystem
