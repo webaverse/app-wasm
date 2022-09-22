@@ -84,6 +84,9 @@ EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int i
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration) {
   return AnimationSystem::createAnimation(scratchStack, nameByteLength, duration);
 }
+EMSCRIPTEN_KEEPALIVE void setAnimationGroup(AnimationSystem::Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength) {
+  return AnimationSystem::setAnimationGroup(animation, scratchStack, groupNameByteLength, keyNameByteLength);
+}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
   return AnimationSystem::getAnimation(scratchStack, nameByteLength);
 }

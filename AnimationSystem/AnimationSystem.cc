@@ -105,6 +105,8 @@ namespace AnimationSystem {
   // Main ------
 
   Avatar *createAvatar(AnimationMixer *mixer) {
+    std::cout << "createAvatar ------------------" << std::endl;
+
     // std::cout << "AnimationName::Combo: " << AnimationName::Combo << std::endl;
     // std::cout << "AnimationName::Slash: " << AnimationName::Slash << std::endl;
     // std::cout << "AnimationName::DashAttack: " << AnimationName::DashAttack << std::endl;
@@ -115,6 +117,14 @@ namespace AnimationSystem {
     // std::cout << "AnimationName::Drink: " << AnimationName::Drink << std::endl;
     // std::cout << "AnimationName::Throw: " << AnimationName::Throw << std::endl;
     // std::cout << "AnimationName::PickUpThrow: " << AnimationName::PickUpThrow << std::endl;
+
+    for (auto const& x : animationGroups) {
+      std::map<std::string, Animation *> animationGroup = animationGroups[x.first];
+      for (auto const& y : animationGroup) {
+        Animation *animation = animationGroup[y.first];
+        std::cout << " groupName: " << x.first << " keyName: " << y.first << " name: " << animation->name << std::endl;
+      }
+    }
     
     // todo: init only once globally.
     std::vector<std::string> animationNames;
@@ -543,6 +553,29 @@ namespace AnimationSystem {
     animationAll[name] = animation;
 
     return animation;
+  }
+  void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength) {
+    
+    unsigned int index = 0;
+
+    std::string groupName = "";
+    for (unsigned int i = 0; i < groupNameByteLength; i++) {
+      groupName += scratchStack[index++];
+    }
+
+    std::string keyName = "";
+    for (unsigned int i = 0; i < keyNameByteLength; i++) {
+      keyName += scratchStack[index++];
+    }
+
+    // if (!animationGroups[groupName]) { // note: don't need this check.
+    //   animationGroups[groupName] = new std::map<std::string, Animation *>;
+    // }
+
+    animationGroups[groupName][keyName] = animation;
+
+    std::cout << "groupName: " << groupName << " keyName: " << keyName << " name: " << animation->name << std::endl;
+
   }
   Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
     std::string name = "";
