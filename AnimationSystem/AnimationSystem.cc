@@ -5,7 +5,7 @@ namespace AnimationSystem {
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
-  std::map<std::string, Animation *> animationo;
+  std::map<std::string, std::map<std::string, Animation *>> animationGroups;
   std::map<unsigned int, std::string> AnimationName;
 
   float localVectorArr[3];
