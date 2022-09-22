@@ -561,7 +561,7 @@ namespace AnimationSystem {
 
     return motion;
   }
-  void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  void createInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;
     interpolant.parameterPositions = parameterPositions;
@@ -570,11 +570,7 @@ namespace AnimationSystem {
     interpolant.sampleValues = sampleValues;
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
-    std::string name = "";
-    for (unsigned int i = 0; i < animationNameByteLength; i++) {
-      name += scratchStack[i];
-    }
-    animationAll[name]->interpolants.push_back(interpolant);
+    animation->interpolants.push_back(interpolant);
   }
   float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) {
     Interpolant interpolant = animation->interpolants[interpolantIndex];

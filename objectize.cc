@@ -87,8 +87,8 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchSt
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
   return AnimationSystem::getAnimation(scratchStack, nameByteLength);
 }
-EMSCRIPTEN_KEEPALIVE void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
-  return AnimationSystem::createInterpolant(scratchStack, animationNameByteLength, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
+EMSCRIPTEN_KEEPALIVE void createInterpolant(AnimationSystem::Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  return AnimationSystem::createInterpolant(animation, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
 
 // End AnimationSystem
