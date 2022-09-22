@@ -121,44 +121,38 @@ namespace AnimationSystem {
     // std::cout << "AnimationName::Throw: " << AnimationName::Throw << std::endl;
     // std::cout << "AnimationName::PickUpThrow: " << AnimationName::PickUpThrow << std::endl;
 
-    std::cout << "--- xy" << std::endl;
+    // std::cout << "--- xy" << std::endl;
 
-    p = cubicBezier.valueAt(0);
-    std::cout << "cubicBezier 0: " << p.x << " " << p.y << std::endl;
-    p = cubicBezier.valueAt(0.25);
-    std::cout << "cubicBezier 0.25: " << p.x << " " << p.y << std::endl;
-    p = cubicBezier.valueAt(0.5);
-    std::cout << "cubicBezier 0.5: " << p.x << " " << p.y << std::endl;
-    p = cubicBezier.valueAt(0.75);
-    std::cout << "cubicBezier 0.75: " << p.x << " " << p.y << std::endl;
-    p = cubicBezier.valueAt(1);
-    std::cout << "cubicBezier 1: " << p.x << " " << p.y << std::endl;
+    for (float t = 0; t < 1; t += 0.01) {
+      p = cubicBezier.valueAt(t);
+      std::cout << "cubicBezier: " << t << " --- " << p.x << ", " << p.y << std::endl;
+    }
 
-    std::cout << "--- x" << std::endl;
+    // std::cout << "--- x" << std::endl;
 
-    cubicBezierValue = cubicBezier.valueAt(0, 0);
-    std::cout << "cubicBezier 0: " << cubicBezierValue << std::endl;
-    cubicBezierValue = cubicBezier.valueAt(0.25, 0);
-    std::cout << "cubicBezier 0.25: " << cubicBezierValue << std::endl;
-    cubicBezierValue = cubicBezier.valueAt(0.5, 0);
-    std::cout << "cubicBezier 0.5: " << cubicBezierValue << std::endl;
-    cubicBezierValue = cubicBezier.valueAt(0.75, 0);
-    std::cout << "cubicBezier 0.75: " << cubicBezierValue << std::endl;
-    cubicBezierValue = cubicBezier.valueAt(1, 0);
-    std::cout << "cubicBezier 1: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(0, 0);
+    // std::cout << "cubicBezier 0: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(0.25, 0);
+    // std::cout << "cubicBezier 0.25: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(0.5, 0);
+    // std::cout << "cubicBezier 0.5: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(0.75, 0);
+    // std::cout << "cubicBezier 0.75: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(1, 0);
+    // std::cout << "cubicBezier 1: " << cubicBezierValue << std::endl;
 
-    std::cout << "--- y" << std::endl;
+    // std::cout << "--- y" << std::endl;
 
-    cubicBezierValue = cubicBezier.valueAt(0, 1);
-    std::cout << "cubicBezier 0: " << cubicBezierValue << std::endl;
-    cubicBezierValue = cubicBezier.valueAt(0.25, 1);
-    std::cout << "cubicBezier 0.25: " << cubicBezierValue << std::endl;
-    cubicBezierValue = cubicBezier.valueAt(0.5, 1);
-    std::cout << "cubicBezier 0.5: " << cubicBezierValue << std::endl;
-    cubicBezierValue = cubicBezier.valueAt(0.75, 1);
-    std::cout << "cubicBezier 0.75: " << cubicBezierValue << std::endl;
-    cubicBezierValue = cubicBezier.valueAt(1, 1);
-    std::cout << "cubicBezier 1: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(0, 1);
+    // std::cout << "cubicBezier 0: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(0.25, 1);
+    // std::cout << "cubicBezier 0.25: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(0.5, 1);
+    // std::cout << "cubicBezier 0.5: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(0.75, 1);
+    // std::cout << "cubicBezier 0.75: " << cubicBezierValue << std::endl;
+    // cubicBezierValue = cubicBezier.valueAt(1, 1);
+    // std::cout << "cubicBezier 1: " << cubicBezierValue << std::endl;
     
     // todo: init only once globally.
     std::vector<std::string> animationNames;
