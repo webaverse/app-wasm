@@ -1144,8 +1144,7 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendFly, "; // test: blend strings.
 
       float t2 = avatar->flyTime / 1000;
-      // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
-      float f = 1;
+      float f = avatar->flyState ? min(cubicBezier.valueAt(t2, 1), 1) : (1 - min(cubicBezier.valueAt(t2, 1), 1));
       float *v2 = evaluateInterpolant(floatAnimation, spec.index, fmod(t2, floatAnimation->duration));
 
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
@@ -1234,8 +1233,7 @@ namespace AnimationSystem {
       // const v2 = src2.evaluate(t2);
       float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2); // todo: src2->evaluate(t2);
 
-      // const f = avatar.activateTime > 0 ? Math.min(cubicBezier(t2), 1) : (1 - Math.min(cubicBezier(t2), 1));
-      float f = 1; // test: todo:
+      float f = avatar->activateTime > 0 ? min(cubicBezier.valueAt(t2, 1), 1) : (1 - min(cubicBezier.valueAt(t2, 1), 1));
 
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
     }
