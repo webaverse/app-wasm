@@ -2,6 +2,7 @@
 #define _ANIMATIONSYSTEM_H
 #include "physics.h"
 #include <iostream>
+#include "lib/bezier.h"
 
 namespace AnimationSystem {
   struct Interpolant;
