@@ -1038,7 +1038,8 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *emoteAnimation = avatar->emoteMotiono[avatar->emoteAnimationName == "" ? avatar->defaultEmoteAnimationName : avatar->emoteAnimationName]->animation;
+    // Animation *emoteAnimation = avatar->emoteMotiono[avatar->emoteAnimationName == "" ? avatar->defaultEmoteAnimationName : avatar->emoteAnimationName]->animation;
+    Animation *emoteAnimation = animationGroups["emote"][avatar->emoteAnimationName == "" ? avatar->defaultEmoteAnimationName : avatar->emoteAnimationName];
     float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime; // todo: use now.
     float t2 = min(emoteTime / 1000, emoteAnimation->duration);
     float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
