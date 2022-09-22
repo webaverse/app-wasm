@@ -4,6 +4,7 @@ namespace AnimationSystem {
   std::vector<Avatar *> avatars;
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
+  std::map<std::string, Animation *> animationAll;
   std::map<std::string, Animation *> animationo;
   std::map<unsigned int, std::string> AnimationName;
 
@@ -228,170 +229,170 @@ namespace AnimationSystem {
     return avatar;
   }
   void Avatar::setAnimations() {
-    fallLoopAnimation = animationo["falling.fbx"];
-    floatAnimation = animationo["treading water.fbx"]; // todo: animations.find(a => a.isFloat);
-    doubleJumpAnimation = animationo["jump_double.fbx"];
-    jumpAnimation = animationo["jump.fbx"];
+    fallLoopAnimation = animationAll["falling.fbx"];
+    floatAnimation = animationAll["treading water.fbx"]; // todo: animations.find(a => a.isFloat);
+    doubleJumpAnimation = animationAll["jump_double.fbx"];
+    jumpAnimation = animationAll["jump.fbx"];
   }
   void Avatar::createMotions() {
-    this->motiono["idle"] = this->mixer->createMotion(animationo["idle.fbx"], "idle"); // todo: don't need `this->`
+    this->motiono["idle"] = this->mixer->createMotion(animationAll["idle.fbx"], "idle"); // todo: don't need `this->`
 
-    this->motiono["walkForward"] = this->mixer->createMotion(animationo["walking.fbx"], "walkForward");
-    this->motiono["walkBackward"] = this->mixer->createMotion(animationo["walking backwards.fbx"], "walkBackward");
-    this->motiono["walkLeft"] = this->mixer->createMotion(animationo["left strafe walking.fbx"], "walkLeft");
-    this->motiono["walkRight"] = this->mixer->createMotion(animationo["right strafe walking.fbx"], "walkRight");
-    this->motiono["walkLeftMirror"] = this->mixer->createMotion(animationo["right strafe walking reverse.fbx"], "walkLeftMirror");
-    this->motiono["walkRightMirror"] = this->mixer->createMotion(animationo["left strafe walking reverse.fbx"], "walkRightMirror");
+    this->motiono["walkForward"] = this->mixer->createMotion(animationAll["walking.fbx"], "walkForward");
+    this->motiono["walkBackward"] = this->mixer->createMotion(animationAll["walking backwards.fbx"], "walkBackward");
+    this->motiono["walkLeft"] = this->mixer->createMotion(animationAll["left strafe walking.fbx"], "walkLeft");
+    this->motiono["walkRight"] = this->mixer->createMotion(animationAll["right strafe walking.fbx"], "walkRight");
+    this->motiono["walkLeftMirror"] = this->mixer->createMotion(animationAll["right strafe walking reverse.fbx"], "walkLeftMirror");
+    this->motiono["walkRightMirror"] = this->mixer->createMotion(animationAll["left strafe walking reverse.fbx"], "walkRightMirror");
 
-    this->motiono["runForward"] = this->mixer->createMotion(animationo["Fast Run.fbx"], "runForward");
-    this->motiono["runBackward"] = this->mixer->createMotion(animationo["running backwards.fbx"], "runBackward");
-    this->motiono["runLeft"] = this->mixer->createMotion(animationo["left strafe.fbx"], "runLeft");
-    this->motiono["runRight"] = this->mixer->createMotion(animationo["right strafe.fbx"], "runRight");
-    this->motiono["runLeftMirror"] = this->mixer->createMotion(animationo["right strafe reverse.fbx"], "runLeftMirror");
-    this->motiono["runRightMirror"] = this->mixer->createMotion(animationo["left strafe reverse.fbx"], "runRightMirror");
+    this->motiono["runForward"] = this->mixer->createMotion(animationAll["Fast Run.fbx"], "runForward");
+    this->motiono["runBackward"] = this->mixer->createMotion(animationAll["running backwards.fbx"], "runBackward");
+    this->motiono["runLeft"] = this->mixer->createMotion(animationAll["left strafe.fbx"], "runLeft");
+    this->motiono["runRight"] = this->mixer->createMotion(animationAll["right strafe.fbx"], "runRight");
+    this->motiono["runLeftMirror"] = this->mixer->createMotion(animationAll["right strafe reverse.fbx"], "runLeftMirror");
+    this->motiono["runRightMirror"] = this->mixer->createMotion(animationAll["left strafe reverse.fbx"], "runRightMirror");
 
-    this->motiono["crouchForward"] = this->mixer->createMotion(animationo["Sneaking Forward.fbx"], "crouchForward");
-    this->motiono["crouchBackward"] = this->mixer->createMotion(animationo["Sneaking Forward reverse.fbx"], "crouchBackward");
-    this->motiono["crouchLeft"] = this->mixer->createMotion(animationo["Crouched Sneaking Left.fbx"], "crouchLeft");
-    this->motiono["crouchRight"] = this->mixer->createMotion(animationo["Crouched Sneaking Right.fbx"], "crouchRight");
-    this->motiono["crouchLeftMirror"] = this->mixer->createMotion(animationo["Crouched Sneaking Right reverse.fbx"], "crouchLeftMirror");
-    this->motiono["crouchRightMirror"] = this->mixer->createMotion(animationo["Crouched Sneaking Left reverse.fbx"], "crouchRightMirror");
+    this->motiono["crouchForward"] = this->mixer->createMotion(animationAll["Sneaking Forward.fbx"], "crouchForward");
+    this->motiono["crouchBackward"] = this->mixer->createMotion(animationAll["Sneaking Forward reverse.fbx"], "crouchBackward");
+    this->motiono["crouchLeft"] = this->mixer->createMotion(animationAll["Crouched Sneaking Left.fbx"], "crouchLeft");
+    this->motiono["crouchRight"] = this->mixer->createMotion(animationAll["Crouched Sneaking Right.fbx"], "crouchRight");
+    this->motiono["crouchLeftMirror"] = this->mixer->createMotion(animationAll["Crouched Sneaking Right reverse.fbx"], "crouchLeftMirror");
+    this->motiono["crouchRightMirror"] = this->mixer->createMotion(animationAll["Crouched Sneaking Left reverse.fbx"], "crouchRightMirror");
 
-    // this->motiono["bowForward"] = this->mixer->createMotion(animationo["Standing Aim Walk Forward.fbx"], "bowForward");
-    // this->motiono["bowBackward"] = this->mixer->createMotion(animationo["Standing Aim Walk Forward reverse.fbx"], "bowBackward");
-    // this->motiono["bowLeft"] = this->mixer->createMotion(animationo["Standing Aim Walk Left.fbx"], "bowLeft");
-    // this->motiono["bowRight"] = this->mixer->createMotion(animationo["Standing Aim Walk Right.fbx"], "bowRight");
-    // this->motiono["bowLeftMirror"] = this->mixer->createMotion(animationo["Standing Aim Walk Right reverse.fbx"], "bowLeftMirror");
-    // this->motiono["bowRightMirror"] = this->mixer->createMotion(animationo["Standing Aim Walk Left reverse.fbx"], "bowRightMirror");
+    // this->motiono["bowForward"] = this->mixer->createMotion(animationAll["Standing Aim Walk Forward.fbx"], "bowForward");
+    // this->motiono["bowBackward"] = this->mixer->createMotion(animationAll["Standing Aim Walk Forward reverse.fbx"], "bowBackward");
+    // this->motiono["bowLeft"] = this->mixer->createMotion(animationAll["Standing Aim Walk Left.fbx"], "bowLeft");
+    // this->motiono["bowRight"] = this->mixer->createMotion(animationAll["Standing Aim Walk Right.fbx"], "bowRight");
+    // this->motiono["bowLeftMirror"] = this->mixer->createMotion(animationAll["Standing Aim Walk Right reverse.fbx"], "bowLeftMirror");
+    // this->motiono["bowRightMirror"] = this->mixer->createMotion(animationAll["Standing Aim Walk Left reverse.fbx"], "bowRightMirror");
 
-    this->motiono["crouchIdle"] = this->mixer->createMotion(animationo["Crouch Idle.fbx"], "crouchIdle");
-    this->motiono["fly"] = this->mixer->createMotion(animationo["treading water.fbx"], "fly");
-    // this->motiono["flyIdle"] = this->mixer->createMotion(animationo["fly_idle.fbx"], "flyIdle");
-    // this->motiono["flyDodgeForward"] = this->mixer->createMotion(animationo["fly_dodge_forward.fbx"], "flyDodgeForward");
-    // this->motiono["flyDodgeBackward"] = this->mixer->createMotion(animationo["fly_dodge_backward.fbx"], "flyDodgeBackward");
-    // this->motiono["flyDodgeLeft"] = this->mixer->createMotion(animationo["fly_dodge_left.fbx"], "flyDodgeLeft");
-    // this->motiono["flyDodgeRight"] = this->mixer->createMotion(animationo["fly_dodge_right.fbx"], "flyDodgeRight");
-    // this->motiono["flyDash"] = this->mixer->createMotion(animationo["fly_dash_forward.fbx"], "flyDash");
-    this->motiono["narutoRun"] = this->mixer->createMotion(animationo["naruto run.fbx"], "narutoRun");
+    this->motiono["crouchIdle"] = this->mixer->createMotion(animationAll["Crouch Idle.fbx"], "crouchIdle");
+    this->motiono["fly"] = this->mixer->createMotion(animationAll["treading water.fbx"], "fly");
+    // this->motiono["flyIdle"] = this->mixer->createMotion(animationAll["fly_idle.fbx"], "flyIdle");
+    // this->motiono["flyDodgeForward"] = this->mixer->createMotion(animationAll["fly_dodge_forward.fbx"], "flyDodgeForward");
+    // this->motiono["flyDodgeBackward"] = this->mixer->createMotion(animationAll["fly_dodge_backward.fbx"], "flyDodgeBackward");
+    // this->motiono["flyDodgeLeft"] = this->mixer->createMotion(animationAll["fly_dodge_left.fbx"], "flyDodgeLeft");
+    // this->motiono["flyDodgeRight"] = this->mixer->createMotion(animationAll["fly_dodge_right.fbx"], "flyDodgeRight");
+    // this->motiono["flyDash"] = this->mixer->createMotion(animationAll["fly_dash_forward.fbx"], "flyDash");
+    this->motiono["narutoRun"] = this->mixer->createMotion(animationAll["naruto run.fbx"], "narutoRun");
 
-    this->motiono["jump"] = this->mixer->createMotion(animationo["jump.fbx"], "jump");
+    this->motiono["jump"] = this->mixer->createMotion(animationAll["jump.fbx"], "jump");
 
-    this->motiono["doubleJump"] = this->mixer->createMotion(animationo["jump_double.fbx"], "doubleJump");
+    this->motiono["doubleJump"] = this->mixer->createMotion(animationAll["jump_double.fbx"], "doubleJump");
 
-    this->motiono["fallLoop"] = this->mixer->createMotion(animationo["falling.fbx"], "fallLoop");
+    this->motiono["fallLoop"] = this->mixer->createMotion(animationAll["falling.fbx"], "fallLoop");
 
-    this->motiono["land"] = this->mixer->createMotion(animationo["landing.fbx"], "land");
+    this->motiono["land"] = this->mixer->createMotion(animationAll["landing.fbx"], "land");
 
-    this->motiono["land2"] = this->mixer->createMotion(animationo["landing 2.fbx"], "land2");
+    this->motiono["land2"] = this->mixer->createMotion(animationAll["landing 2.fbx"], "land2");
 
     // useAnimations
-    this->useMotiono["combo"] = this->mixer->createMotion(animationo["One Hand Sword Combo.fbx"], "combo");
-    // this->useMotiono["dashAttack"] = this->mixer->createMotion(animationo["sword_dash.fbx"], "dashAttack");
-    this->useMotiono["drink"] = this->mixer->createMotion(animationo["drinking.fbx"], "drink");
-    this->useMotiono["eat"] = this->mixer->createMotion(animationo["eating.fbx"], "eat");
-    this->useMotiono["magic"] = this->mixer->createMotion(animationo["magic cast.fbx"], "magic");
-    this->useMotiono["pickUpThrow"] = this->mixer->createMotion(animationo["pick_up_throw.fbx"], "pickUpThrow");
-    this->useMotiono["pistol"] = this->mixer->createMotion(animationo["Pistol Aiming Idle.fbx"], "pistol");
-    this->useMotiono["rifle"] = this->mixer->createMotion(animationo["Rifle Aiming Idle.fbx"], "rifle");
-    this->useMotiono["slash"] = this->mixer->createMotion(animationo["sword and shield slash.fbx"], "slash");
-    this->useMotiono["throw"] = this->mixer->createMotion(animationo["pick_up_throw.fbx"], "throw");
+    this->useMotiono["combo"] = this->mixer->createMotion(animationAll["One Hand Sword Combo.fbx"], "combo");
+    // this->useMotiono["dashAttack"] = this->mixer->createMotion(animationAll["sword_dash.fbx"], "dashAttack");
+    this->useMotiono["drink"] = this->mixer->createMotion(animationAll["drinking.fbx"], "drink");
+    this->useMotiono["eat"] = this->mixer->createMotion(animationAll["eating.fbx"], "eat");
+    this->useMotiono["magic"] = this->mixer->createMotion(animationAll["magic cast.fbx"], "magic");
+    this->useMotiono["pickUpThrow"] = this->mixer->createMotion(animationAll["pick_up_throw.fbx"], "pickUpThrow");
+    this->useMotiono["pistol"] = this->mixer->createMotion(animationAll["Pistol Aiming Idle.fbx"], "pistol");
+    this->useMotiono["rifle"] = this->mixer->createMotion(animationAll["Rifle Aiming Idle.fbx"], "rifle");
+    this->useMotiono["slash"] = this->mixer->createMotion(animationAll["sword and shield slash.fbx"], "slash");
+    this->useMotiono["throw"] = this->mixer->createMotion(animationAll["pick_up_throw.fbx"], "throw");
     for (auto const& x : this->useMotiono) {
       this->motiono[x.first] = this->useMotiono[x.first];
     }
     
     // useComboAnimations
-    this->useComboMotiono["swordSideIdle"] = this->mixer->createMotion(animationo["sword_idle_side.fbx"], "swordSideIdle");
-    this->useComboMotiono["swordSideSlash"] = this->mixer->createMotion(animationo["sword_side_slash.fbx"], "swordSideSlash");
-    this->useComboMotiono["swordSideSlashStep"] = this->mixer->createMotion(animationo["sword_side_slash_step.fbx"], "swordSideSlashStep");
-    this->useComboMotiono["swordTopDownSlash"] = this->mixer->createMotion(animationo["sword_topdown_slash.fbx"], "swordTopDownSlash");
-    this->useComboMotiono["swordTopDownSlashStep"] = this->mixer->createMotion(animationo["sword_topdown_slash_step.fbx"], "swordTopDownSlashStep");
-    // this->useComboMotiono["dashAttack"] = this->mixer->createMotion(animationo["sword_dash.fbx"], "dashAttack");
+    this->useComboMotiono["swordSideIdle"] = this->mixer->createMotion(animationAll["sword_idle_side.fbx"], "swordSideIdle");
+    this->useComboMotiono["swordSideSlash"] = this->mixer->createMotion(animationAll["sword_side_slash.fbx"], "swordSideSlash");
+    this->useComboMotiono["swordSideSlashStep"] = this->mixer->createMotion(animationAll["sword_side_slash_step.fbx"], "swordSideSlashStep");
+    this->useComboMotiono["swordTopDownSlash"] = this->mixer->createMotion(animationAll["sword_topdown_slash.fbx"], "swordTopDownSlash");
+    this->useComboMotiono["swordTopDownSlashStep"] = this->mixer->createMotion(animationAll["sword_topdown_slash_step.fbx"], "swordTopDownSlashStep");
+    // this->useComboMotiono["dashAttack"] = this->mixer->createMotion(animationAll["sword_dash.fbx"], "dashAttack");
     for (auto const& x : this->useComboMotiono) {
       this->motiono[x.first] = this->useComboMotiono[x.first];
     }
 
     // bowAnimations
-    this->bowMotiono["bowDraw"] = this->mixer->createMotion(animationo["bow draw.fbx"], "bowDraw");
-    this->bowMotiono["bowIdle"] = this->mixer->createMotion(animationo["bow idle.fbx"], "bowIdle");
-    this->bowMotiono["bowLoose"] = this->mixer->createMotion(animationo["bow loose.fbx"], "bowLoose");
+    this->bowMotiono["bowDraw"] = this->mixer->createMotion(animationAll["bow draw.fbx"], "bowDraw");
+    this->bowMotiono["bowIdle"] = this->mixer->createMotion(animationAll["bow idle.fbx"], "bowIdle");
+    this->bowMotiono["bowLoose"] = this->mixer->createMotion(animationAll["bow loose.fbx"], "bowLoose");
     for (auto const& x : this->bowMotiono) {
       this->motiono[x.first] = this->bowMotiono[x.first];
     }
 
     // sitAnimations
-    this->sitMotiono["chair"] = this->mixer->createMotion(animationo["sitting idle.fbx"], "chair");
-    this->sitMotiono["saddle"] = this->mixer->createMotion(animationo["sitting idle.fbx"], "saddle");
-    this->sitMotiono["stand"] = this->mixer->createMotion(animationo["Skateboarding.fbx"], "stand");
+    this->sitMotiono["chair"] = this->mixer->createMotion(animationAll["sitting idle.fbx"], "chair");
+    this->sitMotiono["saddle"] = this->mixer->createMotion(animationAll["sitting idle.fbx"], "saddle");
+    this->sitMotiono["stand"] = this->mixer->createMotion(animationAll["Skateboarding.fbx"], "stand");
     for (auto const& x : this->sitMotiono) {
       this->motiono[x.first] = this->sitMotiono[x.first];
     }
 
     // hurtAnimations
-    this->hurtMotiono["pain_back"] = this->mixer->createMotion(animationo["pain_back.fbx"], "pain_back");
-    this->hurtMotiono["pain_arch"] = this->mixer->createMotion(animationo["pain_arch.fbx"], "pain_arch");
+    this->hurtMotiono["pain_back"] = this->mixer->createMotion(animationAll["pain_back.fbx"], "pain_back");
+    this->hurtMotiono["pain_arch"] = this->mixer->createMotion(animationAll["pain_arch.fbx"], "pain_arch");
     for (auto const& x : this->hurtMotiono) {
       this->motiono[x.first] = this->hurtMotiono[x.first];
     }
 
     // emoteAnimations
-    this->emoteMotiono["alert"] = this->mixer->createMotion(animationo["alert.fbx"], "alert");
-    this->emoteMotiono["alertSoft"] = this->mixer->createMotion(animationo["alert_soft.fbx"], "alertSoft");
-    this->emoteMotiono["angry"] = this->mixer->createMotion(animationo["angry.fbx"], "angry");
-    this->emoteMotiono["angrySoft"] = this->mixer->createMotion(animationo["angry_soft.fbx"], "angrySoft");
-    this->emoteMotiono["embarrassed"] = this->mixer->createMotion(animationo["embarrassed.fbx"], "embarrassed");
-    this->emoteMotiono["embarrassedSoft"] = this->mixer->createMotion(animationo["embarrassed_soft.fbx"], "embarrassedSoft");
-    this->emoteMotiono["headNod"] = this->mixer->createMotion(animationo["head_nod.fbx"], "headNod");
-    this->emoteMotiono["headNodSoft"] = this->mixer->createMotion(animationo["head_nod_single.fbx"], "headNodSoft");
-    this->emoteMotiono["headShake"] = this->mixer->createMotion(animationo["head_shake.fbx"], "headShake");
-    this->emoteMotiono["headShakeSoft"] = this->mixer->createMotion(animationo["head_shake_single.fbx"], "headShakeSoft");
-    this->emoteMotiono["sad"] = this->mixer->createMotion(animationo["sad.fbx"], "sad");
-    this->emoteMotiono["sadSoft"] = this->mixer->createMotion(animationo["sad_soft.fbx"], "sadSoft");
-    this->emoteMotiono["surprise"] = this->mixer->createMotion(animationo["surprise.fbx"], "surprise");
-    this->emoteMotiono["surpriseSoft"] = this->mixer->createMotion(animationo["surprise_soft.fbx"], "surpriseSoft");
-    this->emoteMotiono["victory"] = this->mixer->createMotion(animationo["victory.fbx"], "victory");
-    this->emoteMotiono["victorySoft"] = this->mixer->createMotion(animationo["victory_soft.fbx"], "victorySoft");
+    this->emoteMotiono["alert"] = this->mixer->createMotion(animationAll["alert.fbx"], "alert");
+    this->emoteMotiono["alertSoft"] = this->mixer->createMotion(animationAll["alert_soft.fbx"], "alertSoft");
+    this->emoteMotiono["angry"] = this->mixer->createMotion(animationAll["angry.fbx"], "angry");
+    this->emoteMotiono["angrySoft"] = this->mixer->createMotion(animationAll["angry_soft.fbx"], "angrySoft");
+    this->emoteMotiono["embarrassed"] = this->mixer->createMotion(animationAll["embarrassed.fbx"], "embarrassed");
+    this->emoteMotiono["embarrassedSoft"] = this->mixer->createMotion(animationAll["embarrassed_soft.fbx"], "embarrassedSoft");
+    this->emoteMotiono["headNod"] = this->mixer->createMotion(animationAll["head_nod.fbx"], "headNod");
+    this->emoteMotiono["headNodSoft"] = this->mixer->createMotion(animationAll["head_nod_single.fbx"], "headNodSoft");
+    this->emoteMotiono["headShake"] = this->mixer->createMotion(animationAll["head_shake.fbx"], "headShake");
+    this->emoteMotiono["headShakeSoft"] = this->mixer->createMotion(animationAll["head_shake_single.fbx"], "headShakeSoft");
+    this->emoteMotiono["sad"] = this->mixer->createMotion(animationAll["sad.fbx"], "sad");
+    this->emoteMotiono["sadSoft"] = this->mixer->createMotion(animationAll["sad_soft.fbx"], "sadSoft");
+    this->emoteMotiono["surprise"] = this->mixer->createMotion(animationAll["surprise.fbx"], "surprise");
+    this->emoteMotiono["surpriseSoft"] = this->mixer->createMotion(animationAll["surprise_soft.fbx"], "surpriseSoft");
+    this->emoteMotiono["victory"] = this->mixer->createMotion(animationAll["victory.fbx"], "victory");
+    this->emoteMotiono["victorySoft"] = this->mixer->createMotion(animationAll["victory_soft.fbx"], "victorySoft");
     for (auto const& x : this->emoteMotiono) {
       this->motiono[x.first] = this->emoteMotiono[x.first];
     }
 
     // danceAnimations
-    this->danceMotiono["dansu"] = this->mixer->createMotion(animationo["Hip Hop Dancing.fbx"], "dansu");
-    this->danceMotiono["powerup"] = this->mixer->createMotion(animationo["powerup.fbx"], "powerup");
+    this->danceMotiono["dansu"] = this->mixer->createMotion(animationAll["Hip Hop Dancing.fbx"], "dansu");
+    this->danceMotiono["powerup"] = this->mixer->createMotion(animationAll["powerup.fbx"], "powerup");
 
     // holdAnimations
-    this->holdMotiono["pick_up_idle"] = this->mixer->createMotion(animationo["pick_up_idle.fbx"], "pick_up_idle");
+    this->holdMotiono["pick_up_idle"] = this->mixer->createMotion(animationAll["pick_up_idle.fbx"], "pick_up_idle");
     this->motiono["pick_up_idle"] = this->holdMotiono["pick_up_idle"];
 
     // activateAnimations
-    this->activateMotiono["grab_forward"] = this->mixer->createMotion(animationo["grab_forward.fbx"], "grab_forward");
-    this->activateMotiono["grab_down"] = this->mixer->createMotion(animationo["grab_down.fbx"], "grab_down");
-    this->activateMotiono["grab_up"] = this->mixer->createMotion(animationo["grab_up.fbx"], "grab_up");
-    this->activateMotiono["grab_left"] = this->mixer->createMotion(animationo["grab_left.fbx"], "grab_left");
-    this->activateMotiono["grab_right"] = this->mixer->createMotion(animationo["grab_right.fbx"], "grab_right");
-    this->activateMotiono["pick_up"] = this->mixer->createMotion(animationo["pick_up.fbx"], "pick_up");
+    this->activateMotiono["grab_forward"] = this->mixer->createMotion(animationAll["grab_forward.fbx"], "grab_forward");
+    this->activateMotiono["grab_down"] = this->mixer->createMotion(animationAll["grab_down.fbx"], "grab_down");
+    this->activateMotiono["grab_up"] = this->mixer->createMotion(animationAll["grab_up.fbx"], "grab_up");
+    this->activateMotiono["grab_left"] = this->mixer->createMotion(animationAll["grab_left.fbx"], "grab_left");
+    this->activateMotiono["grab_right"] = this->mixer->createMotion(animationAll["grab_right.fbx"], "grab_right");
+    this->activateMotiono["pick_up"] = this->mixer->createMotion(animationAll["pick_up.fbx"], "pick_up");
     for (auto const& x : this->activateMotiono) {
       this->motiono[x.first] = this->activateMotiono[x.first];
     }
 
-    this->motiono["pickUpZelda"] = this->mixer->createMotion(animationo["pick_up_zelda.fbx"]);
-    this->motiono["pickUpIdleZelda"] = this->mixer->createMotion(animationo["pick_up_idle_zelda.fbx"]);
+    this->motiono["pickUpZelda"] = this->mixer->createMotion(animationAll["pick_up_zelda.fbx"]);
+    this->motiono["pickUpIdleZelda"] = this->mixer->createMotion(animationAll["pick_up_idle_zelda.fbx"]);
 
     //
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
-    // this->motiono[] = this->mixer->createMotion(animationo[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
+    // this->motiono[] = this->mixer->createMotion(animationAll[]);
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings) { // todo: del
     this->strings.clear();
@@ -539,7 +540,7 @@ namespace AnimationSystem {
     }
     animation->name = name; // todo: don't need ?
 
-    animationo[name] = animation;
+    animationAll[name] = animation;
 
     return animation;
   }
@@ -549,7 +550,7 @@ namespace AnimationSystem {
       name += scratchStack[i];
     }
 
-    return animationo[name];
+    return animationAll[name];
   }
   AnimationNode *AnimationMixer::createMotion(Animation *animation, std::string name) {
     AnimationNode *motion = new AnimationNode();
@@ -573,7 +574,7 @@ namespace AnimationSystem {
     for (unsigned int i = 0; i < animationNameByteLength; i++) {
       name += scratchStack[i];
     }
-    animationo[name]->interpolants.push_back(interpolant);
+    animationAll[name]->interpolants.push_back(interpolant);
   }
   float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) {
     Interpolant interpolant = animation->interpolants[interpolantIndex];
@@ -842,7 +843,7 @@ namespace AnimationSystem {
       if (aimAnimation) {
         float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = animationAll["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -853,7 +854,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      Animation *idleAnimation = animationAll["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -876,7 +877,7 @@ namespace AnimationSystem {
     if (!spec.isPosition) {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      Animation *idleAnimation = animationAll["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
@@ -889,7 +890,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      Animation *idleAnimation = animationAll["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
       
@@ -917,7 +918,7 @@ namespace AnimationSystem {
       if (hurtAnimation) {
         float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = animationAll["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
@@ -928,7 +929,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      Animation *idleAnimation = animationAll["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -983,7 +984,7 @@ namespace AnimationSystem {
       if (!spec.isPosition) {
         float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = animationAll["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -994,7 +995,7 @@ namespace AnimationSystem {
         float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
         _clearXZ(v2, spec.isPosition);
 
-        Animation *idleAnimation = animationo["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = animationAll["idle.fbx"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -1051,7 +1052,7 @@ namespace AnimationSystem {
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
 
-    Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
+    Animation *narutoRunAnimation = avatar->motiono[avatar->defaultNarutoRunAnimation]->animation; // todo: use animationAll directly. change animation.nam and add animation.fileName.
     float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
     float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
 
@@ -1062,7 +1063,7 @@ namespace AnimationSystem {
   void _blendSit(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
 
-    Animation *sitAnimation = avatar->motiono[avatar->sitAnimationName == "" ? avatar->defaultSitAnimation : avatar->sitAnimationName]->animation; // todo: use animationo directly. change animation.nam and add animation.fileName.
+    Animation *sitAnimation = avatar->motiono[avatar->sitAnimationName == "" ? avatar->defaultSitAnimation : avatar->sitAnimationName]->animation; // todo: use animationAll directly. change animation.nam and add animation.fileName.
     float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
 
     copyValue(spec.dst, v2, spec.isPosition);
@@ -1134,7 +1135,7 @@ namespace AnimationSystem {
     if (!avatar->landWithMoving) {
       float animationSpeed = 0.75;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = animationo["landing.fbx"];
+      Animation *landingAnimation = animationAll["landing.fbx"]; // todo: don't use animationAll here.
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -1152,7 +1153,7 @@ namespace AnimationSystem {
     } else {
       float animationSpeed = 0.95;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = animationo["landing 2.fbx"];
+      Animation *landingAnimation = animationAll["landing 2.fbx"];
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -1182,7 +1183,7 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
 
       std::string activateAnimationName = avatar->activateAnimationName == "" ? avatar->defaultActivateAnimationName : avatar->activateAnimationName;
-      Animation *activateAnimation = avatar->motiono[activateAnimationName]->animation; // todo: animationo
+      Animation *activateAnimation = avatar->motiono[activateAnimationName]->animation; // todo: animationAll
       // Interpolant *src2 = activateAnimation->interpolants[spec.index];
       // const t2 = ((avatar.activateTime / 1000) * activateAnimations[defaultAnimation].speedFactor) % activateAnimation.duration; // todo: speedFactor
       float t2 = fmod((avatar->activateTime / 1000), activateAnimation->duration);
