@@ -480,6 +480,7 @@ namespace AnimationSystem {
 
       // blend walk run
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
+      _clearXZ(spec.dst, spec.isPosition);
     // }
 
     // blend idle ---
@@ -492,6 +493,7 @@ namespace AnimationSystem {
       // crouchAnimations
       localVecQuatPtr2 = doBlendList(spec, animationGroups["crouch"], localWeights, avatar->landTimeS);
       copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
+      _clearXZ(localVecQuatArr, spec.isPosition);
 
       // blend crouch idle ---
       // if (avatar->idleWalkFactor < 1) {
@@ -850,6 +852,7 @@ namespace AnimationSystem {
         f = clamp(f, 0, 1);
 
         interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+        _clearXZ(spec.dst, spec.isPosition);
       }
     } else {
       float animationSpeed = 0.95;
