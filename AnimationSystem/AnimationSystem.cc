@@ -907,7 +907,7 @@ namespace AnimationSystem {
     }
   }
 
-  void _blendActivate(AnimationMapping &spec, Avatar *avatar) { // todo: full port
+  void _blendActivate(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->activateTime > 0) {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
 
