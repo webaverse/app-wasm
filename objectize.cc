@@ -63,9 +63,9 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 // AnimationSystem
 
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Avatar *createAnimationAvatar(AnimationSystem::AnimationMixer *mixer) {
-  return AnimationSystem::createAvatar(mixer);
+  return AnimationSystem::createAnimationAvatar(mixer);
 }
-EMSCRIPTEN_KEEPALIVE void updateAvatar(AnimationSystem::Avatar *avatar, float *scratchStack) {
+EMSCRIPTEN_KEEPALIVE void updateAnimationAvatar(AnimationSystem::Avatar *avatar, float *scratchStack) {
   return avatar->update(scratchStack);
 }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
@@ -83,14 +83,11 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchSt
 EMSCRIPTEN_KEEPALIVE void setAnimationGroup(AnimationSystem::Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength, unsigned int keyNameUInt) {
   return AnimationSystem::setAnimationGroup(animation, scratchStack, groupNameByteLength, keyNameByteLength, keyNameUInt);
 }
-EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
-  return AnimationSystem::getAnimation(scratchStack, nameByteLength);
-}
 EMSCRIPTEN_KEEPALIVE void initAnimationSystem(float *scratchStack) {
   return AnimationSystem::initAnimationSystem(scratchStack);
 }
-EMSCRIPTEN_KEEPALIVE void createInterpolant(AnimationSystem::Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
-  return AnimationSystem::createInterpolant(animation, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
+EMSCRIPTEN_KEEPALIVE void createAnimationInterpolant(AnimationSystem::Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  return AnimationSystem::createAnimationInterpolant(animation, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
 }
 
 // End AnimationSystem

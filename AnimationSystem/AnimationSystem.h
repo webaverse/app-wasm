@@ -149,15 +149,12 @@ namespace AnimationSystem {
   // need run in this order
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
-  void createInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
+  void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength, unsigned int keyNameUInt);
   void initAnimationSystem(float *scratchStack);
   AnimationMixer *createAnimationMixer();
-  Avatar *createAvatar(AnimationMixer *mixer);
+  Avatar *createAnimationAvatar(AnimationMixer *mixer);
   // end: need run in this order
-
-  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
-
 };
 
 #endif // _ANIMATIONSYSTEM_H

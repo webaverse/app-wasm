@@ -181,8 +181,8 @@ namespace AnimationSystem {
 
   // Main ------
 
-  Avatar *createAvatar(AnimationMixer *mixer) {
-    std::cout << "createAvatar ------------------" << std::endl;
+  Avatar *createAnimationAvatar(AnimationMixer *mixer) {
+    // std::cout << "createAnimationAvatar ------------------" << std::endl;
 
     // test
     // for (auto const& x : animationGroups) {
@@ -202,7 +202,7 @@ namespace AnimationSystem {
     return avatar;
   }
   void initAnimationSystem(float *scratchStack) { // only need init once globally
-    std::cout << "initAnimationSystem ------------------" << std::endl;
+    // std::cout << "initAnimationSystem ------------------" << std::endl;
 
     // -------------------------------------------------------------------------
     
@@ -373,15 +373,7 @@ namespace AnimationSystem {
 
     AnimationName[keyNameUInt] = keyName;
   }
-  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
-    std::string name = "";
-    for (unsigned int i = 0; i < nameByteLength; i++) {
-      name += scratchStack[i];
-    }
-
-    return animationAll[name];
-  }
-  void createInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;
     interpolant.parameterPositions = parameterPositions;
@@ -931,7 +923,7 @@ namespace AnimationSystem {
         if (!spec.isPosition) {
           multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
         } else {
-      interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+          interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
         }
       } else {
         if (!spec.isTop) {
