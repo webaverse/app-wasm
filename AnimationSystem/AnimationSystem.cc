@@ -7,6 +7,7 @@ namespace AnimationSystem {
   std::map<std::string, Animation *> animationAll;
   std::map<std::string, std::map<std::string, Animation *>> animationGroups;
   std::map<unsigned int, std::string> AnimationName;
+  std::map<std::string, float> speedFactors;
 
   float localVectorArr[3];
   float localQuaternionArr[4];
@@ -200,13 +201,26 @@ namespace AnimationSystem {
 
     return avatar;
   }
-  void initAnimationSystem() { // only need init once globally
+  void initAnimationSystem(float *scratchStack) { // only need init once globally
     std::cout << "initAnimationSystem ------------------" << std::endl;
+
+    // -------------------------------------------------------------------------
+    
+    unsigned int index = 0;
+
+    speedFactors["grab_forward"] = scratchStack[index++];
+    speedFactors["grab_down"] = scratchStack[index++];
+    speedFactors["grab_up"] = scratchStack[index++];
+    speedFactors["grab_left"] = scratchStack[index++];
+    speedFactors["grab_right"] = scratchStack[index++];
+    speedFactors["pick_up"] = scratchStack[index++];
+
+    // -------------------------------------------------------------------------
     
     AnimationName[0] = "";
 
-    //
-    
+    // -------------------------------------------------------------------------
+
     animationGroups["single"]["idle"] = animationAll["idle.fbx"];
     animationGroups["single"]["crouchIdle"] = animationAll["Crouch Idle.fbx"];
 
@@ -907,10 +921,7 @@ namespace AnimationSystem {
 
       std::string activateAnimationName = avatar->activateAnimationName == "" ? avatar->defaultActivateAnimationName : avatar->activateAnimationName;
       Animation *activateAnimation = animationGroups["activate"][activateAnimationName];
-      // Interpolant *src2 = activateAnimation->interpolants[spec.index];
-      // const t2 = ((avatar.activateTime / 1000) * activateAnimations[defaultAnimation].speedFactor) % activateAnimation.duration; // todo: speedFactor
-      float t2 = fmod((avatar->activateTime / 1000), activateAnimation->duration);
-      // const v2 = src2.evaluate(t2);
+      float t2 = fmod((avatar->activateTime / 1000 * speedFactors[activateAnimationName]), activateAnimation->duration);
       float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2);
 
       // const f = avatar.activateTime > 0 ? Math.min(cubicBezier(t2), 1) : (1 - Math.min(cubicBezier(t2), 1));

@@ -151,7 +151,7 @@ namespace AnimationSystem {
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   void createInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength, unsigned int keyNameUInt);
-  void initAnimationSystem();
+  void initAnimationSystem(float *scratchStack);
   AnimationMixer *createAnimationMixer();
   Avatar *createAvatar(AnimationMixer *mixer);
   // end: need run in this order

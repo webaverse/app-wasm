@@ -87,8 +87,8 @@ EMSCRIPTEN_KEEPALIVE void setAnimationGroup(AnimationSystem::Animation *animatio
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
   return AnimationSystem::getAnimation(scratchStack, nameByteLength);
 }
-EMSCRIPTEN_KEEPALIVE void initAnimationSystem() {
-  return AnimationSystem::initAnimationSystem();
+EMSCRIPTEN_KEEPALIVE void initAnimationSystem(float *scratchStack) {
+  return AnimationSystem::initAnimationSystem(scratchStack);
 }
 EMSCRIPTEN_KEEPALIVE void createInterpolant(AnimationSystem::Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
   return AnimationSystem::createInterpolant(animation, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
