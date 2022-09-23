@@ -927,7 +927,18 @@ namespace AnimationSystem {
       // const f = avatar.activateTime > 0 ? Math.min(cubicBezier(t2), 1) : (1 - Math.min(cubicBezier(t2), 1));
       float f = avatar->activateTime > 0 ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
 
+      if (spec.index == BoneIndex::Spine || spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest || spec.index == BoneIndex::Neck || spec.index == BoneIndex::Head) {
+        if (!spec.isPosition) {
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        } else {
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+        }
+      } else {
+        if (!spec.isTop) {
+          f *= (1 - avatar->idleWalkFactor);
+        }
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+      }
     }
   }
 
