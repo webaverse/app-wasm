@@ -99,33 +99,62 @@ namespace AnimationSystem {
     std::vector<std::string> strings;
 
     // values
-    std::string activateAnimationName, fallLoopFrom, sitAnimationName, danceAnimationName, emoteAnimationName, useAnimationName, useAnimationComboName, hurtAnimationName, unuseAnimationName, aimAnimationName, holdAnimationName;
+    float activateTime;
+    float landTime;
+    float fallLoopFactor;
+    float fallLoopTime;
+    float flyTime;
+    float doubleJumpTime;
+    float jumpTime;
+    float narutoRunTime;
+    float narutoRunTimeFactor;
+    float danceFactor;
+    float crouchMaxTime;
+    float emoteFactor;
+    float lastEmoteTime;
+    float idleWalkFactor;
+    float useTime;
+    float useAnimationEnvelopeLength;
+    float hurtTime;
+    float unuseTime;
+    float aimTime;
+    float aimMaxTime;
+    float walkRunFactor;
+    float crouchFactor;
+    float pickUpTime;
+    float forwardFactor;
+    float backwardFactor;
+    float leftFactor;
+    float rightFactor;
+    float mirrorLeftFactorReverse;
+    float mirrorLeftFactor;
+    float mirrorRightFactorReverse;
+    float mirrorRightFactor;
+    float landTimeS;
+    float timeSinceLastMoveS;
+
+    bool landWithMoving;
+    bool flyState;
+    bool doubleJumpState;
+    bool jumpState;
+    bool sitState;
+    bool narutoRunState;
+    bool holdState;
+    bool pickUpState;
+
+    std::string activateAnimationName;
+    std::string fallLoopFrom;
+    std::string sitAnimationName;
+    std::string danceAnimationName;
+    std::string emoteAnimationName;
+    std::string useAnimationName;
+    std::string useAnimationComboName;
+    std::string hurtAnimationName;
+    std::string unuseAnimationName;
+    std::string aimAnimationName;
+    std::string holdAnimationName;
+
     std::vector<std::string> useAnimationEnvelopeNames;
-    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength, hurtTime, unuseTime, aimTime, aimMaxTime, walkRunFactor, crouchFactor, pickUpTime, forwardFactor, backwardFactor, leftFactor, rightFactor, mirrorLeftFactorReverse, mirrorLeftFactor, mirrorRightFactorReverse, mirrorRightFactor, landTimeS, timeSinceLastMoveS;
-    bool landWithMoving, flyState, doubleJumpState, jumpState, sitState, narutoRunState, holdState, pickUpState;
-
-    // action start/end events
-    bool jumpStart, jumpEnd, lastJumpState;
-    bool doubleJumpStart, doubleJumpEnd, lastDoubleJumpState;
-    bool landStart, landEnd, lastLandState;
-    bool flyStart, flyEnd, lastFlyState;
-    bool activateStart, activateEnd, lastActivateState;
-    bool narutoRunStart, narutoRunEnd, lastNarutoRunState;
-    bool sitStart, sitEnd, lastSitState;
-    bool holdStart, holdEnd, lastHoldState;
-    bool emoteStart, emoteEnd, lastEmoteState;
-    bool fallLoopStart, fallLoopEnd, lastFallLoopState;
-    bool hurtStart, hurtEnd, lastHurtState;
-    bool danceStart, danceEnd, lastDanceState;
-    bool useEnvelopeStart, useEnvelopeEnd, lastUseEnvelopeState;
-    //
-    bool useStart, useEnd;
-    std::string lastUseAnimation;
-    //
-    bool useComboStart, useComboEnd;
-    std::string lastUseAnimationComboName;
-
-    std::string testBlendStrings; // test
     
     void update(float *scratchStack);
   };
