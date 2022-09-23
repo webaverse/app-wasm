@@ -2,7 +2,6 @@
 #define _ANIMATIONSYSTEM_H
 #include "physics.h"
 #include <iostream>
-#include "lib/bezier.h"
 
 namespace AnimationSystem {
   struct Interpolant;
@@ -17,7 +16,7 @@ namespace AnimationSystem {
     LoopRepeat = 2201,
     LoopPingPong = 2202
   };
-  enum BoneName { // todo: rename boneIndex
+  enum BoneIndex {
     // Hips = 0, // position
     Hips = 1, // quaternion
     Spine = 2,
@@ -72,18 +71,6 @@ namespace AnimationSystem {
     Left_ankle = 51,
     Left_toe = 52
   };
-  // enum AnimationName { // todo: use this enum instead of std::map.
-  //   Combo,
-  //   Slash,
-  //   DashAttack,
-  //   Rifle,
-  //   Pistol,
-  //   Magic,
-  //   Eat,
-  //   Drink,
-  //   Throw,
-  //   PickUpThrow
-  // };
 
   struct Interpolant {
     unsigned int numParameterPositions;
@@ -113,23 +100,13 @@ namespace AnimationSystem {
   class Avatar {
   public:
     AnimationMixer *mixer;
-    std::map<std::string, AnimationNode *> motiono; // todo: duplicated with mixer.motiono ?
-    std::map<std::string, AnimationNode *> useMotiono;
-    std::map<std::string, AnimationNode *> useComboMotiono;
-    std::map<std::string, AnimationNode *> bowMotiono;
-    std::map<std::string, AnimationNode *> sitMotiono;
-    std::map<std::string, AnimationNode *> emoteMotiono;
-    std::map<std::string, AnimationNode *> danceMotiono;
-    std::map<std::string, AnimationNode *> holdMotiono;
-    std::map<std::string, AnimationNode *> activateMotiono;
-    std::map<std::string, AnimationNode *> hurtMotiono;
 
     std::vector<std::string> strings;
 
     // values
-    std::string activateAnimationName, fallLoopFrom, sitAnimationName, defaultSitAnimation, defaultNarutoRunAnimation, danceAnimationName, defaultDanceAnimationName, emoteAnimationName, defaultEmoteAnimationName, useAnimationName, useAnimationComboName, hurtAnimationName, unuseAnimationName, aimAnimationName, defaultActivateAnimationName, holdAnimationName, defaultHoldAnimationName;
+    std::string activateAnimationName, fallLoopFrom, sitAnimationName, danceAnimationName, emoteAnimationName, useAnimationName, useAnimationComboName, hurtAnimationName, unuseAnimationName, aimAnimationName, holdAnimationName;
     std::vector<std::string> useAnimationEnvelopeNames;
-    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength, hurtTime, unuseTime, aimTime, aimMaxTime, walkRunFactor, crouchFactor, pickUpTime, forwardFactor, backwardFactor, leftFactor, rightFactor, mirrorLeftFactorReverse, mirrorLeftFactor, mirrorRightFactorReverse, mirrorRightFactor;
+    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength, hurtTime, unuseTime, aimTime, aimMaxTime, walkRunFactor, crouchFactor, pickUpTime, forwardFactor, backwardFactor, leftFactor, rightFactor, mirrorLeftFactorReverse, mirrorLeftFactor, mirrorRightFactorReverse, mirrorRightFactor, landTimeS, timeSinceLastMoveS;
     bool landWithMoving, flyState, doubleJumpState, jumpState, sitState, narutoRunState, holdState, pickUpState;
 
     // action start/end events
@@ -155,43 +132,29 @@ namespace AnimationSystem {
 
     std::string testBlendStrings; // test
     
-    void setAnimations();
-    void createMotions();
     void update(float *scratchStack);
-    void updateString(char *scratchStack, unsigned int numStrings);
   };
-  class AnimationNode {
-  public:
-    // node & motion ------
-    // AnimationMixer *mixer;
-    std::string name;
-
-    // motion ------
-    Animation *animation;
-  };
-  class AnimationMixer { // note: mixer can't aware of avatar.
+  class AnimationMixer {
   public:
     // static float now;
     static float nowS;
 
-    Avatar *avatar; // todo: delete this ?
-    std::map<std::string, AnimationNode *> motiono;
+    Avatar *avatar;
     float *animationValues[53]; // 53 bones interpolants result buffers.
 
-    AnimationNode *createMotion(Animation *animation, std::string name = "");
     float **update(float now, float nowS);
   };
 
   // ------
-  Avatar *createAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
-  AnimationMixer *createAnimationMixer();
+  // need run in this order
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
-  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
-  void createInterpolant(char *scratchStack, unsigned int animationNameByteLength, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
-  void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
-
+  void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
+  void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength, unsigned int keyNameUInt);
+  void initAnimationSystem(float *scratchStack);
+  AnimationMixer *createAnimationMixer();
+  Avatar *createAnimationAvatar(AnimationMixer *mixer);
+  // end: need run in this order
 };
 
 #endif // _ANIMATIONSYSTEM_H
