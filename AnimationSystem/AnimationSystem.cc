@@ -98,17 +98,6 @@ namespace AnimationSystem {
   Avatar *createAvatar(AnimationMixer *mixer) {
     std::cout << "createAvatar ------------------" << std::endl;
 
-    // std::cout << "AnimationName::Combo: " << AnimationName::Combo << std::endl;
-    // std::cout << "AnimationName::Slash: " << AnimationName::Slash << std::endl;
-    // std::cout << "AnimationName::DashAttack: " << AnimationName::DashAttack << std::endl;
-    // std::cout << "AnimationName::Rifle: " << AnimationName::Rifle << std::endl;
-    // std::cout << "AnimationName::Pistol: " << AnimationName::Pistol << std::endl;
-    // std::cout << "AnimationName::Magic: " << AnimationName::Magic << std::endl;
-    // std::cout << "AnimationName::Eat: " << AnimationName::Eat << std::endl;
-    // std::cout << "AnimationName::Drink: " << AnimationName::Drink << std::endl;
-    // std::cout << "AnimationName::Throw: " << AnimationName::Throw << std::endl;
-    // std::cout << "AnimationName::PickUpThrow: " << AnimationName::PickUpThrow << std::endl;
-
     // test
     // for (auto const& x : animationGroups) {
     //   std::map<std::string, Animation *> animationGroup = animationGroups[x.first];
@@ -128,6 +117,10 @@ namespace AnimationSystem {
   }
   void initAnimationSystem() { // only need init once globally
     std::cout << "initAnimationSystem ------------------" << std::endl;
+    
+    AnimationName[0] = "";
+
+    //
     
     animationGroups["single"]["idle"] = animationAll["idle.fbx"];
     animationGroups["single"]["crouchIdle"] = animationAll["Crouch Idle.fbx"];
@@ -155,83 +148,6 @@ namespace AnimationSystem {
     animationGroups["crouch"]["leftMirror"] = animationAll["Crouched Sneaking Right reverse.fbx"];
     animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
     animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
-    
-    // todo: init only once globally.
-    std::vector<std::string> animationNames;
-    // useAnimations
-    animationNames.push_back("");
-    animationNames.push_back("combo"); // todo: don't need list, auto-add in setAnimationGroup().
-    animationNames.push_back("slash");
-    animationNames.push_back("dashAttack");
-    animationNames.push_back("rifle");
-    animationNames.push_back("pistol");
-    animationNames.push_back("magic");
-    animationNames.push_back("eat");
-    animationNames.push_back("drink");
-    animationNames.push_back("throw");
-    animationNames.push_back("pickUpThrow");
-    // emoteAnimations
-    animationNames.push_back("alert");
-    animationNames.push_back("alertSoft");
-    animationNames.push_back("angry");
-    animationNames.push_back("angrySoft");
-    animationNames.push_back("embarrassed");
-    animationNames.push_back("embarrassedSoft");
-    animationNames.push_back("headNod");
-    animationNames.push_back("headNodSoft");
-    animationNames.push_back("headShake");
-    animationNames.push_back("headShakeSoft");
-    animationNames.push_back("sad");
-    animationNames.push_back("sadSoft");
-    animationNames.push_back("surprise");
-    animationNames.push_back("surpriseSoft");
-    animationNames.push_back("victory");
-    animationNames.push_back("victorySoft");
-    // sitAnimations
-    animationNames.push_back("chair");
-    animationNames.push_back("saddle");
-    animationNames.push_back("stand");
-    // danceAnimations
-    animationNames.push_back("dansu");
-    animationNames.push_back("powerup");
-    // activateAnimations
-    animationNames.push_back("grab_forward");
-    animationNames.push_back("grab_down");
-    animationNames.push_back("grab_up");
-    animationNames.push_back("grab_left");
-    animationNames.push_back("grab_right");
-    animationNames.push_back("pick_up");
-    // hurtAnimations
-    animationNames.push_back("pain_back");
-    animationNames.push_back("pain_arch");
-    // useComboAnimations
-    animationNames.push_back("swordSideIdle");
-    animationNames.push_back("swordSideIdleStatic");
-    animationNames.push_back("swordSideSlash");
-    animationNames.push_back("swordSideSlashStep");
-    animationNames.push_back("swordTopDownSlash");
-    animationNames.push_back("swordTopDownSlashStep");
-    animationNames.push_back("swordUndraw");
-    animationNames.push_back("dashAttack");
-    // bowAnimations
-    animationNames.push_back("bowDraw");
-    animationNames.push_back("bowIdle");
-    animationNames.push_back("bowLoose");
-    // pickUpAnimations
-    animationNames.push_back("pickUp");
-    animationNames.push_back("pickUpIdle");
-    animationNames.push_back("pickUpThrow");
-    animationNames.push_back("putDown");
-    animationNames.push_back("pickUpZelda");
-    animationNames.push_back("pickUpIdleZelda");
-    animationNames.push_back("putDownZelda");
-    // narutoRunAnimations
-    animationNames.push_back("narutoRun");
-    // holdAnimations
-    animationNames.push_back("pick_up_idle");
-    for (unsigned int i = 0; i < animationNames.size(); i++) {
-      AnimationName[i] = animationNames[i];
-    }
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings) { // todo: del
     this->strings.clear();
@@ -383,7 +299,7 @@ namespace AnimationSystem {
 
     return animation;
   }
-  void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength) {
+  void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength, unsigned int keyNameUInt) {
     
     unsigned int index = 0;
 
@@ -405,6 +321,7 @@ namespace AnimationSystem {
 
     // std::cout << "groupName: " << groupName << " keyName: " << keyName << " name: " << animation->name << std::endl;
 
+    AnimationName[keyNameUInt] = keyName;
   }
   Animation *getAnimation(char *scratchStack, unsigned int nameByteLength) {
     std::string name = "";
