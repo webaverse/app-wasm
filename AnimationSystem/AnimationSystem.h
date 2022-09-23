@@ -112,16 +112,6 @@ namespace AnimationSystem {
   class Avatar {
   public:
     AnimationMixer *mixer;
-    std::map<std::string, AnimationNode *> motiono; // todo: duplicated with mixer.motiono ?
-    std::map<std::string, AnimationNode *> useMotiono;
-    std::map<std::string, AnimationNode *> useComboMotiono;
-    std::map<std::string, AnimationNode *> bowMotiono;
-    std::map<std::string, AnimationNode *> sitMotiono;
-    std::map<std::string, AnimationNode *> emoteMotiono;
-    std::map<std::string, AnimationNode *> danceMotiono;
-    std::map<std::string, AnimationNode *> holdMotiono;
-    std::map<std::string, AnimationNode *> activateMotiono;
-    std::map<std::string, AnimationNode *> hurtMotiono;
 
     std::vector<std::string> strings;
 
@@ -155,18 +145,8 @@ namespace AnimationSystem {
     std::string testBlendStrings; // test
     
     void setAnimations();
-    void createMotions();
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
-  };
-  class AnimationNode {
-  public:
-    // node & motion ------
-    // AnimationMixer *mixer;
-    std::string name;
-
-    // motion ------
-    Animation *animation;
   };
   class AnimationMixer { // note: mixer can't aware of avatar.
   public:
@@ -174,10 +154,8 @@ namespace AnimationSystem {
     static float nowS;
 
     Avatar *avatar; // todo: delete this ?
-    std::map<std::string, AnimationNode *> motiono;
     float *animationValues[53]; // 53 bones interpolants result buffers.
 
-    AnimationNode *createMotion(Animation *animation, std::string name = "");
     float **update(float now, float nowS);
   };
 
