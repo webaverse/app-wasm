@@ -986,7 +986,7 @@ namespace AnimationSystem {
     } else if(avatar->useAnimationComboName != "") {
       useAnimation = animationGroups["use"][avatar->useAnimationComboName];
       t2 = min(useTimeS, useAnimation->duration);
-    } else if (avatar->useAnimationEnvelopeNames.size() > 0) { // todo: why not bowLoose and transition animations in the end ?
+    } else if (avatar->useAnimationEnvelopeNames.size() > 0) {
       float totalTime = 0;
       for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
         std::string animationName = avatar->useAnimationEnvelopeNames[i];
@@ -1092,7 +1092,7 @@ namespace AnimationSystem {
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
 
-    Animation *narutoRunAnimation = animationGroups["narutoRun"][avatar->defaultNarutoRunAnimation]; // todo: use animationAll directly. change animation.nam and add animation.fileName.
+    Animation *narutoRunAnimation = animationGroups["narutoRun"][avatar->defaultNarutoRunAnimation];
     float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
     float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
 
@@ -1104,7 +1104,7 @@ namespace AnimationSystem {
   void _blendSit(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
 
-    Animation *sitAnimation = animationGroups["sit"][avatar->sitAnimationName == "" ? avatar->defaultSitAnimation : avatar->sitAnimationName]; // todo: use animationAll directly. change animation.nam and add animation.fileName.
+    Animation *sitAnimation = animationGroups["sit"][avatar->sitAnimationName == "" ? avatar->defaultSitAnimation : avatar->sitAnimationName];
     float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
 
     copyValue(spec.dst, v2, spec.isPosition);
@@ -1132,7 +1132,7 @@ namespace AnimationSystem {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendDoubleJump, "; // test: blend strings.
 
     float t2 = avatar->doubleJumpTime / 1000;
-    float *v2 = evaluateInterpolant(doubleJumpAnimation, spec.index, t2); // todo: animationGroups["single"]
+    float *v2 = evaluateInterpolant(animationGroups["single"]["doubleJump"], spec.index, t2);
 
     copyValue(spec.dst, v2, spec.isPosition);
 
@@ -1146,7 +1146,7 @@ namespace AnimationSystem {
       float t2 = avatar->flyTime / 1000;
       // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
       float f = 1;
-      float *v2 = evaluateInterpolant(floatAnimation, spec.index, fmod(t2, floatAnimation->duration)); // todo: animationGroups["single"]
+      float *v2 = evaluateInterpolant(floatAnimation, spec.index, fmod(t2, animationGroups["single"]["float"]->duration));
 
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
 
@@ -1164,7 +1164,7 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendFallLoop, "; // test: blend strings.
 
       float t2 = (avatar->fallLoopTime / 1000);
-      float *v2 = evaluateInterpolant(fallLoopAnimation, spec.index, t2); // todo: animationGroups["single"]
+      float *v2 = evaluateInterpolant(animationGroups["single"]["fallLoop"], spec.index, t2);
       float f = clamp(t2 / 0.3, 0, 1);
 
       if (avatar->fallLoopFrom == "jump") {
@@ -1181,7 +1181,7 @@ namespace AnimationSystem {
     if (!avatar->landWithMoving) {
       float animationSpeed = 0.75;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = animationAll["landing.fbx"]; // todo: don't use animationAll here. // todo: animationGroups["single"]
+      Animation *landingAnimation = animationGroups["land"]["landing"]; // todo: don't use animationAll here.
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -1199,7 +1199,7 @@ namespace AnimationSystem {
     } else {
       float animationSpeed = 0.95;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = animationAll["landing 2.fbx"]; // todo: animationGroups["single"]
+      Animation *landingAnimation = animationGroups["land"]["landing2"];
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -1230,7 +1230,7 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
 
       std::string activateAnimationName = avatar->activateAnimationName == "" ? avatar->defaultActivateAnimationName : avatar->activateAnimationName;
-      Animation *activateAnimation = animationGroups["activate"][activateAnimationName]; // todo: animationAll
+      Animation *activateAnimation = animationGroups["activate"][activateAnimationName];
       // Interpolant *src2 = activateAnimation->interpolants[spec.index];
       // const t2 = ((avatar.activateTime / 1000) * activateAnimations[defaultAnimation].speedFactor) % activateAnimation.duration; // todo: speedFactor
       float t2 = fmod((avatar->activateTime / 1000), activateAnimation->duration);
