@@ -54,6 +54,93 @@ namespace AnimationSystem {
     dst[2] = src[2];
     if (!isPosition) dst[3] = src[3];
   }
+  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
+    float x0 = src0[srcOffset0 + 0];
+    float y0 = src0[srcOffset0 + 1];
+    float z0 = src0[srcOffset0 + 2];
+
+    float x1 = src1[srcOffset1 + 0];
+    float y1 = src1[srcOffset1 + 1];
+    float z1 = src1[srcOffset1 + 2];
+
+    dst[dstOffset + 0] = x0 + (x1 - x0) * t;
+    dst[dstOffset + 1] = y0 + (y1 - y0) * t;
+    dst[dstOffset + 2] = z0 + (z1 - z0) * t;
+  };
+  void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
+
+    // fuzz-free, array-based Quaternion SLERP operation
+
+    float x0 = src0[srcOffset0 + 0],
+          y0 = src0[srcOffset0 + 1],
+          z0 = src0[srcOffset0 + 2],
+          w0 = src0[srcOffset0 + 3];
+
+    float x1 = src1[srcOffset1 + 0],
+          y1 = src1[srcOffset1 + 1],
+          z1 = src1[srcOffset1 + 2],
+          w1 = src1[srcOffset1 + 3];
+
+    if (t == 0) {
+
+      dst[dstOffset + 0] = x0;
+      dst[dstOffset + 1] = y0;
+      dst[dstOffset + 2] = z0;
+      dst[dstOffset + 3] = w0;
+      return;
+    }
+
+    if (t == 1) {
+
+      dst[dstOffset + 0] = x1;
+      dst[dstOffset + 1] = y1;
+      dst[dstOffset + 2] = z1;
+      dst[dstOffset + 3] = w1;
+      return;
+    }
+
+    if (w0 != w1 || x0 != x1 || y0 != y1 || z0 != z1) {
+
+      float s = 1 - t;
+      float cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
+            dir = (cos >= 0 ? 1 : -1),
+            sqrSin = 1 - cos * cos;
+
+      // Skip the Slerp for tiny steps to avoid numeric problems:
+      float EPSILON = 2.220446049250313e-16;
+      if (sqrSin > EPSILON) {
+
+        float sinVal = sqrt(sqrSin),
+              len = atan2(sinVal, cos * dir);
+
+        s = sin(s * len) / sinVal;
+        t = sin(t * len) / sinVal;
+      }
+
+      float tDir = t * dir;
+
+      x0 = x0 * s + x1 * tDir;
+      y0 = y0 * s + y1 * tDir;
+      z0 = z0 * s + z1 * tDir;
+      w0 = w0 * s + w1 * tDir;
+
+      // Normalize in case we just did a lerp:
+      if (s == 1 - t) {
+
+        float f = 1 / sqrt(x0 * x0 + y0 * y0 + z0 * z0 + w0 * w0);
+
+        x0 *= f;
+        y0 *= f;
+        z0 *= f;
+        w0 *= f;
+      }
+    }
+
+    dst[dstOffset] = x0;
+    dst[dstOffset + 1] = y0;
+    dst[dstOffset + 2] = z0;
+    dst[dstOffset + 3] = w0;
+  }
   void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition) { // todo: del offsets.
     if (isPosition) {
       lerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
@@ -332,112 +419,17 @@ namespace AnimationSystem {
         float time1 = interpolant.parameterPositions[index1];
         float f = (t - time0) / (time1 - time0);
 
-        if (interpolant.valueSize == 3) { // todo: use interpolateFlat
-          lerpFlat(
-            interpolant.resultBuffer, 0,
-            interpolant.sampleValues, index0 * interpolant.valueSize,
-            interpolant.sampleValues, index1 * interpolant.valueSize,
-            f
-          );
-        } else {
-          slerpFlat(
-            interpolant.resultBuffer, 0,
-            interpolant.sampleValues, index0 * interpolant.valueSize,
-            interpolant.sampleValues, index1 * interpolant.valueSize,
-            f
-          );
-        }
+        interpolateFlat(
+          interpolant.resultBuffer, 0,
+          interpolant.sampleValues, index0 * interpolant.valueSize,
+          interpolant.sampleValues, index1 * interpolant.valueSize,
+          f,
+          interpolant.valueSize == 3
+        );
       }
     }
 
     return interpolant.resultBuffer;
-  }
-  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
-    float x0 = src0[srcOffset0 + 0];
-    float y0 = src0[srcOffset0 + 1];
-    float z0 = src0[srcOffset0 + 2];
-
-    float x1 = src1[srcOffset1 + 0];
-    float y1 = src1[srcOffset1 + 1];
-    float z1 = src1[srcOffset1 + 2];
-
-    dst[dstOffset + 0] = x0 + (x1 - x0) * t;
-    dst[dstOffset + 1] = y0 + (y1 - y0) * t;
-    dst[dstOffset + 2] = z0 + (z1 - z0) * t;
-  };
-  void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t) {
-
-    // fuzz-free, array-based Quaternion SLERP operation
-
-    float x0 = src0[srcOffset0 + 0],
-          y0 = src0[srcOffset0 + 1],
-          z0 = src0[srcOffset0 + 2],
-          w0 = src0[srcOffset0 + 3];
-
-    float x1 = src1[srcOffset1 + 0],
-          y1 = src1[srcOffset1 + 1],
-          z1 = src1[srcOffset1 + 2],
-          w1 = src1[srcOffset1 + 3];
-
-    if (t == 0) {
-
-      dst[dstOffset + 0] = x0;
-      dst[dstOffset + 1] = y0;
-      dst[dstOffset + 2] = z0;
-      dst[dstOffset + 3] = w0;
-      return;
-    }
-
-    if (t == 1) {
-
-      dst[dstOffset + 0] = x1;
-      dst[dstOffset + 1] = y1;
-      dst[dstOffset + 2] = z1;
-      dst[dstOffset + 3] = w1;
-      return;
-    }
-
-    if (w0 != w1 || x0 != x1 || y0 != y1 || z0 != z1) {
-
-      float s = 1 - t;
-      float cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
-            dir = (cos >= 0 ? 1 : -1),
-            sqrSin = 1 - cos * cos;
-
-      // Skip the Slerp for tiny steps to avoid numeric problems:
-      float EPSILON = 2.220446049250313e-16;
-      if (sqrSin > EPSILON) {
-
-        float sinVal = sqrt(sqrSin),
-              len = atan2(sinVal, cos * dir);
-
-        s = sin(s * len) / sinVal;
-        t = sin(t * len) / sinVal;
-      }
-
-      float tDir = t * dir;
-
-      x0 = x0 * s + x1 * tDir;
-      y0 = y0 * s + y1 * tDir;
-      z0 = z0 * s + z1 * tDir;
-      w0 = w0 * s + w1 * tDir;
-
-      // Normalize in case we just did a lerp:
-      if (s == 1 - t) {
-
-        float f = 1 / sqrt(x0 * x0 + y0 * y0 + z0 * z0 + w0 * w0);
-
-        x0 *= f;
-        y0 *= f;
-        z0 *= f;
-        w0 *= f;
-      }
-    }
-
-    dst[dstOffset] = x0;
-    dst[dstOffset + 1] = y0;
-    dst[dstOffset + 2] = z0;
-    dst[dstOffset + 3] = w0;
   }
 
   float *doBlendList(AnimationMapping &spec, std::map<std::string, Animation *> animations, std::map<std::string, float> weights) { // todo: different times.

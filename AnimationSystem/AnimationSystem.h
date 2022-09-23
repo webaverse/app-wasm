@@ -169,8 +169,6 @@ namespace AnimationSystem {
   // end: need run in this order
 
   Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
-  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t); // todo: don't need declare
-  void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
 
 };
 
