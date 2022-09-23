@@ -984,11 +984,11 @@ namespace AnimationSystem {
         _handleDefault(spec, this->avatar);
       }
 
-      // // note: cascading blending, in order to do transition between all kinds of aniamtions.
-      // _blendFly(spec, this->avatar);
-      // _blendFallLoop(spec, this->avatar);
-      // _blendLand(spec, this->avatar);
-      // _blendActivate(spec, this->avatar);
+      // note: cascading blending, in order to do transition between all kinds of aniamtions.
+      _blendFly(spec, this->avatar);
+      _blendFallLoop(spec, this->avatar);
+      _blendLand(spec, this->avatar);
+      _blendActivate(spec, this->avatar);
 
       // if (spec.isPosition) std::cout << "testBlendStrings: " << avatar->testBlendStrings << std::endl; // test: blend strings.
 
