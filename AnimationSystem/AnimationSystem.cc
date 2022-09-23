@@ -21,8 +21,6 @@ namespace AnimationSystem {
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
-  bool isSetAnimations = false;
-
   // functions:
 
   // Utils ------
@@ -119,12 +117,50 @@ namespace AnimationSystem {
     //     std::cout << " groupName: " << x.first << " keyName: " << y.first << " name: " << animation->name << std::endl;
     //   }
     // }
+
+    // avatar->mixer = createAnimationMixer();
+    Avatar *avatar = new Avatar();
+    avatars.push_back(avatar);
+    avatar->mixer = mixer;
+    mixer->avatar = avatar; // todo: prevent set `mixer->avatar = avatar` ?
+
+    return avatar;
+  }
+  void initAnimationSystem() { // only need init once globally
+    std::cout << "initAnimationSystem ------------------" << std::endl;
+    
+    animationGroups["single"]["idle"] = animationAll["idle.fbx"];
+    animationGroups["single"]["crouchIdle"] = animationAll["Crouch Idle.fbx"];
+
+    // 8 directions walk animations ---
+    animationGroups["walk"]["forward"] = animationAll["walking.fbx"];
+    animationGroups["walk"]["backward"] = animationAll["walking backwards.fbx"];
+    animationGroups["walk"]["left"] = animationAll["left strafe walking.fbx"];
+    animationGroups["walk"]["leftMirror"] = animationAll["right strafe walking reverse.fbx"];
+    animationGroups["walk"]["right"] = animationAll["right strafe walking.fbx"];
+    animationGroups["walk"]["rightMirror"] = animationAll["left strafe walking reverse.fbx"];
+
+    // 8 directions run animations ---
+    animationGroups["run"]["forward"] = animationAll["Fast Run.fbx"];
+    animationGroups["run"]["backward"] = animationAll["running backwards.fbx"];
+    animationGroups["run"]["left"] = animationAll["left strafe.fbx"];
+    animationGroups["run"]["leftMirror"] = animationAll["right strafe reverse.fbx"];
+    animationGroups["run"]["right"] = animationAll["right strafe.fbx"];
+    animationGroups["run"]["rightMirror"] = animationAll["left strafe reverse.fbx"];
+
+    // 8 directions crouch animations ---
+    animationGroups["crouch"]["forward"] = animationAll["Sneaking Forward.fbx"];
+    animationGroups["crouch"]["backward"] = animationAll["Sneaking Forward reverse.fbx"];
+    animationGroups["crouch"]["left"] = animationAll["Crouched Sneaking Left.fbx"];
+    animationGroups["crouch"]["leftMirror"] = animationAll["Crouched Sneaking Right reverse.fbx"];
+    animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
+    animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
     
     // todo: init only once globally.
     std::vector<std::string> animationNames;
     // useAnimations
     animationNames.push_back("");
-    animationNames.push_back("combo");
+    animationNames.push_back("combo"); // todo: don't need list, auto-add in setAnimationGroup().
     animationNames.push_back("slash");
     animationNames.push_back("dashAttack");
     animationNames.push_back("rifle");
@@ -195,49 +231,6 @@ namespace AnimationSystem {
     animationNames.push_back("pick_up_idle");
     for (unsigned int i = 0; i < animationNames.size(); i++) {
       AnimationName[i] = animationNames[i];
-    }
-
-    // avatar->mixer = createAnimationMixer();
-    Avatar *avatar = new Avatar();
-    avatars.push_back(avatar);
-    avatar->mixer = mixer;
-    mixer->avatar = avatar; // todo: prevent set `mixer->avatar = avatar` ?
-
-    avatar->setAnimations();
-
-    return avatar;
-  }
-  void Avatar::setAnimations() {
-    if (!isSetAnimations) { // only need set once globally // todo: initAnimationSystem().
-    
-      animationGroups["single"]["idle"] = animationAll["idle.fbx"];
-      animationGroups["single"]["crouchIdle"] = animationAll["Crouch Idle.fbx"];
-
-      // 8 directions walk animations ---
-      animationGroups["walk"]["forward"] = animationAll["walking.fbx"];
-      animationGroups["walk"]["backward"] = animationAll["walking backwards.fbx"];
-      animationGroups["walk"]["left"] = animationAll["left strafe walking.fbx"];
-      animationGroups["walk"]["leftMirror"] = animationAll["right strafe walking reverse.fbx"];
-      animationGroups["walk"]["right"] = animationAll["right strafe walking.fbx"];
-      animationGroups["walk"]["rightMirror"] = animationAll["left strafe walking reverse.fbx"];
-
-      // 8 directions run animations ---
-      animationGroups["run"]["forward"] = animationAll["Fast Run.fbx"];
-      animationGroups["run"]["backward"] = animationAll["running backwards.fbx"];
-      animationGroups["run"]["left"] = animationAll["left strafe.fbx"];
-      animationGroups["run"]["leftMirror"] = animationAll["right strafe reverse.fbx"];
-      animationGroups["run"]["right"] = animationAll["right strafe.fbx"];
-      animationGroups["run"]["rightMirror"] = animationAll["left strafe reverse.fbx"];
-
-      // 8 directions crouch animations ---
-      animationGroups["crouch"]["forward"] = animationAll["Sneaking Forward.fbx"];
-      animationGroups["crouch"]["backward"] = animationAll["Sneaking Forward reverse.fbx"];
-      animationGroups["crouch"]["left"] = animationAll["Crouched Sneaking Left.fbx"];
-      animationGroups["crouch"]["leftMirror"] = animationAll["Crouched Sneaking Right reverse.fbx"];
-      animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
-      animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
-
-      isSetAnimations = true;
     }
   }
   void Avatar::updateString(char *scratchStack, unsigned int numStrings) { // todo: del
@@ -587,7 +580,7 @@ namespace AnimationSystem {
     float currentWeight = 0;
     // for (int i = 0; i < numAnimations; i++) {
     for (auto const& x : animations) {
-      if (spec.isPosition) std::cout << " x.first: " << x.first << std::endl;
+      // if (spec.isPosition) std::cout << " x.first: " << x.first << std::endl;
       float weight = weights[x.first];
       if (weight > 0) {
         Animation *animation = animations[x.first]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.

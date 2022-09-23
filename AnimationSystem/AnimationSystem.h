@@ -144,7 +144,6 @@ namespace AnimationSystem {
 
     std::string testBlendStrings; // test
     
-    void setAnimations();
     void update(float *scratchStack);
     void updateString(char *scratchStack, unsigned int numStrings);
   };
@@ -160,14 +159,18 @@ namespace AnimationSystem {
   };
 
   // ------
-  Avatar *createAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
-  AnimationMixer *createAnimationMixer();
+  // need run in this order
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
-  void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength);
-  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
   void createInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
+  void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength);
+  void initAnimationSystem();
+  AnimationMixer *createAnimationMixer();
+  Avatar *createAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
+  // end: need run in this order
+
+  Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
+  void lerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t); // todo: don't need declare
   void slerpFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t);
 
 };
