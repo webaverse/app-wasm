@@ -504,44 +504,200 @@ namespace AnimationSystem {
     // }
   }
 
-  void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendPickUp, "; // test: blend strings.
+  void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendDoubleJump, "; // test: blend strings.
 
-    Animation *pickUpAnimation = animationGroups["pickup"]["pickUpZelda"];
-    Animation *pickUpIdleAnimation = animationGroups["pickup"]["pickUpIdleZelda"];
+    float t2 = avatar->doubleJumpTime / 1000;
+    float *v2 = evaluateInterpolant(animationGroups["single"]["doubleJump"], spec.index, t2);
 
-    float t2 = avatar->pickUpTime / 1000;
-    if (t2 < pickUpAnimation->duration) {
-      float *v2 = evaluateInterpolant(pickUpAnimation, spec.index, t2);
-      copyValue(spec.dst, v2, spec.isPosition);
-    } else {
-      float t3 = fmod((t2 - pickUpAnimation->duration), pickUpIdleAnimation->duration);
-      float *v2 = evaluateInterpolant(pickUpIdleAnimation, spec.index, t3);
+    copyValue(spec.dst, v2, spec.isPosition);
+
+    _clearXZ(spec.dst, spec.isPosition);
+  }
+
+  void _blendJump(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendJump, "; // test: blend strings.
+
+    float t2 = avatar->jumpTime / 1000;
+    float *v2 = evaluateInterpolant(animationGroups["single"]["jump"], spec.index, t2);
+
+    copyValue(spec.dst, v2, spec.isPosition);
+
+    _clearXZ(spec.dst, spec.isPosition);
+
+    if (avatar->holdState && spec.isArm) {
+      Animation *holdAnimation = animationGroups["hold"][avatar->defaultHoldAnimationName];
+      float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
+      float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
       copyValue(spec.dst, v2, spec.isPosition);
     }
   }
 
-  void _blendHold(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendHold, "; // test: blend strings.
+  void _blendSit(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
+
+    Animation *sitAnimation = animationGroups["sit"][avatar->sitAnimationName == "" ? avatar->defaultSitAnimation : avatar->sitAnimationName];
+    float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
+
+    copyValue(spec.dst, v2, spec.isPosition);
+  }
+
+  void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
+
+    Animation *narutoRunAnimation = animationGroups["narutoRun"][avatar->defaultNarutoRunAnimation];
+    float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
+    float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
+
+    copyValue(spec.dst, v2, spec.isPosition);
+
+    _clearXZ(spec.dst, spec.isPosition);
+  }
+
+  void _blendDance(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendDance, "; // test: blend strings.
+
+    _handleDefault(spec, avatar);
+
+    Animation *danceAnimation = animationGroups["dance"][avatar->danceAnimationName == "" ? avatar->defaultDanceAnimationName : avatar->danceAnimationName];
+    float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
+    float *v2 = evaluateInterpolant(danceAnimation, spec.index, t2);
+
+    float danceFactorS = avatar->danceFactor / avatar->crouchMaxTime;
+    float f = min(max(danceFactorS, 0), 1);
+    
+    interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+
+    _clearXZ(spec.dst, spec.isPosition);
+  }
+
+  void _blendEmote(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendEmote, "; // test: blend strings.
+
+    _handleDefault(spec, avatar);
+
+    Animation *emoteAnimation = animationGroups["emote"][avatar->emoteAnimationName == "" ? avatar->defaultEmoteAnimationName : avatar->emoteAnimationName];
+    float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime; // todo: use now.
+    float t2 = min(emoteTime / 1000, emoteAnimation->duration);
+    float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
+
+    float emoteFactorS = avatar->emoteFactor / avatar->crouchMaxTime;
+    float f = min(max(emoteFactorS, 0), 1);
+
+    if (spec.index == BoneIndex::Spine || spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest || spec.index == BoneIndex::Neck || spec.index == BoneIndex::Head) {
+      if (!spec.isPosition) {
+        multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+      } else {
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+      }
+    } else {
+      if (!spec.isTop) {
+        f *= (1 - avatar->idleWalkFactor);
+      }
+
+      interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+    }
+
+    _clearXZ(spec.dst, spec.isPosition);
+  }
+
+  void _blendUse(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendUse, "; // test: blend strings.
+
+    Animation *useAnimation = nullptr;
+    float t2;
+    float useTimeS = avatar->useTime / 1000;
+    if (avatar->useAnimationName != "") {
+      useAnimation = animationGroups["use"][avatar->useAnimationName];
+      t2 = min(useTimeS, useAnimation->duration);
+    } else if(avatar->useAnimationComboName != "") {
+      useAnimation = animationGroups["use"][avatar->useAnimationComboName];
+      t2 = min(useTimeS, useAnimation->duration);
+    } else if (avatar->useAnimationEnvelopeNames.size() > 0) {
+      float totalTime = 0;
+      for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
+        std::string animationName = avatar->useAnimationEnvelopeNames[i];
+        Animation *animation = animationGroups["use"][animationName];
+        totalTime += animation->duration;
+      }
+
+      if (totalTime > 0) {
+        float animationTimeBase = 0;
+        for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
+          std::string animationName = avatar->useAnimationEnvelopeNames[i];
+          Animation *animation = animationGroups["use"][animationName];
+          if (useTimeS < (animationTimeBase + animation->duration)) {
+            useAnimation = animation;
+            break;
+          }
+          animationTimeBase += animation->duration;
+        }
+        if (useAnimation != nullptr) { // first iteration
+          t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
+        } else { // loop
+          std::string secondLastAnimationName = avatar->useAnimationEnvelopeNames[avatar->useAnimationEnvelopeNames.size() - 2];
+          useAnimation = animationGroups["use"][secondLastAnimationName];
+          t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
+        }
+      }
+    }
     
     _handleDefault(spec, avatar);
 
-    Animation *holdAnimation = animationGroups["hold"][avatar->defaultHoldAnimationName];
-    float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
-    float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
+    if (useAnimation) {
+      if (!spec.isPosition) {
+        float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
 
-    if (spec.isTop) {
-      if (spec.index == BoneIndex::Left_arm || spec.index == BoneIndex::Right_arm) {
-        copyValue(spec.dst, v2, spec.isPosition);
+        Animation *idleAnimation = animationGroups["single"]["idle"];
+        float t3 = 0;
+        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+        invertQuaternionFlat(v3, 0);
+        multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
+        multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
       } else {
-        if (spec.isArm) {
-          float f = avatar->walkRunFactor * 0.7 + avatar->crouchFactor * (1 - avatar->idleWalkFactor) * 0.5;
-          interpolateFlat(spec.dst, 0, spec.dst, 0, identityQuaternion, 0, f, spec.isPosition);
-          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
-        } else {
-          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
-        }
+        float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+        _clearXZ(v2, spec.isPosition);
+
+        Animation *idleAnimation = animationGroups["single"]["idle"];
+        float t3 = 0;
+        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+        subVectorsFlat(spec.dst, spec.dst, v3);
+        addVectorsFlat(spec.dst, spec.dst, v2);
       }
+    }
+  }
+
+  void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendHurt, "; // test: blend strings.
+
+    _handleDefault(spec, avatar);
+
+    Animation *hurtAnimation = animationGroups["hurt"][avatar->hurtAnimationName];
+    float hurtTimeS = avatar->hurtTime / 1000;
+    float t2 = min(hurtTimeS, hurtAnimation->duration);
+    if (!spec.isPosition) {
+      if (hurtAnimation) {
+        float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
+
+        Animation *idleAnimation = animationGroups["single"]["idle"];
+        float t3 = 0;
+        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+        
+        invertQuaternionFlat(v3, 0);
+        multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
+        multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+      }
+    } else {
+      float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
+
+      Animation *idleAnimation = animationGroups["single"]["idle"];
+      float t3 = 0;
+      float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+      subVectorsFlat(spec.dst, spec.dst, v3);
+      addVectorsFlat(spec.dst, spec.dst, v2);
     }
   }
 
@@ -615,201 +771,45 @@ namespace AnimationSystem {
     }
   }
 
-  void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendHurt, "; // test: blend strings.
-
-    _handleDefault(spec, avatar);
-
-    Animation *hurtAnimation = animationGroups["hurt"][avatar->hurtAnimationName];
-    float hurtTimeS = avatar->hurtTime / 1000;
-    float t2 = min(hurtTimeS, hurtAnimation->duration);
-    if (!spec.isPosition) {
-      if (hurtAnimation) {
-        float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
-
-        Animation *idleAnimation = animationGroups["single"]["idle"];
-        float t3 = 0;
-        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
-        
-        invertQuaternionFlat(v3, 0);
-        multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
-        multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
-      }
-    } else {
-      float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
-
-      Animation *idleAnimation = animationGroups["single"]["idle"];
-      float t3 = 0;
-      float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
-
-      subVectorsFlat(spec.dst, spec.dst, v3);
-      addVectorsFlat(spec.dst, spec.dst, v2);
-    }
-  }
-
-  void _blendUse(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendUse, "; // test: blend strings.
-
-    Animation *useAnimation = nullptr;
-    float t2;
-    float useTimeS = avatar->useTime / 1000;
-    if (avatar->useAnimationName != "") {
-      useAnimation = animationGroups["use"][avatar->useAnimationName];
-      t2 = min(useTimeS, useAnimation->duration);
-    } else if(avatar->useAnimationComboName != "") {
-      useAnimation = animationGroups["use"][avatar->useAnimationComboName];
-      t2 = min(useTimeS, useAnimation->duration);
-    } else if (avatar->useAnimationEnvelopeNames.size() > 0) {
-      float totalTime = 0;
-      for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
-        std::string animationName = avatar->useAnimationEnvelopeNames[i];
-        Animation *animation = animationGroups["use"][animationName];
-        totalTime += animation->duration;
-      }
-
-      if (totalTime > 0) {
-        float animationTimeBase = 0;
-        for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
-          std::string animationName = avatar->useAnimationEnvelopeNames[i];
-          Animation *animation = animationGroups["use"][animationName];
-          if (useTimeS < (animationTimeBase + animation->duration)) {
-            useAnimation = animation;
-            break;
-          }
-          animationTimeBase += animation->duration;
-        }
-        if (useAnimation != nullptr) { // first iteration
-          t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
-        } else { // loop
-          std::string secondLastAnimationName = avatar->useAnimationEnvelopeNames[avatar->useAnimationEnvelopeNames.size() - 2];
-          useAnimation = animationGroups["use"][secondLastAnimationName];
-          t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
-        }
-      }
-    }
+  void _blendHold(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendHold, "; // test: blend strings.
     
     _handleDefault(spec, avatar);
 
-    if (useAnimation) {
-      if (!spec.isPosition) {
-        float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+    Animation *holdAnimation = animationGroups["hold"][avatar->defaultHoldAnimationName];
+    float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
+    float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"];
-        float t3 = 0;
-        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
-
-        invertQuaternionFlat(v3, 0);
-        multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
-        multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+    if (spec.isTop) {
+      if (spec.index == BoneIndex::Left_arm || spec.index == BoneIndex::Right_arm) {
+        copyValue(spec.dst, v2, spec.isPosition);
       } else {
-        float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
-        _clearXZ(v2, spec.isPosition);
-
-        Animation *idleAnimation = animationGroups["single"]["idle"];
-        float t3 = 0;
-        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
-
-        subVectorsFlat(spec.dst, spec.dst, v3);
-        addVectorsFlat(spec.dst, spec.dst, v2);
+        if (spec.isArm) {
+          float f = avatar->walkRunFactor * 0.7 + avatar->crouchFactor * (1 - avatar->idleWalkFactor) * 0.5;
+          interpolateFlat(spec.dst, 0, spec.dst, 0, identityQuaternion, 0, f, spec.isPosition);
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        } else {
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        }
       }
     }
   }
 
-  void _blendEmote(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendEmote, "; // test: blend strings.
+  void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
+    // if (spec.isPosition) avatar->testBlendStrings += "_blendPickUp, "; // test: blend strings.
 
-    _handleDefault(spec, avatar);
+    Animation *pickUpAnimation = animationGroups["pickup"]["pickUpZelda"];
+    Animation *pickUpIdleAnimation = animationGroups["pickup"]["pickUpIdleZelda"];
 
-    Animation *emoteAnimation = animationGroups["emote"][avatar->emoteAnimationName == "" ? avatar->defaultEmoteAnimationName : avatar->emoteAnimationName];
-    float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime; // todo: use now.
-    float t2 = min(emoteTime / 1000, emoteAnimation->duration);
-    float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
-
-    float emoteFactorS = avatar->emoteFactor / avatar->crouchMaxTime;
-    float f = min(max(emoteFactorS, 0), 1);
-
-    if (spec.index == BoneIndex::Spine || spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest || spec.index == BoneIndex::Neck || spec.index == BoneIndex::Head) {
-      if (!spec.isPosition) {
-        multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
-      } else {
-        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
-      }
+    float t2 = avatar->pickUpTime / 1000;
+    if (t2 < pickUpAnimation->duration) {
+      float *v2 = evaluateInterpolant(pickUpAnimation, spec.index, t2);
+      copyValue(spec.dst, v2, spec.isPosition);
     } else {
-      if (!spec.isTop) {
-        f *= (1 - avatar->idleWalkFactor);
-      }
-
-      interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
-    }
-
-    _clearXZ(spec.dst, spec.isPosition);
-  }
-
-  void _blendDance(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendDance, "; // test: blend strings.
-
-    _handleDefault(spec, avatar);
-
-    Animation *danceAnimation = animationGroups["dance"][avatar->danceAnimationName == "" ? avatar->defaultDanceAnimationName : avatar->danceAnimationName];
-    float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
-    float *v2 = evaluateInterpolant(danceAnimation, spec.index, t2);
-
-    float danceFactorS = avatar->danceFactor / avatar->crouchMaxTime;
-    float f = min(max(danceFactorS, 0), 1);
-    
-    interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
-
-    _clearXZ(spec.dst, spec.isPosition);
-  }
-
-  void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
-
-    Animation *narutoRunAnimation = animationGroups["narutoRun"][avatar->defaultNarutoRunAnimation];
-    float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
-    float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
-
-    copyValue(spec.dst, v2, spec.isPosition);
-
-    _clearXZ(spec.dst, spec.isPosition);
-  }
-
-  void _blendSit(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
-
-    Animation *sitAnimation = animationGroups["sit"][avatar->sitAnimationName == "" ? avatar->defaultSitAnimation : avatar->sitAnimationName];
-    float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
-
-    copyValue(spec.dst, v2, spec.isPosition);
-  }
-
-  void _blendJump(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendJump, "; // test: blend strings.
-
-    float t2 = avatar->jumpTime / 1000;
-    float *v2 = evaluateInterpolant(animationGroups["single"]["jump"], spec.index, t2);
-
-    copyValue(spec.dst, v2, spec.isPosition);
-
-    _clearXZ(spec.dst, spec.isPosition);
-
-    if (avatar->holdState && spec.isArm) {
-      Animation *holdAnimation = animationGroups["hold"][avatar->defaultHoldAnimationName];
-      float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
-      float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
+      float t3 = fmod((t2 - pickUpAnimation->duration), pickUpIdleAnimation->duration);
+      float *v2 = evaluateInterpolant(pickUpIdleAnimation, spec.index, t3);
       copyValue(spec.dst, v2, spec.isPosition);
     }
-  }
-
-  void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendDoubleJump, "; // test: blend strings.
-
-    float t2 = avatar->doubleJumpTime / 1000;
-    float *v2 = evaluateInterpolant(animationGroups["single"]["doubleJump"], spec.index, t2);
-
-    copyValue(spec.dst, v2, spec.isPosition);
-
-    _clearXZ(spec.dst, spec.isPosition);
   }
 
   void _blendFly(AnimationMapping &spec, Avatar *avatar) {
@@ -831,24 +831,6 @@ namespace AnimationSystem {
       }
     }
   };
-
-  void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
-    if (avatar->fallLoopFactor > 0) {
-      // if (spec.isPosition) avatar->testBlendStrings += "_blendFallLoop, "; // test: blend strings.
-
-      float t2 = (avatar->fallLoopTime / 1000);
-      float *v2 = evaluateInterpolant(animationGroups["single"]["fallLoop"], spec.index, t2);
-      float f = clamp(t2 / 0.3, 0, 1);
-
-      if (avatar->fallLoopFrom == "jump") {
-        copyValue(spec.dst, v2, spec.isPosition);
-      } else {
-        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
-      }
-
-      _clearXZ(spec.dst, spec.isPosition);
-    }
-  }
 
   void _blendLand(AnimationMapping &spec, Avatar *avatar) {
     if (!avatar->landWithMoving) {
@@ -895,6 +877,24 @@ namespace AnimationSystem {
         interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
         _clearXZ(spec.dst, spec.isPosition);
       }
+    }
+  }
+
+  void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
+    if (avatar->fallLoopFactor > 0) {
+      // if (spec.isPosition) avatar->testBlendStrings += "_blendFallLoop, "; // test: blend strings.
+
+      float t2 = (avatar->fallLoopTime / 1000);
+      float *v2 = evaluateInterpolant(animationGroups["single"]["fallLoop"], spec.index, t2);
+      float f = clamp(t2 / 0.3, 0, 1);
+
+      if (avatar->fallLoopFrom == "jump") {
+        copyValue(spec.dst, v2, spec.isPosition);
+      } else {
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+      }
+
+      _clearXZ(spec.dst, spec.isPosition);
     }
   }
 
