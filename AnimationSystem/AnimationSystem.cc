@@ -531,7 +531,7 @@ namespace AnimationSystem {
     float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
 
     if (spec.isTop) {
-      if (spec.index == BoneName::Left_arm || spec.index == BoneName::Right_arm) {
+      if (spec.index == BoneIndex::Left_arm || spec.index == BoneIndex::Right_arm) {
         copyValue(spec.dst, v2, spec.isPosition);
       } else {
         if (spec.isArm) {
@@ -734,7 +734,7 @@ namespace AnimationSystem {
     float emoteFactorS = avatar->emoteFactor / avatar->crouchMaxTime;
     float f = min(max(emoteFactorS, 0), 1);
 
-    if (spec.index == BoneName::Spine || spec.index == BoneName::Chest || spec.index == BoneName::UpperChest || spec.index == BoneName::Neck || spec.index == BoneName::Head) {
+    if (spec.index == BoneIndex::Spine || spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest || spec.index == BoneIndex::Neck || spec.index == BoneIndex::Head) {
       if (!spec.isPosition) {
         multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
       } else {

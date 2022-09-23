@@ -16,7 +16,7 @@ namespace AnimationSystem {
     LoopRepeat = 2201,
     LoopPingPong = 2202
   };
-  enum BoneName { // todo: rename boneIndex
+  enum BoneIndex {
     // Hips = 0, // position
     Hips = 1, // quaternion
     Spine = 2,
@@ -71,18 +71,6 @@ namespace AnimationSystem {
     Left_ankle = 51,
     Left_toe = 52
   };
-  // enum AnimationName { // todo: use this enum instead of std::map.
-  //   Combo,
-  //   Slash,
-  //   DashAttack,
-  //   Rifle,
-  //   Pistol,
-  //   Magic,
-  //   Eat,
-  //   Drink,
-  //   Throw,
-  //   PickUpThrow
-  // };
 
   struct Interpolant {
     unsigned int numParameterPositions;
@@ -165,7 +153,7 @@ namespace AnimationSystem {
   void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength, unsigned int keyNameUInt);
   void initAnimationSystem();
   AnimationMixer *createAnimationMixer();
-  Avatar *createAvatar(AnimationMixer *mixer); // todo: rename: createAvatar()
+  Avatar *createAvatar(AnimationMixer *mixer);
   // end: need run in this order
 
   Animation *getAnimation(char *scratchStack, unsigned int nameByteLength);
