@@ -69,9 +69,6 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::Avatar *createAnimationAvatar(AnimationSys
 EMSCRIPTEN_KEEPALIVE void updateAvatar(AnimationSystem::Avatar *avatar, float *scratchStack) {
   return avatar->update(scratchStack);
 }
-EMSCRIPTEN_KEEPALIVE void updateAvatarString(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int numStrings) {
-  return avatar->updateString(scratchStack, numStrings);
-}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }

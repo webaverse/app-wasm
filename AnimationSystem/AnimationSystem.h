@@ -145,7 +145,6 @@ namespace AnimationSystem {
     std::string testBlendStrings; // test
     
     void update(float *scratchStack);
-    void updateString(char *scratchStack, unsigned int numStrings);
   };
   class AnimationMixer { // note: mixer can't aware of avatar.
   public:

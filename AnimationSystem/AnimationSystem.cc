@@ -149,19 +149,7 @@ namespace AnimationSystem {
     animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
     animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
   }
-  void Avatar::updateString(char *scratchStack, unsigned int numStrings) { // todo: del
-    this->strings.clear();
-    unsigned int index = 0;
-    for (unsigned int stringIndex = 0; stringIndex < numStrings; stringIndex++) {
-      unsigned int stringByteLength = (unsigned int)(scratchStack[index++]);
-      std::string string = "";
-      for (unsigned int charIndex = 0; charIndex < stringByteLength; charIndex++) {
-        string += scratchStack[index++];
-      }
-      this->strings.push_back(string);
-    }
-  }
-  void Avatar::update(float *scratchStack) {
+  void Avatar::update(float *scratchStack) { // todo: clean unused.
     unsigned int index = 0;
 
     // values ---
@@ -178,29 +166,19 @@ namespace AnimationSystem {
     this->walkRunFactor = scratchStack[index++];
     this->crouchFactor = scratchStack[index++];
 
-    float holdFactor = scratchStack[index++];
-
     this->activateTime = scratchStack[index++];
 
     // action states ---
     this->jumpState = scratchStack[index++];
     this->doubleJumpState = scratchStack[index++];
-    bool landState = scratchStack[index++];
     this->flyState = scratchStack[index++];
-    bool activateState = scratchStack[index++];
     this->narutoRunState = scratchStack[index++];
     this->sitState = scratchStack[index++];
     this->holdState = scratchStack[index++];
-    bool emoteState = scratchStack[index++];
-    bool fallLoopState = scratchStack[index++];
-    bool hurtState = scratchStack[index++];
-    bool danceState = scratchStack[index++];
-    bool useEnvelopeState = scratchStack[index++]; // todo: clean this and other unused.
     this->pickUpState = scratchStack[index++];
 
     // other ---
     this->landWithMoving = scratchStack[index++];
-    float dashAttacking = scratchStack[index++];
     this->landTime = scratchStack[index++];
     this->fallLoopFactor = scratchStack[index++];
     this->fallLoopTime = scratchStack[index++];
@@ -241,35 +219,6 @@ namespace AnimationSystem {
     for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
       useAnimationEnvelopeNames.push_back(AnimationName[(unsigned int)(scratchStack[index++])]);
     }
-
-    // ---------------------------------------------------------------------------------------------------
-
-    // index = 0;
-
-    // strings ----
-    // this->defaultSitAnimation = this->strings[index++]; // todo: defaultSitAnimationName, only rename on wasm side.
-    // this->defaultEmoteAnimationName = this->strings[index++];
-    // this->defaultDanceAnimationName = this->strings[index++];
-    // std::string defaultHoldAnimationName = this->strings[index++];
-    // this->defaultActivateAnimationName = this->strings[index++];
-    // this->defaultNarutoRunAnimation = this->strings[index++]; // todo: defaultNarutoRunAnimationName
-    // ---
-    // this->useAnimationName = this->strings[index++];
-    // this->useAnimationComboName = this->strings[index++];
-    // this->sitAnimationName = this->strings[index++]; // todo: sitAnimationName, only rename on wasm side.
-    // this->emoteAnimationName = this->strings[index++];
-    // this->danceAnimationName = this->strings[index++];
-    // this->activateAnimationName = this->strings[index++];
-    // this->hurtAnimationName = this->strings[index++];
-    // this->unuseAnimationName = this->strings[index++];
-    // this->aimAnimationName = this->strings[index++];
-    // ---
-    // this->fallLoopFrom = this->strings[index++];
-
-    // useAnimationEnvelopeNames.clear();
-    // for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
-    //   useAnimationEnvelopeNames.push_back(this->strings[index++]);
-    // }
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
