@@ -139,7 +139,7 @@ namespace AnimationSystem {
     dst[dstOffset + 2] = z0;
     dst[dstOffset + 3] = w0;
   }
-  void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition) { // todo: del offsets.
+  void interpolateFlat(float *dst, unsigned int dstOffset, float *src0, unsigned int srcOffset0, float *src1, unsigned int srcOffset1, float t, bool isPosition) {
     if (isPosition) {
       lerpFlat(dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t);
     } else {
@@ -234,7 +234,7 @@ namespace AnimationSystem {
     animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
     animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
   }
-  void Avatar::update(float *scratchStack) { // todo: clean unused.
+  void Avatar::update(float *scratchStack) {
     unsigned int index = 0;
 
     // values ---
@@ -329,7 +329,7 @@ namespace AnimationSystem {
     for (unsigned int i = 0; i < nameByteLength; i++) {
       name += scratchStack[i];
     }
-    animation->name = name; // todo: don't need ?
+    animation->name = name;
 
     animationAll[name] = animation;
 
@@ -441,7 +441,7 @@ namespace AnimationSystem {
       // if (spec.isPosition) std::cout << " x.first: " << x.first << std::endl;
       float weight = weights[x.first];
       if (weight > 0) {
-        Animation *animation = animations[x.first]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
+        Animation *animation = animations[x.first];
         float *vecQuat = evaluateInterpolant(animation, spec.index, fmod(timeS, animation->duration));
         if (indexWeightBigThanZero == 0) {
           resultVecQuat = vecQuat;
@@ -567,7 +567,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      Animation *idleAnimation = animationGroups["single"]["idle"];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -582,8 +582,7 @@ namespace AnimationSystem {
     _handleDefault(spec, avatar);
 
     float unuseTimeS = avatar->unuseTime / 1000;
-    std::string unuseAnimationName = avatar->unuseAnimationName; // todo: performance: use avatar->unuseAnimationName directly.
-    Animation *unuseAnimation = animationGroups["use"][unuseAnimationName];
+    Animation *unuseAnimation = animationGroups["use"][avatar->unuseAnimationName];
     float t2 = min(unuseTimeS, unuseAnimation->duration);
     float f = min(max(unuseTimeS / unuseAnimation->duration, 0), 1);
     float f2 = std::pow(1 - f, 2);
@@ -591,7 +590,7 @@ namespace AnimationSystem {
     if (!spec.isPosition) {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      Animation *idleAnimation = animationGroups["single"]["idle"];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
@@ -604,7 +603,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      Animation *idleAnimation = animationGroups["single"]["idle"];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
       
@@ -614,11 +613,6 @@ namespace AnimationSystem {
 
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVectorArr, 0, f2, spec.isPosition);
     }
-
-    // todo: don't need ?
-    // if (f >= 1) {
-    //   avatar.useAnimation = ''; // todo: need feedback to js side ?
-    // }
   }
 
   void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
@@ -633,7 +627,7 @@ namespace AnimationSystem {
       if (hurtAnimation) {
         float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = animationGroups["single"]["idle"];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
@@ -644,7 +638,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+      Animation *idleAnimation = animationGroups["single"]["idle"];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -700,7 +694,7 @@ namespace AnimationSystem {
       if (!spec.isPosition) {
         float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = animationGroups["single"]["idle"];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -711,7 +705,7 @@ namespace AnimationSystem {
         float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
         _clearXZ(v2, spec.isPosition);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = animationGroups["single"]["idle"];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -860,7 +854,7 @@ namespace AnimationSystem {
     if (!avatar->landWithMoving) {
       float animationSpeed = 0.75;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = animationGroups["land"]["landing"]; // todo: don't use animationAll here.
+      Animation *landingAnimation = animationGroups["land"]["landing"];
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -914,7 +908,7 @@ namespace AnimationSystem {
       // const t2 = ((avatar.activateTime / 1000) * activateAnimations[defaultAnimation].speedFactor) % activateAnimation.duration; // todo: speedFactor
       float t2 = fmod((avatar->activateTime / 1000), activateAnimation->duration);
       // const v2 = src2.evaluate(t2);
-      float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2); // todo: src2->evaluate(t2);
+      float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2);
 
       // const f = avatar.activateTime > 0 ? Math.min(cubicBezier(t2), 1) : (1 - Math.min(cubicBezier(t2), 1));
       float f = 1; // test: todo:
@@ -947,7 +941,7 @@ namespace AnimationSystem {
         _blendEmote(spec, this->avatar);
       } else if (
         avatar->useAnimationName != "" ||
-        avatar->useAnimationComboName != "" || // todo: useAnimationComboNames, same logic as useAnimationEnvelopeNames.
+        avatar->useAnimationComboName != "" ||
         avatar->useAnimationEnvelopeNames.size() > 0
       ) {
         _blendUse(spec, this->avatar);

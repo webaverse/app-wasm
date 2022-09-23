@@ -134,12 +134,12 @@ namespace AnimationSystem {
     
     void update(float *scratchStack);
   };
-  class AnimationMixer { // note: mixer can't aware of avatar.
+  class AnimationMixer {
   public:
     // static float now;
     static float nowS;
 
-    Avatar *avatar; // todo: delete this ?
+    Avatar *avatar;
     float *animationValues[53]; // 53 bones interpolants result buffers.
 
     float **update(float now, float nowS);
