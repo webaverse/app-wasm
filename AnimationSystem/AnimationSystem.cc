@@ -9,9 +9,7 @@ namespace AnimationSystem {
   std::map<unsigned int, std::string> AnimationName;
 
   float localVectorArr[3];
-
   float localQuaternionArr[4];
-
   float localVecQuatArr[4];
 
   float *localVecQuatPtr;
@@ -301,6 +299,8 @@ namespace AnimationSystem {
     this->unuseAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
     this->aimAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
     this->fallLoopFrom = (unsigned int)(scratchStack[index++]) == 1 ? "jump" : "";
+    this->landTimeS = scratchStack[index++];
+    this->timeSinceLastMoveS = scratchStack[index++];
 
     useAnimationEnvelopeNames.clear();
     for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
@@ -432,7 +432,7 @@ namespace AnimationSystem {
     return interpolant.resultBuffer;
   }
 
-  float *doBlendList(AnimationMapping &spec, std::map<std::string, Animation *> animations, std::map<std::string, float> weights) { // todo: different times.
+  float *doBlendList(AnimationMapping &spec, std::map<std::string, Animation *> animations, std::map<std::string, float> weights, float timeS) {
     float *resultVecQuat;
     unsigned int indexWeightBigThanZero = 0;
     float currentWeight = 0;
@@ -442,7 +442,7 @@ namespace AnimationSystem {
       float weight = weights[x.first];
       if (weight > 0) {
         Animation *animation = animations[x.first]; // todo: If not using pointer, cpp will copy node data when assign here? Yes.
-        float *vecQuat = evaluateInterpolant(animation, spec.index, fmod(AnimationMixer::nowS, animation->duration));
+        float *vecQuat = evaluateInterpolant(animation, spec.index, fmod(timeS, animation->duration));
         if (indexWeightBigThanZero == 0) {
           resultVecQuat = vecQuat;
 
@@ -471,12 +471,12 @@ namespace AnimationSystem {
     localWeights["rightMirror"] = avatar->mirrorRightFactor;
 
     // walkAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups["walk"], localWeights);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups["walk"], localWeights, avatar->landTimeS);
     copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
     // if (avatar->walkRunFactor > 0) {
       // runAnimations
-      localVecQuatPtr2 = doBlendList(spec, animationGroups["run"], localWeights);
+      localVecQuatPtr2 = doBlendList(spec, animationGroups["run"], localWeights, avatar->landTimeS);
 
       // blend walk run
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
@@ -484,18 +484,18 @@ namespace AnimationSystem {
 
     // blend idle ---
     // if (avatar->idleWalkFactor < 1) {
-      localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["idle"], spec.index, fmod(AnimationMixer::nowS, animationGroups["single"]["idle"]->duration));
+      localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["idle"], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups["single"]["idle"]->duration));
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
     // }
 
     // if (avatar->crouchFactor > 0) {
       // crouchAnimations
-      localVecQuatPtr2 = doBlendList(spec, animationGroups["crouch"], localWeights);
+      localVecQuatPtr2 = doBlendList(spec, animationGroups["crouch"], localWeights, avatar->landTimeS);
       copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
 
       // blend crouch idle ---
       // if (avatar->idleWalkFactor < 1) {
-        localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["crouchIdle"], spec.index, fmod(AnimationMixer::nowS, animationGroups["single"]["crouchIdle"]->duration));
+        localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["crouchIdle"], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups["single"]["crouchIdle"]->duration));
         interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
       // }
 
