@@ -23,12 +23,9 @@ namespace AnimationSystem {
   Animation *crouchAnimations[6];
   float localWeightsArr6[6];
 
-  Animation *fallLoopAnimation;
-  Animation *floatAnimation;
-  Animation *doubleJumpAnimation;
-  Animation *jumpAnimation;
-
   float identityQuaternion[4] = {0, 0, 0, 1};
+
+  bool isSetAnimations = false;
 
   // functions:
 
@@ -240,10 +237,37 @@ namespace AnimationSystem {
     return avatar;
   }
   void Avatar::setAnimations() {
-    fallLoopAnimation = animationAll["falling.fbx"];
-    floatAnimation = animationAll["treading water.fbx"]; // todo: animations.find(a => a.isFloat);
-    doubleJumpAnimation = animationAll["jump_double.fbx"];
-    jumpAnimation = animationAll["jump.fbx"];
+    if (!isSetAnimations) { // only need set once globally // todo: initAnimationSystem().
+    
+      animationGroups["single"]["idle"] = animationAll["idle.fbx"];
+      animationGroups["single"]["crouchIdle"] = animationAll["Crouch Idle.fbx"];
+
+      // 8 directions walk animations ---
+      animationGroups["walk"]["walkForward"] = animationAll["walking.fbx"];
+      animationGroups["walk"]["walkBackward"] = animationAll["walking backwards.fbx"];
+      animationGroups["walk"]["walkLeft"] = animationAll["left strafe walking.fbx"];
+      animationGroups["walk"]["walkLeftMirror"] = animationAll["right strafe walking.fbx"];
+      animationGroups["walk"]["walkRight"] = animationAll["right strafe walking reverse.fbx"];
+      animationGroups["walk"]["walkRightMirror"] = animationAll["left strafe walking reverse.fbx"];
+
+      // 8 directions run animations ---
+      animationGroups["run"]["runForward"] = animationAll["Fast Run.fbx"];
+      animationGroups["run"]["runBackward"] = animationAll["running backwards.fbx"];
+      animationGroups["run"]["runLeft"] = animationAll["left strafe.fbx"];
+      animationGroups["run"]["runLeftMirror"] = animationAll["right strafe.fbx"];
+      animationGroups["run"]["runRight"] = animationAll["right strafe reverse.fbx"];
+      animationGroups["run"]["runRightMirror"] = animationAll["left strafe reverse.fbx"];
+
+      // 8 directions crouch animations ---
+      animationGroups["crouch"]["crouchForward"] = animationAll["Sneaking Forward.fbx"];
+      animationGroups["crouch"]["crouchBackward"] = animationAll["Sneaking Forward reverse.fbx"];
+      animationGroups["crouch"]["crouchLeft"] = animationAll["Crouched Sneaking Left.fbx"];
+      animationGroups["crouch"]["crouchLeftMirror"] = animationAll["Crouched Sneaking Right.fbx"];
+      animationGroups["crouch"]["crouchRight"] = animationAll["Crouched Sneaking Right reverse.fbx"];
+      animationGroups["crouch"]["crouchRightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
+
+      isSetAnimations = true;
+    }
   }
   void Avatar::createMotions() {
     this->motiono["idle"] = this->mixer->createMotion(animationAll["idle.fbx"], "idle"); // todo: don't need `this->`
@@ -805,7 +829,7 @@ namespace AnimationSystem {
 
     // blend idle ---
     // if (avatar->idleWalkFactor < 1) {
-      localVecQuatPtr = evaluateInterpolant(avatar->motiono["idle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["idle"]->animation->duration));
+      localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["idle"], spec.index, fmod(AnimationMixer::nowS, animationGroups["single"]["idle"]->duration));
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
     // }
 
@@ -816,7 +840,7 @@ namespace AnimationSystem {
 
       // blend crouch idle ---
       // if (avatar->idleWalkFactor < 1) {
-        localVecQuatPtr = evaluateInterpolant(avatar->motiono["crouchIdle"]->animation, spec.index, fmod(AnimationMixer::nowS, avatar->motiono["crouchIdle"]->animation->duration));
+        localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["crouchIdle"], spec.index, fmod(AnimationMixer::nowS, animationGroups["single"]["crouchIdle"]->duration));
         interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
       // }
 
@@ -1114,7 +1138,7 @@ namespace AnimationSystem {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendJump, "; // test: blend strings.
 
     float t2 = avatar->jumpTime / 1000;
-    float *v2 = evaluateInterpolant(jumpAnimation, spec.index, t2);
+    float *v2 = evaluateInterpolant(animationGroups["single"]["jump"], spec.index, t2);
 
     copyValue(spec.dst, v2, spec.isPosition);
 
@@ -1146,7 +1170,7 @@ namespace AnimationSystem {
       float t2 = avatar->flyTime / 1000;
       // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
       float f = 1;
-      float *v2 = evaluateInterpolant(floatAnimation, spec.index, fmod(t2, animationGroups["single"]["float"]->duration));
+      float *v2 = evaluateInterpolant(animationGroups["single"]["float"], spec.index, fmod(t2, animationGroups["single"]["float"]->duration));
 
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
 
