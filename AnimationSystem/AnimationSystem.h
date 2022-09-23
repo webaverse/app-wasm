@@ -82,7 +82,7 @@ namespace AnimationSystem {
   };
   struct Animation {
     float duration;
-    std::vector<Interpolant> interpolants; // todo: pure array?
+    std::vector<Interpolant> interpolants;
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
     std::string name;
@@ -108,29 +108,6 @@ namespace AnimationSystem {
     std::vector<std::string> useAnimationEnvelopeNames;
     float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength, hurtTime, unuseTime, aimTime, aimMaxTime, walkRunFactor, crouchFactor, pickUpTime, forwardFactor, backwardFactor, leftFactor, rightFactor, mirrorLeftFactorReverse, mirrorLeftFactor, mirrorRightFactorReverse, mirrorRightFactor, landTimeS, timeSinceLastMoveS;
     bool landWithMoving, flyState, doubleJumpState, jumpState, sitState, narutoRunState, holdState, pickUpState;
-
-    // action start/end events
-    bool jumpStart, jumpEnd, lastJumpState;
-    bool doubleJumpStart, doubleJumpEnd, lastDoubleJumpState;
-    bool landStart, landEnd, lastLandState;
-    bool flyStart, flyEnd, lastFlyState;
-    bool activateStart, activateEnd, lastActivateState;
-    bool narutoRunStart, narutoRunEnd, lastNarutoRunState;
-    bool sitStart, sitEnd, lastSitState;
-    bool holdStart, holdEnd, lastHoldState;
-    bool emoteStart, emoteEnd, lastEmoteState;
-    bool fallLoopStart, fallLoopEnd, lastFallLoopState;
-    bool hurtStart, hurtEnd, lastHurtState;
-    bool danceStart, danceEnd, lastDanceState;
-    bool useEnvelopeStart, useEnvelopeEnd, lastUseEnvelopeState;
-    //
-    bool useStart, useEnd;
-    std::string lastUseAnimation;
-    //
-    bool useComboStart, useComboEnd;
-    std::string lastUseAnimationComboName;
-
-    std::string testBlendStrings; // test
     
     void update(float *scratchStack);
   };

@@ -5,7 +5,7 @@ namespace AnimationSystem {
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
-  std::map<std::string, std::map<std::string, Animation *>> animationGroups; // todo: performance: all use unsigned int as key ?
+  std::map<std::string, std::map<std::string, Animation *>> animationGroups;
   std::map<unsigned int, std::string> AnimationName;
   std::map<std::string, float> speedFactors;
 
@@ -26,10 +26,6 @@ namespace AnimationSystem {
   std::map<std::string, float> localWeights;
 
   float identityQuaternion[4] = {0, 0, 0, 1};
-
-  Bezier::Bezier<3> cubicBezier({ {0, 0}, {0, 1}, {0, 1}, {1, 1} });
-  Bezier::Point p;
-  float cubicBezierValue;
 
   // functions:
 
@@ -201,10 +197,6 @@ namespace AnimationSystem {
     return avatar;
   }
   void initAnimationSystem(float *scratchStack) { // only need init once globally
-    // std::cout << "initAnimationSystem ------------------" << std::endl;
-
-    // -------------------------------------------------------------------------
-    
     unsigned int index = 0;
 
     speedFactors["grab_forward"] = scratchStack[index++];
@@ -282,7 +274,6 @@ namespace AnimationSystem {
     this->holdState = scratchStack[index++];
     this->pickUpState = scratchStack[index++];
 
-    // other ---
     this->landWithMoving = scratchStack[index++];
     this->landTime = scratchStack[index++];
     this->fallLoopFactor = scratchStack[index++];
@@ -363,13 +354,7 @@ namespace AnimationSystem {
       keyName += scratchStack[index++];
     }
 
-    // if (!animationGroups[groupName]) { // note: don't need this check.
-    //   animationGroups[groupName] = new std::map<std::string, Animation *>;
-    // }
-
     animationGroups[groupName][keyName] = animation;
-
-    // std::cout << "groupName: " << groupName << " keyName: " << keyName << " name: " << animation->name << std::endl;
 
     AnimationName[keyNameUInt] = keyName;
   }
@@ -442,9 +427,7 @@ namespace AnimationSystem {
     float *resultVecQuat;
     unsigned int indexWeightBigThanZero = 0;
     float currentWeight = 0;
-    // for (int i = 0; i < numAnimations; i++) {
     for (auto const& x : animations) {
-      // if (spec.isPosition) std::cout << " x.first: " << x.first << std::endl;
       float weight = weights[x.first];
       if (weight > 0) {
         Animation *animation = animations[x.first];
@@ -467,8 +450,6 @@ namespace AnimationSystem {
   }
 
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_handleDefault, "; // test: blend strings.
-
     localWeights["forward"] = avatar->forwardFactor;
     localWeights["backward"] = avatar->backwardFactor;
     localWeights["left"] = avatar->mirrorLeftFactorReverse;
@@ -480,41 +461,31 @@ namespace AnimationSystem {
     localVecQuatPtr2 = doBlendList(spec, animationGroups["walk"], localWeights, avatar->landTimeS);
     copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
-    // if (avatar->walkRunFactor > 0) {
-      // runAnimations
-      localVecQuatPtr2 = doBlendList(spec, animationGroups["run"], localWeights, avatar->landTimeS);
+    // runAnimations
+    localVecQuatPtr2 = doBlendList(spec, animationGroups["run"], localWeights, avatar->landTimeS);
 
-      // blend walk run
-      interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
-      _clearXZ(spec.dst, spec.isPosition);
-    // }
+    // blend walk run
+    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
+    _clearXZ(spec.dst, spec.isPosition);
 
     // blend idle ---
-    // if (avatar->idleWalkFactor < 1) {
-      localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["idle"], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups["single"]["idle"]->duration));
-      interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
-    // }
+    localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["idle"], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups["single"]["idle"]->duration));
+    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
-    // if (avatar->crouchFactor > 0) {
-      // crouchAnimations
-      localVecQuatPtr2 = doBlendList(spec, animationGroups["crouch"], localWeights, avatar->landTimeS);
-      copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
-      _clearXZ(localVecQuatArr, spec.isPosition);
+    // crouchAnimations
+    localVecQuatPtr2 = doBlendList(spec, animationGroups["crouch"], localWeights, avatar->landTimeS);
+    copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
+    _clearXZ(localVecQuatArr, spec.isPosition);
 
-      // blend crouch idle ---
-      // if (avatar->idleWalkFactor < 1) {
-        localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["crouchIdle"], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups["single"]["crouchIdle"]->duration));
-        interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
-      // }
+    // blend crouch idle ---
+    localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["crouchIdle"], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups["single"]["crouchIdle"]->duration));
+    interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
-      // blend walkRun and crouch
-      interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatArr, 0, avatar->crouchFactor, spec.isPosition);
-    // }
+    // blend walkRun and crouch
+    interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatArr, 0, avatar->crouchFactor, spec.isPosition);
   }
 
   void _blendDoubleJump(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendDoubleJump, "; // test: blend strings.
-
     float t2 = avatar->doubleJumpTime / 1000;
     float *v2 = evaluateInterpolant(animationGroups["single"]["doubleJump"], spec.index, t2);
 
@@ -524,8 +495,6 @@ namespace AnimationSystem {
   }
 
   void _blendJump(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendJump, "; // test: blend strings.
-
     float t2 = avatar->jumpTime / 1000;
     float *v2 = evaluateInterpolant(animationGroups["single"]["jump"], spec.index, t2);
 
@@ -542,8 +511,6 @@ namespace AnimationSystem {
   }
 
   void _blendSit(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
-
     Animation *sitAnimation = animationGroups["sit"][avatar->sitAnimationName == "" ? defaultSitAnimationName : avatar->sitAnimationName];
     float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
 
@@ -551,8 +518,6 @@ namespace AnimationSystem {
   }
 
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
-
     Animation *narutoRunAnimation = animationGroups["narutoRun"][defaultNarutoRunAnimationName];
     float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
     float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
@@ -563,8 +528,6 @@ namespace AnimationSystem {
   }
 
   void _blendDance(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendDance, "; // test: blend strings.
-
     _handleDefault(spec, avatar);
 
     Animation *danceAnimation = animationGroups["dance"][avatar->danceAnimationName == "" ? defaultDanceAnimationName : avatar->danceAnimationName];
@@ -580,12 +543,10 @@ namespace AnimationSystem {
   }
 
   void _blendEmote(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendEmote, "; // test: blend strings.
-
     _handleDefault(spec, avatar);
 
     Animation *emoteAnimation = animationGroups["emote"][avatar->emoteAnimationName == "" ? defaultEmoteAnimationName : avatar->emoteAnimationName];
-    float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime; // todo: use now.
+    float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime;
     float t2 = min(emoteTime / 1000, emoteAnimation->duration);
     float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
 
@@ -610,8 +571,6 @@ namespace AnimationSystem {
   }
 
   void _blendUse(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendUse, "; // test: blend strings.
-
     Animation *useAnimation = nullptr;
     float t2;
     float useTimeS = avatar->useTime / 1000;
@@ -678,8 +637,6 @@ namespace AnimationSystem {
   }
 
   void _blendHurt(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendHurt, "; // test: blend strings.
-
     _handleDefault(spec, avatar);
 
     Animation *hurtAnimation = animationGroups["hurt"][avatar->hurtAnimationName];
@@ -710,8 +667,6 @@ namespace AnimationSystem {
   }
 
   void _blendAim(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendAim, "; // test: blend strings.
-    
     _handleDefault(spec, avatar);
 
     Animation *aimAnimation = animationGroups["aim"][avatar->aimAnimationName];
@@ -720,7 +675,7 @@ namespace AnimationSystem {
       if (aimAnimation) {
         float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = animationGroups["single"]["idle"];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -741,8 +696,6 @@ namespace AnimationSystem {
   }
 
   void _blendUnuse(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendUnuse, "; // test: blend strings.
-    
     _handleDefault(spec, avatar);
 
     float unuseTimeS = avatar->unuseTime / 1000;
@@ -780,8 +733,6 @@ namespace AnimationSystem {
   }
 
   void _blendHold(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendHold, "; // test: blend strings.
-    
     _handleDefault(spec, avatar);
 
     Animation *holdAnimation = animationGroups["hold"][defaultHoldAnimationName];
@@ -804,8 +755,6 @@ namespace AnimationSystem {
   }
 
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
-    // if (spec.isPosition) avatar->testBlendStrings += "_blendPickUp, "; // test: blend strings.
-
     Animation *pickUpAnimation = animationGroups["pickup"]["pickUpZelda"];
     Animation *pickUpIdleAnimation = animationGroups["pickup"]["pickUpIdleZelda"];
 
@@ -822,10 +771,8 @@ namespace AnimationSystem {
 
   void _blendFly(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->flyState || (avatar->flyTime >= 0 && avatar->flyTime < 1000)) {
-      // if (spec.isPosition) avatar->testBlendStrings += "_blendFly, "; // test: blend strings.
-
       float t2 = avatar->flyTime / 1000;
-      // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
+      // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1));
       float f = avatar->flyState ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
       float *v2 = evaluateInterpolant(animationGroups["single"]["float"], spec.index, fmod(t2, animationGroups["single"]["float"]->duration));
 
@@ -849,8 +796,6 @@ namespace AnimationSystem {
       float landFactor = landTimeS / landingAnimationDuration;
 
       if (landFactor > 0 && landFactor <= 1) {
-        // if (spec.isPosition) avatar->testBlendStrings += "_blendLand, "; // test: blend strings.
-
         float t2 = landTimeS * animationSpeed;
         float *v2 = evaluateInterpolant(landingAnimation, spec.index, t2);
 
@@ -868,8 +813,6 @@ namespace AnimationSystem {
       float landFactor = landTimeS / landingAnimationDuration;
 
       if (landFactor > 0 && landFactor <= 1) {
-        // if (spec.isPosition) avatar->testBlendStrings += "_blendLand, "; // test: blend strings.
-
         float t2 = landTimeS * animationSpeed;
         float *v2 = evaluateInterpolant(landingAnimation, spec.index, t2);
 
@@ -891,8 +834,6 @@ namespace AnimationSystem {
 
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->fallLoopFactor > 0) {
-      // if (spec.isPosition) avatar->testBlendStrings += "_blendFallLoop, "; // test: blend strings.
-
       float t2 = (avatar->fallLoopTime / 1000);
       float *v2 = evaluateInterpolant(animationGroups["single"]["fallLoop"], spec.index, t2);
       float f = clamp(t2 / 0.3, 0, 1);
@@ -909,8 +850,6 @@ namespace AnimationSystem {
 
   void _blendActivate(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->activateTime > 0) {
-      // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
-
       std::string activateAnimationName = avatar->activateAnimationName == "" ? defaultActivateAnimationName : avatar->activateAnimationName;
       Animation *activateAnimation = animationGroups["activate"][activateAnimationName];
       float t2 = fmod((avatar->activateTime / 1000 * speedFactors[activateAnimationName]), activateAnimation->duration);
@@ -935,13 +874,10 @@ namespace AnimationSystem {
   }
 
   float **AnimationMixer::update(float now, float nowS) {
-    // AnimationMixer::now = now; // why can't set, cause idle and dance animatios play very fast ? use file variale instead ?
     AnimationMixer::nowS = nowS;
 
     for (int i = 0; i < 53; i++) {
       AnimationMapping spec = _animationMappings[i];
-
-      // if (spec.isPosition) avatar->testBlendStrings = ""; // test: blend strings.
 
       // note: Use exaclty same early return logic as js version, instead of all cascading, to prevent some bugs. But still want to use all cascading afterwards.
       if (avatar->doubleJumpState) {
@@ -963,7 +899,7 @@ namespace AnimationSystem {
       ) {
         _blendUse(spec, this->avatar);
       } else if (avatar->hurtAnimationName != "") {
-        _blendHurt(spec, this->avatar); // todo: move to highest priority.
+        _blendHurt(spec, this->avatar);
       } else if (avatar->aimAnimationName != "") {
         _blendAim(spec, this->avatar);
       } else if (avatar->unuseAnimationName != "" && avatar->unuseTime >= 0) {
@@ -976,18 +912,12 @@ namespace AnimationSystem {
         _handleDefault(spec, this->avatar);
       }
 
-      // // note: cascading blending, in order to do transition between all kinds of aniamtions.
-      // _blendFly(spec, this->avatar);
-      // _blendFallLoop(spec, this->avatar);
-      // _blendLand(spec, this->avatar);
-      // _blendActivate(spec, this->avatar);
+      // note: cascading blending, in order to do transition between all kinds of aniamtions.
+      _blendFly(spec, this->avatar);
+      _blendFallLoop(spec, this->avatar);
+      _blendLand(spec, this->avatar);
+      _blendActivate(spec, this->avatar);
 
-      // if (spec.isPosition) std::cout << "testBlendStrings: " << avatar->testBlendStrings << std::endl; // test: blend strings.
-
-      // animationValues[i][0] = spec.dst[0];
-      // animationValues[i][1] = spec.dst[1];
-      // animationValues[i][2] = spec.dst[2];
-      // if (!spec.isPosition) animationValues[i][3] = spec.dst[3];
       animationValues[i] = spec.dst;
     }
 
