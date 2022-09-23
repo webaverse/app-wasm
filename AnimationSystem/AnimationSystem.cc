@@ -324,10 +324,19 @@ namespace AnimationSystem {
     this->landTimeS = scratchStack[index++];
     this->timeSinceLastMoveS = scratchStack[index++];
 
-    useAnimationEnvelopeNames.clear();
+    this->useAnimationEnvelopeNames.clear();
     for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
-      useAnimationEnvelopeNames.push_back(AnimationName[(unsigned int)(scratchStack[index++])]);
+      this->useAnimationEnvelopeNames.push_back(AnimationName[(unsigned int)(scratchStack[index++])]);
     }
+
+    //
+    
+    localWeights["forward"] = this->forwardFactor;
+    localWeights["backward"] = this->backwardFactor;
+    localWeights["left"] = this->mirrorLeftFactorReverse;
+    localWeights["leftMirror"] = this->mirrorLeftFactor;
+    localWeights["right"] = this->mirrorRightFactorReverse;
+    localWeights["rightMirror"] = this->mirrorRightFactor;
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
@@ -446,14 +455,14 @@ namespace AnimationSystem {
     return interpolant.resultBuffer;
   }
 
-  float *doBlendList(AnimationMapping &spec, std::map<std::string, Animation *> animations, std::map<std::string, float> weights, float timeS) {
+  float *doBlendList(AnimationMapping &spec, std::map<std::string, Animation *> &animations, float &timeS) { // note: Big performance influnce!!! Use `&` to prevent copy parameter's values!!!
     float *resultVecQuat;
     unsigned int indexWeightBigThanZero = 0;
     float currentWeight = 0;
     // for (int i = 0; i < numAnimations; i++) {
     for (auto const& x : animations) {
       // if (spec.isPosition) std::cout << " x.first: " << x.first << std::endl;
-      float weight = weights[x.first];
+      float weight = localWeights[x.first];
       if (weight > 0) {
         Animation *animation = animations[x.first];
         float *vecQuat = evaluateInterpolant(animation, spec.index, fmod(timeS, animation->duration));
@@ -477,20 +486,21 @@ namespace AnimationSystem {
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_handleDefault, "; // test: blend strings.
 
-    localWeights["forward"] = avatar->forwardFactor;
-    localWeights["backward"] = avatar->backwardFactor;
-    localWeights["left"] = avatar->mirrorLeftFactorReverse;
-    localWeights["leftMirror"] = avatar->mirrorLeftFactor;
-    localWeights["right"] = avatar->mirrorRightFactorReverse;
-    localWeights["rightMirror"] = avatar->mirrorRightFactor;
+    // note: Big performance influnce!!! Do not update `localWeights` here, because of will run 53 times ( 53 bones )!!! todo: Notice codes which will run 53 times!!!
+    // localWeights["forward"] = avatar->forwardFactor;
+    // localWeights["backward"] = avatar->backwardFactor;
+    // localWeights["left"] = avatar->mirrorLeftFactorReverse;
+    // localWeights["leftMirror"] = avatar->mirrorLeftFactor;
+    // localWeights["right"] = avatar->mirrorRightFactorReverse;
+    // localWeights["rightMirror"] = avatar->mirrorRightFactor;
 
     // walkAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups["walk"], localWeights, avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups["walk"], avatar->landTimeS);
     copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
     // if (avatar->walkRunFactor > 0) {
       // runAnimations
-      localVecQuatPtr2 = doBlendList(spec, animationGroups["run"], localWeights, avatar->landTimeS);
+      localVecQuatPtr2 = doBlendList(spec, animationGroups["run"], avatar->landTimeS);
 
       // blend walk run
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
@@ -505,7 +515,7 @@ namespace AnimationSystem {
 
     // if (avatar->crouchFactor > 0) {
       // crouchAnimations
-      localVecQuatPtr2 = doBlendList(spec, animationGroups["crouch"], localWeights, avatar->landTimeS);
+      localVecQuatPtr2 = doBlendList(spec, animationGroups["crouch"], avatar->landTimeS);
       copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
       _clearXZ(localVecQuatArr, spec.isPosition);
 
