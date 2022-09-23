@@ -104,10 +104,62 @@ namespace AnimationSystem {
     std::vector<std::string> strings;
 
     // values
-    std::string activateAnimationName, fallLoopFrom, sitAnimationName, danceAnimationName, emoteAnimationName, useAnimationName, useAnimationComboName, hurtAnimationName, unuseAnimationName, aimAnimationName, holdAnimationName;
+    float activateTime;
+    float landTime;
+    float fallLoopFactor;
+    float fallLoopTime;
+    float flyTime;
+    float doubleJumpTime;
+    float jumpTime;
+    float narutoRunTime;
+    float narutoRunTimeFactor;
+    float danceFactor;
+    float crouchMaxTime;
+    float emoteFactor;
+    float lastEmoteTime;
+    float idleWalkFactor;
+    float useTime;
+    float useAnimationEnvelopeLength;
+    float hurtTime;
+    float unuseTime;
+    float aimTime;
+    float aimMaxTime;
+    float walkRunFactor;
+    float crouchFactor;
+    float pickUpTime;
+    float forwardFactor;
+    float backwardFactor;
+    float leftFactor;
+    float rightFactor;
+    float mirrorLeftFactorReverse;
+    float mirrorLeftFactor;
+    float mirrorRightFactorReverse;
+    float mirrorRightFactor;
+    float landTimeS;
+    float timeSinceLastMoveS;
+
+    bool landWithMoving;
+    bool flyState;
+    bool doubleJumpState;
+    bool jumpState;
+    bool sitState;
+    bool narutoRunState;
+    bool holdState;
+    bool pickUpState;
+
+    std::string activateAnimationName;
+    std::string fallLoopFrom;
+    std::string sitAnimationName;
+    std::string danceAnimationName;
+    std::string emoteAnimationName;
+    std::string useAnimationName;
+    std::string useAnimationComboName;
+    std::string hurtAnimationName;
+    std::string unuseAnimationName;
+    std::string aimAnimationName;
+    std::string holdAnimationName;
+
     std::vector<std::string> useAnimationEnvelopeNames;
-    float activateTime, landTime, fallLoopFactor, fallLoopTime, flyTime, doubleJumpTime, jumpTime, narutoRunTime, narutoRunTimeFactor, danceFactor, crouchMaxTime, emoteFactor, lastEmoteTime, idleWalkFactor, useTime, useAnimationEnvelopeLength, hurtTime, unuseTime, aimTime, aimMaxTime, walkRunFactor, crouchFactor, pickUpTime, forwardFactor, backwardFactor, leftFactor, rightFactor, mirrorLeftFactorReverse, mirrorLeftFactor, mirrorRightFactorReverse, mirrorRightFactor, landTimeS, timeSinceLastMoveS;
-    bool landWithMoving, flyState, doubleJumpState, jumpState, sitState, narutoRunState, holdState, pickUpState;
     
     void update(float *scratchStack);
   };
