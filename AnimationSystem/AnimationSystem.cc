@@ -5,9 +5,16 @@ namespace AnimationSystem {
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
-  std::map<std::string, std::map<std::string, Animation *>> animationGroups;
+  std::map<std::string, std::map<std::string, Animation *>> animationGroups; // todo: performance: all use unsigned int as key ?
   std::map<unsigned int, std::string> AnimationName;
   std::map<std::string, float> speedFactors;
+
+  std::string defaultSitAnimationName;
+  std::string defaultEmoteAnimationName;
+  std::string defaultDanceAnimationName;
+  std::string defaultHoldAnimationName;
+  std::string defaultActivateAnimationName;
+  std::string defaultNarutoRunAnimationName;
 
   float localVectorArr[3];
   float localQuaternionArr[4];
@@ -215,6 +222,13 @@ namespace AnimationSystem {
     speedFactors["grab_right"] = scratchStack[index++];
     speedFactors["pick_up"] = scratchStack[index++];
 
+    defaultSitAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    defaultEmoteAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    defaultDanceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    defaultHoldAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    defaultActivateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+    defaultNarutoRunAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+
     // -------------------------------------------------------------------------
     
     AnimationName[0] = "";
@@ -303,12 +317,6 @@ namespace AnimationSystem {
     this->danceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
     this->activateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
     this->hurtAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->defaultSitAnimation = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->defaultEmoteAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->defaultDanceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->defaultHoldAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->defaultActivateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->defaultNarutoRunAnimation = AnimationName[(unsigned int)(scratchStack[index++])];
     this->useAnimationComboName = AnimationName[(unsigned int)(scratchStack[index++])];
     this->unuseAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
     this->aimAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
@@ -534,7 +542,7 @@ namespace AnimationSystem {
     _clearXZ(spec.dst, spec.isPosition);
 
     if (avatar->holdState && spec.isArm) {
-      Animation *holdAnimation = animationGroups["hold"][avatar->defaultHoldAnimationName];
+      Animation *holdAnimation = animationGroups["hold"][defaultHoldAnimationName];
       float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
       float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
       copyValue(spec.dst, v2, spec.isPosition);
@@ -544,7 +552,7 @@ namespace AnimationSystem {
   void _blendSit(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
 
-    Animation *sitAnimation = animationGroups["sit"][avatar->sitAnimationName == "" ? avatar->defaultSitAnimation : avatar->sitAnimationName];
+    Animation *sitAnimation = animationGroups["sit"][avatar->sitAnimationName == "" ? defaultSitAnimationName : avatar->sitAnimationName];
     float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
 
     copyValue(spec.dst, v2, spec.isPosition);
@@ -553,7 +561,7 @@ namespace AnimationSystem {
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
 
-    Animation *narutoRunAnimation = animationGroups["narutoRun"][avatar->defaultNarutoRunAnimation];
+    Animation *narutoRunAnimation = animationGroups["narutoRun"][defaultNarutoRunAnimationName];
     float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
     float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
 
@@ -567,7 +575,7 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *danceAnimation = animationGroups["dance"][avatar->danceAnimationName == "" ? avatar->defaultDanceAnimationName : avatar->danceAnimationName];
+    Animation *danceAnimation = animationGroups["dance"][avatar->danceAnimationName == "" ? defaultDanceAnimationName : avatar->danceAnimationName];
     float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
     float *v2 = evaluateInterpolant(danceAnimation, spec.index, t2);
 
@@ -584,7 +592,7 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *emoteAnimation = animationGroups["emote"][avatar->emoteAnimationName == "" ? avatar->defaultEmoteAnimationName : avatar->emoteAnimationName];
+    Animation *emoteAnimation = animationGroups["emote"][avatar->emoteAnimationName == "" ? defaultEmoteAnimationName : avatar->emoteAnimationName];
     float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime; // todo: use now.
     float t2 = min(emoteTime / 1000, emoteAnimation->duration);
     float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
@@ -784,7 +792,7 @@ namespace AnimationSystem {
     
     _handleDefault(spec, avatar);
 
-    Animation *holdAnimation = animationGroups["hold"][avatar->defaultHoldAnimationName];
+    Animation *holdAnimation = animationGroups["hold"][defaultHoldAnimationName];
     float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
     float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
 
@@ -832,7 +840,7 @@ namespace AnimationSystem {
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
 
       if (avatar->holdState && spec.isArm) {
-        Animation *holdAnimation = animationGroups["hold"][avatar->defaultHoldAnimationName];
+        Animation *holdAnimation = animationGroups["hold"][defaultHoldAnimationName];
         float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
         float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
         copyValue(spec.dst, v2, spec.isPosition);
@@ -911,7 +919,7 @@ namespace AnimationSystem {
     if (avatar->activateTime > 0) {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
 
-      std::string activateAnimationName = avatar->activateAnimationName == "" ? avatar->defaultActivateAnimationName : avatar->activateAnimationName;
+      std::string activateAnimationName = avatar->activateAnimationName == "" ? defaultActivateAnimationName : avatar->activateAnimationName;
       Animation *activateAnimation = animationGroups["activate"][activateAnimationName];
       float t2 = fmod((avatar->activateTime / 1000 * speedFactors[activateAnimationName]), activateAnimation->duration);
       float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2);
@@ -976,11 +984,11 @@ namespace AnimationSystem {
         _handleDefault(spec, this->avatar);
       }
 
-      // note: cascading blending, in order to do transition between all kinds of aniamtions.
-      _blendFly(spec, this->avatar);
-      _blendFallLoop(spec, this->avatar);
-      _blendLand(spec, this->avatar);
-      _blendActivate(spec, this->avatar);
+      // // note: cascading blending, in order to do transition between all kinds of aniamtions.
+      // _blendFly(spec, this->avatar);
+      // _blendFallLoop(spec, this->avatar);
+      // _blendLand(spec, this->avatar);
+      // _blendActivate(spec, this->avatar);
 
       // if (spec.isPosition) std::cout << "testBlendStrings: " << avatar->testBlendStrings << std::endl; // test: blend strings.
 
