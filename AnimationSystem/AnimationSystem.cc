@@ -197,7 +197,7 @@ namespace AnimationSystem {
     Avatar *avatar = new Avatar();
     avatars.push_back(avatar);
     avatar->mixer = mixer;
-    mixer->avatar = avatar; // todo: prevent set `mixer->avatar = avatar` ?
+    mixer->avatar = avatar;
 
     return avatar;
   }
