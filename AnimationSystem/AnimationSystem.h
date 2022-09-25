@@ -130,6 +130,10 @@ namespace AnimationSystem {
     float mirrorRightFactor;
     float landTimeS;
     float timeSinceLastMoveS;
+    float swimTime;
+    float movementsTime;
+    float sprintFactor;
+    float movementsTransitionFactor;
 
     bool landWithMoving;
     bool flyState;
@@ -139,6 +143,7 @@ namespace AnimationSystem {
     bool narutoRunState;
     bool holdState;
     bool pickUpState;
+    bool swimState;
 
     std::string activateAnimationName;
     std::string fallLoopFrom;

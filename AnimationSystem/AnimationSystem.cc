@@ -278,8 +278,12 @@ namespace AnimationSystem {
     this->idleWalkFactor = scratchStack[index++];
     this->walkRunFactor = scratchStack[index++];
     this->crouchFactor = scratchStack[index++];
+    this->sprintFactor = scratchStack[index++];
+    this->movementsTransitionFactor = scratchStack[index++];
 
     this->activateTime = scratchStack[index++];
+    this->swimTime = scratchStack[index++];
+    this->movementsTime = scratchStack[index++];
 
     // action states ---
     this->jumpState = scratchStack[index++];
@@ -289,6 +293,7 @@ namespace AnimationSystem {
     this->sitState = scratchStack[index++];
     this->holdState = scratchStack[index++];
     this->pickUpState = scratchStack[index++];
+    this->swimState = scratchStack[index++];
 
     // other ---
     this->landWithMoving = scratchStack[index++];
@@ -925,6 +930,44 @@ namespace AnimationSystem {
     }
   }
 
+  void _blendSwim(AnimationMapping &spec, Avatar *avatar) {
+    if (avatar->swimState) {
+      // if (spec.isPosition) avatar->testBlendStrings += "_blendSwim, "; // test: blend strings.
+
+      float swimTimeS = avatar->swimTime / 1000;
+      float movementsTimeS = avatar->movementsTime / 1000;
+
+      float t2 = fmod(swimTimeS, animationGroups["single"]["float"]->duration);
+      float *v2 = evaluateInterpolant(animationGroups["single"]["float"], spec.index, t2);
+
+      float t3 = fmod(movementsTimeS * 1, animationGroups["swim"]["breaststroke"]->duration);
+      float *v3 = evaluateInterpolant(animationGroups["swim"]["breaststroke"], spec.index, t3);
+
+      float t4 = fmod(movementsTimeS * 2, animationGroups["swim"]["freestyle"]->duration);
+      float *v4 = evaluateInterpolant(animationGroups["swim"]["freestyle"], spec.index, t4);
+
+      float f = clamp(swimTimeS / 0.2, 0, 1);
+
+      if (!spec.isPosition) {
+        // // can't use idleWalkFactor & walkRunFactor here, otherwise "Impulsive breaststroke swim animation" will turn into "freestyle animation" when speed is fast,
+        // // and will turn into "floating" a little when speed is slow.
+        // // interpolateFlat(localQuaternionArr, 0, v3, 0, v4, 0, avatar->walkRunFactor, spec.isPosition);
+        // // interpolateFlat(v2, 0, v2, 0, localQuaternionArr, 0, avatar->idleWalkFactor, spec.isPosition);
+        interpolateFlat(localQuaternionArr, 0, v3, 0, v4, 0, avatar->sprintFactor, spec.isPosition);
+        interpolateFlat(v2, 0, v2, 0, localQuaternionArr, 0, avatar->movementsTransitionFactor, spec.isPosition);
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+      } else {
+        float liftSwims = 0.05; // lift swims height, prevent head sink in water
+        v3[1] += 0.03; // align Swimming.fbx's height to freestyle.fbx
+        v3[1] += liftSwims;
+        v4[1] += liftSwims;
+        interpolateFlat(localQuaternionArr, 0, v3, 0, v4, 0, avatar->sprintFactor, spec.isPosition);
+        interpolateFlat(v2, 0, v2, 0, localQuaternionArr, 0, avatar->movementsTransitionFactor, spec.isPosition);
+        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+      }
+    }
+  }
+
   void _blendActivate(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->activateTime > 0) {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
@@ -999,6 +1042,7 @@ namespace AnimationSystem {
       _blendFallLoop(spec, this->avatar);
       _blendLand(spec, this->avatar);
       _blendActivate(spec, this->avatar);
+      _blendSwim(spec, this->avatar);
 
       // if (spec.isPosition) std::cout << "testBlendStrings: " << avatar->testBlendStrings << std::endl; // test: blend strings.
 
