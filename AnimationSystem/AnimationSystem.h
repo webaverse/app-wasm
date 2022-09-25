@@ -116,7 +116,7 @@ namespace AnimationSystem {
     static float nowS;
 
     Avatar *avatar;
-    float *animationValues[53]; // 53 bones interpolants result buffers.
+    float **animationValues;
 
     float **update(float now, float nowS);
   };

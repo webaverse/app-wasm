@@ -346,6 +346,7 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
+    animationMixer->animationValues = new float *[_animationMappings.size()];
     return animationMixer;
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm) {
@@ -999,7 +1000,7 @@ namespace AnimationSystem {
     // AnimationMixer::now = now; // why can't set, cause idle and dance animatios play very fast ? use file variale instead ?
     AnimationMixer::nowS = nowS;
 
-    for (int i = 0; i < 53; i++) {
+    for (int i = 0; i < _animationMappings.size(); i++) {
       AnimationMapping spec = _animationMappings[i];
 
       // if (spec.isPosition) avatar->testBlendStrings = ""; // test: blend strings.
