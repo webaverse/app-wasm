@@ -96,8 +96,6 @@ namespace AnimationSystem {
   public:
     AnimationMixer *mixer;
 
-    std::vector<std::string> strings;
-
     // values
     float activateTime;
     float landTime;
@@ -155,6 +153,10 @@ namespace AnimationSystem {
     std::string holdAnimationName;
 
     std::vector<std::string> useAnimationEnvelopeNames;
+
+    //
+
+    std::string testBlendStrings; // test
     
     void update(float *scratchStack);
   };
