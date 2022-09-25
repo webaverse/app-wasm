@@ -10,12 +10,7 @@ namespace AnimationSystem {
   class Avatar;
   class AnimationNode;
   class AnimationMixer;
-
-  enum LoopType {
-    LoopOnce = 2200,
-    LoopRepeat = 2201,
-    LoopPingPong = 2202
-  };
+  
   enum BoneIndex {
     // Hips = 0, // position
     Hips = 1, // quaternion
