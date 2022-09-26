@@ -1,4 +1,5 @@
 #include "AnimationSystem.h"
+#include "CubicBezierEasing.h"
 
 namespace AnimationSystem {
   std::vector<Avatar *> avatars;
@@ -185,7 +186,7 @@ namespace AnimationSystem {
     dst[1] = src0[1] - src1[1];
     dst[2] = src0[2] - src1[2];
   }
-
+  
   // Main ------
 
   Avatar *createAnimationAvatar(AnimationMixer *mixer) {
@@ -210,6 +211,35 @@ namespace AnimationSystem {
   }
   void initAnimationSystem(float *scratchStack) { // only need init once globally
     // std::cout << "initAnimationSystem ------------------" << std::endl;
+
+    // -------------------------------------------------------------------------
+
+    // for (float i = 0; i <= 1; i+=0.1) {
+    //   std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i);
+    // }
+    float i;
+    i = 0;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.1;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.2;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.3;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.4;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.5;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.6;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.7;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.8;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 0.9;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+    i = 1;
+    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
 
     // -------------------------------------------------------------------------
     
@@ -261,6 +291,10 @@ namespace AnimationSystem {
     animationGroups["crouch"]["leftMirror"] = animationAll["Crouched Sneaking Right reverse.fbx"];
     animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
     animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
+
+    //
+
+    CubicBezierEasing::init(0, 1, 0, 1);
   }
   void Avatar::update(float *scratchStack) {
     unsigned int index = 0;
@@ -407,7 +441,7 @@ namespace AnimationSystem {
 
     animation->interpolants.push_back(interpolant);
   }
-  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) {
+  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) { // todo: move to Utils.
     Interpolant interpolant = animation->interpolants[interpolantIndex];
 
     if (interpolant.numParameterPositions == 1) {
@@ -849,8 +883,8 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendFly, "; // test: blend strings.
 
       float t2 = avatar->flyTime / 1000;
-      // const f = avatar->flyState ? min(cubicBezier(t2), 1) : (1 - min(cubicBezier(t2), 1)); // todo: cubicBezier.
-      float f = avatar->flyState ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
+      float f = avatar->flyState ? min(CubicBezierEasing::cubicBezier(t2), 1) : (1 - min(CubicBezierEasing::cubicBezier(t2), 1)); // todo: cubicBezier.
+      // float f = avatar->flyState ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
       float *v2 = evaluateInterpolant(animationGroups["single"]["float"], spec.index, fmod(t2, animationGroups["single"]["float"]->duration));
 
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
@@ -978,8 +1012,8 @@ namespace AnimationSystem {
       float t2 = fmod((avatar->activateTime / 1000 * speedFactors[activateAnimationName]), activateAnimation->duration);
       float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2);
 
-      // const f = avatar.activateTime > 0 ? Math.min(cubicBezier(t2), 1) : (1 - Math.min(cubicBezier(t2), 1));
-      float f = avatar->activateTime > 0 ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
+      float f = avatar->activateTime > 0 ? min(CubicBezierEasing::cubicBezier(t2), 1) : (1 - min(CubicBezierEasing::cubicBezier(t2), 1));
+      // float f = avatar->activateTime > 0 ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
 
       if (spec.index == BoneIndex::Spine || spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest || spec.index == BoneIndex::Neck || spec.index == BoneIndex::Head) {
         if (!spec.isPosition) {
