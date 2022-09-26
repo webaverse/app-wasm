@@ -34,13 +34,13 @@ namespace CubicBezierEasing {
   // Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
   float getSlope (float aT, float aA1, float aA2) { return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1); }
 
-  float myAbs(float x) { // todo: use native `abs()`.
-    if (x >= 0) {
-      return x;
-    } else {
-      return -x;
-    }
-  }
+  // float myAbs(float x) { // todo: use native `abs()`.
+  //   if (x >= 0) {
+  //     return x;
+  //   } else {
+  //     return -x;
+  //   }
+  // }
 
   float binarySubdivide (float aX, float aA, float aB, float mX1, float mX2) {
     float currentX, currentT, i = 0;
@@ -52,7 +52,7 @@ namespace CubicBezierEasing {
       } else {
         aA = currentT;
       }
-    } while (myAbs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
+    } while (abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
     return currentT;
   }
 
@@ -76,14 +76,14 @@ namespace CubicBezierEasing {
     float intervalStart = 0.0;
     unsigned int currentSample = 1;
     unsigned int lastSample = kSplineTableSize - 1;
-    std::cout << "-wasm- aX: " << aX << std::endl;
-    std::cout << "-wasm- currentSample: " << currentSample << std::endl;
-    std::cout << "-wasm- lastSample: " << lastSample << std::endl;
+    // std::cout << "-wasm- aX: " << aX << std::endl;
+    // std::cout << "-wasm- currentSample: " << currentSample << std::endl;
+    // std::cout << "-wasm- lastSample: " << lastSample << std::endl;
 
     for (; currentSample != lastSample && sampleValues[currentSample] <= aX; ++currentSample) {
-      std::cout << "-wasm- currentSample: " << currentSample << std::endl;
-      std::cout << "-wasm- sampleValues[currentSample]: " << sampleValues[currentSample] << std::endl;
-      std::cout << "-wasm- intervalStart: " << intervalStart << std::endl;
+      // std::cout << "-wasm- currentSample: " << currentSample << std::endl;
+      // std::cout << "-wasm- sampleValues[currentSample]: " << sampleValues[currentSample] << std::endl;
+      // std::cout << "-wasm- intervalStart: " << intervalStart << std::endl;
       intervalStart += kSampleStepSize;
     }
     --currentSample;
@@ -118,7 +118,7 @@ namespace CubicBezierEasing {
         return x;
       }
       float t = getTForX(x);
-      std::cout << "-wasm- t: " << t << std::endl;
+      // std::cout << "-wasm- t: " << t << std::endl;
       return calcBezier(t, _mY1, _mY2);
     }
   }
@@ -144,7 +144,7 @@ namespace CubicBezierEasing {
     sampleValues = new float[kSplineTableSize]; // todo: destory ?
     for (unsigned int i = 0; i < kSplineTableSize; ++i) {
       sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
-      std::cout << "sampleValues " << i << " : " << sampleValues[i] << std::endl;
+      // std::cout << "sampleValues " << i << " : " << sampleValues[i] << std::endl;
     }
   };
 
