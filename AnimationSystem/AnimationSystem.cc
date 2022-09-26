@@ -188,7 +188,7 @@ namespace AnimationSystem {
     dst[1] = src0[1] - src1[1];
     dst[2] = src0[2] - src1[2];
   }
-  
+
   // Main ------
 
   Avatar *createAnimationAvatar(AnimationMixer *mixer) {
@@ -396,7 +396,7 @@ namespace AnimationSystem {
 
     animation->interpolants.push_back(interpolant);
   }
-  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) { // todo: move to Utils.
+  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) {
     Interpolant interpolant = animation->interpolants[interpolantIndex];
 
     if (interpolant.numParameterPositions == 1) {

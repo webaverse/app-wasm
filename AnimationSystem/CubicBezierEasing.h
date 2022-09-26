@@ -34,14 +34,6 @@ namespace CubicBezierEasing {
   // Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
   float getSlope (float aT, float aA1, float aA2) { return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1); }
 
-  // float myAbs(float x) { // todo: use native `abs()`.
-  //   if (x >= 0) {
-  //     return x;
-  //   } else {
-  //     return -x;
-  //   }
-  // }
-
   float binarySubdivide (float aX, float aA, float aB, float mX1, float mX2) {
     float currentX, currentT, i = 0;
     do {
@@ -76,14 +68,8 @@ namespace CubicBezierEasing {
     float intervalStart = 0.0;
     unsigned int currentSample = 1;
     unsigned int lastSample = kSplineTableSize - 1;
-    // std::cout << "-wasm- aX: " << aX << std::endl;
-    // std::cout << "-wasm- currentSample: " << currentSample << std::endl;
-    // std::cout << "-wasm- lastSample: " << lastSample << std::endl;
 
     for (; currentSample != lastSample && sampleValues[currentSample] <= aX; ++currentSample) {
-      // std::cout << "-wasm- currentSample: " << currentSample << std::endl;
-      // std::cout << "-wasm- sampleValues[currentSample]: " << sampleValues[currentSample] << std::endl;
-      // std::cout << "-wasm- intervalStart: " << intervalStart << std::endl;
       intervalStart += kSampleStepSize;
     }
     --currentSample;
@@ -93,18 +79,11 @@ namespace CubicBezierEasing {
     float guessForT = intervalStart + dist * kSampleStepSize;
 
     float initialSlope = getSlope(guessForT, _mX1, _mX2);
-    // std::cout << "-wasm- currentSample: " << currentSample << std::endl;
-    // std::cout << "-wasm- dist: " << dist << std::endl;
-    // std::cout << "-wasm- guessForT: " << guessForT << std::endl;
-    // std::cout << "-wasm- initialSlope: " << initialSlope << std::endl;
     if (initialSlope >= NEWTON_MIN_SLOPE) {
-      // std::cout << "-wasm- case 1" << std::endl;
       return newtonRaphsonIterate(aX, guessForT, _mX1, _mX2);
     } else if (initialSlope == 0.0) {
-      // std::cout << "-wasm- case 2" << std::endl;
       return guessForT;
     } else {
-      // std::cout << "-wasm- case 3" << std::endl;
       return binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, _mX1, _mX2);
     }
   }
@@ -117,9 +96,7 @@ namespace CubicBezierEasing {
       if (x == 0 || x == 1) { // Keep this check to prevent values inputed from js are imprecise ?
         return x;
       }
-      float t = getTForX(x);
-      // std::cout << "-wasm- t: " << t << std::endl;
-      return calcBezier(t, _mY1, _mY2);
+      return calcBezier(getTForX(x), _mY1, _mY2);
     }
   }
 
@@ -141,10 +118,9 @@ namespace CubicBezierEasing {
     _mY2 = mY2;
 
     // Precompute samples table
-    sampleValues = new float[kSplineTableSize]; // todo: destory ?
+    sampleValues = new float[kSplineTableSize];
     for (unsigned int i = 0; i < kSplineTableSize; ++i) {
       sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
-      // std::cout << "sampleValues " << i << " : " << sampleValues[i] << std::endl;
     }
   };
 
