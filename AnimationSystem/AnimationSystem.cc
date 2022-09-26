@@ -28,6 +28,8 @@ namespace AnimationSystem {
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
+  bool isInitedAnimationSystem = false;
+
   // functions:
 
   // Utils ------
@@ -210,91 +212,107 @@ namespace AnimationSystem {
     return avatar;
   }
   void initAnimationSystem(float *scratchStack) { // only need init once globally
-    // std::cout << "initAnimationSystem ------------------" << std::endl;
+    if (!isInitedAnimationSystem) {
+      std::cout << "initAnimationSystem ------------------" << std::endl;
 
-    // -------------------------------------------------------------------------
+      // -------------------------------------------------------------------------
+      
+      unsigned int index = 0;
 
-    // for (float i = 0; i <= 1; i+=0.1) {
-    //   std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i);
-    // }
-    float i;
-    i = 0;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.1;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.2;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.3;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.4;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.5;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.6;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.7;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.8;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 0.9;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
-    i = 1;
-    std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i) << std::endl;
+      speedFactors["grab_forward"] = scratchStack[index++];
+      speedFactors["grab_down"] = scratchStack[index++];
+      speedFactors["grab_up"] = scratchStack[index++];
+      speedFactors["grab_left"] = scratchStack[index++];
+      speedFactors["grab_right"] = scratchStack[index++];
+      speedFactors["pick_up"] = scratchStack[index++];
 
-    // -------------------------------------------------------------------------
-    
-    unsigned int index = 0;
+      defaultSitAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+      defaultEmoteAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+      defaultDanceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+      defaultHoldAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+      defaultActivateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+      defaultNarutoRunAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
 
-    speedFactors["grab_forward"] = scratchStack[index++];
-    speedFactors["grab_down"] = scratchStack[index++];
-    speedFactors["grab_up"] = scratchStack[index++];
-    speedFactors["grab_left"] = scratchStack[index++];
-    speedFactors["grab_right"] = scratchStack[index++];
-    speedFactors["pick_up"] = scratchStack[index++];
+      // -------------------------------------------------------------------------
+      
+      AnimationName[0] = "";
 
-    defaultSitAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    defaultEmoteAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    defaultDanceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    defaultHoldAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    defaultActivateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    defaultNarutoRunAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+      // -------------------------------------------------------------------------
 
-    // -------------------------------------------------------------------------
-    
-    AnimationName[0] = "";
+      animationGroups["single"]["idle"] = animationAll["idle.fbx"];
+      animationGroups["single"]["crouchIdle"] = animationAll["Crouch Idle.fbx"];
 
-    // -------------------------------------------------------------------------
+      // 8 directions walk animations ---
+      animationGroups["walk"]["forward"] = animationAll["walking.fbx"];
+      animationGroups["walk"]["backward"] = animationAll["walking backwards.fbx"];
+      animationGroups["walk"]["left"] = animationAll["left strafe walking.fbx"];
+      animationGroups["walk"]["leftMirror"] = animationAll["right strafe walking reverse.fbx"];
+      animationGroups["walk"]["right"] = animationAll["right strafe walking.fbx"];
+      animationGroups["walk"]["rightMirror"] = animationAll["left strafe walking reverse.fbx"];
 
-    animationGroups["single"]["idle"] = animationAll["idle.fbx"];
-    animationGroups["single"]["crouchIdle"] = animationAll["Crouch Idle.fbx"];
+      // 8 directions run animations ---
+      animationGroups["run"]["forward"] = animationAll["Fast Run.fbx"];
+      animationGroups["run"]["backward"] = animationAll["running backwards.fbx"];
+      animationGroups["run"]["left"] = animationAll["left strafe.fbx"];
+      animationGroups["run"]["leftMirror"] = animationAll["right strafe reverse.fbx"];
+      animationGroups["run"]["right"] = animationAll["right strafe.fbx"];
+      animationGroups["run"]["rightMirror"] = animationAll["left strafe reverse.fbx"];
 
-    // 8 directions walk animations ---
-    animationGroups["walk"]["forward"] = animationAll["walking.fbx"];
-    animationGroups["walk"]["backward"] = animationAll["walking backwards.fbx"];
-    animationGroups["walk"]["left"] = animationAll["left strafe walking.fbx"];
-    animationGroups["walk"]["leftMirror"] = animationAll["right strafe walking reverse.fbx"];
-    animationGroups["walk"]["right"] = animationAll["right strafe walking.fbx"];
-    animationGroups["walk"]["rightMirror"] = animationAll["left strafe walking reverse.fbx"];
+      // 8 directions crouch animations ---
+      animationGroups["crouch"]["forward"] = animationAll["Sneaking Forward.fbx"];
+      animationGroups["crouch"]["backward"] = animationAll["Sneaking Forward reverse.fbx"];
+      animationGroups["crouch"]["left"] = animationAll["Crouched Sneaking Left.fbx"];
+      animationGroups["crouch"]["leftMirror"] = animationAll["Crouched Sneaking Right reverse.fbx"];
+      animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
+      animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
 
-    // 8 directions run animations ---
-    animationGroups["run"]["forward"] = animationAll["Fast Run.fbx"];
-    animationGroups["run"]["backward"] = animationAll["running backwards.fbx"];
-    animationGroups["run"]["left"] = animationAll["left strafe.fbx"];
-    animationGroups["run"]["leftMirror"] = animationAll["right strafe reverse.fbx"];
-    animationGroups["run"]["right"] = animationAll["right strafe.fbx"];
-    animationGroups["run"]["rightMirror"] = animationAll["left strafe reverse.fbx"];
+      //
 
-    // 8 directions crouch animations ---
-    animationGroups["crouch"]["forward"] = animationAll["Sneaking Forward.fbx"];
-    animationGroups["crouch"]["backward"] = animationAll["Sneaking Forward reverse.fbx"];
-    animationGroups["crouch"]["left"] = animationAll["Crouched Sneaking Left.fbx"];
-    animationGroups["crouch"]["leftMirror"] = animationAll["Crouched Sneaking Right reverse.fbx"];
-    animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
-    animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
+      CubicBezierEasing::init(0, 1, 0, 1);
 
-    //
+      // -------------------------------------------------------------------------
 
-    CubicBezierEasing::init(0, 1, 0, 1);
+      // for (float i = 0; i <= 1; i+=0.1) {
+      //   std::cout << "cubicBezier " << i << ": " << CubicBezierEasing::cubicBezier(i);
+      // }
+      float i, result;
+      i = 0;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.1;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.2;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.3;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.4;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.5;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.6;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.7;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.8;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 0.9;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      i = 1;
+      result = CubicBezierEasing::cubicBezier(i);
+      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+
+      //
+      isInitedAnimationSystem = true;
+    }
   }
   void Avatar::update(float *scratchStack) {
     unsigned int index = 0;
