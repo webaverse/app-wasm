@@ -44,7 +44,7 @@ namespace AnimationSystem {
   float *localVecQuatPtr;
   float *localVecQuatPtr2;
 
-  std::vector<float> localWeights;
+  float localWeights[6];
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
