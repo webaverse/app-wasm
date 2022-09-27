@@ -512,7 +512,7 @@ namespace AnimationSystem {
     this->unuseAnimationIndex = (int)(scratchStack[index++]);
     this->aimAnimationIndex = (int)(scratchStack[index++]);
 
-    this->fallLoopFrom = (unsigned int)(scratchStack[index++]) == 1 ? "jump" : "";
+    this->fallLoopFrom = (int)(scratchStack[index++]);
     this->landTimeS = scratchStack[index++];
     this->timeSinceLastMoveS = scratchStack[index++];
 
@@ -1110,7 +1110,7 @@ namespace AnimationSystem {
       float *v2 = evaluateInterpolant(singleAnimations[(int)SingleAnimationIndex::FallLoop], spec.index, t2);
       float f = clamp(t2 / 0.3, 0, 1);
 
-      if (avatar->fallLoopFrom == "jump") {
+      if (avatar->fallLoopFrom == (int)FallLoopFrom::Jump) {
         copyValue(spec.dst, v2, spec.isPosition);
       } else {
         interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);

@@ -77,7 +77,7 @@ enum class AnimationGroupIndex {
   Use
 };
 
-// ---
+// ---   note: Start from 0, -1 means null/undefined.
 
 enum class SingleAnimationIndex {
   Idle,
@@ -207,7 +207,7 @@ enum class UseAnimationIndex {
   Magic,
   Eat,
   Drink,
-  Throw, // note: Have to use uppercase, lower case "throw" will cause key word conflict error "error: expected identifier". // todo: Can use lower case with enum class ?
+  Throw, // note: Have to use uppercase, lower case "throw" will cause key word conflict error "error: expected identifier". // Can use lower case "throw" with enum class ? Still can't.
   PickUpThrow,
   BowDraw,
   BowIdle,
@@ -218,4 +218,10 @@ enum class UseAnimationIndex {
   SwordSideSlashStep,
   SwordTopDownSlash,
   SwordTopDownSlashStep
+};
+
+// ------   note: Start from 0, -1 means null/undefined.
+
+enum class FallLoopFrom {
+  Jump
 };

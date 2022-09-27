@@ -103,7 +103,7 @@ namespace AnimationSystem {
 
     std::vector<int> useAnimationEnvelopeIndices;
 
-    std::string fallLoopFrom; // todo: Don't use string ?
+    int fallLoopFrom;
 
     //
 
