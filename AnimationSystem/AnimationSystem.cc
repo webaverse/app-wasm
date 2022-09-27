@@ -6,16 +6,19 @@ namespace AnimationSystem {
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
-  std::map<std::string, std::map<std::string, Animation *>> animationGroups; // todo: performance: all use unsigned int as key ?
+  // std::map<std::string, std::map<std::string, Animation *>> animationGroups; // todo: performance: all use unsigned int as key ?
   std::map<unsigned int, std::string> AnimationName;
   std::map<std::string, float> speedFactors;
 
-  std::string defaultSitAnimationName;
-  std::string defaultEmoteAnimationName;
-  std::string defaultDanceAnimationName;
-  std::string defaultHoldAnimationName;
-  std::string defaultActivateAnimationName;
-  std::string defaultNarutoRunAnimationName;
+  std::vector<std::vector<Animation *>> animationGroups;
+  std::vector<Animation *> useAnimations;
+
+  unsigned int defaultSitAnimationIndex = 0;
+  unsigned int defaultEmoteAnimationIndex = 0;
+  unsigned int defaultDanceAnimationIndex = 0;
+  unsigned int defaultHoldAnimationIndex = 0;
+  unsigned int defaultActivateAnimationIndex = 0;
+  unsigned int defaultNarutoRunAnimationIndex = 0;
 
   float localVectorArr[3];
   float localQuaternionArr[4];
@@ -226,47 +229,163 @@ namespace AnimationSystem {
       speedFactors["grab_right"] = scratchStack[index++];
       speedFactors["pick_up"] = scratchStack[index++];
 
-      defaultSitAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-      defaultEmoteAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-      defaultDanceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-      defaultHoldAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-      defaultActivateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-      defaultNarutoRunAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-
       // -------------------------------------------------------------------------
       
       AnimationName[0] = "";
 
       // -------------------------------------------------------------------------
 
-      animationGroups["single"]["idle"] = animationAll["idle.fbx"];
-      animationGroups["single"]["crouchIdle"] = animationAll["Crouch Idle.fbx"];
+      // note: Need be the same order with `constants.h/enum SingleAnimationIndex`.
+      singleAnimations.push_back(animationAll["idle.fbx"]); // Idle
+      singleAnimations.push_back(animationAll["Crouch Idle.fbx"]); // CrouchIdle
+      singleAnimations.push_back(animationAll["jump.fbx"]); // Jump
+      singleAnimations.push_back(animationAll["jump_double.fbx"]); // DoubleJump
+      singleAnimations.push_back(animationAll["falling.fbx"]); // FallLoop
+      singleAnimations.push_back(animationAll["treading water.fbx"]); // Float
+      animationGroups.push_back(singleAnimations);
+
+      // ---
 
       // 8 directions walk animations ---
-      animationGroups["walk"]["forward"] = animationAll["walking.fbx"];
-      animationGroups["walk"]["backward"] = animationAll["walking backwards.fbx"];
-      animationGroups["walk"]["left"] = animationAll["left strafe walking.fbx"];
-      animationGroups["walk"]["leftMirror"] = animationAll["right strafe walking reverse.fbx"];
-      animationGroups["walk"]["right"] = animationAll["right strafe walking.fbx"];
-      animationGroups["walk"]["rightMirror"] = animationAll["left strafe walking reverse.fbx"];
+      // note: Need be the same order with `constants.h/enum WalkAnimationIndex`.
+      walkAnimations.push_back(animationAll["walking.fbx"]); // Forward
+      walkAnimations.push_back(animationAll["walking backwards.fbx"]); // Backward
+      walkAnimations.push_back(animationAll["left strafe walking.fbx"]); // Left
+      walkAnimations.push_back(animationAll["right strafe walking reverse.fbx"]); // LeftMirror
+      walkAnimations.push_back(animationAll["right strafe walking.fbx"]); // Right
+      walkAnimations.push_back(animationAll["left strafe walking reverse.fbx"]); // RightMirror
+      animationGroups.push_back(walkAnimations);
 
       // 8 directions run animations ---
-      animationGroups["run"]["forward"] = animationAll["Fast Run.fbx"];
-      animationGroups["run"]["backward"] = animationAll["running backwards.fbx"];
-      animationGroups["run"]["left"] = animationAll["left strafe.fbx"];
-      animationGroups["run"]["leftMirror"] = animationAll["right strafe reverse.fbx"];
-      animationGroups["run"]["right"] = animationAll["right strafe.fbx"];
-      animationGroups["run"]["rightMirror"] = animationAll["left strafe reverse.fbx"];
+      // note: Need be the same order with `constants.h/enum RunAnimationIndex`.
+      runAnimations.push_back(animationAll["Fast Run.fbx"]); // Forward
+      runAnimations.push_back(animationAll["running backwards.fbx"]); // Backward
+      runAnimations.push_back(animationAll["left strafe.fbx"]); // Left
+      runAnimations.push_back(animationAll["right strafe reverse.fbx"]); // LeftMirror
+      runAnimations.push_back(animationAll["right strafe.fbx"]); // Right
+      runAnimations.push_back(animationAll["left strafe reverse.fbx"]); // RightMirror
+      animationGroups.push_back(runAnimations);
 
       // 8 directions crouch animations ---
-      animationGroups["crouch"]["forward"] = animationAll["Sneaking Forward.fbx"];
-      animationGroups["crouch"]["backward"] = animationAll["Sneaking Forward reverse.fbx"];
-      animationGroups["crouch"]["left"] = animationAll["Crouched Sneaking Left.fbx"];
-      animationGroups["crouch"]["leftMirror"] = animationAll["Crouched Sneaking Right reverse.fbx"];
-      animationGroups["crouch"]["right"] = animationAll["Crouched Sneaking Right.fbx"];
-      animationGroups["crouch"]["rightMirror"] = animationAll["Crouched Sneaking Left reverse.fbx"];
+      // note: Need be the same order with `constants.h/enum CrouchAnimationIndex`.
+      crouchAnimations.push_back(animationAll["Sneaking Forward.fbx"]); // Forward
+      crouchAnimations.push_back(animationAll["Sneaking Forward reverse.fbx"]); // Backward
+      crouchAnimations.push_back(animationAll["Crouched Sneaking Left.fbx"]); // Left
+      crouchAnimations.push_back(animationAll["Crouched Sneaking Right reverse.fbx"]); // LeftMirror
+      crouchAnimations.push_back(animationAll["Crouched Sneaking Right.fbx"]); // Right
+      crouchAnimations.push_back(animationAll["Crouched Sneaking Left reverse.fbx"]); // RightMirror
+      animationGroups.push_back(crouchAnimations);
 
-      //
+      // -------------------------------------------------------------------------
+
+      // note: Need be the same order with `constants.h/enum ActivateAnimationIndex`.
+      activateAnimations.push_back(animationAll["grab_forward.fbx"]); // Grab_forward
+      activateAnimations.push_back(animationAll["grab_down.fbx"]); // Grab_down
+      activateAnimations.push_back(animationAll["grab_up.fbx"]); // Grab_up
+      activateAnimations.push_back(animationAll["grab_left.fbx"]); // Grab_left
+      activateAnimations.push_back(animationAll["grab_right.fbx"]); // Grab_right
+      activateAnimations.push_back(animationAll["pick_up.fbx"]); // Pick_up
+      animationGroups.push_back(activateAnimations);
+
+      // note: Need be the same order with `constants.h/enum AimAnimationIndex`.
+      aimAnimations.push_back(animationAll["sword_idle_side.fbx"]); // SwordSideIdle
+      aimAnimations.push_back(animationAll["sword_side_slash.fbx"]); // SwordSideSlash
+      aimAnimations.push_back(animationAll["sword_side_slash_step.fbx"]); // SwordSideSlashStep
+      aimAnimations.push_back(animationAll["sword_topdown_slash.fbx"]); // SwordTopDownSlash
+      aimAnimations.push_back(animationAll["sword_topdown_slash_step.fbx"]); // SwordTopDownSlashStep
+      animationGroups.push_back(aimAnimations);
+
+      // note: Need be the same order with `constants.h/enum DanceAnimationIndex`.
+      danceAnimations.push_back(animationAll["Hip Hop Dancing.fbx"]); // Dansu
+      danceAnimations.push_back(animationAll["powerup.fbx"]); // Powerup
+      animationGroups.push_back(danceAnimations);
+
+      // note: Need be the same order with `constants.h/enum EmoteAnimationIndex`.
+      emoteAnimations.push_back(animationAll["alert.fbx"]); // Alert
+      emoteAnimations.push_back(animationAll["alert_soft.fbx"]); // AlertSoft
+      emoteAnimations.push_back(animationAll["angry.fbx"]); // Angry
+      emoteAnimations.push_back(animationAll["angry_soft.fbx"]); // AngrySoft
+      emoteAnimations.push_back(animationAll["embarrassed.fbx"]); // Embarrassed
+      emoteAnimations.push_back(animationAll["embarrassed_soft.fbx"]); // EmbarrassedSoft
+      emoteAnimations.push_back(animationAll["head_nod.fbx"]); // HeadNod
+      emoteAnimations.push_back(animationAll["head_nod_single.fbx"]); // HeadNodSoft
+      emoteAnimations.push_back(animationAll["head_shake.fbx"]); // HeadShake
+      emoteAnimations.push_back(animationAll["head_shake_single.fbx"]); // HeadShakeSoft
+      emoteAnimations.push_back(animationAll["sad.fbx"]); // Sad
+      emoteAnimations.push_back(animationAll["sad_soft.fbx"]); // SadSoft
+      emoteAnimations.push_back(animationAll["surprise.fbx"]); // Surprise
+      emoteAnimations.push_back(animationAll["surprise_soft.fbx"]); // SurpriseSoft
+      emoteAnimations.push_back(animationAll["victory.fbx"]); // Victory
+      emoteAnimations.push_back(animationAll["victory_soft.fbx"]); // VictorySoft
+      animationGroups.push_back(emoteAnimations);
+
+      // // note: Need be the same order with `constants.h/enum HoldAnimationIndex`.
+      holdAnimations.push_back(animationAll["pick_up_idle.fbx"]); // Pick_up_idle
+      animationGroups.push_back(holdAnimations);
+
+      // note: Need be the same order with `constants.h/enum HurtAnimationIndex`.
+      hurtAnimations.push_back(animationAll["pain_back.fbx"]); // Pain_back
+      hurtAnimations.push_back(animationAll["pain_arch.fbx"]); // Pain_arch
+      animationGroups.push_back(hurtAnimations);
+
+      // note: Need be the same order with `constants.h/enum LandAnimationIndex`.
+      landAnimations.push_back(animationAll["landing.fbx"]); // Landing
+      landAnimations.push_back(animationAll["landing 2.fbx"]); // Landing2
+      animationGroups.push_back(landAnimations);
+
+      // note: Need be the same order with `constants.h/enum NarutoRunAnimationIndex`.
+      narutoRunAnimations.push_back(animationAll["naruto run.fbx"]); // NarutoRun
+      animationGroups.push_back(narutoRunAnimations);
+
+      // note: Need be the same order with `constants.h/enum PickUpAnimationIndex`.
+      pickUpAnimations.push_back(animationAll["pick_up.fbx"]); // PickUp
+      pickUpAnimations.push_back(animationAll["pick_up_idle.fbx"]); // PickUpIdle
+      pickUpAnimations.push_back(animationAll["pick_up_throw.fbx"]); // PickUpThrow
+      pickUpAnimations.push_back(animationAll["put_down.fbx"]); // PutDown
+      pickUpAnimations.push_back(animationAll["pick_up_zelda.fbx"]); // PickUpZelda
+      pickUpAnimations.push_back(animationAll["pick_up_idle_zelda.fbx"]); // PickUpIdleZelda
+      pickUpAnimations.push_back(animationAll["put_down_zelda.fbx"]); // PutDownZelda
+      animationGroups.push_back(pickUpAnimations);
+
+      // note: Need be the same order with `constants.h/enum SitAnimationIndex`.
+      sitAnimations.push_back(animationAll["sitting idle.fbx"]); // Chair
+      sitAnimations.push_back(animationAll["sitting idle.fbx"]); // Saddle
+      sitAnimations.push_back(animationAll["Skateboarding.fbx"]); // Stand
+      animationGroups.push_back(sitAnimations);
+
+      // note: Need be the same order with `constants.h/enum SwimAnimationIndex`.
+      swimAnimations.push_back(animationAll["Swimming.fbx"]); // Breaststroke
+      swimAnimations.push_back(animationAll["freestyle.fbx"]); // Freestyle
+      animationGroups.push_back(swimAnimations);
+
+      // note: Need be the same order with `constants.h/enum UseAnimationIndex`.
+      useAnimations.push_back(animationAll["One Hand Sword Combo.fbx"]); // Combo
+      useAnimations.push_back(animationAll["sword and shield slash.fbx"]); // Slash
+      useAnimations.push_back(animationAll["Rifle Aiming Idle.fbx"]); // Rifle
+      useAnimations.push_back(animationAll["Pistol Aiming Idle.fbx"]); // Pistol
+      useAnimations.push_back(animationAll["magic cast.fbx"]); // Magic
+      useAnimations.push_back(animationAll["eating.fbx"]); // Eat
+      useAnimations.push_back(animationAll["drinking.fbx"]); // Drink
+      useAnimations.push_back(animationAll["pick_up_throw.fbx"]); // Throw
+      useAnimations.push_back(animationAll["pick_up_throw.fbx"]); // PickUpThrow
+      useAnimations.push_back(animationAll["bow draw.fbx"]); // BowDraw
+      useAnimations.push_back(animationAll["bow idle.fbx"]); // BowIdle
+      useAnimations.push_back(animationAll["bow loose.fbx"]); // BowLoose
+      useAnimations.push_back(animationAll["pickaxe_swing.fbx"]); // Pickaxe
+      useAnimations.push_back(animationAll["sword_idle_side.fbx"]); // SwordSideIdle
+      useAnimations.push_back(animationAll["sword_side_slash.fbx"]); // SwordSideSlash
+      useAnimations.push_back(animationAll["sword_side_slash_step.fbx"]); // SwordSideSlashStep
+      useAnimations.push_back(animationAll["sword_topdown_slash.fbx"]); // SwordTopDownSlash
+      useAnimations.push_back(animationAll["sword_topdown_slash_step.fbx"]); // SwordTopDownSlashSte
+      animationGroups.push_back(useAnimations);
+
+      // -------------------------------------------------------------------------
+
+      std::cout << "test animation name: " << useAnimations[UseAnimationIndex::Drink]->name << std::endl;
+      std::cout << "test animation name: " << useAnimations[UseAnimationIndex::SwordSideSlashStep]->name << std::endl;
+      std::cout << "test animation name: " << useAnimations[UseAnimationIndex::Throw]->name << std::endl;
+
+      // -------------------------------------------------------------------------
 
       CubicBezierEasing::init(0, 1, 0, 1);
 
@@ -442,7 +561,7 @@ namespace AnimationSystem {
     //   animationGroups[groupName] = new std::map<std::string, Animation *>;
     // }
 
-    animationGroups[groupName][keyName] = animation;
+    // animationGroups[groupName][keyName] = animation;
 
     // std::cout << "groupName: " << groupName << " keyName: " << keyName << " name: " << animation->name << std::endl;
 
@@ -553,12 +672,12 @@ namespace AnimationSystem {
     // localWeights["rightMirror"] = avatar->mirrorRightFactor;
 
     // walkAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups["walk"], avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, walkAnimations, avatar->landTimeS);
     copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
     // if (avatar->walkRunFactor > 0) {
       // runAnimations
-      localVecQuatPtr2 = doBlendList(spec, animationGroups["run"], avatar->landTimeS);
+      localVecQuatPtr2 = doBlendList(spec, runAnimations, avatar->landTimeS);
 
       // blend walk run
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
@@ -567,19 +686,19 @@ namespace AnimationSystem {
 
     // blend idle ---
     // if (avatar->idleWalkFactor < 1) {
-      localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["idle"], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups["single"]["idle"]->duration));
+      localVecQuatPtr = evaluateInterpolant(singleAnimations[SingleAnimationIndex::Idle], spec.index, fmod(avatar->timeSinceLastMoveS, singleAnimations[SingleAnimationIndex::Idle]->duration));
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
     // }
 
     // if (avatar->crouchFactor > 0) {
       // crouchAnimations
-      localVecQuatPtr2 = doBlendList(spec, animationGroups["crouch"], avatar->landTimeS);
+      localVecQuatPtr2 = doBlendList(spec, crouchAnimations, avatar->landTimeS);
       copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
       _clearXZ(localVecQuatArr, spec.isPosition);
 
       // blend crouch idle ---
       // if (avatar->idleWalkFactor < 1) {
-        localVecQuatPtr = evaluateInterpolant(animationGroups["single"]["crouchIdle"], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups["single"]["crouchIdle"]->duration));
+        localVecQuatPtr = evaluateInterpolant(singleAnimations[SingleAnimationIndex::CrouchIdle], spec.index, fmod(avatar->timeSinceLastMoveS, singleAnimations[SingleAnimationIndex::CrouchIdle]->duration));
         interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
       // }
 
@@ -592,7 +711,7 @@ namespace AnimationSystem {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendDoubleJump, "; // test: blend strings.
 
     float t2 = avatar->doubleJumpTime / 1000;
-    float *v2 = evaluateInterpolant(animationGroups["single"]["doubleJump"], spec.index, t2);
+    float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::DoubleJump], spec.index, t2);
 
     copyValue(spec.dst, v2, spec.isPosition);
 
@@ -603,14 +722,14 @@ namespace AnimationSystem {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendJump, "; // test: blend strings.
 
     float t2 = avatar->jumpTime / 1000;
-    float *v2 = evaluateInterpolant(animationGroups["single"]["jump"], spec.index, t2);
+    float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::Jump], spec.index, t2);
 
     copyValue(spec.dst, v2, spec.isPosition);
 
     _clearXZ(spec.dst, spec.isPosition);
 
     if (avatar->holdState && spec.isArm) {
-      Animation *holdAnimation = animationGroups["hold"][defaultHoldAnimationName];
+      Animation *holdAnimation = HoldAnimations[defaultHoldAnimationIndex];
       float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
       float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
       copyValue(spec.dst, v2, spec.isPosition);
@@ -620,7 +739,7 @@ namespace AnimationSystem {
   void _blendSit(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
 
-    Animation *sitAnimation = animationGroups["sit"][avatar->sitAnimationName == "" ? defaultSitAnimationName : avatar->sitAnimationName];
+    Animation *sitAnimation = sitAnimations[avatar->sitAnimationName == "" ? defaultSitAnimationIndex : avatar->sitAnimationName];
     float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
 
     copyValue(spec.dst, v2, spec.isPosition);
@@ -629,7 +748,7 @@ namespace AnimationSystem {
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
 
-    Animation *narutoRunAnimation = animationGroups["narutoRun"][defaultNarutoRunAnimationName];
+    Animation *narutoRunAnimation = narutoRunAnimations[defaultNarutoRunAnimationIndex];
     float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
     float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
 
@@ -643,7 +762,7 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *danceAnimation = animationGroups["dance"][avatar->danceAnimationName == "" ? defaultDanceAnimationName : avatar->danceAnimationName];
+    Animation *danceAnimation = danceAnimations[avatar->danceAnimationName == "" ? defaultDanceAnimationIndex : avatar->danceAnimationName];
     float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
     float *v2 = evaluateInterpolant(danceAnimation, spec.index, t2);
 
@@ -660,7 +779,7 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *emoteAnimation = animationGroups["emote"][avatar->emoteAnimationName == "" ? defaultEmoteAnimationName : avatar->emoteAnimationName];
+    Animation *emoteAnimation = EmoteAnimations[avatar->emoteAnimationName == "" ? defaultEmoteAnimationIndex : avatar->emoteAnimationName];
     float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime; // todo: use now.
     float t2 = min(emoteTime / 1000, emoteAnimation->duration);
     float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
@@ -692,16 +811,16 @@ namespace AnimationSystem {
     float t2;
     float useTimeS = avatar->useTime / 1000;
     if (avatar->useAnimationName != "") {
-      useAnimation = animationGroups["use"][avatar->useAnimationName];
+      useAnimation = UseAnimations[avatar->useAnimationName];
       t2 = min(useTimeS, useAnimation->duration);
     } else if(avatar->useAnimationComboName != "") {
-      useAnimation = animationGroups["use"][avatar->useAnimationComboName];
+      useAnimation = UseAnimations[avatar->useAnimationComboName];
       t2 = min(useTimeS, useAnimation->duration);
     } else if (avatar->useAnimationEnvelopeNames.size() > 0) {
       float totalTime = 0;
       for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
         std::string animationName = avatar->useAnimationEnvelopeNames[i];
-        Animation *animation = animationGroups["use"][animationName];
+        Animation *animation = UseAnimations[animationName];
         totalTime += animation->duration;
       }
 
@@ -709,7 +828,7 @@ namespace AnimationSystem {
         float animationTimeBase = 0;
         for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
           std::string animationName = avatar->useAnimationEnvelopeNames[i];
-          Animation *animation = animationGroups["use"][animationName];
+          Animation *animation = UseAnimations[animationName];
           if (useTimeS < (animationTimeBase + animation->duration)) {
             useAnimation = animation;
             break;
@@ -720,7 +839,7 @@ namespace AnimationSystem {
           t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
         } else { // loop
           std::string secondLastAnimationName = avatar->useAnimationEnvelopeNames[avatar->useAnimationEnvelopeNames.size() - 2];
-          useAnimation = animationGroups["use"][secondLastAnimationName];
+          useAnimation = UseAnimations[secondLastAnimationName];
           t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
         }
       }
@@ -732,7 +851,7 @@ namespace AnimationSystem {
       if (!spec.isPosition) {
         float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"];
+        Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -743,7 +862,7 @@ namespace AnimationSystem {
         float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
         _clearXZ(v2, spec.isPosition);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"];
+        Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -758,14 +877,14 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *hurtAnimation = animationGroups["hurt"][avatar->hurtAnimationName];
+    Animation *hurtAnimation = HurtAnimations[avatar->hurtAnimationName];
     float hurtTimeS = avatar->hurtTime / 1000;
     float t2 = min(hurtTimeS, hurtAnimation->duration);
     if (!spec.isPosition) {
       if (hurtAnimation) {
         float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"];
+        Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
@@ -776,7 +895,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationGroups["single"]["idle"];
+      Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -790,13 +909,13 @@ namespace AnimationSystem {
     
     _handleDefault(spec, avatar);
 
-    Animation *aimAnimation = animationGroups["aim"][avatar->aimAnimationName];
+    Animation *aimAnimation = AimAnimations[avatar->aimAnimationName];
     float t2 = fmod((avatar->aimTime / avatar->aimMaxTime), aimAnimation->duration);
     if (!spec.isPosition) {
       if (aimAnimation) {
         float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationGroups["single"]["idle"]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle]; // todo: don't always idle.fbx ? Walk Run Crouch ?
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -807,7 +926,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationGroups["single"]["idle"];
+      Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -822,7 +941,7 @@ namespace AnimationSystem {
     _handleDefault(spec, avatar);
 
     float unuseTimeS = avatar->unuseTime / 1000;
-    Animation *unuseAnimation = animationGroups["use"][avatar->unuseAnimationName];
+    Animation *unuseAnimation = UseAnimations[avatar->unuseAnimationName];
     float t2 = min(unuseTimeS, unuseAnimation->duration);
     float f = min(max(unuseTimeS / unuseAnimation->duration, 0), 1);
     float f2 = std::pow(1 - f, 2);
@@ -830,7 +949,7 @@ namespace AnimationSystem {
     if (!spec.isPosition) {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationGroups["single"]["idle"];
+      Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
@@ -843,7 +962,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
-      Animation *idleAnimation = animationGroups["single"]["idle"];
+      Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
       
@@ -860,7 +979,7 @@ namespace AnimationSystem {
     
     _handleDefault(spec, avatar);
 
-    Animation *holdAnimation = animationGroups["hold"][defaultHoldAnimationName];
+    Animation *holdAnimation = HoldAnimations[defaultHoldAnimationIndex];
     float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
     float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
 
@@ -882,8 +1001,8 @@ namespace AnimationSystem {
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendPickUp, "; // test: blend strings.
 
-    Animation *pickUpAnimation = animationGroups["pickup"]["pickUpZelda"];
-    Animation *pickUpIdleAnimation = animationGroups["pickup"]["pickUpIdleZelda"];
+    Animation *pickUpAnimation = PickupAnimations["pickUpZelda"];
+    Animation *pickUpIdleAnimation = PickupAnimations["pickUpIdleZelda"];
 
     float t2 = avatar->pickUpTime / 1000;
     if (t2 < pickUpAnimation->duration) {
@@ -903,12 +1022,12 @@ namespace AnimationSystem {
       float t2 = avatar->flyTime / 1000;
       float f = avatar->flyState ? min(CubicBezierEasing::cubicBezier(t2), 1) : (1 - min(CubicBezierEasing::cubicBezier(t2), 1)); // todo: cubicBezier.
       // float f = avatar->flyState ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
-      float *v2 = evaluateInterpolant(animationGroups["single"]["float"], spec.index, fmod(t2, animationGroups["single"]["float"]->duration));
+      float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::Float], spec.index, fmod(t2, singleAnimations[SingleAnimationIndex::Float]->duration));
 
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
 
       if (avatar->holdState && spec.isArm) {
-        Animation *holdAnimation = animationGroups["hold"][defaultHoldAnimationName];
+        Animation *holdAnimation = HoldAnimations[defaultHoldAnimationIndex];
         float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
         float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
         copyValue(spec.dst, v2, spec.isPosition);
@@ -920,7 +1039,7 @@ namespace AnimationSystem {
     if (!avatar->landWithMoving) {
       float animationSpeed = 0.75;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = animationGroups["land"]["landing"];
+      Animation *landingAnimation = LandAnimations["landing"];
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -939,7 +1058,7 @@ namespace AnimationSystem {
     } else {
       float animationSpeed = 0.95;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = animationGroups["land"]["landing2"];
+      Animation *landingAnimation = LandAnimations["landing2"];
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -970,7 +1089,7 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendFallLoop, "; // test: blend strings.
 
       float t2 = (avatar->fallLoopTime / 1000);
-      float *v2 = evaluateInterpolant(animationGroups["single"]["fallLoop"], spec.index, t2);
+      float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::FallLoop], spec.index, t2);
       float f = clamp(t2 / 0.3, 0, 1);
 
       if (avatar->fallLoopFrom == "jump") {
@@ -990,14 +1109,14 @@ namespace AnimationSystem {
       float swimTimeS = avatar->swimTime / 1000;
       float movementsTimeS = avatar->movementsTime / 1000;
 
-      float t2 = fmod(swimTimeS, animationGroups["single"]["float"]->duration);
-      float *v2 = evaluateInterpolant(animationGroups["single"]["float"], spec.index, t2);
+      float t2 = fmod(swimTimeS, singleAnimations[SingleAnimationIndex::Float]->duration);
+      float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::Float], spec.index, t2);
 
-      float t3 = fmod(movementsTimeS * 1, animationGroups["swim"]["breaststroke"]->duration);
-      float *v3 = evaluateInterpolant(animationGroups["swim"]["breaststroke"], spec.index, t3);
+      float t3 = fmod(movementsTimeS * 1, SwimAnimations["breaststroke"]->duration);
+      float *v3 = evaluateInterpolant(SwimAnimations["breaststroke"], spec.index, t3);
 
-      float t4 = fmod(movementsTimeS * 2, animationGroups["swim"]["freestyle"]->duration);
-      float *v4 = evaluateInterpolant(animationGroups["swim"]["freestyle"], spec.index, t4);
+      float t4 = fmod(movementsTimeS * 2, SwimAnimations["freestyle"]->duration);
+      float *v4 = evaluateInterpolant(SwimAnimations["freestyle"], spec.index, t4);
 
       float f = clamp(swimTimeS / 0.2, 0, 1);
 
@@ -1025,8 +1144,8 @@ namespace AnimationSystem {
     if (avatar->activateTime > 0) {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
 
-      std::string activateAnimationName = avatar->activateAnimationName == "" ? defaultActivateAnimationName : avatar->activateAnimationName;
-      Animation *activateAnimation = animationGroups["activate"][activateAnimationName];
+      std::string activateAnimationName = avatar->activateAnimationName == "" ? defaultActivateAnimationIndex : avatar->activateAnimationName;
+      Animation *activateAnimation = ActivateAnimations[activateAnimationName];
       float t2 = fmod((avatar->activateTime / 1000 * speedFactors[activateAnimationName]), activateAnimation->duration);
       float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2);
 

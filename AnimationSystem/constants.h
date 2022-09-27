@@ -53,3 +53,169 @@ enum BoneIndex {
   Left_ankle = 51,
   Left_toe = 52
 };
+
+// ------
+
+enum AnimationGroupIndex {
+  Single,
+  //
+  Walk,
+  Run,
+  Crouch,
+  //
+  Activate,
+  Aim,
+  Dance,
+  Emote,
+  Hold,
+  Hurt,
+  Land,
+  NarutoRun,
+  PickUp,
+  Sit,
+  Swim,
+  Use
+};
+
+// ---
+
+enum SingleAnimationIndex {
+  Idle,
+  CrouchIdle,
+  Jump,
+  DoubleJump,
+  FallLoop,
+  Float
+};
+
+// ---
+
+enum WalkAnimationIndex {
+  Forward,
+  Backward,
+  Left,
+  LeftMirror,
+  Right,
+  RightMirror
+};
+
+enum RunAnimationIndex {
+  Forward,
+  Backward,
+  Left,
+  LeftMirror,
+  Right,
+  RightMirror
+};
+
+enum CrouchAnimationIndex {
+  Forward,
+  Backward,
+  Left,
+  LeftMirror,
+  Right,
+  RightMirror
+};
+
+// ---
+
+enum ActivateAnimationIndex {
+  Grab_forward,
+  Grab_down,
+  Grab_up,
+  Grab_left,
+  Grab_right,
+  Pick_up
+};
+
+enum AimAnimationIndex {
+  SwordSideIdle,
+  SwordSideSlash,
+  SwordSideSlashStep,
+  SwordTopDownSlash,
+  SwordTopDownSlashStep
+};
+
+enum DanceAnimationIndex {
+  Dansu,
+  Powerup
+};
+
+enum EmoteAnimationIndex {
+  Alert,
+  AlertSoft,
+  Angry,
+  AngrySoft,
+  Embarrassed,
+  EmbarrassedSoft,
+  HeadNod,
+  HeadNodSoft,
+  HeadShake,
+  HeadShakeSoft,
+  Sad,
+  SadSoft,
+  Surprise,
+  SurpriseSoft,
+  Victory,
+  VictorySoft
+};
+
+enum HoldAnimationIndex {
+  Pick_up_idle
+};
+
+enum HurtAnimationIndex {
+  Pain_back,
+  Pain_arch
+};
+
+enum LandAnimationIndex {
+  Landing,
+  Landing2
+};
+
+enum NarutoRunAnimationIndex {
+  NarutoRun
+};
+
+enum PickUpAnimationIndex {
+  PickUp,
+  PickUpIdle,
+  PickUpThrow,
+  PutDown,
+  PickUpZelda,
+  PickUpIdleZelda,
+  PutDownZelda
+};
+
+enum SitAnimationIndex {
+  Chair,
+  Saddle,
+  Stand
+};
+
+enum SwimAnimationIndex {
+  Breaststroke,
+  Freestyle
+};
+
+enum UseAnimationIndex {
+  Combo,
+  Slash,
+  Rifle,
+  Pistol,
+  Magic,
+  Eat,
+  Drink,
+  Throw, // note: Have to use uppercase, lower case "throw" will cause key word conflict error "error: expected identifier".
+  PickUpThrow,
+  BowDraw,
+  BowIdle,
+  BowLoose,
+  Pickaxe,
+  SwordSideIdle,
+  SwordSideSlash,
+  SwordSideSlashStep,
+  SwordTopDownSlash,
+  SwordTopDownSlashStep
+};
