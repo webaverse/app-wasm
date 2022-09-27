@@ -29,6 +29,7 @@ namespace AnimationSystem {
   std::vector<Animation *> swimAnimations;
   std::vector<Animation *> useAnimations;
 
+  // todo: real default index instead of 0.
   unsigned int defaultSitAnimationIndex = 0;
   unsigned int defaultEmoteAnimationIndex = 0;
   unsigned int defaultDanceAnimationIndex = 0;
