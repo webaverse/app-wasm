@@ -56,7 +56,7 @@ enum BoneIndex {
 
 // ------
 
-enum AnimationGroupIndex {
+enum class AnimationGroupIndex {
   Single,
   //
   Walk,
@@ -79,7 +79,7 @@ enum AnimationGroupIndex {
 
 // ---
 
-enum SingleAnimationIndex {
+enum class SingleAnimationIndex {
   Idle,
   CrouchIdle,
   Jump,
@@ -90,7 +90,7 @@ enum SingleAnimationIndex {
 
 // ---
 
-enum WalkAnimationIndex {
+enum class WalkAnimationIndex {
   Forward,
   Backward,
   Left,
@@ -99,7 +99,7 @@ enum WalkAnimationIndex {
   RightMirror
 };
 
-enum RunAnimationIndex {
+enum class RunAnimationIndex {
   Forward,
   Backward,
   Left,
@@ -108,7 +108,7 @@ enum RunAnimationIndex {
   RightMirror
 };
 
-enum CrouchAnimationIndex {
+enum class CrouchAnimationIndex {
   Forward,
   Backward,
   Left,
@@ -119,7 +119,7 @@ enum CrouchAnimationIndex {
 
 // ---
 
-enum ActivateAnimationIndex {
+enum class ActivateAnimationIndex {
   Grab_forward,
   Grab_down,
   Grab_up,
@@ -128,7 +128,7 @@ enum ActivateAnimationIndex {
   Pick_up
 };
 
-enum AimAnimationIndex {
+enum class AimAnimationIndex {
   SwordSideIdle,
   SwordSideSlash,
   SwordSideSlashStep,
@@ -136,12 +136,12 @@ enum AimAnimationIndex {
   SwordTopDownSlashStep
 };
 
-enum DanceAnimationIndex {
+enum class DanceAnimationIndex {
   Dansu,
   Powerup
 };
 
-enum EmoteAnimationIndex {
+enum class EmoteAnimationIndex {
   Alert,
   AlertSoft,
   Angry,
@@ -160,25 +160,25 @@ enum EmoteAnimationIndex {
   VictorySoft
 };
 
-enum HoldAnimationIndex {
+enum class HoldAnimationIndex {
   Pick_up_idle
 };
 
-enum HurtAnimationIndex {
+enum class HurtAnimationIndex {
   Pain_back,
   Pain_arch
 };
 
-enum LandAnimationIndex {
+enum class LandAnimationIndex {
   Landing,
   Landing2
 };
 
-enum NarutoRunAnimationIndex {
+enum class NarutoRunAnimationIndex {
   NarutoRun
 };
 
-enum PickUpAnimationIndex {
+enum class PickUpAnimationIndex {
   PickUp,
   PickUpIdle,
   PickUpThrow,
@@ -188,18 +188,18 @@ enum PickUpAnimationIndex {
   PutDownZelda
 };
 
-enum SitAnimationIndex {
+enum class SitAnimationIndex {
   Chair,
   Saddle,
   Stand
 };
 
-enum SwimAnimationIndex {
+enum class SwimAnimationIndex {
   Breaststroke,
   Freestyle
 };
 
-enum UseAnimationIndex {
+enum class UseAnimationIndex {
   Combo,
   Slash,
   Rifle,
@@ -207,7 +207,7 @@ enum UseAnimationIndex {
   Magic,
   Eat,
   Drink,
-  Throw, // note: Have to use uppercase, lower case "throw" will cause key word conflict error "error: expected identifier".
+  Throw, // note: Have to use uppercase, lower case "throw" will cause key word conflict error "error: expected identifier". // todo: Can use lower case with enum class ?
   PickUpThrow,
   BowDraw,
   BowIdle,

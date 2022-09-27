@@ -6,11 +6,28 @@ namespace AnimationSystem {
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
-  // std::map<std::string, std::map<std::string, Animation *>> animationGroups; // todo: performance: all use unsigned int as key ?
   std::map<unsigned int, std::string> AnimationName;
-  std::map<std::string, float> speedFactors;
+  std::vector<float> activateSpeedFactors;
 
   std::vector<std::vector<Animation *>> animationGroups;
+  //
+  std::vector<Animation *> singleAnimations;
+  //
+  std::vector<Animation *> walkAnimations;
+  std::vector<Animation *> runAnimations;
+  std::vector<Animation *> crouchAnimations;
+  //
+  std::vector<Animation *> activateAnimations;
+  std::vector<Animation *> aimAnimations;
+  std::vector<Animation *> danceAnimations;
+  std::vector<Animation *> emoteAnimations;
+  std::vector<Animation *> holdAnimations;
+  std::vector<Animation *> hurtAnimations;
+  std::vector<Animation *> landAnimations;
+  std::vector<Animation *> narutoRunAnimations;
+  std::vector<Animation *> pickUpAnimations;
+  std::vector<Animation *> sitAnimations;
+  std::vector<Animation *> swimAnimations;
   std::vector<Animation *> useAnimations;
 
   unsigned int defaultSitAnimationIndex = 0;
@@ -27,7 +44,7 @@ namespace AnimationSystem {
   float *localVecQuatPtr;
   float *localVecQuatPtr2;
 
-  std::map<std::string, float> localWeights;
+  std::vector<float> localWeights;
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
@@ -220,17 +237,6 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
       
-      unsigned int index = 0;
-
-      speedFactors["grab_forward"] = scratchStack[index++];
-      speedFactors["grab_down"] = scratchStack[index++];
-      speedFactors["grab_up"] = scratchStack[index++];
-      speedFactors["grab_left"] = scratchStack[index++];
-      speedFactors["grab_right"] = scratchStack[index++];
-      speedFactors["pick_up"] = scratchStack[index++];
-
-      // -------------------------------------------------------------------------
-      
       AnimationName[0] = "";
 
       // -------------------------------------------------------------------------
@@ -286,6 +292,14 @@ namespace AnimationSystem {
       activateAnimations.push_back(animationAll["grab_right.fbx"]); // Grab_right
       activateAnimations.push_back(animationAll["pick_up.fbx"]); // Pick_up
       animationGroups.push_back(activateAnimations);
+
+      unsigned int index = 0;
+      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_forward
+      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_down
+      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_up
+      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_left
+      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_right
+      activateSpeedFactors.push_back(scratchStack[index++]); // Pick_up
 
       // note: Need be the same order with `constants.h/enum AimAnimationIndex`.
       aimAnimations.push_back(animationAll["sword_idle_side.fbx"]); // SwordSideIdle
@@ -381,9 +395,9 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
-      std::cout << "test animation name: " << useAnimations[UseAnimationIndex::Drink]->name << std::endl;
-      std::cout << "test animation name: " << useAnimations[UseAnimationIndex::SwordSideSlashStep]->name << std::endl;
-      std::cout << "test animation name: " << useAnimations[UseAnimationIndex::Throw]->name << std::endl;
+      std::cout << "test animation name: " << useAnimations[(int)UseAnimationIndex::Drink]->name << std::endl;
+      std::cout << "test animation name: " << useAnimations[(int)UseAnimationIndex::SwordSideSlashStep]->name << std::endl;
+      std::cout << "test animation name: " << useAnimations[(int)UseAnimationIndex::Throw]->name << std::endl;
 
       // -------------------------------------------------------------------------
 
@@ -487,32 +501,34 @@ namespace AnimationSystem {
     this->aimTime = scratchStack[index++];
     this->aimMaxTime = scratchStack[index++];
     this->pickUpTime = scratchStack[index++];
-    this->useAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->emoteAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->sitAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->danceAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->activateAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->hurtAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->useAnimationComboName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->unuseAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
-    this->aimAnimationName = AnimationName[(unsigned int)(scratchStack[index++])];
+
+    this->useAnimationIndex = (int)(scratchStack[index++]);
+    this->emoteAnimationIndex = (int)(scratchStack[index++]);
+    this->sitAnimationIndex = (int)(scratchStack[index++]);
+    this->danceAnimationIndex = (int)(scratchStack[index++]);
+    this->activateAnimationIndex = (int)(scratchStack[index++]);
+    this->hurtAnimationIndex = (int)(scratchStack[index++]);
+    this->useAnimationComboIndex = (int)(scratchStack[index++]); // todo: use real combo index.
+    this->unuseAnimationIndex = (int)(scratchStack[index++]);
+    this->aimAnimationIndex = (int)(scratchStack[index++]);
+
     this->fallLoopFrom = (unsigned int)(scratchStack[index++]) == 1 ? "jump" : "";
     this->landTimeS = scratchStack[index++];
     this->timeSinceLastMoveS = scratchStack[index++];
 
-    this->useAnimationEnvelopeNames.clear();
+    this->useAnimationEnvelopeIndices.clear();
     for (unsigned int i = 0; i < useAnimationEnvelopeLength; i++) {
-      this->useAnimationEnvelopeNames.push_back(AnimationName[(unsigned int)(scratchStack[index++])]);
+      this->useAnimationEnvelopeIndices.push_back((int)(scratchStack[index++]));
     }
 
     //
     
-    localWeights["forward"] = this->forwardFactor;
-    localWeights["backward"] = this->backwardFactor;
-    localWeights["left"] = this->mirrorLeftFactorReverse;
-    localWeights["leftMirror"] = this->mirrorLeftFactor;
-    localWeights["right"] = this->mirrorRightFactorReverse;
-    localWeights["rightMirror"] = this->mirrorRightFactor;
+    localWeights[0] = this->forwardFactor;
+    localWeights[1] = this->backwardFactor;
+    localWeights[2] = this->mirrorLeftFactorReverse;
+    localWeights[3] = this->mirrorLeftFactor;
+    localWeights[4] = this->mirrorRightFactorReverse;
+    localWeights[5] = this->mirrorRightFactor;
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
@@ -632,16 +648,18 @@ namespace AnimationSystem {
     return interpolant.resultBuffer;
   }
 
-  float *doBlendList(AnimationMapping &spec, std::map<std::string, Animation *> &animations, float &timeS) { // note: Big performance influnce!!! Use `&` to prevent copy parameter's values!!!
+  float *doBlendList(AnimationMapping &spec, std::vector<Animation *> &animations, float &timeS) { // note: Big performance influnce!!! Use `&` to prevent copy parameter's values!!!
     float *resultVecQuat;
     unsigned int indexWeightBigThanZero = 0;
     float currentWeight = 0;
-    // for (int i = 0; i < numAnimations; i++) {
-    for (auto const& x : animations) {
+    for (int i = 0; i < animations.size(); i++) {
+    // for (auto const& x : animations) {
       // if (spec.isPosition) std::cout << " x.first: " << x.first << std::endl;
-      float weight = localWeights[x.first];
+      // float weight = localWeights[x.first];
+      float weight = localWeights[i];
       if (weight > 0) {
-        Animation *animation = animations[x.first];
+        // Animation *animation = animations[x.first];
+        Animation *animation = animations[i];
         float *vecQuat = evaluateInterpolant(animation, spec.index, fmod(timeS, animation->duration));
         if (indexWeightBigThanZero == 0) {
           resultVecQuat = vecQuat;
@@ -686,7 +704,7 @@ namespace AnimationSystem {
 
     // blend idle ---
     // if (avatar->idleWalkFactor < 1) {
-      localVecQuatPtr = evaluateInterpolant(singleAnimations[SingleAnimationIndex::Idle], spec.index, fmod(avatar->timeSinceLastMoveS, singleAnimations[SingleAnimationIndex::Idle]->duration));
+      localVecQuatPtr = evaluateInterpolant(singleAnimations[(int)SingleAnimationIndex::Idle], spec.index, fmod(avatar->timeSinceLastMoveS, singleAnimations[(int)SingleAnimationIndex::Idle]->duration));
       interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
     // }
 
@@ -698,7 +716,7 @@ namespace AnimationSystem {
 
       // blend crouch idle ---
       // if (avatar->idleWalkFactor < 1) {
-        localVecQuatPtr = evaluateInterpolant(singleAnimations[SingleAnimationIndex::CrouchIdle], spec.index, fmod(avatar->timeSinceLastMoveS, singleAnimations[SingleAnimationIndex::CrouchIdle]->duration));
+        localVecQuatPtr = evaluateInterpolant(singleAnimations[(int)SingleAnimationIndex::CrouchIdle], spec.index, fmod(avatar->timeSinceLastMoveS, singleAnimations[(int)SingleAnimationIndex::CrouchIdle]->duration));
         interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
       // }
 
@@ -711,7 +729,7 @@ namespace AnimationSystem {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendDoubleJump, "; // test: blend strings.
 
     float t2 = avatar->doubleJumpTime / 1000;
-    float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::DoubleJump], spec.index, t2);
+    float *v2 = evaluateInterpolant(singleAnimations[(int)SingleAnimationIndex::DoubleJump], spec.index, t2);
 
     copyValue(spec.dst, v2, spec.isPosition);
 
@@ -722,14 +740,14 @@ namespace AnimationSystem {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendJump, "; // test: blend strings.
 
     float t2 = avatar->jumpTime / 1000;
-    float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::Jump], spec.index, t2);
+    float *v2 = evaluateInterpolant(singleAnimations[(int)SingleAnimationIndex::Jump], spec.index, t2);
 
     copyValue(spec.dst, v2, spec.isPosition);
 
     _clearXZ(spec.dst, spec.isPosition);
 
     if (avatar->holdState && spec.isArm) {
-      Animation *holdAnimation = HoldAnimations[defaultHoldAnimationIndex];
+      Animation *holdAnimation = holdAnimations[defaultHoldAnimationIndex];
       float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
       float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
       copyValue(spec.dst, v2, spec.isPosition);
@@ -739,7 +757,7 @@ namespace AnimationSystem {
   void _blendSit(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendSit, "; // test: blend strings.
 
-    Animation *sitAnimation = sitAnimations[avatar->sitAnimationName == "" ? defaultSitAnimationIndex : avatar->sitAnimationName];
+    Animation *sitAnimation = sitAnimations[avatar->sitAnimationIndex == -1 ? defaultSitAnimationIndex : avatar->sitAnimationIndex];
     float *v2 = evaluateInterpolant(sitAnimation, spec.index, 1);
 
     copyValue(spec.dst, v2, spec.isPosition);
@@ -762,7 +780,7 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *danceAnimation = danceAnimations[avatar->danceAnimationName == "" ? defaultDanceAnimationIndex : avatar->danceAnimationName];
+    Animation *danceAnimation = danceAnimations[avatar->danceAnimationIndex < 0 ? defaultDanceAnimationIndex : avatar->danceAnimationIndex];
     float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
     float *v2 = evaluateInterpolant(danceAnimation, spec.index, t2);
 
@@ -779,7 +797,7 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *emoteAnimation = EmoteAnimations[avatar->emoteAnimationName == "" ? defaultEmoteAnimationIndex : avatar->emoteAnimationName];
+    Animation *emoteAnimation = emoteAnimations[avatar->emoteAnimationIndex < 0 ? defaultEmoteAnimationIndex : avatar->emoteAnimationIndex];
     float emoteTime = AnimationMixer::nowS * 1000 - avatar->lastEmoteTime; // todo: use now.
     float t2 = min(emoteTime / 1000, emoteAnimation->duration);
     float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
@@ -810,25 +828,25 @@ namespace AnimationSystem {
     Animation *useAnimation = nullptr;
     float t2;
     float useTimeS = avatar->useTime / 1000;
-    if (avatar->useAnimationName != "") {
-      useAnimation = UseAnimations[avatar->useAnimationName];
+    if (avatar->useAnimationIndex >= 0) {
+      useAnimation = useAnimations[avatar->useAnimationIndex];
       t2 = min(useTimeS, useAnimation->duration);
-    } else if(avatar->useAnimationComboName != "") {
-      useAnimation = UseAnimations[avatar->useAnimationComboName];
+    } else if(avatar->useAnimationComboIndex >= 0) {
+      useAnimation = useAnimations[avatar->useAnimationComboIndex];
       t2 = min(useTimeS, useAnimation->duration);
-    } else if (avatar->useAnimationEnvelopeNames.size() > 0) {
+    } else if (avatar->useAnimationEnvelopeIndices.size() > 0) {
       float totalTime = 0;
-      for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
-        std::string animationName = avatar->useAnimationEnvelopeNames[i];
-        Animation *animation = UseAnimations[animationName];
+      for (unsigned int i = 0; i < avatar->useAnimationEnvelopeIndices.size() - 1; i++) {
+        int animationIndex = avatar->useAnimationEnvelopeIndices[i];
+        Animation *animation = useAnimations[animationIndex];
         totalTime += animation->duration;
       }
 
       if (totalTime > 0) {
         float animationTimeBase = 0;
-        for (unsigned int i = 0; i < avatar->useAnimationEnvelopeNames.size() - 1; i++) {
-          std::string animationName = avatar->useAnimationEnvelopeNames[i];
-          Animation *animation = UseAnimations[animationName];
+        for (unsigned int i = 0; i < avatar->useAnimationEnvelopeIndices.size() - 1; i++) {
+          int animationIndex = avatar->useAnimationEnvelopeIndices[i];
+          Animation *animation = useAnimations[animationIndex];
           if (useTimeS < (animationTimeBase + animation->duration)) {
             useAnimation = animation;
             break;
@@ -838,8 +856,8 @@ namespace AnimationSystem {
         if (useAnimation != nullptr) { // first iteration
           t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
         } else { // loop
-          std::string secondLastAnimationName = avatar->useAnimationEnvelopeNames[avatar->useAnimationEnvelopeNames.size() - 2];
-          useAnimation = UseAnimations[secondLastAnimationName];
+          int secondLastAnimationIndex = avatar->useAnimationEnvelopeIndices[avatar->useAnimationEnvelopeIndices.size() - 2];
+          useAnimation = useAnimations[secondLastAnimationIndex];
           t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
         }
       }
@@ -851,7 +869,7 @@ namespace AnimationSystem {
       if (!spec.isPosition) {
         float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
 
-        Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
+        Animation *idleAnimation = singleAnimations[(int)SingleAnimationIndex::Idle];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -862,7 +880,7 @@ namespace AnimationSystem {
         float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
         _clearXZ(v2, spec.isPosition);
 
-        Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
+        Animation *idleAnimation = singleAnimations[(int)SingleAnimationIndex::Idle];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -877,14 +895,14 @@ namespace AnimationSystem {
 
     _handleDefault(spec, avatar);
 
-    Animation *hurtAnimation = HurtAnimations[avatar->hurtAnimationName];
+    Animation *hurtAnimation = hurtAnimations[avatar->hurtAnimationIndex];
     float hurtTimeS = avatar->hurtTime / 1000;
     float t2 = min(hurtTimeS, hurtAnimation->duration);
     if (!spec.isPosition) {
       if (hurtAnimation) {
         float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
 
-        Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
+        Animation *idleAnimation = singleAnimations[(int)SingleAnimationIndex::Idle];
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
@@ -895,7 +913,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
 
-      Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
+      Animation *idleAnimation = singleAnimations[(int)SingleAnimationIndex::Idle];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -909,13 +927,13 @@ namespace AnimationSystem {
     
     _handleDefault(spec, avatar);
 
-    Animation *aimAnimation = AimAnimations[avatar->aimAnimationName];
+    Animation *aimAnimation = aimAnimations[avatar->aimAnimationIndex];
     float t2 = fmod((avatar->aimTime / avatar->aimMaxTime), aimAnimation->duration);
     if (!spec.isPosition) {
       if (aimAnimation) {
         float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
 
-        Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle]; // todo: don't always idle.fbx ? Walk Run Crouch ?
+        Animation *idleAnimation = singleAnimations[(int)SingleAnimationIndex::Idle]; // todo: don't always idle.fbx ? Walk Run Crouch ?
         float t3 = 0;
         float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -926,7 +944,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
 
-      Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
+      Animation *idleAnimation = singleAnimations[(int)SingleAnimationIndex::Idle];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
@@ -941,7 +959,7 @@ namespace AnimationSystem {
     _handleDefault(spec, avatar);
 
     float unuseTimeS = avatar->unuseTime / 1000;
-    Animation *unuseAnimation = UseAnimations[avatar->unuseAnimationName];
+    Animation *unuseAnimation = useAnimations[avatar->unuseAnimationIndex];
     float t2 = min(unuseTimeS, unuseAnimation->duration);
     float f = min(max(unuseTimeS / unuseAnimation->duration, 0), 1);
     float f2 = std::pow(1 - f, 2);
@@ -949,7 +967,7 @@ namespace AnimationSystem {
     if (!spec.isPosition) {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
-      Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
+      Animation *idleAnimation = singleAnimations[(int)SingleAnimationIndex::Idle];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
         
@@ -962,7 +980,7 @@ namespace AnimationSystem {
     } else {
       float *v2 = evaluateInterpolant(unuseAnimation, spec.index, t2);
 
-      Animation *idleAnimation = singleAnimations[SingleAnimationIndex::Idle];
+      Animation *idleAnimation = singleAnimations[(int)SingleAnimationIndex::Idle];
       float t3 = 0;
       float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
       
@@ -979,7 +997,7 @@ namespace AnimationSystem {
     
     _handleDefault(spec, avatar);
 
-    Animation *holdAnimation = HoldAnimations[defaultHoldAnimationIndex];
+    Animation *holdAnimation = holdAnimations[defaultHoldAnimationIndex];
     float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
     float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
 
@@ -1001,8 +1019,8 @@ namespace AnimationSystem {
   void _blendPickUp(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendPickUp, "; // test: blend strings.
 
-    Animation *pickUpAnimation = PickupAnimations["pickUpZelda"];
-    Animation *pickUpIdleAnimation = PickupAnimations["pickUpIdleZelda"];
+    Animation *pickUpAnimation = pickUpAnimations[(int)PickUpAnimationIndex::PickUpZelda];
+    Animation *pickUpIdleAnimation = pickUpAnimations[(int)PickUpAnimationIndex::PickUpIdleZelda];
 
     float t2 = avatar->pickUpTime / 1000;
     if (t2 < pickUpAnimation->duration) {
@@ -1020,14 +1038,14 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendFly, "; // test: blend strings.
 
       float t2 = avatar->flyTime / 1000;
-      float f = avatar->flyState ? min(CubicBezierEasing::cubicBezier(t2), 1) : (1 - min(CubicBezierEasing::cubicBezier(t2), 1)); // todo: cubicBezier.
+      float f = avatar->flyState ? min(CubicBezierEasing::cubicBezier(t2), 1) : (1 - min(CubicBezierEasing::cubicBezier(t2), 1));
       // float f = avatar->flyState ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
-      float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::Float], spec.index, fmod(t2, singleAnimations[SingleAnimationIndex::Float]->duration));
+      float *v2 = evaluateInterpolant(singleAnimations[(int)SingleAnimationIndex::Float], spec.index, fmod(t2, singleAnimations[(int)SingleAnimationIndex::Float]->duration));
 
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
 
       if (avatar->holdState && spec.isArm) {
-        Animation *holdAnimation = HoldAnimations[defaultHoldAnimationIndex];
+        Animation *holdAnimation = holdAnimations[defaultHoldAnimationIndex];
         float t2 = fmod(AnimationMixer::nowS, holdAnimation->duration);
         float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
         copyValue(spec.dst, v2, spec.isPosition);
@@ -1039,7 +1057,7 @@ namespace AnimationSystem {
     if (!avatar->landWithMoving) {
       float animationSpeed = 0.75;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = LandAnimations["landing"];
+      Animation *landingAnimation = landAnimations[(int)LandAnimationIndex::Landing];
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -1058,7 +1076,7 @@ namespace AnimationSystem {
     } else {
       float animationSpeed = 0.95;
       float landTimeS = avatar->landTime / 1000;
-      Animation *landingAnimation = LandAnimations["landing2"];
+      Animation *landingAnimation = landAnimations[(int)LandAnimationIndex::Landing2];
       float landingAnimationDuration = landingAnimation->duration / animationSpeed;
       float landFactor = landTimeS / landingAnimationDuration;
 
@@ -1089,7 +1107,7 @@ namespace AnimationSystem {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendFallLoop, "; // test: blend strings.
 
       float t2 = (avatar->fallLoopTime / 1000);
-      float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::FallLoop], spec.index, t2);
+      float *v2 = evaluateInterpolant(singleAnimations[(int)SingleAnimationIndex::FallLoop], spec.index, t2);
       float f = clamp(t2 / 0.3, 0, 1);
 
       if (avatar->fallLoopFrom == "jump") {
@@ -1109,14 +1127,14 @@ namespace AnimationSystem {
       float swimTimeS = avatar->swimTime / 1000;
       float movementsTimeS = avatar->movementsTime / 1000;
 
-      float t2 = fmod(swimTimeS, singleAnimations[SingleAnimationIndex::Float]->duration);
-      float *v2 = evaluateInterpolant(singleAnimations[SingleAnimationIndex::Float], spec.index, t2);
+      float t2 = fmod(swimTimeS, singleAnimations[(int)SingleAnimationIndex::Float]->duration);
+      float *v2 = evaluateInterpolant(singleAnimations[(int)SingleAnimationIndex::Float], spec.index, t2);
 
-      float t3 = fmod(movementsTimeS * 1, SwimAnimations["breaststroke"]->duration);
-      float *v3 = evaluateInterpolant(SwimAnimations["breaststroke"], spec.index, t3);
+      float t3 = fmod(movementsTimeS * 1, swimAnimations[(int)SwimAnimationIndex::Breaststroke]->duration);
+      float *v3 = evaluateInterpolant(swimAnimations[(int)SwimAnimationIndex::Breaststroke], spec.index, t3);
 
-      float t4 = fmod(movementsTimeS * 2, SwimAnimations["freestyle"]->duration);
-      float *v4 = evaluateInterpolant(SwimAnimations["freestyle"], spec.index, t4);
+      float t4 = fmod(movementsTimeS * 2, swimAnimations[(int)SwimAnimationIndex::Freestyle]->duration);
+      float *v4 = evaluateInterpolant(swimAnimations[(int)SwimAnimationIndex::Freestyle], spec.index, t4);
 
       float f = clamp(swimTimeS / 0.2, 0, 1);
 
@@ -1144,9 +1162,9 @@ namespace AnimationSystem {
     if (avatar->activateTime > 0) {
       // if (spec.isPosition) avatar->testBlendStrings += "_blendActivate, "; // test: blend strings.
 
-      std::string activateAnimationName = avatar->activateAnimationName == "" ? defaultActivateAnimationIndex : avatar->activateAnimationName;
-      Animation *activateAnimation = ActivateAnimations[activateAnimationName];
-      float t2 = fmod((avatar->activateTime / 1000 * speedFactors[activateAnimationName]), activateAnimation->duration);
+      int activateAnimationIndex = avatar->activateAnimationIndex < 0 ? defaultActivateAnimationIndex : avatar->activateAnimationIndex;
+      Animation *activateAnimation = activateAnimations[activateAnimationIndex];
+      float t2 = fmod((avatar->activateTime / 1000 * activateSpeedFactors[activateAnimationIndex]), activateAnimation->duration);
       float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2);
 
       float f = avatar->activateTime > 0 ? min(CubicBezierEasing::cubicBezier(t2), 1) : (1 - min(CubicBezierEasing::cubicBezier(t2), 1));
@@ -1190,16 +1208,16 @@ namespace AnimationSystem {
       } else if (avatar->emoteFactor > 0) {
         _blendEmote(spec, this->avatar);
       } else if (
-        avatar->useAnimationName != "" ||
-        avatar->useAnimationComboName != "" ||
-        avatar->useAnimationEnvelopeNames.size() > 0
+        avatar->useAnimationIndex >= 0 ||
+        avatar->useAnimationComboIndex >= 0 ||
+        avatar->useAnimationEnvelopeIndices.size() > 0
       ) {
         _blendUse(spec, this->avatar);
-      } else if (avatar->hurtAnimationName != "") {
+      } else if (avatar->hurtAnimationIndex >= 0) {
         _blendHurt(spec, this->avatar); // todo: move to highest priority.
-      } else if (avatar->aimAnimationName != "") {
+      } else if (avatar->aimAnimationIndex >= 0) {
         _blendAim(spec, this->avatar);
-      } else if (avatar->unuseAnimationName != "" && avatar->unuseTime >= 0) {
+      } else if (avatar->unuseAnimationIndex >= 0 && avatar->unuseTime >= 0) {
         _blendUnuse(spec, this->avatar);
       } else if (avatar->holdState) {
         _blendHold(spec, this->avatar);

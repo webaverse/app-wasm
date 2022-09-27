@@ -90,19 +90,20 @@ namespace AnimationSystem {
     bool pickUpState;
     bool swimState;
 
-    std::string activateAnimationName;
-    std::string fallLoopFrom;
-    std::string sitAnimationName;
-    std::string danceAnimationName;
-    std::string emoteAnimationName;
-    std::string useAnimationName;
-    std::string useAnimationComboName;
-    std::string hurtAnimationName;
-    std::string unuseAnimationName;
-    std::string aimAnimationName;
-    std::string holdAnimationName;
+    int activateAnimationIndex;
+    int sitAnimationIndex;
+    int danceAnimationIndex;
+    int emoteAnimationIndex;
+    int useAnimationIndex;
+    int useAnimationComboIndex;
+    int hurtAnimationIndex;
+    int unuseAnimationIndex;
+    int aimAnimationIndex;
+    int holdAnimationName;
 
-    std::vector<std::string> useAnimationEnvelopeNames;
+    std::vector<int> useAnimationEnvelopeIndices;
+
+    std::string fallLoopFrom; // todo: Don't use string ?
 
     //
 
