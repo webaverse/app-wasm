@@ -6,7 +6,6 @@ namespace AnimationSystem {
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
-  std::map<unsigned int, std::string> AnimationName;
   std::vector<float> activateSpeedFactors;
 
   std::vector<std::vector<Animation *>> animationGroups;
@@ -234,10 +233,6 @@ namespace AnimationSystem {
   void initAnimationSystem(float *scratchStack) { // only need init once globally
     if (!isInitedAnimationSystem) {
       std::cout << "initAnimationSystem ------------------" << std::endl;
-
-      // -------------------------------------------------------------------------
-      
-      AnimationName[0] = "";
 
       // -------------------------------------------------------------------------
 
@@ -558,30 +553,6 @@ namespace AnimationSystem {
     animationAll[name] = animation;
 
     return animation;
-  }
-  void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength, unsigned int keyNameUInt) {
-    
-    unsigned int index = 0;
-
-    std::string groupName = "";
-    for (unsigned int i = 0; i < groupNameByteLength; i++) {
-      groupName += scratchStack[index++];
-    }
-
-    std::string keyName = "";
-    for (unsigned int i = 0; i < keyNameByteLength; i++) {
-      keyName += scratchStack[index++];
-    }
-
-    // if (!animationGroups[groupName]) { // note: don't need this check.
-    //   animationGroups[groupName] = new std::map<std::string, Animation *>;
-    // }
-
-    // animationGroups[groupName][keyName] = animation;
-
-    // std::cout << "groupName: " << groupName << " keyName: " << keyName << " name: " << animation->name << std::endl;
-
-    AnimationName[keyNameUInt] = keyName;
   }
   void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
     Interpolant interpolant;
