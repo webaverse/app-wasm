@@ -90,19 +90,20 @@ namespace AnimationSystem {
     bool pickUpState;
     bool swimState;
 
-    std::string activateAnimationName;
-    std::string fallLoopFrom;
-    std::string sitAnimationName;
-    std::string danceAnimationName;
-    std::string emoteAnimationName;
-    std::string useAnimationName;
-    std::string useAnimationComboName;
-    std::string hurtAnimationName;
-    std::string unuseAnimationName;
-    std::string aimAnimationName;
-    std::string holdAnimationName;
+    int activateAnimationIndex;
+    int sitAnimationIndex;
+    int danceAnimationIndex;
+    int emoteAnimationIndex;
+    int useAnimationIndex;
+    int useAnimationComboIndex;
+    int hurtAnimationIndex;
+    int unuseAnimationIndex;
+    int aimAnimationIndex;
+    int holdAnimationName;
 
-    std::vector<std::string> useAnimationEnvelopeNames;
+    std::vector<int> useAnimationEnvelopeIndices;
+
+    int fallLoopFrom;
 
     //
     
@@ -124,7 +125,6 @@ namespace AnimationSystem {
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  void setAnimationGroup(Animation *animation, char *scratchStack, unsigned int groupNameByteLength, unsigned int keyNameByteLength, unsigned int keyNameUInt);
   void initAnimationSystem(float *scratchStack);
   AnimationMixer *createAnimationMixer();
   Avatar *createAnimationAvatar(AnimationMixer *mixer);
