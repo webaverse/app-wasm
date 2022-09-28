@@ -225,3 +225,11 @@ enum class UseAnimationIndex {
 enum class FallLoopFrom {
   Jump
 };
+
+// ---------------------------------------------------------
+
+class AnimationGroupDeclaration {
+public:
+  std::string groupName;
+  std::vector<std::string> animationFileNames;
+};

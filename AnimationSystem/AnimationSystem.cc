@@ -50,6 +50,22 @@ namespace AnimationSystem {
 
   bool isInitedAnimationSystem = false;
 
+  typedef std::vector<AnimationGroupDeclaration> AnimationGroupDeclarations;
+
+  AnimationGroupDeclarations declarations = {
+    {
+      "crouch",
+      {
+        "Sneaking Forward.fbx",
+        "Sneaking Forward reverse.fbx",
+        "Crouched Sneaking Left.fbx",
+        "Crouched Sneaking Right reverse.fbx",
+        "Crouched Sneaking Right.fbx",
+        "Crouched Sneaking Left reverse.fbx",
+      }
+    }
+  };
+
   // functions:
 
   // Utils ------
@@ -234,6 +250,15 @@ namespace AnimationSystem {
   void initAnimationSystem(float *scratchStack) { // only need init once globally
     if (!isInitedAnimationSystem) {
       std::cout << "initAnimationSystem ------------------" << std::endl;
+
+      for (unsigned int i = 0; i < declarations.size(); i++) {
+          AnimationGroupDeclaration declaration = declarations[i];
+          std::cout << "declaration.groupName: " << declaration.groupName << std::endl;
+          for (unsigned int j = 0; j < declaration.animationFileNames.size(); j++) {
+              std::string animationFileName = declaration.animationFileNames[j];
+              std::cout << "animationFileName: " << animationFileName << std::endl;
+          }
+      }
 
       // -------------------------------------------------------------------------
 
