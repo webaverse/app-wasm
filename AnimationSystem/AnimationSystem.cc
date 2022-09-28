@@ -1,5 +1,6 @@
 #include "AnimationSystem.h"
 #include "CubicBezierEasing.h"
+#include "constants.h"
 
 namespace AnimationSystem {
   std::vector<Avatar *> avatars;
@@ -49,53 +50,6 @@ namespace AnimationSystem {
   float identityQuaternion[4] = {0, 0, 0, 1};
 
   bool isInitedAnimationSystem = false;
-
-  class AnimationGroupIndexes {
-  public:
-    int single;
-    //
-    int walk;
-    int run;
-    int crouch;
-    //
-    int activate;
-    int aim;
-    int dance;
-    int emote;
-    int hold;
-    int hurt;
-    int land;
-    int narutoRun;
-    int pickUp;
-    int sit;
-    int swim;
-    int use;
-  };
-  AnimationGroupIndexes animationGroupIndexes;
-  int iota = 0;
-  AnimationGroupDeclarations declarations = {
-    {
-      animationGroupIndexes.dance = iota++,
-      "dance",
-      {
-        {"Dansu", "Hip Hop Dancing.fbx"},
-        {"Powerup", "powerup.fbx"}
-      }
-    },
-    {
-      animationGroupIndexes.activate = iota++,
-      "activate",
-      {
-        {"PickUp", "pick_up.fbx"},
-        {"PickUpIdle", "pick_up_idle.fbx"},
-        {"PickUpThrow", "pick_up_throw.fbx"},
-        {"PutDown", "put_down.fbx"},
-        {"PickUpZelda", "pick_up_zelda.fbx"},
-        {"PickUpIdleZelda", "pick_up_idle_zelda.fbx"},
-        {"PutDownZelda", "put_down_zelda.fbx"}
-      }
-    },
-  };
 
   // functions:
 
@@ -286,6 +240,8 @@ namespace AnimationSystem {
       std::cout << "animationGroupIndexes.activate: " << animationGroupIndexes.activate << std::endl;
       std::cout << "animationGroupIndexes.use: " << animationGroupIndexes.use << std::endl;
       std::cout << "animationGroupIndexes.land: " << animationGroupIndexes.land << std::endl;
+      std::cout << "danceAnimationIndexes.dansu: " << danceAnimationIndexes.dansu << std::endl;
+      std::cout << "danceAnimationIndexes.powerup: " << danceAnimationIndexes.powerup << std::endl;
 
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];

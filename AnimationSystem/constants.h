@@ -231,14 +231,72 @@ enum class FallLoopFrom {
 class AnimationDeclaration {
 public:
   std::string keyName;
+  int index;
   std::string fileName;
 };
 
 class AnimationGroupDeclaration {
 public:
-  int index;
   std::string groupName;
+  int index;
   std::vector<AnimationDeclaration> animationDeclarations;
 };
 
 typedef std::vector<AnimationGroupDeclaration> AnimationGroupDeclarations;
+
+int animationGroupIota = 0;
+class AnimationGroupIndexes {
+public:
+  int single;
+  //
+  int walk;
+  int run;
+  int crouch;
+  //
+  int activate;
+  int aim;
+  int dance;
+  int emote;
+  int hold;
+  int hurt;
+  int land;
+  int narutoRun;
+  int pickUp;
+  int sit;
+  int swim;
+  int use;
+};
+AnimationGroupIndexes animationGroupIndexes;
+
+int danceAnimationIota = 0;
+class DanceAnimationIndexes {
+public:
+  int dansu;
+  int powerup;
+};
+DanceAnimationIndexes danceAnimationIndexes;
+
+int iota = 0;
+AnimationGroupDeclarations declarations = {
+  {
+    "dance",
+    animationGroupIndexes.dance = animationGroupIota++,
+    {
+      {"dansu", danceAnimationIndexes.dansu = danceAnimationIota++, "Hip Hop Dancing.fbx"},
+      {"powerup", danceAnimationIndexes.powerup = danceAnimationIota++, "powerup.fbx"}
+    }
+  },
+  {
+    "activate",
+    animationGroupIndexes.activate = animationGroupIota++,
+    {
+      {"pickUp", 0, "pick_up.fbx"},
+      {"pickUpIdle", 0, "pick_up_idle.fbx"},
+      {"pickUpThrow", 0, "pick_up_throw.fbx"},
+      {"putDown", 0, "put_down.fbx"},
+      {"pickUpZelda", 0, "pick_up_zelda.fbx"},
+      {"pickUpIdleZelda", 0, "pick_up_idle_zelda.fbx"},
+      {"putDownZelda", 0, "put_down_zelda.fbx"}
+    }
+  },
+};
