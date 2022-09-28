@@ -228,9 +228,16 @@ enum class FallLoopFrom {
 
 // ---------------------------------------------------------
 
+class AnimationDeclaration {
+public:
+  std::string keyName;
+  std::string fileName;
+};
+
 class AnimationGroupDeclaration {
 public:
-  int index;
   std::string groupName;
-  std::vector<std::string> animationFileNames;
+  std::vector<AnimationDeclaration> animationDeclarations;
 };
+
+typedef std::vector<AnimationGroupDeclaration> AnimationGroupDeclarations;

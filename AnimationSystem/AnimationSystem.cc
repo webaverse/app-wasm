@@ -50,30 +50,23 @@ namespace AnimationSystem {
 
   bool isInitedAnimationSystem = false;
 
-  typedef std::vector<AnimationGroupDeclaration> AnimationGroupDeclarations;
-
   AnimationGroupDeclarations declarations = {
     {
-      0, // todo: don't need.
       "crouch",
       {
-        "Sneaking Forward.fbx",
-        "Sneaking Forward reverse.fbx",
-        "Crouched Sneaking Left.fbx",
-        "Crouched Sneaking Right reverse.fbx",
-        "Crouched Sneaking Right.fbx",
-        "Crouched Sneaking Left reverse.fbx",
+        {"aaa", "Sneaking Forward.fbx"},
+        {"bbb", "Sneaking Forward reverse.fbx"},
+        {"ccc", "Crouched Sneaking Left.fbx"}
       }
     },
     {
-      1,
       "walk",
       {
-        "aaa",
-        "bbb",
-        "ccc"
+        {"a11", "Walk Forward.fbx"},
+        {"b22", "Walk Forward reverse.fbx"},
+        {"c33", "Walk Left.fbx"}
       }
-    }
+    },
   };
 
   // functions:
@@ -262,13 +255,15 @@ namespace AnimationSystem {
       std::cout << "initAnimationSystem ------------------" << std::endl;
 
       for (unsigned int i = 0; i < declarations.size(); i++) {
-          AnimationGroupDeclaration declaration = declarations[i];
-          std::cout << "-IL: declaration.index: " << declaration.index << std::endl;
-          std::cout << "-IL: declaration.groupName: " << declaration.groupName << std::endl;
-          for (unsigned int j = 0; j < declaration.animationFileNames.size(); j++) {
-              std::string animationFileName = declaration.animationFileNames[j];
-              std::cout << "-IL: animationFileName: " << animationFileName << std::endl;
-          }
+        AnimationGroupDeclaration declaration = declarations[i];
+        std::cout << "-IL: groupIndex: " << i << std::endl;
+        std::cout << "-IL: declaration.groupName: " << declaration.groupName << std::endl;
+        for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
+          AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
+          std::cout << "-IL: animationIndex: " << j << std::endl;
+          std::cout << "-IL: animationDeclaration.keyName: " << animationDeclaration.keyName << std::endl;
+          std::cout << "-IL: animationDeclaration.fileName: " << animationDeclaration.fileName << std::endl;
+        }
       }
 
       // -------------------------------------------------------------------------
