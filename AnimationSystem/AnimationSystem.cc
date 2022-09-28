@@ -50,11 +50,32 @@ namespace AnimationSystem {
 
   bool isInitedAnimationSystem = false;
 
-  int indexA ;
+  class AnimationGroupIndexes {
+  public:
+    int single;
+    //
+    int walk;
+    int run;
+    int crouch;
+    //
+    int activate;
+    int aim;
+    int dance;
+    int emote;
+    int hold;
+    int hurt;
+    int land;
+    int narutoRun;
+    int pickUp;
+    int sit;
+    int swim;
+    int use;
+  };
+  AnimationGroupIndexes animationGroupIndexes;
   int iota = 0;
   AnimationGroupDeclarations declarations = {
     {
-      indexA = iota++,
+      animationGroupIndexes.dance = iota++,
       "dance",
       {
         {"Dansu", "Hip Hop Dancing.fbx"},
@@ -62,7 +83,7 @@ namespace AnimationSystem {
       }
     },
     {
-      indexA = iota++,
+      animationGroupIndexes.activate = iota++,
       "activate",
       {
         {"PickUp", "pick_up.fbx"},
@@ -260,6 +281,11 @@ namespace AnimationSystem {
   void initAnimationSystem(float *scratchStack) { // only need init once globally
     if (!isInitedAnimationSystem) {
       std::cout << "initAnimationSystem ------------------" << std::endl;
+
+      std::cout << "animationGroupIndexes.dance: " << animationGroupIndexes.dance << std::endl;
+      std::cout << "animationGroupIndexes.activate: " << animationGroupIndexes.activate << std::endl;
+      std::cout << "animationGroupIndexes.use: " << animationGroupIndexes.use << std::endl;
+      std::cout << "animationGroupIndexes.land: " << animationGroupIndexes.land << std::endl;
 
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];
