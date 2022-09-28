@@ -50,8 +50,11 @@ namespace AnimationSystem {
 
   bool isInitedAnimationSystem = false;
 
+  int indexA ;
+  int iota = 0;
   AnimationGroupDeclarations declarations = {
     {
+      indexA = iota++,
       "dance",
       {
         {"Dansu", "Hip Hop Dancing.fbx"},
@@ -59,6 +62,7 @@ namespace AnimationSystem {
       }
     },
     {
+      indexA = iota++,
       "activate",
       {
         {"PickUp", "pick_up.fbx"},
@@ -259,11 +263,12 @@ namespace AnimationSystem {
 
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];
-        std::cout << "-IL: groupIndex: " << i << std::endl;
+        std::cout << "-IL: group i: " << i << std::endl;
+        std::cout << "-IL: groupIndex: " << declaration.index << std::endl;
         std::cout << "-IL: declaration.groupName: " << declaration.groupName << std::endl;
         for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
           AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
-          std::cout << "-IL: animationIndex: " << j << std::endl;
+          std::cout << "-IL: animation i: " << j << std::endl;
           std::cout << "-IL: animationDeclaration.keyName: " << animationDeclaration.keyName << std::endl;
           std::cout << "-IL: animationDeclaration.fileName: " << animationDeclaration.fileName << std::endl;
         }

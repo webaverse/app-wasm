@@ -236,6 +236,7 @@ public:
 
 class AnimationGroupDeclaration {
 public:
+  int index;
   std::string groupName;
   std::vector<AnimationDeclaration> animationDeclarations;
 };
