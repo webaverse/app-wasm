@@ -52,19 +52,22 @@ namespace AnimationSystem {
 
   AnimationGroupDeclarations declarations = {
     {
-      "crouch",
+      "dance",
       {
-        {"aaa", "Sneaking Forward.fbx"},
-        {"bbb", "Sneaking Forward reverse.fbx"},
-        {"ccc", "Crouched Sneaking Left.fbx"}
+        {"Dansu", "Hip Hop Dancing.fbx"},
+        {"Powerup", "powerup.fbx"}
       }
     },
     {
-      "walk",
+      "activate",
       {
-        {"a11", "Walk Forward.fbx"},
-        {"b22", "Walk Forward reverse.fbx"},
-        {"c33", "Walk Left.fbx"}
+        {"PickUp", "pick_up.fbx"},
+        {"PickUpIdle", "pick_up_idle.fbx"},
+        {"PickUpThrow", "pick_up_throw.fbx"},
+        {"PutDown", "put_down.fbx"},
+        {"PickUpZelda", "pick_up_zelda.fbx"},
+        {"PickUpIdleZelda", "pick_up_idle_zelda.fbx"},
+        {"PutDownZelda", "put_down_zelda.fbx"}
       }
     },
   };
