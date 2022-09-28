@@ -236,12 +236,12 @@ namespace AnimationSystem {
     if (!isInitedAnimationSystem) {
       std::cout << "initAnimationSystem ------------------" << std::endl;
 
-      std::cout << "animationGroupIndexes.dance: " << animationGroupIndexes.dance << std::endl;
-      std::cout << "animationGroupIndexes.activate: " << animationGroupIndexes.activate << std::endl;
-      std::cout << "animationGroupIndexes.use: " << animationGroupIndexes.use << std::endl;
-      std::cout << "animationGroupIndexes.land: " << animationGroupIndexes.land << std::endl;
-      std::cout << "danceAnimationIndexes.dansu: " << danceAnimationIndexes.dansu << std::endl;
-      std::cout << "danceAnimationIndexes.powerup: " << danceAnimationIndexes.powerup << std::endl;
+      std::cout << "animationGroupIndexes.Dance: " << animationGroupIndexes.Dance << std::endl;
+      std::cout << "animationGroupIndexes.Activate: " << animationGroupIndexes.Activate << std::endl;
+      std::cout << "animationGroupIndexes.Use: " << animationGroupIndexes.Use << std::endl;
+      std::cout << "animationGroupIndexes.Land: " << animationGroupIndexes.Land << std::endl;
+      std::cout << "danceAnimationIndexes.Dansu: " << danceAnimationIndexes.Dansu << std::endl;
+      std::cout << "danceAnimationIndexes.Powerup: " << danceAnimationIndexes.Powerup << std::endl;
 
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];

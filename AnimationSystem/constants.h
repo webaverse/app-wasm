@@ -244,59 +244,78 @@ public:
 
 typedef std::vector<AnimationGroupDeclaration> AnimationGroupDeclarations;
 
+// ------
+
 int animationGroupIota = 0;
 class AnimationGroupIndexes {
 public:
-  int single;
+  int Single;
   //
-  int walk;
-  int run;
-  int crouch;
+  int Walk;
+  int Run;
+  int Crouch;
   //
-  int activate;
-  int aim;
-  int dance;
-  int emote;
-  int hold;
-  int hurt;
-  int land;
-  int narutoRun;
-  int pickUp;
-  int sit;
-  int swim;
-  int use;
+  int Activate;
+  int Aim;
+  int Dance;
+  int Emote;
+  int Hold;
+  int Hurt;
+  int Land;
+  int NarutoRun;
+  int PickUp;
+  int Sit;
+  int Swim;
+  int Use;
 };
 AnimationGroupIndexes animationGroupIndexes;
+
+// ---   note: Start from 0, -1 means null/undefined.
+
+int singleAnimationIota = 0;
+class SingleAnimationIndexes {
+public:
+  int Idle;
+  int CrouchIdle;
+  int Jump;
+  int DoubleJump;
+  int FallLoop;
+  int Float; // note: Have to use upper case. Otherwise will cause error "error: cannot combine with previous 'int' declaration specifier `int float`;" .
+};
+SingleAnimationIndexes singleAnimationIndexes;
+
+// ---
 
 int danceAnimationIota = 0;
 class DanceAnimationIndexes {
 public:
-  int dansu;
-  int powerup;
+  int Dansu;
+  int Powerup;
 };
 DanceAnimationIndexes danceAnimationIndexes;
 
-int iota = 0;
+// ------
+
 AnimationGroupDeclarations declarations = {
   {
-    "dance",
-    animationGroupIndexes.dance = animationGroupIota++,
+    "Dance",
+    animationGroupIndexes.Dance = animationGroupIota++,
     {
-      {"dansu", danceAnimationIndexes.dansu = danceAnimationIota++, "Hip Hop Dancing.fbx"},
-      {"powerup", danceAnimationIndexes.powerup = danceAnimationIota++, "powerup.fbx"}
+      {"Dansu", danceAnimationIndexes.Dansu = danceAnimationIota++, "Hip Hop Dancing.fbx"},
+      {"Powerup", danceAnimationIndexes.Powerup = danceAnimationIota++, "powerup.fbx"}
     }
   },
   {
-    "activate",
-    animationGroupIndexes.activate = animationGroupIota++,
+    "Activate",
+    animationGroupIndexes.Activate = animationGroupIota++,
     {
-      {"pickUp", 0, "pick_up.fbx"},
-      {"pickUpIdle", 0, "pick_up_idle.fbx"},
-      {"pickUpThrow", 0, "pick_up_throw.fbx"},
-      {"putDown", 0, "put_down.fbx"},
-      {"pickUpZelda", 0, "pick_up_zelda.fbx"},
-      {"pickUpIdleZelda", 0, "pick_up_idle_zelda.fbx"},
-      {"putDownZelda", 0, "put_down_zelda.fbx"}
+      {"PickUp", 0, "pick_up.fbx"},
+      {"PickUpIdle", 0, "pick_up_idle.fbx"},
+      {"PickUpThrow", 0, "pick_up_throw.fbx"},
+      {"PutDown", 0, "put_down.fbx"},
+      {"PickUpZelda", 0, "pick_up_zelda.fbx"},
+      {"PickUpIdleZelda", 0, "pick_up_idle_zelda.fbx"},
+      {"PutDownZelda", 0, "put_down_zelda.fbx"}
     }
   },
 };
