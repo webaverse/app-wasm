@@ -1,7 +1,6 @@
 #ifndef _ANIMATIONSYSTEM_H
 #define _ANIMATIONSYSTEM_H
 #include "physics.h"
-#include "constants.h"
 #include <iostream>
 
 namespace AnimationSystem {
