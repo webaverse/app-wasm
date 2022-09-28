@@ -54,6 +54,7 @@ namespace AnimationSystem {
 
   AnimationGroupDeclarations declarations = {
     {
+      0, // todo: don't need.
       "crouch",
       {
         "Sneaking Forward.fbx",
@@ -62,6 +63,15 @@ namespace AnimationSystem {
         "Crouched Sneaking Right reverse.fbx",
         "Crouched Sneaking Right.fbx",
         "Crouched Sneaking Left reverse.fbx",
+      }
+    },
+    {
+      1,
+      "walk",
+      {
+        "aaa",
+        "bbb",
+        "ccc"
       }
     }
   };
@@ -253,10 +263,11 @@ namespace AnimationSystem {
 
       for (unsigned int i = 0; i < declarations.size(); i++) {
           AnimationGroupDeclaration declaration = declarations[i];
-          std::cout << "declaration.groupName: " << declaration.groupName << std::endl;
+          std::cout << "-IL: declaration.index: " << declaration.index << std::endl;
+          std::cout << "-IL: declaration.groupName: " << declaration.groupName << std::endl;
           for (unsigned int j = 0; j < declaration.animationFileNames.size(); j++) {
               std::string animationFileName = declaration.animationFileNames[j];
-              std::cout << "animationFileName: " << animationFileName << std::endl;
+              std::cout << "-IL: animationFileName: " << animationFileName << std::endl;
           }
       }
 

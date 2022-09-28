@@ -230,6 +230,7 @@ enum class FallLoopFrom {
 
 class AnimationGroupDeclaration {
 public:
+  int index;
   std::string groupName;
   std::vector<std::string> animationFileNames;
 };
