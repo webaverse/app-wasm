@@ -226,13 +226,20 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
-      unsigned int index = 0; // todo: Define activateSpeedFactors directly in wasm.
-      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_forward
-      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_down
-      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_up
-      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_left
-      activateSpeedFactors.push_back(scratchStack[index++]); // Grab_right
-      activateSpeedFactors.push_back(scratchStack[index++]); // Pick_up
+      // unsigned int index = 0;
+      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_forward
+      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_down
+      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_up
+      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_left
+      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_right
+      // activateSpeedFactors.push_back(scratchStack[index++]); // Pick_up
+      //
+      activateSpeedFactors.push_back(1.2); // Grab_forward
+      activateSpeedFactors.push_back(1.7); // Grab_down
+      activateSpeedFactors.push_back(1.2); // Grab_up
+      activateSpeedFactors.push_back(1.2); // Grab_left
+      activateSpeedFactors.push_back(1.2); // Grab_right
+      activateSpeedFactors.push_back(1); // Pick_up
 
       // -------------------------------------------------------------------------
 
