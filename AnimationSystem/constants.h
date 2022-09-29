@@ -302,12 +302,36 @@ AnimationGroupDeclarations declarations = {
     "Single",
     animationGroupIndexes.Single = animationGroupIota++,
     {
-      {"Idle", singleAnimationIndexes.Idle = singleAnimationIota++, "idle.fbx"}, // todo: Put `Animation *` here directly ?
-      {"CrouchIdle", singleAnimationIndexes.CrouchIdle = singleAnimationIota++, "Crouch Idle.fbx"},
-      {"Jump", singleAnimationIndexes.Jump = singleAnimationIota++, "jump.fbx"},
-      {"DoubleJump", singleAnimationIndexes.DoubleJump = singleAnimationIota++, "jump_double.fbx"},
-      {"FallLoop", singleAnimationIndexes.FallLoop = singleAnimationIota++, "falling.fbx"},
-      {"Float", singleAnimationIndexes.Float = singleAnimationIota++, "treading water.fbx"},
+      {
+        "Idle",
+        singleAnimationIndexes.Idle = singleAnimationIota++,
+        "idle.fbx"
+      },
+      {
+        "CrouchIdle",
+        singleAnimationIndexes.CrouchIdle = singleAnimationIota++,
+        "Crouch Idle.fbx"
+      },
+      {
+        "Jump",
+        singleAnimationIndexes.Jump = singleAnimationIota++,
+        "jump.fbx"
+      },
+      {
+        "DoubleJump",
+        singleAnimationIndexes.DoubleJump = singleAnimationIota++,
+        "jump_double.fbx"
+      },
+      {
+        "FallLoop",
+        singleAnimationIndexes.FallLoop = singleAnimationIota++,
+        "falling.fbx"
+      },
+      {
+        "Float",
+        singleAnimationIndexes.Float = singleAnimationIota++,
+        "treading water.fbx"
+      },
     }
   },
   //
@@ -315,36 +339,108 @@ AnimationGroupDeclarations declarations = {
     "Walk",
     animationGroupIndexes.Walk = animationGroupIota++,
     {
-      {"Forward", walkAnimationIndexes.Forward = walkAnimationIota++, "walking.fbx"},
-      {"Backward", walkAnimationIndexes.Backward = walkAnimationIota++, "walking backwards.fbx"},
-      {"Left", walkAnimationIndexes.Left = walkAnimationIota++, "left strafe walking.fbx"},
-      {"LeftMirror", walkAnimationIndexes.LeftMirror = walkAnimationIota++, "right strafe walking reverse.fbx"},
-      {"Right", walkAnimationIndexes.Right = walkAnimationIota++, "right strafe walking.fbx"},
-      {"RightMirror", walkAnimationIndexes.RightMirror = walkAnimationIota++, "left strafe walking reverse.fbx"},
+      {
+        "Forward",
+        walkAnimationIndexes.Forward = walkAnimationIota++,
+        "walking.fbx"
+      },
+      {
+        "Backward",
+        walkAnimationIndexes.Backward = walkAnimationIota++,
+        "walking backwards.fbx"
+      },
+      {
+        "Left",
+        walkAnimationIndexes.Left = walkAnimationIota++,
+        "left strafe walking.fbx"
+      },
+      {
+        "LeftMirror",
+        walkAnimationIndexes.LeftMirror = walkAnimationIota++,
+        "right strafe walking reverse.fbx"
+      },
+      {
+        "Right",
+        walkAnimationIndexes.Right = walkAnimationIota++,
+        "right strafe walking.fbx"
+      },
+      {
+        "RightMirror",
+        walkAnimationIndexes.RightMirror = walkAnimationIota++,
+        "left strafe walking reverse.fbx"
+      },
     }
   },
   {
     "Run",
     animationGroupIndexes.Run = animationGroupIota++,
     {
-      {"Forward", runAnimationIndexes.Forward = runAnimationIota++, "Fast Run.fbx"},
-      {"Backward", runAnimationIndexes.Backward = runAnimationIota++, "running backwards.fbx"},
-      {"Left", runAnimationIndexes.Left = runAnimationIota++, "left strafe.fbx"},
-      {"LeftMirror", runAnimationIndexes.LeftMirror = runAnimationIota++, "right strafe reverse.fbx"},
-      {"Right", runAnimationIndexes.Right = runAnimationIota++, "right strafe.fbx"},
-      {"RightMirror", runAnimationIndexes.RightMirror = runAnimationIota++, "left strafe reverse.fbx"},
+      {
+        "Forward",
+        runAnimationIndexes.Forward = runAnimationIota++,
+        "Fast Run.fbx"
+      },
+      {
+        "Backward",
+        runAnimationIndexes.Backward = runAnimationIota++,
+        "running backwards.fbx"
+      },
+      {
+        "Left",
+        runAnimationIndexes.Left = runAnimationIota++,
+        "left strafe.fbx"
+      },
+      {
+        "LeftMirror",
+        runAnimationIndexes.LeftMirror = runAnimationIota++,
+        "right strafe reverse.fbx"
+      },
+      {
+        "Right",
+        runAnimationIndexes.Right = runAnimationIota++,
+        "right strafe.fbx"
+      },
+      {
+        "RightMirror",
+        runAnimationIndexes.RightMirror = runAnimationIota++,
+        "left strafe reverse.fbx"
+      },
     }
   },
   {
     "Crouch",
     animationGroupIndexes.Crouch = animationGroupIota++,
     {
-      {"Forward", crouchAnimationIndexes.Forward = crouchAnimationIota++, "Sneaking Forward.fbx"},
-      {"Backward", crouchAnimationIndexes.Backward = crouchAnimationIota++, "Sneaking Forward reverse.fbx"},
-      {"Left", crouchAnimationIndexes.Left = crouchAnimationIota++, "Crouched Sneaking Left.fbx"},
-      {"LeftMirror", crouchAnimationIndexes.LeftMirror = crouchAnimationIota++, "Crouched Sneaking Right reverse.fbx"},
-      {"Right", crouchAnimationIndexes.Right = crouchAnimationIota++, "Crouched Sneaking Right.fbx"},
-      {"RightMirror", crouchAnimationIndexes.RightMirror = crouchAnimationIota++, "Crouched Sneaking Left reverse.fbx"},
+      {
+        "Forward",
+        crouchAnimationIndexes.Forward = crouchAnimationIota++,
+        "Sneaking Forward.fbx"
+      },
+      {
+        "Backward",
+        crouchAnimationIndexes.Backward = crouchAnimationIota++,
+        "Sneaking Forward reverse.fbx"
+      },
+      {
+        "Left",
+        crouchAnimationIndexes.Left = crouchAnimationIota++,
+        "Crouched Sneaking Left.fbx"
+      },
+      {
+        "LeftMirror",
+        crouchAnimationIndexes.LeftMirror = crouchAnimationIota++,
+        "Crouched Sneaking Right reverse.fbx"
+      },
+      {
+        "Right",
+        crouchAnimationIndexes.Right = crouchAnimationIota++,
+        "Crouched Sneaking Right.fbx"
+      },
+      {
+        "RightMirror",
+        crouchAnimationIndexes.RightMirror = crouchAnimationIota++,
+        "Crouched Sneaking Left reverse.fbx"
+      },
     }
   },
   //
@@ -352,137 +448,397 @@ AnimationGroupDeclarations declarations = {
     "Activate",
     animationGroupIndexes.Activate = animationGroupIota++,
     {
-      {"Grab_forward", activateAnimationIndexes.Grab_forward = activateAnimationIota++, "grab_forward.fbx"},
-      {"Grab_down", activateAnimationIndexes.Grab_down = activateAnimationIota++, "grab_down.fbx"},
-      {"Grab_up", activateAnimationIndexes.Grab_up = activateAnimationIota++, "grab_up.fbx"},
-      {"Grab_left", activateAnimationIndexes.Grab_left = activateAnimationIota++, "grab_left.fbx"},
-      {"Grab_right", activateAnimationIndexes.Grab_right = activateAnimationIota++, "grab_right.fbx"},
-      {"Pick_up", activateAnimationIndexes.Pick_up = activateAnimationIota++, "pick_up.fbx"},
+      {
+        "Grab_forward",
+        activateAnimationIndexes.Grab_forward = activateAnimationIota++,
+        "grab_forward.fbx"
+      },
+      {
+        "Grab_down",
+        activateAnimationIndexes.Grab_down = activateAnimationIota++,
+        "grab_down.fbx"
+      },
+      {
+        "Grab_up",
+        activateAnimationIndexes.Grab_up = activateAnimationIota++,
+        "grab_up.fbx"
+      },
+      {
+        "Grab_left",
+        activateAnimationIndexes.Grab_left = activateAnimationIota++,
+        "grab_left.fbx"
+      },
+      {
+        "Grab_right",
+        activateAnimationIndexes.Grab_right = activateAnimationIota++,
+        "grab_right.fbx"
+      },
+      {
+        "Pick_up",
+        activateAnimationIndexes.Pick_up = activateAnimationIota++,
+        "pick_up.fbx"
+      },
     }
   },
   {
     "Aim",
     animationGroupIndexes.Aim = animationGroupIota++,
     {
-      {"SwordSideIdle", aimAnimationIndexes.SwordSideIdle = aimAnimationIota++, "sword_idle_side.fbx"},
-      {"SwordSideSlash", aimAnimationIndexes.SwordSideSlash = aimAnimationIota++, "sword_side_slash.fbx"},
-      {"SwordSideSlashStep", aimAnimationIndexes.SwordSideSlashStep = aimAnimationIota++, "sword_side_slash_step.fbx"},
-      {"SwordTopDownSlash", aimAnimationIndexes.SwordTopDownSlash = aimAnimationIota++, "sword_topdown_slash.fbx"},
-      {"SwordTopDownSlashStep", aimAnimationIndexes.SwordTopDownSlashStep = aimAnimationIota++, "sword_topdown_slash_step.fbx"},
+      {
+        "SwordSideIdle",
+        aimAnimationIndexes.SwordSideIdle = aimAnimationIota++,
+        "sword_idle_side.fbx"
+      },
+      {
+        "SwordSideSlash",
+        aimAnimationIndexes.SwordSideSlash = aimAnimationIota++,
+        "sword_side_slash.fbx"
+      },
+      {
+        "SwordSideSlashStep",
+        aimAnimationIndexes.SwordSideSlashStep = aimAnimationIota++,
+        "sword_side_slash_step.fbx"
+      },
+      {
+        "SwordTopDownSlash",
+        aimAnimationIndexes.SwordTopDownSlash = aimAnimationIota++,
+        "sword_topdown_slash.fbx"
+      },
+      {
+        "SwordTopDownSlashStep",
+        aimAnimationIndexes.SwordTopDownSlashStep = aimAnimationIota++,
+        "sword_topdown_slash_step.fbx"
+      },
     }
   },
   {
     "Dance",
     animationGroupIndexes.Dance = animationGroupIota++,
     {
-      {"Dansu", danceAnimationIndexes.Dansu = danceAnimationIota++, "Hip Hop Dancing.fbx"},
-      {"Powerup", danceAnimationIndexes.Powerup = danceAnimationIota++, "powerup.fbx"},
+      {
+        "Dansu",
+        danceAnimationIndexes.Dansu = danceAnimationIota++,
+        "Hip Hop Dancing.fbx"
+      },
+      {
+        "Powerup",
+        danceAnimationIndexes.Powerup = danceAnimationIota++,
+        "powerup.fbx"
+      },
     }
   },
   {
     "Emote",
     animationGroupIndexes.Emote = animationGroupIota++,
     {
-      {"Alert", emoteAnimationIndexes.Alert = emoteAnimationIota++, "alert.fbx"},
-      {"AlertSoft", emoteAnimationIndexes.AlertSoft = emoteAnimationIota++, "alert_soft.fbx"},
-      {"Angry", emoteAnimationIndexes.Angry = emoteAnimationIota++, "angry.fbx"},
-      {"AngrySoft", emoteAnimationIndexes.AngrySoft = emoteAnimationIota++, "angry_soft.fbx"},
-      {"Embarrassed", emoteAnimationIndexes.Embarrassed = emoteAnimationIota++, "embarrassed.fbx"},
-      {"EmbarrassedSoft", emoteAnimationIndexes.EmbarrassedSoft = emoteAnimationIota++, "embarrassed_soft.fbx"},
-      {"HeadNod", emoteAnimationIndexes.HeadNod = emoteAnimationIota++, "head_nod.fbx"},
-      {"HeadNodSoft", emoteAnimationIndexes.HeadNodSoft = emoteAnimationIota++, "head_nod_single.fbx"},
-      {"HeadShake", emoteAnimationIndexes.HeadShake = emoteAnimationIota++, "head_shake.fbx"},
-      {"HeadShakeSoft", emoteAnimationIndexes.HeadShakeSoft = emoteAnimationIota++, "head_shake_single.fbx"},
-      {"Sad", emoteAnimationIndexes.Sad = emoteAnimationIota++, "sad.fbx"},
-      {"SadSoft", emoteAnimationIndexes.SadSoft = emoteAnimationIota++, "sad_soft.fbx"},
-      {"Surprise", emoteAnimationIndexes.Surprise = emoteAnimationIota++, "surprise.fbx"},
-      {"SurpriseSoft", emoteAnimationIndexes.SurpriseSoft = emoteAnimationIota++, "surprise_soft.fbx"},
-      {"Victory", emoteAnimationIndexes.Victory = emoteAnimationIota++, "victory.fbx"},
-      {"VictorySoft", emoteAnimationIndexes.VictorySoft = emoteAnimationIota++, "victory_soft.fbx"},
+      {
+        "Alert",
+        emoteAnimationIndexes.Alert = emoteAnimationIota++,
+        "alert.fbx"
+      },
+      {
+        "AlertSoft",
+        emoteAnimationIndexes.AlertSoft = emoteAnimationIota++,
+        "alert_soft.fbx"
+      },
+      {
+        "Angry",
+        emoteAnimationIndexes.Angry = emoteAnimationIota++,
+        "angry.fbx"
+      },
+      {
+        "AngrySoft",
+        emoteAnimationIndexes.AngrySoft = emoteAnimationIota++,
+        "angry_soft.fbx"
+      },
+      {
+        "Embarrassed",
+        emoteAnimationIndexes.Embarrassed = emoteAnimationIota++,
+        "embarrassed.fbx"
+      },
+      {
+        "EmbarrassedSoft",
+        emoteAnimationIndexes.EmbarrassedSoft = emoteAnimationIota++,
+        "embarrassed_soft.fbx"
+      },
+      {
+        "HeadNod",
+        emoteAnimationIndexes.HeadNod = emoteAnimationIota++,
+        "head_nod.fbx"
+      },
+      {
+        "HeadNodSoft",
+        emoteAnimationIndexes.HeadNodSoft = emoteAnimationIota++,
+        "head_nod_single.fbx"
+      },
+      {
+        "HeadShake",
+        emoteAnimationIndexes.HeadShake = emoteAnimationIota++,
+        "head_shake.fbx"
+      },
+      {
+        "HeadShakeSoft",
+        emoteAnimationIndexes.HeadShakeSoft = emoteAnimationIota++,
+        "head_shake_single.fbx"
+      },
+      {
+        "Sad",
+        emoteAnimationIndexes.Sad = emoteAnimationIota++,
+        "sad.fbx"
+      },
+      {
+        "SadSoft",
+        emoteAnimationIndexes.SadSoft = emoteAnimationIota++,
+        "sad_soft.fbx"
+      },
+      {
+        "Surprise",
+        emoteAnimationIndexes.Surprise = emoteAnimationIota++,
+        "surprise.fbx"
+      },
+      {
+        "SurpriseSoft",
+        emoteAnimationIndexes.SurpriseSoft = emoteAnimationIota++,
+        "surprise_soft.fbx"
+      },
+      {
+        "Victory",
+        emoteAnimationIndexes.Victory = emoteAnimationIota++,
+        "victory.fbx"
+      },
+      {
+        "VictorySoft",
+        emoteAnimationIndexes.VictorySoft = emoteAnimationIota++,
+        "victory_soft.fbx"
+      },
     }
   },
   {
     "Hold",
     animationGroupIndexes.Hold = animationGroupIota++,
     {
-      {"Pick_up_idle", holdAnimationIndexes.Pick_up_idle = holdAnimationIota++, "pick_up_idle.fbx"},
+      {
+        "Pick_up_idle",
+        holdAnimationIndexes.Pick_up_idle = holdAnimationIota++,
+        "pick_up_idle.fbx"
+      },
     }
   },
   {
     "Hurt",
     animationGroupIndexes.Hurt = animationGroupIota++,
     {
-      {"Pain_back", hurtAnimationIndexes.Pain_back = hurtAnimationIota++, "pain_back.fbx"},
-      {"Pain_arch", hurtAnimationIndexes.Pain_arch = hurtAnimationIota++, "pain_arch.fbx"},
+      {
+        "Pain_back",
+        hurtAnimationIndexes.Pain_back = hurtAnimationIota++,
+        "pain_back.fbx"
+      },
+      {
+        "Pain_arch",
+        hurtAnimationIndexes.Pain_arch = hurtAnimationIota++,
+        "pain_arch.fbx"
+      },
     }
   },
   {
     "Land",
     animationGroupIndexes.Land = animationGroupIota++,
     {
-      {"Landing", landAnimationIndexes.Landing = landAnimationIota++, "landing.fbx"},
-      {"Landing2", landAnimationIndexes.Landing2 = landAnimationIota++, "landing 2.fbx"},
+      {
+        "Landing",
+        landAnimationIndexes.Landing = landAnimationIota++,
+        "landing.fbx"
+      },
+      {
+        "Landing2",
+        landAnimationIndexes.Landing2 = landAnimationIota++,
+        "landing 2.fbx"
+      },
     }
   },
   {
     "NarutoRun",
     animationGroupIndexes.NarutoRun = animationGroupIota++,
     {
-      {"NarutoRun", narutoRunAnimationIndexes.NarutoRun = narutoRunAnimationIota++, "naruto run.fbx"},
+      {
+        "NarutoRun",
+        narutoRunAnimationIndexes.NarutoRun = narutoRunAnimationIota++,
+        "naruto run.fbx"
+      },
     }
   },
   {
     "PickUp",
     animationGroupIndexes.PickUp = animationGroupIota++,
     {
-      {"PickUp", pickUpAnimationIndexes.PickUp = pickUpAnimationIota++, "pick_up.fbx"},
-      {"PickUpIdle", pickUpAnimationIndexes.PickUpIdle = pickUpAnimationIota++, "pick_up_idle.fbx"},
-      {"PickUpThrow", pickUpAnimationIndexes.PickUpThrow = pickUpAnimationIota++, "pick_up_throw.fbx"},
-      {"PutDown", pickUpAnimationIndexes.PutDown = pickUpAnimationIota++, "put_down.fbx"},
-      {"PickUpZelda", pickUpAnimationIndexes.PickUpZelda = pickUpAnimationIota++, "pick_up_zelda.fbx"},
-      {"PickUpIdleZelda", pickUpAnimationIndexes.PickUpIdleZelda = pickUpAnimationIota++, "pick_up_idle_zelda.fbx"},
-      {"PutDownZelda", pickUpAnimationIndexes.PutDownZelda = pickUpAnimationIota++, "put_down_zelda.fbx"},
+      {
+        "PickUp",
+        pickUpAnimationIndexes.PickUp = pickUpAnimationIota++,
+        "pick_up.fbx"
+      },
+      {
+        "PickUpIdle",
+        pickUpAnimationIndexes.PickUpIdle = pickUpAnimationIota++,
+        "pick_up_idle.fbx"
+      },
+      {
+        "PickUpThrow",
+        pickUpAnimationIndexes.PickUpThrow = pickUpAnimationIota++,
+        "pick_up_throw.fbx"
+      },
+      {
+        "PutDown",
+        pickUpAnimationIndexes.PutDown = pickUpAnimationIota++,
+        "put_down.fbx"
+      },
+      {
+        "PickUpZelda",
+        pickUpAnimationIndexes.PickUpZelda = pickUpAnimationIota++,
+        "pick_up_zelda.fbx"
+      },
+      {
+        "PickUpIdleZelda",
+        pickUpAnimationIndexes.PickUpIdleZelda = pickUpAnimationIota++,
+        "pick_up_idle_zelda.fbx"
+      },
+      {
+        "PutDownZelda",
+        pickUpAnimationIndexes.PutDownZelda = pickUpAnimationIota++,
+        "put_down_zelda.fbx"
+      },
     }
   },
   {
     "Sit",
     animationGroupIndexes.Sit = animationGroupIota++,
     {
-      {"Chair", sitAnimationIndexes.Chair = sitAnimationIota++, "sitting idle.fbx"},
-      {"Saddle", sitAnimationIndexes.Saddle = sitAnimationIota++, "sitting idle.fbx"},
-      {"Stand", sitAnimationIndexes.Stand = sitAnimationIota++, "Skateboarding.fbx"},
+      {
+        "Chair",
+        sitAnimationIndexes.Chair = sitAnimationIota++,
+        "sitting idle.fbx"
+      },
+      {
+        "Saddle",
+        sitAnimationIndexes.Saddle = sitAnimationIota++,
+        "sitting idle.fbx"
+      },
+      {
+        "Stand",
+        sitAnimationIndexes.Stand = sitAnimationIota++,
+        "Skateboarding.fbx"
+      },
     }
   },
   {
     "Swim",
     animationGroupIndexes.Swim = animationGroupIota++,
     {
-      {"Breaststroke", swimAnimationIndexes.Breaststroke = swimAnimationIota++, "Swimming.fbx"},
-      {"Freestyle", swimAnimationIndexes.Freestyle = swimAnimationIota++, "freestyle.fbx"},
+      {
+        "Breaststroke",
+        swimAnimationIndexes.Breaststroke = swimAnimationIota++,
+        "Swimming.fbx"
+      },
+      {
+        "Freestyle",
+        swimAnimationIndexes.Freestyle = swimAnimationIota++,
+        "freestyle.fbx"
+      },
     }
   },
   {
     "Use",
     animationGroupIndexes.Use = animationGroupIota++,
     {
-      {"Combo", useAnimationIndexes.Combo = useAnimationIota++, "One Hand Sword Combo.fbx"},
-      {"Slash", useAnimationIndexes.Slash = useAnimationIota++, "sword and shield slash.fbx"},
-      {"Rifle", useAnimationIndexes.Rifle = useAnimationIota++, "Rifle Aiming Idle.fbx"},
-      {"Pistol", useAnimationIndexes.Pistol = useAnimationIota++, "Pistol Aiming Idle.fbx"},
-      {"Magic", useAnimationIndexes.Magic = useAnimationIota++, "magic cast.fbx"},
-      {"Eat", useAnimationIndexes.Eat = useAnimationIota++, "eating.fbx"},
-      {"Drink", useAnimationIndexes.Drink = useAnimationIota++, "drinking.fbx"},
-      {"Throw", useAnimationIndexes.Throw = useAnimationIota++, "pick_up_throw.fbx"},
-      {"PickUpThrow", useAnimationIndexes.PickUpThrow = useAnimationIota++, "pick_up_throw.fbx"},
-      {"BowDraw", useAnimationIndexes.BowDraw = useAnimationIota++, "bow draw.fbx"},
-      {"BowIdle", useAnimationIndexes.BowIdle = useAnimationIota++, "bow idle.fbx"},
-      {"BowLoose", useAnimationIndexes.BowLoose = useAnimationIota++, "bow loose.fbx"},
-      {"Pickaxe", useAnimationIndexes.Pickaxe = useAnimationIota++, "pickaxe_swing.fbx"},
-      {"SwordSideIdle", useAnimationIndexes.SwordSideIdle = useAnimationIota++, "sword_idle_side.fbx"},
-      {"SwordSideSlash", useAnimationIndexes.SwordSideSlash = useAnimationIota++, "sword_side_slash.fbx"},
-      {"SwordSideSlashStep", useAnimationIndexes.SwordSideSlashStep = useAnimationIota++, "sword_side_slash_step.fbx"},
-      {"SwordTopDownSlash", useAnimationIndexes.SwordTopDownSlash = useAnimationIota++, "sword_topdown_slash.fbx"},
-      {"SwordTopDownSlashStep", useAnimationIndexes.SwordTopDownSlashStep = useAnimationIota++, "sword_topdown_slash_step.fbx"},
+      {
+        "Combo",
+        useAnimationIndexes.Combo = useAnimationIota++,
+        "One Hand Sword Combo.fbx"
+      },
+      {
+        "Slash",
+        useAnimationIndexes.Slash = useAnimationIota++,
+        "sword and shield slash.fbx"
+      },
+      {
+        "Rifle",
+        useAnimationIndexes.Rifle = useAnimationIota++,
+        "Rifle Aiming Idle.fbx"
+      },
+      {
+        "Pistol",
+        useAnimationIndexes.Pistol = useAnimationIota++,
+        "Pistol Aiming Idle.fbx"
+      },
+      {
+        "Magic",
+        useAnimationIndexes.Magic = useAnimationIota++,
+        "magic cast.fbx"
+      },
+      {
+        "Eat",
+        useAnimationIndexes.Eat = useAnimationIota++,
+        "eating.fbx"
+      },
+      {
+        "Drink",
+        useAnimationIndexes.Drink = useAnimationIota++,
+        "drinking.fbx"
+      },
+      {
+        "Throw",
+        useAnimationIndexes.Throw = useAnimationIota++,
+        "pick_up_throw.fbx"
+      },
+      {
+        "PickUpThrow",
+        useAnimationIndexes.PickUpThrow = useAnimationIota++,
+        "pick_up_throw.fbx"
+      },
+      {
+        "BowDraw",
+        useAnimationIndexes.BowDraw = useAnimationIota++,
+        "bow draw.fbx"
+      },
+      {
+        "BowIdle",
+        useAnimationIndexes.BowIdle = useAnimationIota++,
+        "bow idle.fbx"
+      },
+      {
+        "BowLoose",
+        useAnimationIndexes.BowLoose = useAnimationIota++,
+        "bow loose.fbx"
+      },
+      {
+        "Pickaxe",
+        useAnimationIndexes.Pickaxe = useAnimationIota++,
+        "pickaxe_swing.fbx"
+      },
+      {
+        "SwordSideIdle",
+        useAnimationIndexes.SwordSideIdle = useAnimationIota++,
+        "sword_idle_side.fbx"
+      },
+      {
+        "SwordSideSlash",
+        useAnimationIndexes.SwordSideSlash = useAnimationIota++,
+        "sword_side_slash.fbx"
+      },
+      {
+        "SwordSideSlashStep",
+        useAnimationIndexes.SwordSideSlashStep = useAnimationIota++,
+        "sword_side_slash_step.fbx"
+      },
+      {
+        "SwordTopDownSlash",
+        useAnimationIndexes.SwordTopDownSlash = useAnimationIota++,
+        "sword_topdown_slash.fbx"
+      },
+      {
+        "SwordTopDownSlashStep",
+        useAnimationIndexes.SwordTopDownSlashStep = useAnimationIota++,
+        "sword_topdown_slash_step.fbx"
+      },
     }
   },
 };
