@@ -647,11 +647,19 @@ namespace AnimationSystem {
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
 
-    Animation *narutoRunAnimation = animationGroups[animationGroupIndexes.NarutoRun][defaultNarutoRunAnimationIndex];
-    float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
-    float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
+    if (spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest) {
+      // const down10QuaternionArray = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.1).toArray();
+      spec.dst[0] = 0.15643446504023087;
+      spec.dst[1] = 0;
+      spec.dst[2] = 0;
+      spec.dst[3] = 0.9876883405951378;
+    } else {
+      Animation *narutoRunAnimation = animationGroups[animationGroupIndexes.NarutoRun][defaultNarutoRunAnimationIndex];
+      float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
+      float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
 
-    copyValue(spec.dst, v2, spec.isPosition);
+      copyValue(spec.dst, v2, spec.isPosition);
+    }
 
     _clearXZ(spec.dst, spec.isPosition);
   }
