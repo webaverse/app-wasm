@@ -80,7 +80,7 @@ EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int i
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration) {
   return AnimationSystem::createAnimation(scratchStack, nameByteLength, duration);
 }
-EMSCRIPTEN_KEEPALIVE void initAnimationSystem(float *scratchStack) {
+EMSCRIPTEN_KEEPALIVE unsigned int initAnimationSystem(char *scratchStack) {
   return AnimationSystem::initAnimationSystem(scratchStack);
 }
 EMSCRIPTEN_KEEPALIVE void createAnimationInterpolant(AnimationSystem::Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {

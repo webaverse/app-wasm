@@ -11,13 +11,12 @@ namespace AnimationSystem {
 
   std::vector<std::vector<Animation *>> animationGroups;
 
-  // todo: real default index instead of 0.
-  unsigned int defaultSitAnimationIndex = 0;
-  unsigned int defaultEmoteAnimationIndex = 0;
-  unsigned int defaultDanceAnimationIndex = 0;
-  unsigned int defaultHoldAnimationIndex = 0;
-  unsigned int defaultActivateAnimationIndex = 0;
-  unsigned int defaultNarutoRunAnimationIndex = 0;
+  unsigned int defaultSitAnimationIndex;
+  unsigned int defaultEmoteAnimationIndex;
+  unsigned int defaultDanceAnimationIndex;
+  unsigned int defaultHoldAnimationIndex;
+  unsigned int defaultActivateAnimationIndex;
+  unsigned int defaultNarutoRunAnimationIndex;
 
   float localVectorArr[3];
   float localQuaternionArr[4];
@@ -201,39 +200,60 @@ namespace AnimationSystem {
 
     return avatar;
   }
-  void initAnimationSystem(float *scratchStack) { // only need init once globally
+  unsigned int initAnimationSystem(char *scratchStack) { // only need init once globally
+    std::string jsonStr = "";
+
     if (!isInitedAnimationSystem) {
-      std::cout << "initAnimationSystem ------------------" << std::endl;
-
-      std::cout << "animationGroupIndexes.Dance: " << animationGroupIndexes.Dance << std::endl;
-      std::cout << "animationGroupIndexes.Activate: " << animationGroupIndexes.Activate << std::endl;
-      std::cout << "animationGroupIndexes.Use: " << animationGroupIndexes.Use << std::endl;
-      std::cout << "animationGroupIndexes.Land: " << animationGroupIndexes.Land << std::endl;
-      std::cout << "danceAnimationIndexes.Dansu: " << danceAnimationIndexes.Dansu << std::endl;
-      std::cout << "danceAnimationIndexes.Powerup: " << danceAnimationIndexes.Powerup << std::endl;
-
       // -------------------------------------------------------------------------
 
+      jsonStr += "[";
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];
         std::vector<Animation *> animationGroup;
+
+        jsonStr += "{";
+        jsonStr += "\"name\":";
+        jsonStr += "\"" + declaration.groupName + "\"";
+        jsonStr += ",";
+        jsonStr += "\"index\":";
+        jsonStr += std::to_string(declaration.index);
+        jsonStr += ",";
+        jsonStr += "\"animations\":";
+        jsonStr += "[";
         for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
           AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
           animationGroup.push_back(animationAll[animationDeclaration.fileName]);
+
+          jsonStr += "{";
+          jsonStr += "\"keyName\":";
+          jsonStr += "\"" + animationDeclaration.keyName + "\"";
+          jsonStr += ",";
+          jsonStr += "\"index\":";
+          jsonStr += std::to_string(animationDeclaration.index);
+          jsonStr += ",";
+          jsonStr += "\"fileName\":";
+          jsonStr += "\"" + animationDeclaration.fileName + "\"";
+          jsonStr += "}";
+          if (j != declaration.animationDeclarations.size() - 1) jsonStr += ",";
         }
         animationGroups.push_back(animationGroup);
+        jsonStr += "]";
+        jsonStr += "}";
+        if (i != declarations.size() - 1) jsonStr += ",";
       }
+      jsonStr += "]";
 
       // -------------------------------------------------------------------------
 
-      // unsigned int index = 0;
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_forward
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_down
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_up
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_left
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_right
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Pick_up
-      //
+      defaultSitAnimationIndex = sitAnimationIndexes.Chair;
+      defaultEmoteAnimationIndex = emoteAnimationIndexes.Angry;
+      defaultDanceAnimationIndex = danceAnimationIndexes.Dansu;
+      defaultHoldAnimationIndex = holdAnimationIndexes.Pick_up_idle;
+      defaultActivateAnimationIndex = activateAnimationIndexes.Grab_forward;
+      defaultNarutoRunAnimationIndex = narutoRunAnimationIndexes.NarutoRun;
+
+      // -------------------------------------------------------------------------
+
       activateSpeedFactors.push_back(1.2); // Grab_forward
       activateSpeedFactors.push_back(1.7); // Grab_down
       activateSpeedFactors.push_back(1.2); // Grab_up
@@ -243,17 +263,18 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
-      std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.Drink]->name << std::endl;
-      std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.SwordSideSlashStep]->name << std::endl;
-      std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.Throw]->name << std::endl;
-
-      // -------------------------------------------------------------------------
-
       CubicBezierEasing::init(0, 1, 0, 1);
 
       //
       isInitedAnimationSystem = true;
     }
+    
+    unsigned int jsonStrByteLength = jsonStr.length();
+    for (unsigned int i = 0; i < jsonStrByteLength; i++)
+    {
+      scratchStack[i] = jsonStr.at(i);
+    }
+    return jsonStrByteLength;
   }
   void Avatar::update(float *scratchStack) {
     unsigned int index = 0;
@@ -529,11 +550,19 @@ namespace AnimationSystem {
 
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
 
-    Animation *narutoRunAnimation = animationGroups[animationGroupIndexes.NarutoRun][defaultNarutoRunAnimationIndex];
-    float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
-    float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
+    if (spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest) {
+      // const down10QuaternionArray = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.1).toArray();
+      spec.dst[0] = 0.15643446504023087;
+      spec.dst[1] = 0;
+      spec.dst[2] = 0;
+      spec.dst[3] = 0.9876883405951378;
+    } else {
+      Animation *narutoRunAnimation = animationGroups[animationGroupIndexes.NarutoRun][defaultNarutoRunAnimationIndex];
+      float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
+      float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
 
-    copyValue(spec.dst, v2, spec.isPosition);
+      copyValue(spec.dst, v2, spec.isPosition);
+    }
 
     _clearXZ(spec.dst, spec.isPosition);
   }

@@ -123,7 +123,7 @@ namespace AnimationSystem {
   void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm);
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
-  void initAnimationSystem(float *scratchStack);
+  unsigned int initAnimationSystem(char *scratchStack);
   AnimationMixer *createAnimationMixer();
   Avatar *createAnimationAvatar(AnimationMixer *mixer);
   // end: need run in this order
