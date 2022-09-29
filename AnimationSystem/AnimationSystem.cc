@@ -212,7 +212,9 @@ namespace AnimationSystem {
 
     return avatar;
   }
-  void initAnimationSystem(float *scratchStack) { // only need init once globally
+  unsigned int initAnimationSystem(char *scratchStack) { // only need init once globally
+    std::string jsonStr = "";
+
     if (!isInitedAnimationSystem) {
       std::cout << "initAnimationSystem ------------------" << std::endl;
 
@@ -225,7 +227,6 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
-      std::string jsonStr = "";
       jsonStr += "[";
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];
@@ -283,14 +284,6 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
-      // unsigned int index = 0;
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_forward
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_down
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_up
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_left
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Grab_right
-      // activateSpeedFactors.push_back(scratchStack[index++]); // Pick_up
-      //
       activateSpeedFactors.push_back(1.2); // Grab_forward
       activateSpeedFactors.push_back(1.7); // Grab_down
       activateSpeedFactors.push_back(1.2); // Grab_up
@@ -351,6 +344,13 @@ namespace AnimationSystem {
       //
       isInitedAnimationSystem = true;
     }
+    
+    unsigned int jsonStrByteLength = jsonStr.length();
+    for (unsigned int i = 0; i < jsonStrByteLength; i++)
+    {
+      scratchStack[i] = jsonStr.at(i);
+    }
+    return jsonStrByteLength;
   }
   void Avatar::update(float *scratchStack) {
     unsigned int index = 0;
