@@ -417,6 +417,19 @@ namespace AnimationSystem {
     this->unuseAnimationIndex = (int)(scratchStack[index++]);
     this->aimAnimationIndex = (int)(scratchStack[index++]);
 
+    // std::cout
+    // << "-wasm- xxxAnimatonIndex: "
+    // << this->useAnimationIndex << ", "
+    // << this->emoteAnimationIndex << ", "
+    // << this->sitAnimationIndex << ", "
+    // << this->danceAnimationIndex << ", "
+    // << this->activateAnimationIndex << ", "
+    // << this->hurtAnimationIndex << ", "
+    // << this->useAnimationComboIndex << ", "
+    // << this->unuseAnimationIndex << ", "
+    // << this->aimAnimationIndex << ", "
+    // << std::endl;
+
     this->fallLoopFrom = (int)(scratchStack[index++]);
     this->landTimeS = scratchStack[index++];
     this->timeSinceLastMoveS = scratchStack[index++];
