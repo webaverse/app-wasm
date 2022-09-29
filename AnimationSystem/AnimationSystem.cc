@@ -225,6 +225,12 @@ namespace AnimationSystem {
       std::cout << "danceAnimationIndexes.Dansu: " << danceAnimationIndexes.Dansu << std::endl;
       std::cout << "danceAnimationIndexes.Powerup: " << danceAnimationIndexes.Powerup << std::endl;
 
+      std::cout << "boneIndexes.Hips: " << boneIndexes.Hips << std::endl;
+      std::cout << "boneIndexes.Spine: " << boneIndexes.Spine << std::endl;
+      std::cout << "boneIndexes.Chest: " << boneIndexes.Chest << std::endl;
+      std::cout << "boneIndexes.Left_elbow: " << boneIndexes.Left_elbow << std::endl;
+      std::cout << "boneIndexes.Left_toe: " << boneIndexes.Left_toe << std::endl;
+
       // -------------------------------------------------------------------------
 
       jsonStr += "[";
@@ -660,7 +666,7 @@ namespace AnimationSystem {
   void _blendNarutoRun(AnimationMapping &spec, Avatar *avatar) {
     // if (spec.isPosition) avatar->testBlendStrings += "_blendNarutoRun, "; // test: blend strings.
 
-    if (spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest) {
+    if (spec.index == boneIndexes.Chest || spec.index == boneIndexes.UpperChest) {
       // const down10QuaternionArray = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI * 0.1).toArray();
       spec.dst[0] = 0.15643446504023087;
       spec.dst[1] = 0;
@@ -707,7 +713,7 @@ namespace AnimationSystem {
     float emoteFactorS = avatar->emoteFactor / avatar->crouchMaxTime;
     float f = min(max(emoteFactorS, 0), 1);
 
-    if (spec.index == BoneIndex::Spine || spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest || spec.index == BoneIndex::Neck || spec.index == BoneIndex::Head) {
+    if (spec.index == boneIndexes.Spine || spec.index == boneIndexes.Chest || spec.index == boneIndexes.UpperChest || spec.index == boneIndexes.Neck || spec.index == boneIndexes.Head) {
       if (!spec.isPosition) {
         multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
       } else {
@@ -904,7 +910,7 @@ namespace AnimationSystem {
     float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
 
     if (spec.isTop) {
-      if (spec.index == BoneIndex::Left_arm || spec.index == BoneIndex::Right_arm) {
+      if (spec.index == boneIndexes.Left_arm || spec.index == boneIndexes.Right_arm) {
         copyValue(spec.dst, v2, spec.isPosition);
       } else {
         if (spec.isArm) {
@@ -1072,7 +1078,7 @@ namespace AnimationSystem {
       float f = avatar->activateTime > 0 ? min(CubicBezierEasing::cubicBezier(t2), 1) : (1 - min(CubicBezierEasing::cubicBezier(t2), 1));
       // float f = avatar->activateTime > 0 ? min(pow(t2, 0.1), 1) : (1 - min(pow(t2, 0.1), 1));
 
-      if (spec.index == BoneIndex::Spine || spec.index == BoneIndex::Chest || spec.index == BoneIndex::UpperChest || spec.index == BoneIndex::Neck || spec.index == BoneIndex::Head) {
+      if (spec.index == boneIndexes.Spine || spec.index == boneIndexes.Chest || spec.index == boneIndexes.UpperChest || spec.index == boneIndexes.Neck || spec.index == boneIndexes.Head) {
         if (!spec.isPosition) {
           multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
         } else {
