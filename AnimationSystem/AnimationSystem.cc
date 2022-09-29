@@ -225,26 +225,57 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
+      std::string jsonStr = "";
+      jsonStr += "[";
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];
+        std::vector<Animation *> animationGroup;
+
         // std::cout << "-IL: group i: " << i << std::endl;
         // std::cout << "-IL: groupIndex: " << declaration.index << std::endl;
         // std::cout << "-IL: declaration.groupName: " << declaration.groupName << std::endl;
-        std::vector<Animation *> animationGroup;
+
+        jsonStr += "{";
+        jsonStr += "\"name\":";
+        jsonStr += "\"" + declaration.groupName + "\"";
+        jsonStr += ",";
+        jsonStr += "\"index\":";
+        jsonStr += std::to_string(declaration.index);
+        jsonStr += ",";
+        jsonStr += "\"animations\":";
+        jsonStr += "[";
         for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
           AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
+          animationGroup.push_back(animationAll[animationDeclaration.fileName]);
+
           // std::cout << "-IL: animation i: " << j << std::endl;
           // std::cout << "-IL: animationDeclaration.keyName: " << animationDeclaration.keyName << std::endl;
           // std::cout << "-IL: animationDeclaration.fileName: " << animationDeclaration.fileName << std::endl;
-          animationGroup.push_back(animationAll[animationDeclaration.fileName]);
+
+          jsonStr += "{";
+          jsonStr += "\"keyName\":";
+          jsonStr += "\"" + animationDeclaration.keyName + "\"";
+          jsonStr += ",";
+          jsonStr += "\"index\":";
+          jsonStr += std::to_string(animationDeclaration.index);
+          jsonStr += ",";
+          jsonStr += "\"fileName\":";
+          jsonStr += "\"" + animationDeclaration.fileName + "\"";
+          jsonStr += "}";
+          if (j != declaration.animationDeclarations.size() - 1) jsonStr += ",";
         }
         animationGroups.push_back(animationGroup);
+        jsonStr += "]";
+        jsonStr += "}";
+        if (i != declarations.size() - 1) jsonStr += ",";
       }
+      jsonStr += "]";
+      std::cout << "-wasm-jsonStr: " << jsonStr << std::endl; // test
 
       // -------------------------------------------------------------------------
 
       defaultSitAnimationIndex = sitAnimationIndexes.Chair;
-      defaultEmoteAnimationIndex = emoteAnimationIndexes.angry;
+      defaultEmoteAnimationIndex = emoteAnimationIndexes.Angry;
       defaultDanceAnimationIndex = danceAnimationIndexes.Dansu;
       defaultHoldAnimationIndex = holdAnimationIndexes.Pick_up_idle;
       defaultActivateAnimationIndex = activateAnimationIndexes.Grab_forward;
