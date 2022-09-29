@@ -11,13 +11,12 @@ namespace AnimationSystem {
 
   std::vector<std::vector<Animation *>> animationGroups;
 
-  // todo: real default index instead of 0.
-  unsigned int defaultSitAnimationIndex = 0;
-  unsigned int defaultEmoteAnimationIndex = 0;
-  unsigned int defaultDanceAnimationIndex = 0;
-  unsigned int defaultHoldAnimationIndex = 0;
-  unsigned int defaultActivateAnimationIndex = 0;
-  unsigned int defaultNarutoRunAnimationIndex = 0;
+  unsigned int defaultSitAnimationIndex;
+  unsigned int defaultEmoteAnimationIndex;
+  unsigned int defaultDanceAnimationIndex;
+  unsigned int defaultHoldAnimationIndex;
+  unsigned int defaultActivateAnimationIndex;
+  unsigned int defaultNarutoRunAnimationIndex;
 
   float localVectorArr[3];
   float localQuaternionArr[4];
@@ -231,7 +230,6 @@ namespace AnimationSystem {
         // std::cout << "-IL: group i: " << i << std::endl;
         // std::cout << "-IL: groupIndex: " << declaration.index << std::endl;
         // std::cout << "-IL: declaration.groupName: " << declaration.groupName << std::endl;
-        // std::vector<Animation *> animationGroup = *(new std::vector<Animation *>); // todo: Don't use `new` ?
         std::vector<Animation *> animationGroup;
         for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
           AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
@@ -242,6 +240,15 @@ namespace AnimationSystem {
         }
         animationGroups.push_back(animationGroup);
       }
+
+      // -------------------------------------------------------------------------
+
+      defaultSitAnimationIndex = sitAnimationIndexes.Chair;
+      defaultEmoteAnimationIndex = emoteAnimationIndexes.angry;
+      defaultDanceAnimationIndex = danceAnimationIndexes.Dansu;
+      defaultHoldAnimationIndex = holdAnimationIndexes.Pick_up_idle;
+      defaultActivateAnimationIndex = activateAnimationIndexes.Grab_forward;
+      defaultNarutoRunAnimationIndex = narutoRunAnimationIndexes.NarutoRun;
 
       // -------------------------------------------------------------------------
 
@@ -437,7 +444,7 @@ namespace AnimationSystem {
 
     animation->interpolants.push_back(interpolant);
   }
-  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) { // todo: move to Utils.
+  float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) {
     Interpolant interpolant = animation->interpolants[interpolantIndex];
 
     if (interpolant.numParameterPositions == 1) {
