@@ -306,7 +306,7 @@ AnimationGroupDeclarations declarations = {
         "Idle",
         singleAnimationIndexes.Idle = singleAnimationIota++,
         "idle.fbx"
-      },
+      }, // todo: Put `Animation *` here directly ?
       {
         "CrouchIdle",
         singleAnimationIndexes.CrouchIdle = singleAnimationIota++,
