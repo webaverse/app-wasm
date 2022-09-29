@@ -98,7 +98,6 @@ namespace AnimationSystem {
     int hurtAnimationIndex;
     int unuseAnimationIndex;
     int aimAnimationIndex;
-    int holdAnimationName; // todo: Still need ?
 
     std::vector<int> useAnimationEnvelopeIndices;
 
