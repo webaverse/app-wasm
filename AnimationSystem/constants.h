@@ -1,64 +1,62 @@
-enum BoneIndex {
-  // Hips = 0, // position
-  Hips = 1, // quaternion
-  Spine = 2,
-  Chest = 3,
-  UpperChest = 4,
-  Neck = 5,
-  Head = 6,
-  Left_shoulder = 7,
-  Left_arm = 8,
-  Left_elbow = 9,
-  Left_wrist = 10,
-  Left_middleFinger1 = 11,
-  Left_middleFinger2 = 12,
-  Left_middleFinger3 = 13,
-  Left_thumb0 = 14,
-  Left_thumb1 = 15,
-  Left_thumb2 = 16,
-  Left_indexFinger1 = 17,
-  Left_indexFinger2 = 18,
-  Left_indexFinger3 = 19,
-  Left_ringFinger1 = 20,
-  Left_ringFinger2 = 21,
-  Left_ringFinger3 = 22,
-  Left_littleFinger1 = 23,
-  Left_littleFinger2 = 24,
-  Left_littleFinger3 = 25,
-  Right_shoulder = 26,
-  Right_arm = 27,
-  Right_elbow = 28,
-  Right_wrist = 29,
-  Right_middleFinger1 = 30,
-  Right_middleFinger2 = 31,
-  Right_middleFinger3 = 32,
-  Right_thumb0 = 33,
-  Right_thumb1 = 34,
-  Right_thumb2 = 35,
-  Right_indexFinger1 = 36,
-  Right_indexFinger2 = 37,
-  Right_indexFinger3 = 38,
-  Right_ringFinger1 = 39,
-  Right_ringFinger2 = 40,
-  Right_ringFinger3 = 41,
-  Right_littleFinger1 = 42,
-  Right_littleFinger2 = 43,
-  Right_littleFinger3 = 44,
-  Right_leg = 45,
-  Right_knee = 46,
-  Right_ankle = 47,
-  Right_toe = 48,
-  Left_leg = 49,
-  Left_knee = 50,
-  Left_ankle = 51,
-  Left_toe = 52
+class BoneIndexes {
+public:
+  // positions
+  int HipsPosition;
+  // quaternions
+  int Hips;
+  int Spine;
+  int Chest;
+  int UpperChest;
+  int Neck;
+  int Head;
+  int Left_shoulder;
+  int Left_arm;
+  int Left_elbow;
+  int Left_wrist;
+  int Left_middleFinger1;
+  int Left_middleFinger2;
+  int Left_middleFinger3;
+  int Left_thumb0;
+  int Left_thumb1;
+  int Left_thumb2;
+  int Left_indexFinger1;
+  int Left_indexFinger2;
+  int Left_indexFinger3;
+  int Left_ringFinger1;
+  int Left_ringFinger2;
+  int Left_ringFinger3;
+  int Left_littleFinger1;
+  int Left_littleFinger2;
+  int Left_littleFinger3;
+  int Right_shoulder;
+  int Right_arm;
+  int Right_elbow;
+  int Right_wrist;
+  int Right_middleFinger1;
+  int Right_middleFinger2;
+  int Right_middleFinger3;
+  int Right_thumb0;
+  int Right_thumb1;
+  int Right_thumb2;
+  int Right_indexFinger1;
+  int Right_indexFinger2;
+  int Right_indexFinger3;
+  int Right_ringFinger1;
+  int Right_ringFinger2;
+  int Right_ringFinger3;
+  int Right_littleFinger1;
+  int Right_littleFinger2;
+  int Right_littleFinger3;
+  int Right_leg;
+  int Right_knee;
+  int Right_ankle;
+  int Right_toe;
+  int Left_leg;
+  int Left_knee;
+  int Left_ankle;
+  int Left_toe;
 };
-
-// ------   note: Start from 0, -1 means null/undefined.
-
-enum class FallLoopFrom {
-  Jump
-};
+BoneIndexes boneIndexes;
 
 // ---------------------------------------------------------
 
