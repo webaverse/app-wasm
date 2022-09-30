@@ -74,8 +74,8 @@ EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
 EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(AnimationSystem::AnimationMixer *mixer, float now, float nowS) {
   return mixer->update(now, nowS);
 }
-EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm) {
-  return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone, isTop, isArm);
+EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
+  return AnimationSystem::createAnimationMapping(isPosition, index, isFirstBone, isLastBone, isTop, isArm, scratchStack, nameByteLength);
 }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration) {
   return AnimationSystem::createAnimation(scratchStack, nameByteLength, duration);

@@ -231,6 +231,80 @@ namespace AnimationSystem {
       std::cout << "boneIndexes.Left_elbow: " << boneIndexes.Left_elbow << std::endl;
       std::cout << "boneIndexes.Left_toe: " << boneIndexes.Left_toe << std::endl;
 
+      std::cout << "boneName 0: " << _animationMappings[0].boneName << std::endl;
+      std::cout << "boneName 1: " << _animationMappings[1].boneName << std::endl;
+      std::cout << "boneName 2: " << _animationMappings[2].boneName << std::endl;
+      std::cout << "boneName 9: " << _animationMappings[9].boneName << std::endl;
+      std::cout << "boneName 52: " << _animationMappings[52].boneName << std::endl;
+
+      // -------------------------------------------------------------------------
+
+      for (unsigned int i = 0; i < _animationMappings.size(); i++) {
+        if (_animationMappings[i].isPosition) {
+          boneIndexes.HipsPosition = i;
+        } else {
+          std::string boneName = _animationMappings[i].boneName;
+          if (boneName == "Hips") boneIndexes.Hips = i;
+          else if (boneName == "Spine") boneIndexes.Spine = i;
+          else if (boneName == "Chest") boneIndexes.Chest = i;
+          else if (boneName == "UpperChest") boneIndexes.UpperChest = i;
+          else if (boneName == "Neck") boneIndexes.Neck = i;
+          else if (boneName == "Head") boneIndexes.Head = i;
+          else if (boneName == "Left_shoulder") boneIndexes.Left_shoulder = i;
+          else if (boneName == "Left_arm") boneIndexes.Left_arm = i;
+          else if (boneName == "Left_elbow") boneIndexes.Left_elbow = i;
+          else if (boneName == "Left_wrist") boneIndexes.Left_wrist = i;
+          else if (boneName == "Left_middleFinger1") boneIndexes.Left_middleFinger1 = i;
+          else if (boneName == "Left_middleFinger2") boneIndexes.Left_middleFinger2 = i;
+          else if (boneName == "Left_middleFinger3") boneIndexes.Left_middleFinger3 = i;
+          else if (boneName == "Left_thumb0") boneIndexes.Left_thumb0 = i;
+          else if (boneName == "Left_thumb1") boneIndexes.Left_thumb1 = i;
+          else if (boneName == "Left_thumb2") boneIndexes.Left_thumb2 = i;
+          else if (boneName == "Left_indexFinger1") boneIndexes.Left_indexFinger1 = i;
+          else if (boneName == "Left_indexFinger2") boneIndexes.Left_indexFinger2 = i;
+          else if (boneName == "Left_indexFinger3") boneIndexes.Left_indexFinger3 = i;
+          else if (boneName == "Left_ringFinger1") boneIndexes.Left_ringFinger1 = i;
+          else if (boneName == "Left_ringFinger2") boneIndexes.Left_ringFinger2 = i;
+          else if (boneName == "Left_ringFinger3") boneIndexes.Left_ringFinger3 = i;
+          else if (boneName == "Left_littleFinger1") boneIndexes.Left_littleFinger1 = i;
+          else if (boneName == "Left_littleFinger2") boneIndexes.Left_littleFinger2 = i;
+          else if (boneName == "Left_littleFinger3") boneIndexes.Left_littleFinger3 = i;
+          else if (boneName == "Right_shoulder") boneIndexes.Right_shoulder = i;
+          else if (boneName == "Right_arm") boneIndexes.Right_arm = i;
+          else if (boneName == "Right_elbow") boneIndexes.Right_elbow = i;
+          else if (boneName == "Right_wrist") boneIndexes.Right_wrist = i;
+          else if (boneName == "Right_middleFinger1") boneIndexes.Right_middleFinger1 = i;
+          else if (boneName == "Right_middleFinger2") boneIndexes.Right_middleFinger2 = i;
+          else if (boneName == "Right_middleFinger3") boneIndexes.Right_middleFinger3 = i;
+          else if (boneName == "Right_thumb0") boneIndexes.Right_thumb0 = i;
+          else if (boneName == "Right_thumb1") boneIndexes.Right_thumb1 = i;
+          else if (boneName == "Right_thumb2") boneIndexes.Right_thumb2 = i;
+          else if (boneName == "Right_indexFinger1") boneIndexes.Right_indexFinger1 = i;
+          else if (boneName == "Right_indexFinger2") boneIndexes.Right_indexFinger2 = i;
+          else if (boneName == "Right_indexFinger3") boneIndexes.Right_indexFinger3 = i;
+          else if (boneName == "Right_ringFinger1") boneIndexes.Right_ringFinger1 = i;
+          else if (boneName == "Right_ringFinger2") boneIndexes.Right_ringFinger2 = i;
+          else if (boneName == "Right_ringFinger3") boneIndexes.Right_ringFinger3 = i;
+          else if (boneName == "Right_littleFinger1") boneIndexes.Right_littleFinger1 = i;
+          else if (boneName == "Right_littleFinger2") boneIndexes.Right_littleFinger2 = i;
+          else if (boneName == "Right_littleFinger3") boneIndexes.Right_littleFinger3 = i;
+          else if (boneName == "Right_leg") boneIndexes.Right_leg = i;
+          else if (boneName == "Right_knee") boneIndexes.Right_knee = i;
+          else if (boneName == "Right_ankle") boneIndexes.Right_ankle = i;
+          else if (boneName == "Right_toe") boneIndexes.Right_toe = i;
+          else if (boneName == "Left_leg") boneIndexes.Left_leg = i;
+          else if (boneName == "Left_knee") boneIndexes.Left_knee = i;
+          else if (boneName == "Left_ankle") boneIndexes.Left_ankle = i;
+          else if (boneName == "Left_toe") boneIndexes.Left_toe = i;
+        }
+      }
+
+      std::cout << "boneIndexes.HipsPosition: " << boneIndexes.HipsPosition << std::endl;
+      std::cout << "boneIndexes.Hips: " << boneIndexes.Hips << std::endl;
+      std::cout << "boneIndexes.Spine: " << boneIndexes.Spine << std::endl;
+      std::cout << "boneIndexes.Left_thumb2: " << boneIndexes.Left_thumb2 << std::endl;
+      std::cout << "boneIndexes.Left_toe: " << boneIndexes.Left_toe << std::endl;
+
       // -------------------------------------------------------------------------
 
       jsonStr += "[";
@@ -460,19 +534,29 @@ namespace AnimationSystem {
     animationMixer->animationValues = new float *[_animationMappings.size()];
     return animationMixer;
   }
-  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm) {
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
     AnimationMapping animationMapping;
+
     animationMapping.isPosition = isPosition;
     animationMapping.index = index;
     animationMapping.isFirstBone = isFirstBone;
     animationMapping.isLastBone = isLastBone;
     animationMapping.isTop = isTop;
     animationMapping.isArm = isArm;
+
+    std::string boneName = "";
+    for (unsigned int i = 0; i < nameByteLength; i++) {
+      boneName += scratchStack[i];
+    }
+    animationMapping.boneName = boneName;
+
     _animationMappings.push_back(animationMapping);
   }
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration) {
     Animation *animation = new Animation();
+
     animation->duration = duration;
+
     std::string name = "";
     for (unsigned int i = 0; i < nameByteLength; i++) {
       name += scratchStack[i];
