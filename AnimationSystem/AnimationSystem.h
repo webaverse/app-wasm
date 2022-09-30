@@ -89,6 +89,8 @@ namespace AnimationSystem {
     bool holdState;
     bool pickUpState;
     bool swimState;
+    //
+    bool fallLoopFromJump;
 
     int activateAnimationIndex;
     int sitAnimationIndex;
@@ -101,8 +103,6 @@ namespace AnimationSystem {
     int aimAnimationIndex;
 
     std::vector<int> useAnimationEnvelopeIndices;
-
-    int fallLoopFrom;
 
     //
 

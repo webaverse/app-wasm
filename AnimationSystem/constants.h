@@ -58,12 +58,6 @@ public:
 };
 BoneIndexes boneIndexes;
 
-// ------   note: Start from 0, -1 means null/undefined.
-
-enum class FallLoopFrom {
-  Jump
-};
-
 // ---------------------------------------------------------
 
 class AnimationDeclaration {
