@@ -426,13 +426,11 @@ namespace AnimationSystem {
     animationMixer->animationValues = new float *[_animationMappings.size()];
     return animationMixer;
   }
-  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
     AnimationMapping animationMapping;
 
     animationMapping.isPosition = isPosition;
     animationMapping.index = index;
-    animationMapping.isFirstBone = isFirstBone;
-    animationMapping.isLastBone = isLastBone;
     animationMapping.isTop = isTop;
     animationMapping.isArm = isArm;
 
@@ -463,7 +461,8 @@ namespace AnimationSystem {
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;
     interpolant.parameterPositions = parameterPositions;
-    interpolant.resultBuffer = (float *)malloc(valueSize * sizeof(float));
+    // interpolant.resultBuffer = (float *)malloc(valueSize * sizeof(float));
+    interpolant.resultBuffer = new float[valueSize];
     interpolant.numSampleValues = numSampleValues;
     interpolant.sampleValues = sampleValues;
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
