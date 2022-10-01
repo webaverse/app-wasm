@@ -534,13 +534,11 @@ namespace AnimationSystem {
     animationMixer->animationValues = new float *[_animationMappings.size()];
     return animationMixer;
   }
-  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
     AnimationMapping animationMapping;
 
     animationMapping.isPosition = isPosition;
     animationMapping.index = index;
-    animationMapping.isFirstBone = isFirstBone;
-    animationMapping.isLastBone = isLastBone;
     animationMapping.isTop = isTop;
     animationMapping.isArm = isArm;
 

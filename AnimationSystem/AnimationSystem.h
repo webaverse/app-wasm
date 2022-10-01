@@ -31,8 +31,6 @@ namespace AnimationSystem {
     bool isPosition;
     unsigned int index;
     std::string boneName;
-    bool isFirstBone;
-    bool isLastBone;
     bool isTop;
     bool isArm;
   };
@@ -123,7 +121,7 @@ namespace AnimationSystem {
 
   // ------
   // need run in this order
-  void createAnimationMapping(bool isPosition, unsigned int index, bool isFirstBone, bool isLastBone, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength);
+  void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength);
   Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration);
   void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize);
   unsigned int initAnimationSystem(char *scratchStack);
