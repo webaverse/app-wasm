@@ -569,7 +569,8 @@ namespace AnimationSystem {
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;
     interpolant.parameterPositions = parameterPositions;
-    interpolant.resultBuffer = (float *)malloc(valueSize * sizeof(float));
+    // interpolant.resultBuffer = (float *)malloc(valueSize * sizeof(float));
+    interpolant.resultBuffer = new float[valueSize];
     interpolant.numSampleValues = numSampleValues;
     interpolant.sampleValues = sampleValues;
     interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
