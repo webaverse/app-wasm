@@ -15,10 +15,6 @@ namespace AnimationSystem {
     unsigned int numParameterPositions;
     float *parameterPositions;
     float *resultBuffer;
-    // float resultBuffer[4];
-    /* AnimationSystem/AnimationSystem.cc:630:12: warning: address of stack memory associated with local variable 'interpolant' returned [-Wreturn-stack-address]
-    return interpolant.resultBuffer;
-           ^~~~~~~~~~~ */
     unsigned int numSampleValues;
     float *sampleValues;
     unsigned int valueSize;
@@ -31,9 +27,7 @@ namespace AnimationSystem {
     std::string name;
   };
   struct AnimationMapping { // spec
-    // float *dst =  (float *)malloc((4) * sizeof(float));
     float *dst = new float[4];
-    // float dst[4]; // note: Not work.
     bool isPosition;
     unsigned int index;
     std::string boneName;

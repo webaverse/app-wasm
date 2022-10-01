@@ -461,7 +461,6 @@ namespace AnimationSystem {
     Interpolant interpolant;
     interpolant.numParameterPositions = numParameterPositions;
     interpolant.parameterPositions = parameterPositions;
-    // interpolant.resultBuffer = (float *)malloc(valueSize * sizeof(float));
     interpolant.resultBuffer = new float[valueSize];
     interpolant.numSampleValues = numSampleValues;
     interpolant.sampleValues = sampleValues;
