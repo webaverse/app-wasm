@@ -14,20 +14,20 @@ namespace AnimationSystem {
   struct Interpolant {
     unsigned int numParameterPositions;
     float *parameterPositions;
-    float *resultBuffer;
+    float resultBuffer[4];
     unsigned int numSampleValues;
     float *sampleValues;
     unsigned int valueSize;
   };
   struct Animation {
     float duration;
-    std::vector<Interpolant> interpolants;
+    std::vector<Interpolant *> interpolants;
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
     std::string name;
   };
   struct AnimationMapping { // spec
-    float *dst = new float[4];
+    float dst[4];
     bool isPosition;
     unsigned int index;
     std::string boneName;
@@ -112,9 +112,11 @@ namespace AnimationSystem {
     static float nowS;
 
     Avatar *avatar;
-    float **animationValues;
+    // float animationValues[53][4];
+    // float animationValues[212];
+    float *animationValues;
 
-    float **update(float now, float nowS);
+    float *update(float now, float nowS);
   };
 
   // ------

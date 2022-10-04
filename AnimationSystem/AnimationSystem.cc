@@ -423,7 +423,8 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
-    animationMixer->animationValues = new float *[_animationMappings.size()];
+    // animationMixer->animationValues = new float *[_animationMappings.size()];
+    animationMixer->animationValues = new float[_animationMappings.size() * 4];
     return animationMixer;
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
@@ -458,68 +459,67 @@ namespace AnimationSystem {
     return animation;
   }
   void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
-    Interpolant interpolant;
-    interpolant.numParameterPositions = numParameterPositions;
-    interpolant.parameterPositions = parameterPositions;
-    interpolant.resultBuffer = new float[valueSize];
-    interpolant.numSampleValues = numSampleValues;
-    interpolant.sampleValues = sampleValues;
-    interpolant.valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
+    Interpolant *interpolant = new Interpolant;
+    interpolant->numParameterPositions = numParameterPositions;
+    interpolant->parameterPositions = parameterPositions;
+    interpolant->numSampleValues = numSampleValues;
+    interpolant->sampleValues = sampleValues;
+    interpolant->valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
     animation->interpolants.push_back(interpolant);
   }
   float *evaluateInterpolant(Animation *animation, unsigned int interpolantIndex, float t) {
-    Interpolant interpolant = animation->interpolants[interpolantIndex];
+    Interpolant *interpolant = animation->interpolants[interpolantIndex];
 
-    if (interpolant.numParameterPositions == 1) {
-      interpolant.resultBuffer[0] = interpolant.sampleValues[0];
-      interpolant.resultBuffer[1] = interpolant.sampleValues[1];
-      interpolant.resultBuffer[2] = interpolant.sampleValues[2];
-      if (interpolant.valueSize == 4) {
-        interpolant.resultBuffer[3] = interpolant.sampleValues[3];
+    if (interpolant->numParameterPositions == 1) {
+      interpolant->resultBuffer[0] = interpolant->sampleValues[0];
+      interpolant->resultBuffer[1] = interpolant->sampleValues[1];
+      interpolant->resultBuffer[2] = interpolant->sampleValues[2];
+      if (interpolant->valueSize == 4) {
+        interpolant->resultBuffer[3] = interpolant->sampleValues[3];
       }
     } else {
       int index = 0;
-      for (; index < interpolant.numParameterPositions; index++) {
-        if (interpolant.parameterPositions[index] > t) {
+      for (; index < interpolant->numParameterPositions; index++) {
+        if (interpolant->parameterPositions[index] > t) {
           break;
         }
       }
 
       if (index == 0) { // note: Handle situation that, parameterPositions[0] > 0, and t == 0 or t < parameterPositions[0].
-        interpolant.resultBuffer[0] = interpolant.sampleValues[0];
-        interpolant.resultBuffer[1] = interpolant.sampleValues[1];
-        interpolant.resultBuffer[2] = interpolant.sampleValues[2];
-        if (interpolant.valueSize == 4) {
-          interpolant.resultBuffer[3] = interpolant.sampleValues[3];
+        interpolant->resultBuffer[0] = interpolant->sampleValues[0];
+        interpolant->resultBuffer[1] = interpolant->sampleValues[1];
+        interpolant->resultBuffer[2] = interpolant->sampleValues[2];
+        if (interpolant->valueSize == 4) {
+          interpolant->resultBuffer[3] = interpolant->sampleValues[3];
         }
-      } else if (index > interpolant.numParameterPositions - 1) { // note: Handle situation that, t > max parameterPosition.
-        unsigned int maxIndex = interpolant.numParameterPositions - 1;
-        interpolant.resultBuffer[0] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 0];
-        interpolant.resultBuffer[1] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 1];
-        interpolant.resultBuffer[2] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 2];
-        if (interpolant.valueSize == 4) {
-          interpolant.resultBuffer[3] = interpolant.sampleValues[maxIndex * interpolant.valueSize + 3];
+      } else if (index > interpolant->numParameterPositions - 1) { // note: Handle situation that, t > max parameterPosition.
+        unsigned int maxIndex = interpolant->numParameterPositions - 1;
+        interpolant->resultBuffer[0] = interpolant->sampleValues[maxIndex * interpolant->valueSize + 0];
+        interpolant->resultBuffer[1] = interpolant->sampleValues[maxIndex * interpolant->valueSize + 1];
+        interpolant->resultBuffer[2] = interpolant->sampleValues[maxIndex * interpolant->valueSize + 2];
+        if (interpolant->valueSize == 4) {
+          interpolant->resultBuffer[3] = interpolant->sampleValues[maxIndex * interpolant->valueSize + 3];
         }
       } else {
         unsigned int index0 = index - 1;
         unsigned int index1 = index;
 
-        float time0 = interpolant.parameterPositions[index0];
-        float time1 = interpolant.parameterPositions[index1];
+        float time0 = interpolant->parameterPositions[index0];
+        float time1 = interpolant->parameterPositions[index1];
         float f = (t - time0) / (time1 - time0);
 
         interpolateFlat(
-          interpolant.resultBuffer, 0,
-          interpolant.sampleValues, index0 * interpolant.valueSize,
-          interpolant.sampleValues, index1 * interpolant.valueSize,
+          interpolant->resultBuffer, 0,
+          interpolant->sampleValues, index0 * interpolant->valueSize,
+          interpolant->sampleValues, index1 * interpolant->valueSize,
           f,
-          interpolant.valueSize == 3
+          interpolant->valueSize == 3
         );
       }
     }
 
-    return interpolant.resultBuffer;
+    return interpolant->resultBuffer;
   }
 
   float *doBlendList(AnimationMapping &spec, std::vector<Animation *> &animations, float &timeS) { // note: Big performance influnce!!! Use `&` to prevent copy parameter's values!!!
@@ -1018,7 +1018,7 @@ namespace AnimationSystem {
     }
   }
 
-  float **AnimationMixer::update(float now, float nowS) {
+  float *AnimationMixer::update(float now, float nowS) {
     AnimationMixer::nowS = nowS;
 
     for (int i = 0; i < _animationMappings.size(); i++) {
@@ -1064,7 +1064,10 @@ namespace AnimationSystem {
       _blendActivate(spec, this->avatar);
       _blendSwim(spec, this->avatar);
 
-      animationValues[i] = spec.dst;
+      animationValues[i * 4] = spec.dst[0];
+      animationValues[i * 4 + 1] = spec.dst[1];
+      animationValues[i * 4 + 2] = spec.dst[2];
+      animationValues[i * 4 + 3] = spec.dst[3];
     }
 
     return animationValues;
