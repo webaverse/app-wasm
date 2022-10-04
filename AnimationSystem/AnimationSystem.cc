@@ -423,7 +423,6 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
-    // animationMixer->animationValues = new float *[_animationMappings.size()];
     animationMixer->animationValues = new float[_animationMappings.size() * 4];
     return animationMixer;
   }

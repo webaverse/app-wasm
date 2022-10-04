@@ -112,8 +112,6 @@ namespace AnimationSystem {
     static float nowS;
 
     Avatar *avatar;
-    // float animationValues[53][4];
-    // float animationValues[212];
     float *animationValues;
 
     float *update(float now, float nowS);
