@@ -14,8 +14,8 @@ namespace AnimationSystem {
   struct Interpolant {
     unsigned int numParameterPositions;
     float *parameterPositions;
-    float *resultBuffer;
-    // float resultBuffer[4];
+    // float *resultBuffer;
+    float resultBuffer[4];
     /* AnimationSystem/AnimationSystem.cc:630:12: warning: address of stack memory associated with local variable 'interpolant' returned [-Wreturn-stack-address]
     return interpolant.resultBuffer;
            ^~~~~~~~~~~ */
@@ -25,7 +25,7 @@ namespace AnimationSystem {
   };
   struct Animation {
     float duration;
-    std::vector<Interpolant> interpolants; // todo: pure array?
+    std::vector<Interpolant *> interpolants; // todo: pure array?
     unsigned int currentInterpolantIndex = 0;
     unsigned int index;
     std::string name;
