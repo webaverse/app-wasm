@@ -32,8 +32,8 @@ namespace AnimationSystem {
   };
   struct AnimationMapping { // spec
     // float *dst =  (float *)malloc((4) * sizeof(float));
-    float *dst = new float[4];
-    // float dst[4]; // note: Not work.
+    // float *dst = new float[4];
+    float dst[4];
     bool isPosition;
     unsigned int index;
     std::string boneName;
@@ -120,9 +120,11 @@ namespace AnimationSystem {
     static float nowS;
 
     Avatar *avatar;
-    float **animationValues;
+    // float animationValues[53][4];
+    // float animationValues[212];
+    float *animationValues;
 
-    float **update(float now, float nowS);
+    float *update(float now, float nowS);
   };
 
   // ------

@@ -71,7 +71,7 @@ EMSCRIPTEN_KEEPALIVE void updateAnimationAvatar(AnimationSystem::Avatar *avatar,
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }
-EMSCRIPTEN_KEEPALIVE float **updateAnimationMixer(AnimationSystem::AnimationMixer *mixer, float now, float nowS) {
+EMSCRIPTEN_KEEPALIVE float *updateAnimationMixer(AnimationSystem::AnimationMixer *mixer, float now, float nowS) {
   return mixer->update(now, nowS);
 }
 EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {

@@ -531,7 +531,8 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
-    animationMixer->animationValues = new float *[_animationMappings.size()];
+    // animationMixer->animationValues = new float *[_animationMappings.size()];
+    animationMixer->animationValues = new float[_animationMappings.size() * 4];
     return animationMixer;
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
@@ -1176,7 +1177,7 @@ namespace AnimationSystem {
     }
   }
 
-  float **AnimationMixer::update(float now, float nowS) {
+  float *AnimationMixer::update(float now, float nowS) {
     // AnimationMixer::now = now; // why can't set, cause idle and dance animatios play very fast ? use file variale instead ?
     AnimationMixer::nowS = nowS;
 
@@ -1231,7 +1232,15 @@ namespace AnimationSystem {
       // animationValues[i][1] = spec.dst[1];
       // animationValues[i][2] = spec.dst[2];
       // if (!spec.isPosition) animationValues[i][3] = spec.dst[3];
-      animationValues[i] = spec.dst;
+      // animationValues[i] = spec.dst;
+      //
+      // copyValue(animationValues[i], spec.dst, spec.isPosition);
+      //
+      // 53 * 4
+      animationValues[i * 4] = spec.dst[0];
+      animationValues[i * 4 + 1] = spec.dst[1];
+      animationValues[i * 4 + 2] = spec.dst[2];
+      animationValues[i * 4 + 3] = spec.dst[3];
     }
 
     return animationValues;
