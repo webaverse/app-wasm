@@ -9,6 +9,7 @@ constexpr float PI = 3.14159265358979323846;
 constexpr float SQRT2 = 1.4142135623730951;
 
 class Vec;
+class Vec2;
 class Quat;
 class Matrix;
 
@@ -371,7 +372,17 @@ class Vec {
           return Vec(x, y, z);
         }
 };
-
+class Vec2 {
+  public:
+    
+        union {
+            float data[2];
+            struct {
+                float x;
+                float y;
+            };
+        };
+};
 class Quat {
   public:
     union {
