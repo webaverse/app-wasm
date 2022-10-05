@@ -372,6 +372,7 @@ emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=52428800 -D__linux__ -s ALLOW_MEMORY_G
   -Iconcaveman \
   worker.cc \
   physics-base.cc \
+  meshoptimizer/simplifier.cpp \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
