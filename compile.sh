@@ -335,7 +335,7 @@ emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_
   -I. \
   -o bin/geometry.js
 sed -Ei 's/geometry.wasm/bin\/geometry.wasm/g' bin/geometry.js
-sed -Ei 's/scriptDirectory\+path/"\/"+path/g' geometry.js
+sed -Ei 's/scriptDirectory\+path/"\/"+path/g' bin/geometry.js
 echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject = r;});Module.postRun = () => {  accept();};Module.waitForLoad = () => p;run();export default Module;' >> bin/geometry.js
 echo 'done building main'
 
