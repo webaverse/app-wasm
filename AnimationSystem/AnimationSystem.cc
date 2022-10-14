@@ -7,7 +7,6 @@ namespace AnimationSystem {
   std::vector<AnimationMixer *> _animationMixers;
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
-  std::vector<float> activateSpeedFactors;
 
   std::vector<std::vector<Animation *>> animationGroups;
 
@@ -313,15 +312,6 @@ namespace AnimationSystem {
       defaultHoldAnimationIndex = holdAnimationIndexes.Pick_up_idle;
       defaultActivateAnimationIndex = activateAnimationIndexes.Grab_forward;
       defaultNarutoRunAnimationIndex = narutoRunAnimationIndexes.NarutoRun;
-
-      // -------------------------------------------------------------------------
-
-      activateSpeedFactors.push_back(1.2); // Grab_forward
-      activateSpeedFactors.push_back(1.7); // Grab_down
-      activateSpeedFactors.push_back(1.2); // Grab_up
-      activateSpeedFactors.push_back(1.2); // Grab_left
-      activateSpeedFactors.push_back(1.2); // Grab_right
-      activateSpeedFactors.push_back(1); // Pick_up
 
       // -------------------------------------------------------------------------
 
@@ -1003,7 +993,7 @@ namespace AnimationSystem {
     if (avatar->activateTime > 0) {
       int activateAnimationIndex = avatar->activateAnimationIndex < 0 ? defaultActivateAnimationIndex : avatar->activateAnimationIndex;
       Animation *activateAnimation = animationGroups[animationGroupIndexes.Activate][activateAnimationIndex];
-      float t2 = fmod((avatar->activateTime / 1000 * activateSpeedFactors[activateAnimationIndex]), activateAnimation->duration);
+      float t2 = fmod((avatar->activateTime / 1000), activateAnimation->duration);
       float *v2 = evaluateInterpolant(activateAnimation, spec.index, t2);
 
       float f = avatar->activateTime > 0 ? min(CubicBezierEasing::cubicBezier(t2), 1) : (1 - min(CubicBezierEasing::cubicBezier(t2), 1));
