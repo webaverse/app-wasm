@@ -1,6 +1,7 @@
 #include "AnimationSystem.h"
 #include "CubicBezierEasing.h"
 #include "constants.h"
+#include "jsonpp/dumper.h"
 
 namespace AnimationSystem {
   std::vector<Avatar *> avatars;
@@ -235,6 +236,18 @@ namespace AnimationSystem {
       std::cout << "boneName 2: " << _animationMappings[2].boneName << std::endl;
       std::cout << "boneName 9: " << _animationMappings[9].boneName << std::endl;
       std::cout << "boneName 52: " << _animationMappings[52].boneName << std::endl;
+
+      std::string text;
+      jsonpp::Dumper dumper;
+
+      text = dumper.dump(jsonpp::JsonObject {
+        { "first", "hello" },
+        { "second", nullptr },
+        { "third", std::vector<int> { 5, 6, 7 } },
+        { "fourth", jsonpp::JsonArray { "abc", 9.1 } },
+      });
+
+      std::cout << "jsonpp result: " << text << std::endl;
 
       // -------------------------------------------------------------------------
 
