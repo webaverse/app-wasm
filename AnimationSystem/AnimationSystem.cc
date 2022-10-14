@@ -460,9 +460,15 @@ namespace AnimationSystem {
   void createAnimationInterpolant(Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
     Interpolant *interpolant = new Interpolant;
     interpolant->numParameterPositions = numParameterPositions;
-    interpolant->parameterPositions = parameterPositions;
+    interpolant->parameterPositions = new float[numParameterPositions];
+    for (unsigned int i = 0; i < numParameterPositions; i++) {
+      interpolant->parameterPositions[i] = parameterPositions[i];
+    }
     interpolant->numSampleValues = numSampleValues;
-    interpolant->sampleValues = sampleValues;
+    interpolant->sampleValues = new float[numSampleValues];
+    for (unsigned int i = 0; i < numSampleValues; i++) {
+      interpolant->sampleValues[i] = sampleValues[i];
+    }
     interpolant->valueSize = valueSize; // only support 3 (vector) or 4 (quaternion)
 
     animation->interpolants.push_back(interpolant);
