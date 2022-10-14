@@ -1,6 +1,7 @@
 #include "AnimationSystem.h"
 #include "CubicBezierEasing.h"
 #include "constants.h"
+#include "Poco/JSON/Object.h"
 
 namespace AnimationSystem {
   std::vector<Avatar *> avatars;
@@ -235,6 +236,39 @@ namespace AnimationSystem {
       std::cout << "boneName 2: " << _animationMappings[2].boneName << std::endl;
       std::cout << "boneName 9: " << _animationMappings[9].boneName << std::endl;
       std::cout << "boneName 52: " << _animationMappings[52].boneName << std::endl;
+
+      //
+
+      Poco::JSON::Object object; // creating an empty object
+      // Poco::JSON::Object address(Poco::JSON_PRESERVE_KEY_ORDER); // creating object to preserve insertion order
+      
+      // /* Setting the address */
+      // address.set("DoorNumber", 34);
+      // address.set("Area", "Ram Nagar");
+      // address.set("City", "Mumbai");
+      // address.set("State", "Maharashtra");
+      
+      // /* Setting the object */
+      // object.set("Name", "Abraham");
+      // object.set("Age", 25);
+      // object.set("Address", address);
+      
+      // /* Printing using stringify */
+      // std::cout<<"Indent: 0\n";
+      // object.stringify(std::cout);
+      // std::cout<<std::endl;
+      
+      // std::cout<<"\nIndent: 2\n";
+      // object.stringify(std::cout, 2);
+      // std::cout<<std::endl;
+      
+      // std::cout<<"\nIndent: 2, step: 0\n";
+      // object.stringify(std::cout, 2, 0);
+      // std::cout<<std::endl;
+      
+      // std::cout<<"\nIndent: 2, 5\n";
+      // object.stringify(std::cout, 2, 5);
+      // std::cout<<std::endl;
 
       // -------------------------------------------------------------------------
 
