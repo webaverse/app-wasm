@@ -243,6 +243,12 @@ namespace AnimationSystem {
       j["encoded"] = ws;
       j["testNumber"] = 137;
 
+      json j2;
+      j2["j2aaa"] = "test string";
+      j2["j2bbb"] = 982;
+
+      j["level2"] = j2;
+
       std::cout << "nlohmann json result: " << j << std::endl;
 
       // -------------------------------------------------------------------------
