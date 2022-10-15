@@ -212,7 +212,7 @@ namespace AnimationSystem {
     return avatar;
   }
   unsigned int initAnimationSystem(char *scratchStack) { // only need init once globally
-    std::string jsonStr = "";
+    std::string jsonStr;
 
     if (!isInitedAnimationSystem) {
       std::cout << "initAnimationSystem ------------------" << std::endl;
@@ -255,7 +255,9 @@ namespace AnimationSystem {
       jarr.push_back(0);
       j["child2"] = jarr;
 
-      std::cout << "nlohmann json result: " << j << std::endl;
+      std::string testJString = j.dump();
+
+      std::cout << "nlohmann json result: " << testJString << std::endl;
 
       // -------------------------------------------------------------------------
 
@@ -327,7 +329,8 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
-      jsonStr += "[";
+      json jAnimationGroups;
+
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];
         std::vector<Animation *> animationGroup;
@@ -336,15 +339,11 @@ namespace AnimationSystem {
         // std::cout << "-IL: groupIndex: " << declaration.index << std::endl;
         // std::cout << "-IL: declaration.groupName: " << declaration.groupName << std::endl;
 
-        jsonStr += "{";
-        jsonStr += "\"name\":";
-        jsonStr += "\"" + declaration.groupName + "\"";
-        jsonStr += ",";
-        jsonStr += "\"index\":";
-        jsonStr += std::to_string(declaration.index);
-        jsonStr += ",";
-        jsonStr += "\"animations\":";
-        jsonStr += "[";
+        json jAnimationGroup;
+        jAnimationGroup["name"] = declaration.groupName;
+        jAnimationGroup["index"] = declaration.index;
+
+        json jAnimations;
         for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
           AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
           animationGroup.push_back(animationAll[animationDeclaration.fileName]);
@@ -353,24 +352,20 @@ namespace AnimationSystem {
           // std::cout << "-IL: animationDeclaration.keyName: " << animationDeclaration.keyName << std::endl;
           // std::cout << "-IL: animationDeclaration.fileName: " << animationDeclaration.fileName << std::endl;
 
-          jsonStr += "{";
-          jsonStr += "\"keyName\":";
-          jsonStr += "\"" + animationDeclaration.keyName + "\"";
-          jsonStr += ",";
-          jsonStr += "\"index\":";
-          jsonStr += std::to_string(animationDeclaration.index);
-          jsonStr += ",";
-          jsonStr += "\"fileName\":";
-          jsonStr += "\"" + animationDeclaration.fileName + "\"";
-          jsonStr += "}";
-          if (j != declaration.animationDeclarations.size() - 1) jsonStr += ",";
+          json jAnimation;
+          jAnimation["keyName"] = animationDeclaration.keyName;
+          jAnimation["index"] = animationDeclaration.index;
+          jAnimation["fileName"] = animationDeclaration.fileName;
+
+          jAnimations.push_back(jAnimation);
         }
+        jAnimationGroup["animations"] = jAnimations;
+
+        jAnimationGroups.push_back(jAnimationGroup);
         animationGroups.push_back(animationGroup);
-        jsonStr += "]";
-        jsonStr += "}";
-        if (i != declarations.size() - 1) jsonStr += ",";
       }
-      jsonStr += "]";
+
+      jsonStr = jAnimationGroups.dump();
       std::cout << "-wasm-jsonStr: " << jsonStr << std::endl; // test
 
       // -------------------------------------------------------------------------
