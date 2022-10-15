@@ -241,6 +241,7 @@ namespace AnimationSystem {
 
       j["original"] = ws;
       j["encoded"] = ws;
+      j["testNumber"] = 137;
 
       std::cout << "nlohmann json result: " << j << std::endl;
 
