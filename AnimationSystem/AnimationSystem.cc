@@ -236,6 +236,14 @@ namespace AnimationSystem {
       std::cout << "boneName 9: " << _animationMappings[9].boneName << std::endl;
       std::cout << "boneName 52: " << _animationMappings[52].boneName << std::endl;
 
+      json j;
+      std::string ws = "abc zsdk";
+
+      j["original"] = ws;
+      j["encoded"] = ws;
+
+      std::cout << "nlohmann json result: " << j << std::endl;
+
       // -------------------------------------------------------------------------
 
       for (unsigned int i = 0; i < _animationMappings.size(); i++) {
