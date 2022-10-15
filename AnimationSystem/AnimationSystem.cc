@@ -249,6 +249,12 @@ namespace AnimationSystem {
 
       j["level2"] = j2;
 
+      json jarr;
+      jarr.push_back(5);
+      jarr.push_back(3);
+      jarr.push_back(0);
+      j["child2"] = jarr;
+
       std::cout << "nlohmann json result: " << j << std::endl;
 
       // -------------------------------------------------------------------------
