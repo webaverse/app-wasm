@@ -298,7 +298,7 @@ if [ ! -f occlusionCull.o ]; then
 fi
 echo 'building main...'
 # m = 64*1024; s = 200 * 1024 * 1024; Math.floor(s/m)*m;
-emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 \
+emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_GROWTH=0 -O3 -s LLD_REPORT_UNDEFINED \
   -IPhysX/physx/include -IPhysX/pxshared/include \
   -IPhysX/physx/source/foundation/include \
   -IPhysX/physx/source/pvd/include \

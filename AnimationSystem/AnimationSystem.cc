@@ -1,7 +1,8 @@
 #include "AnimationSystem.h"
 #include "CubicBezierEasing.h"
 #include "constants.h"
-
+#include "json/json.h"
+#include <iostream>
 namespace AnimationSystem {
   std::vector<Avatar *> avatars;
   std::vector<AnimationMixer *> _animationMixers;
@@ -235,6 +236,23 @@ namespace AnimationSystem {
       std::cout << "boneName 2: " << _animationMappings[2].boneName << std::endl;
       std::cout << "boneName 9: " << _animationMappings[9].boneName << std::endl;
       std::cout << "boneName 52: " << _animationMappings[52].boneName << std::endl;
+
+      Json::Value root;
+      Json::Value data;
+      constexpr bool shouldUseOldWay = false;
+      root["action"] = "run";
+      data["number"] = 1;
+      root["data"] = data;
+
+      if (shouldUseOldWay) {
+        Json::FastWriter writer;
+        const std::string json_file = writer.write(root);
+        std::cout << "-wasm-jsoncpp result: " << json_file << std::endl;
+      } else {
+        Json::StreamWriterBuilder builder;
+        const std::string json_file = Json::writeString(builder, root);
+        std::cout << "-wasm-jsoncpp result: " << json_file << std::endl;
+      }
 
       // -------------------------------------------------------------------------
 
