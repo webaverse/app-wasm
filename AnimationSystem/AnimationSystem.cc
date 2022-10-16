@@ -291,6 +291,7 @@ namespace AnimationSystem {
         }
         jAnimationGroup["animations"] = jAnimations;
 
+        jAnimationGroups.push_back(jAnimationGroup);
         animationGroups.push_back(animationGroup);
       }
 
