@@ -200,7 +200,7 @@ namespace AnimationSystem {
     return avatar;
   }
   unsigned int initAnimationSystem(char *scratchStack) { // only need init once globally
-    std::string jsonStr = "";
+    std::string jsonStr;
 
     if (!isInitedAnimationSystem) {
       // -------------------------------------------------------------------------
@@ -267,43 +267,34 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
-      jsonStr += "[";
+      json jAnimationGroups;
+
       for (unsigned int i = 0; i < declarations.size(); i++) {
         AnimationGroupDeclaration declaration = declarations[i];
         std::vector<Animation *> animationGroup;
 
-        jsonStr += "{";
-        jsonStr += "\"name\":";
-        jsonStr += "\"" + declaration.groupName + "\"";
-        jsonStr += ",";
-        jsonStr += "\"index\":";
-        jsonStr += std::to_string(declaration.index);
-        jsonStr += ",";
-        jsonStr += "\"animations\":";
-        jsonStr += "[";
+        json jAnimationGroup;
+        jAnimationGroup["name"] = declaration.groupName;
+        jAnimationGroup["index"] = declaration.index;
+
+        json jAnimations;
         for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
           AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
           animationGroup.push_back(animationAll[animationDeclaration.fileName]);
 
-          jsonStr += "{";
-          jsonStr += "\"keyName\":";
-          jsonStr += "\"" + animationDeclaration.keyName + "\"";
-          jsonStr += ",";
-          jsonStr += "\"index\":";
-          jsonStr += std::to_string(animationDeclaration.index);
-          jsonStr += ",";
-          jsonStr += "\"fileName\":";
-          jsonStr += "\"" + animationDeclaration.fileName + "\"";
-          jsonStr += "}";
-          if (j != declaration.animationDeclarations.size() - 1) jsonStr += ",";
-        }
-        animationGroups.push_back(animationGroup);
-        jsonStr += "]";
-        jsonStr += "}";
-        if (i != declarations.size() - 1) jsonStr += ",";
-      }
-      jsonStr += "]";
+          json jAnimation;
+          jAnimation["keyName"] = animationDeclaration.keyName;
+          jAnimation["index"] = animationDeclaration.index;
+          jAnimation["fileName"] = animationDeclaration.fileName;
 
+          jAnimations.push_back(jAnimation);
+        }
+        jAnimationGroup["animations"] = jAnimations;
+
+        animationGroups.push_back(animationGroup);
+      }
+
+      jsonStr = jAnimationGroups.dump();
       // -------------------------------------------------------------------------
 
       defaultSitAnimationIndex = sitAnimationIndexes.Chair;

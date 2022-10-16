@@ -2,6 +2,8 @@
 #define _ANIMATIONSYSTEM_H
 #include "physics.h"
 #include <iostream>
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
 
 namespace AnimationSystem {
   struct Interpolant;
