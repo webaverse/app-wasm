@@ -881,6 +881,7 @@ namespace AnimationSystem {
         float *v2 = evaluateInterpolant(holdAnimation, spec.index, t2);
         copyValue(spec.dst, v2, spec.isPosition);
       }
+      _clearXZ(spec.dst, spec.isPosition);
     }
   };
 
