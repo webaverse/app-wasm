@@ -87,6 +87,8 @@ public:
   int Run;
   int Crouch;
   //
+  int Skydive;
+  //
   int Activate;
   int Aim;
   int Dance;
@@ -109,11 +111,11 @@ class SingleAnimationIndexes {
 public:
   int Idle;
   int CrouchIdle;
+  int SkydiveIdle;
   int Jump;
   int DoubleJump;
   int FallLoop;
   int Float; // note: Have to use upper case. Otherwise will cause error "error: cannot combine with previous 'int' declaration specifier `int float`;" .
-  int Skydive;
 };
 SingleAnimationIndexes singleAnimationIndexes;
 
@@ -312,6 +314,11 @@ AnimationGroupDeclarations declarations = {
         "Crouch Idle.fbx"
       },
       {
+        "SkydiveIdle",
+        singleAnimationIndexes.SkydiveIdle = singleAnimationIota++,
+        "glide_idle.fbx"
+      },
+      {
         "Jump",
         singleAnimationIndexes.Jump = singleAnimationIota++,
         "jump.fbx"
@@ -330,11 +337,6 @@ AnimationGroupDeclarations declarations = {
         "Float",
         singleAnimationIndexes.Float = singleAnimationIota++,
         "treading water.fbx"
-      },
-      {
-        "Skydive",
-        singleAnimationIndexes.Skydive = singleAnimationIota++,
-        "glide_idle.fbx"
       },
     }
   },
@@ -444,6 +446,33 @@ AnimationGroupDeclarations declarations = {
         "RightMirror",
         crouchAnimationIndexes.RightMirror = crouchAnimationIota++,
         "Crouched Sneaking Left reverse.fbx"
+      },
+    }
+  },
+  //
+  {
+    "Skydive",
+    animationGroupIndexes.Skydive = animationGroupIota++,
+    {
+      {
+        "Forward",
+        crouchAnimationIndexes.Forward = crouchAnimationIota++,
+        "glide_forward.fbx"
+      },
+      {
+        "Backward",
+        crouchAnimationIndexes.Backward = crouchAnimationIota++,
+        "glide_backward.fbx"
+      },
+      {
+        "Left",
+        crouchAnimationIndexes.Left = crouchAnimationIota++,
+        "glide_left.fbx"
+      },
+      {
+        "Right",
+        crouchAnimationIndexes.Right = crouchAnimationIota++,
+        "glide_right.fbx"
       },
     }
   },

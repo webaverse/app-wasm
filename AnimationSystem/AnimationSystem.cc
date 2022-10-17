@@ -25,6 +25,7 @@ namespace AnimationSystem {
   float *localVecQuatPtr2;
 
   float localWeights[6];
+  float skydiveWeights[4];
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
@@ -401,6 +402,11 @@ namespace AnimationSystem {
     localWeights[3] = this->mirrorLeftFactor;
     localWeights[4] = this->mirrorRightFactorReverse;
     localWeights[5] = this->mirrorRightFactor;
+    
+    skydiveWeights[0] = this->forwardFactor;
+    skydiveWeights[1] = this->backwardFactor;
+    skydiveWeights[2] = this->leftFactor;
+    skydiveWeights[3] = this->rightFactor;
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
@@ -509,12 +515,12 @@ namespace AnimationSystem {
     return interpolant->resultBuffer;
   }
 
-  float *doBlendList(AnimationMapping &spec, std::vector<Animation *> &animations, float &timeS) { // note: Big performance influnce!!! Use `&` to prevent copy parameter's values!!!
+  float *doBlendList(AnimationMapping &spec, std::vector<Animation *> &animations, float *weights, float &timeS) { // note: Big performance influnce!!! Use `&` to prevent copy parameter's values!!!
     float *resultVecQuat;
     unsigned int indexWeightBigThanZero = 0;
     float currentWeight = 0;
     for (int i = 0; i < animations.size(); i++) {
-      float weight = localWeights[i];
+      float weight = weights[i];
       if (weight > 0) {
         Animation *animation = animations[i];
         float *vecQuat = evaluateInterpolant(animation, spec.index, fmod(timeS, animation->duration));
@@ -545,11 +551,11 @@ namespace AnimationSystem {
     // localWeights["rightMirror"] = avatar->mirrorRightFactor;
 
     // walkAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Walk], avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Walk], localWeights, avatar->landTimeS);
     copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
     // runAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Run], avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Run], localWeights, avatar->landTimeS);
 
     // blend walk run
     interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
@@ -560,7 +566,7 @@ namespace AnimationSystem {
     interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
     // crouchAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Crouch], avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Crouch], localWeights, avatar->landTimeS);
     copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
     _clearXZ(localVecQuatArr, spec.isPosition);
 
@@ -930,10 +936,23 @@ namespace AnimationSystem {
     }
   }
 
+  float *_get8DirectionsSkydiveAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) { // todo: _blendSkydive().
+    // skydiveAnimations
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Skydive], skydiveWeights, timeS);
+    copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
+    _clearXZ(localVecQuatArr, spec.isPosition);
+
+    // blend skydive idle ---
+    localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle]->duration));
+    interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+    return localVecQuatArr;
+  }
+
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->fallLoopFactor > 0) {
       float fallLoopTimeS = (avatar->fallLoopTime / 1000);
-      float skydiveStartTimeS = 3;
+      // float skydiveStartTimeS = 3; // formal
+      float skydiveStartTimeS = 1; // test
 
       Animation *fallLoopAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.FallLoop];
       float t2 = fmod(fallLoopTimeS, fallLoopAnimation->duration);
@@ -948,9 +967,10 @@ namespace AnimationSystem {
           interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
         }
       } else {
-        Animation *skydiveAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Skydive];
+        Animation *skydiveAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle];
         float t3 = fmod(fallLoopTimeS, skydiveAnimation->duration);
-        float *v3 = evaluateInterpolant(skydiveAnimation, spec.index, t3);
+        // float *v3 = evaluateInterpolant(skydiveAnimation, spec.index, t3);
+        float *v3 = _get8DirectionsSkydiveAnimationValue(spec, avatar, t3);
 
         float f = (fallLoopTimeS - skydiveStartTimeS) / 0.5;
         f = clamp(f, 0, 1);
