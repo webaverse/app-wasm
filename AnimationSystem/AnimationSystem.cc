@@ -932,13 +932,18 @@ namespace AnimationSystem {
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->fallLoopFactor > 0) {
       float t2 = (avatar->fallLoopTime / 1000);
-      float *v2 = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.FallLoop], spec.index, t2);
-      float f = clamp(t2 / 0.3, 0, 1);
+      if (avatar->fallLoopTime < 3000) {;
+        float *v2 = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.FallLoop], spec.index, t2);
+        float f = clamp(t2 / 0.3, 0, 1);
 
-      if (avatar->fallLoopFromJump) {
-        copyValue(spec.dst, v2, spec.isPosition);
+        if (avatar->fallLoopFromJump) {
+          copyValue(spec.dst, v2, spec.isPosition);
+        } else {
+          interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+        }
       } else {
-        interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
+        float *v2 = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Skydive], spec.index, t2);
+        copyValue(spec.dst, v2, spec.isPosition);
       }
 
       _clearXZ(spec.dst, spec.isPosition);

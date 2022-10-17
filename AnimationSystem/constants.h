@@ -113,6 +113,7 @@ public:
   int DoubleJump;
   int FallLoop;
   int Float; // note: Have to use upper case. Otherwise will cause error "error: cannot combine with previous 'int' declaration specifier `int float`;" .
+  int Skydive;
 };
 SingleAnimationIndexes singleAnimationIndexes;
 
@@ -329,6 +330,11 @@ AnimationGroupDeclarations declarations = {
         "Float",
         singleAnimationIndexes.Float = singleAnimationIota++,
         "treading water.fbx"
+      },
+      {
+        "Skydive",
+        singleAnimationIndexes.Skydive = singleAnimationIota++,
+        "glide_idle.fbx"
       },
     }
   },
