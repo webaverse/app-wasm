@@ -24,8 +24,8 @@ namespace AnimationSystem {
   float *localVecQuatPtr;
   float *localVecQuatPtr2;
 
-  float localWeights[6];
-  float skydiveWeights[4];
+  float defaultDirectionsWeights[6];
+  float skydiveDirectionsWeights[4];
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
@@ -396,17 +396,17 @@ namespace AnimationSystem {
 
     //
     
-    localWeights[0] = this->forwardFactor;
-    localWeights[1] = this->backwardFactor;
-    localWeights[2] = this->mirrorLeftFactorReverse;
-    localWeights[3] = this->mirrorLeftFactor;
-    localWeights[4] = this->mirrorRightFactorReverse;
-    localWeights[5] = this->mirrorRightFactor;
+    defaultDirectionsWeights[0] = this->forwardFactor;
+    defaultDirectionsWeights[1] = this->backwardFactor;
+    defaultDirectionsWeights[2] = this->mirrorLeftFactorReverse;
+    defaultDirectionsWeights[3] = this->mirrorLeftFactor;
+    defaultDirectionsWeights[4] = this->mirrorRightFactorReverse;
+    defaultDirectionsWeights[5] = this->mirrorRightFactor;
     
-    skydiveWeights[0] = this->forwardFactor;
-    skydiveWeights[1] = this->backwardFactor;
-    skydiveWeights[2] = this->leftFactor;
-    skydiveWeights[3] = this->rightFactor;
+    skydiveDirectionsWeights[0] = this->forwardFactor;
+    skydiveDirectionsWeights[1] = this->backwardFactor;
+    skydiveDirectionsWeights[2] = this->leftFactor;
+    skydiveDirectionsWeights[3] = this->rightFactor;
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
@@ -542,20 +542,20 @@ namespace AnimationSystem {
   }
 
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
-    // note: Big performance influnce!!! Do not update `localWeights` here, because of will run 53 times ( 53 bones )!!! todo: Notice codes which will run 53 times!!!
-    // localWeights["forward"] = avatar->forwardFactor;
-    // localWeights["backward"] = avatar->backwardFactor;
-    // localWeights["left"] = avatar->mirrorLeftFactorReverse;
-    // localWeights["leftMirror"] = avatar->mirrorLeftFactor;
-    // localWeights["right"] = avatar->mirrorRightFactorReverse;
-    // localWeights["rightMirror"] = avatar->mirrorRightFactor;
+    // note: Big performance influnce!!! Do not update `defaultDirectionsWeights` here, because of will run 53 times ( 53 bones )!!! todo: Notice codes which will run 53 times!!!
+    // defaultDirectionsWeights["forward"] = avatar->forwardFactor;
+    // defaultDirectionsWeights["backward"] = avatar->backwardFactor;
+    // defaultDirectionsWeights["left"] = avatar->mirrorLeftFactorReverse;
+    // defaultDirectionsWeights["leftMirror"] = avatar->mirrorLeftFactor;
+    // defaultDirectionsWeights["right"] = avatar->mirrorRightFactorReverse;
+    // defaultDirectionsWeights["rightMirror"] = avatar->mirrorRightFactor;
 
     // walkAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Walk], localWeights, avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Walk], defaultDirectionsWeights, avatar->landTimeS);
     copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
     // runAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Run], localWeights, avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Run], defaultDirectionsWeights, avatar->landTimeS);
 
     // blend walk run
     interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
@@ -566,7 +566,7 @@ namespace AnimationSystem {
     interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
     // crouchAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Crouch], localWeights, avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Crouch], defaultDirectionsWeights, avatar->landTimeS);
     copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
     _clearXZ(localVecQuatArr, spec.isPosition);
 
@@ -936,9 +936,9 @@ namespace AnimationSystem {
     }
   }
 
-  float *_get8DirectionsSkydiveAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) { // todo: _blendSkydive().
+  float *_get8DirectionsSkydiveAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) {
     // skydiveAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Skydive], skydiveWeights, timeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Skydive], skydiveDirectionsWeights, timeS);
     copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
     _clearXZ(localVecQuatArr, spec.isPosition);
 
@@ -951,12 +951,11 @@ namespace AnimationSystem {
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->fallLoopFactor > 0) {
       float fallLoopTimeS = (avatar->fallLoopTime / 1000);
-      // float skydiveStartTimeS = 3; // formal
-      float skydiveStartTimeS = 1; // test
+      float skydiveStartTimeS = 3;
 
       Animation *fallLoopAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.FallLoop];
       float t2 = fmod(fallLoopTimeS, fallLoopAnimation->duration);
-      float *v2 = evaluateInterpolant(fallLoopAnimation, spec.index, t2); // todo: stop evaluate fallLoop after transition to skydive.
+      float *v2 = evaluateInterpolant(fallLoopAnimation, spec.index, t2);
 
       if (fallLoopTimeS < skydiveStartTimeS) {
         float f = clamp(fallLoopTimeS / 0.3, 0, 1);
@@ -969,7 +968,6 @@ namespace AnimationSystem {
       } else {
         Animation *skydiveAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle];
         float t3 = fmod(fallLoopTimeS, skydiveAnimation->duration);
-        // float *v3 = evaluateInterpolant(skydiveAnimation, spec.index, t3);
         float *v3 = _get8DirectionsSkydiveAnimationValue(spec, avatar, t3);
 
         float f = (fallLoopTimeS - skydiveStartTimeS) / 0.5;
