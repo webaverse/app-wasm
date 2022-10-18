@@ -949,17 +949,17 @@ namespace AnimationSystem {
     return localVecQuatArr;
   }
 
-  // float *_get8DirectionsGliderAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) {
-  //   // gliderAnimations
-  //   localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Glider], directionsWeights, timeS);
-  //   copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
-  //   _clearXZ(localVecQuatArr, spec.isPosition);
+  float *_get8DirectionsGliderAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) {
+    // gliderAnimations
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Glider], directionsWeights, timeS);
+    copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
+    _clearXZ(localVecQuatArr, spec.isPosition);
 
-  //   // blend glider idle ---
-  //   localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle]->duration));
-  //   interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
-  //   return localVecQuatArr;
-  // }
+    // blend glider idle ---
+    localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle]->duration));
+    interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+    return localVecQuatArr;
+  }
 
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->fallLoopFactor > 0) {
@@ -996,8 +996,8 @@ namespace AnimationSystem {
     if (avatar->gliderState) {
       Animation *gliderAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle];
       float t3 = fmod(AnimationMixer::nowS, gliderAnimation->duration);
-      // float *v3 = _get8DirectionsGliderAnimationValue(spec, avatar, t3);
-      float *v3 = evaluateInterpolant(gliderAnimation, spec.index, t3);
+      float *v3 = _get8DirectionsGliderAnimationValue(spec, avatar, t3);
+      // float *v3 = evaluateInterpolant(gliderAnimation, spec.index, t3);
       copyValue(spec.dst, v3, spec.isPosition);
 
       // float f = (fallLoopTimeS - gliderStartTimeS) / 0.5;
