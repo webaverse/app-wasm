@@ -77,6 +77,7 @@ namespace AnimationSystem {
     float timeSinceLastMoveS;
     float swimTime;
     float movementsTime;
+    float gliderTime;
     float sprintFactor;
     float movementsTransitionFactor;
 
