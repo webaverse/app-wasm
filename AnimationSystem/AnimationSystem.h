@@ -89,6 +89,7 @@ namespace AnimationSystem {
     bool holdState;
     bool pickUpState;
     bool swimState;
+    bool gliderState;
     //
     bool fallLoopFromJump;
 

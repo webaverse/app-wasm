@@ -382,4 +382,4 @@ echo 'let accept, reject;const p = new Promise((a, r) => {  accept = a;  reject 
 echo 'done building worker'
 
 # Prevent compile window auto close after error, to see the error details. https://askubuntu.com/a/20353/1012283
-# exec $SHELL
+exec $SHELL

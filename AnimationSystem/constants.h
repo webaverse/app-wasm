@@ -88,6 +88,7 @@ public:
   int Crouch;
   //
   int Skydive;
+  int Glider;
   //
   int Activate;
   int Aim;
@@ -112,6 +113,7 @@ public:
   int Idle;
   int CrouchIdle;
   int SkydiveIdle;
+  int GliderIdle;
   int Jump;
   int DoubleJump;
   int FallLoop;
@@ -156,6 +158,28 @@ public:
   int RightMirror;
 };
 CrouchAnimationIndexes crouchAnimationIndexes;
+
+// ---
+
+int skydiveAnimationIota = 0;
+class SkydiveAnimationIndexes {
+public:
+  int Forward;
+  int Backward;
+  int Left;
+  int Right;
+};
+SkydiveAnimationIndexes skydiveAnimationIndexes;
+
+int gliderAnimationIota = 0;
+class GliderAnimationIndexes {
+public:
+  int Forward;
+  int Backward;
+  int Left;
+  int Right;
+};
+GliderAnimationIndexes gliderAnimationIndexes;
 
 // ---
 
@@ -319,6 +343,11 @@ AnimationGroupDeclarations declarations = {
         "glide_idle.fbx"
       },
       {
+        "GliderIdle",
+        singleAnimationIndexes.GliderIdle = singleAnimationIota++,
+        "glider_forward.fbx"
+      },
+      {
         "Jump",
         singleAnimationIndexes.Jump = singleAnimationIota++,
         "jump.fbx"
@@ -456,23 +485,49 @@ AnimationGroupDeclarations declarations = {
     {
       {
         "Forward",
-        crouchAnimationIndexes.Forward = crouchAnimationIota++,
+        skydiveAnimationIndexes.Forward = skydiveAnimationIota++,
         "glide_forward.fbx"
       },
       {
         "Backward",
-        crouchAnimationIndexes.Backward = crouchAnimationIota++,
+        skydiveAnimationIndexes.Backward = skydiveAnimationIota++,
         "glide_backward.fbx"
       },
       {
         "Left",
-        crouchAnimationIndexes.Left = crouchAnimationIota++,
+        skydiveAnimationIndexes.Left = skydiveAnimationIota++,
         "glide_left.fbx"
       },
       {
         "Right",
-        crouchAnimationIndexes.Right = crouchAnimationIota++,
+        skydiveAnimationIndexes.Right = skydiveAnimationIota++,
         "glide_right.fbx"
+      },
+    }
+  },
+  {
+    "Glider",
+    animationGroupIndexes.Glider = animationGroupIota++,
+    {
+      {
+        "Forward",
+        gliderAnimationIndexes.Forward = gliderAnimationIota++,
+        "glider_forward.fbx"
+      },
+      {
+        "Backward",
+        gliderAnimationIndexes.Backward = gliderAnimationIota++,
+        "glider_backward.fbx"
+      },
+      {
+        "Left",
+        gliderAnimationIndexes.Left = gliderAnimationIota++,
+        "glider_left.fbx"
+      },
+      {
+        "Right",
+        gliderAnimationIndexes.Right = gliderAnimationIota++,
+        "glider_right.fbx"
       },
     }
   },

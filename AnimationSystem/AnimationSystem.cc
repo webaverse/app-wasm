@@ -24,8 +24,8 @@ namespace AnimationSystem {
   float *localVecQuatPtr;
   float *localVecQuatPtr2;
 
-  float defaultDirectionsWeights[6];
-  float skydiveDirectionsWeights[4];
+  float directionsWeights[4];
+  float directionsWeightsWithReverse[6];
 
   float identityQuaternion[4] = {0, 0, 0, 1};
 
@@ -353,6 +353,7 @@ namespace AnimationSystem {
     this->holdState = scratchStack[index++];
     this->pickUpState = scratchStack[index++];
     this->swimState = scratchStack[index++];
+    this->gliderState = scratchStack[index++];
 
     this->landWithMoving = scratchStack[index++];
     this->landTime = scratchStack[index++];
@@ -396,17 +397,17 @@ namespace AnimationSystem {
 
     //
     
-    defaultDirectionsWeights[0] = this->forwardFactor;
-    defaultDirectionsWeights[1] = this->backwardFactor;
-    defaultDirectionsWeights[2] = this->mirrorLeftFactorReverse;
-    defaultDirectionsWeights[3] = this->mirrorLeftFactor;
-    defaultDirectionsWeights[4] = this->mirrorRightFactorReverse;
-    defaultDirectionsWeights[5] = this->mirrorRightFactor;
-    
-    skydiveDirectionsWeights[0] = this->forwardFactor;
-    skydiveDirectionsWeights[1] = this->backwardFactor;
-    skydiveDirectionsWeights[2] = this->leftFactor;
-    skydiveDirectionsWeights[3] = this->rightFactor;
+    directionsWeights[0] = this->forwardFactor;
+    directionsWeights[1] = this->backwardFactor;
+    directionsWeights[2] = this->leftFactor;
+    directionsWeights[3] = this->rightFactor;
+
+    directionsWeightsWithReverse[0] = this->forwardFactor;
+    directionsWeightsWithReverse[1] = this->backwardFactor;
+    directionsWeightsWithReverse[2] = this->mirrorLeftFactorReverse;
+    directionsWeightsWithReverse[3] = this->mirrorLeftFactor;
+    directionsWeightsWithReverse[4] = this->mirrorRightFactorReverse;
+    directionsWeightsWithReverse[5] = this->mirrorRightFactor;
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
@@ -542,20 +543,20 @@ namespace AnimationSystem {
   }
 
   void _handleDefault(AnimationMapping &spec, Avatar *avatar) {
-    // note: Big performance influnce!!! Do not update `defaultDirectionsWeights` here, because of will run 53 times ( 53 bones )!!! todo: Notice codes which will run 53 times!!!
-    // defaultDirectionsWeights["forward"] = avatar->forwardFactor;
-    // defaultDirectionsWeights["backward"] = avatar->backwardFactor;
-    // defaultDirectionsWeights["left"] = avatar->mirrorLeftFactorReverse;
-    // defaultDirectionsWeights["leftMirror"] = avatar->mirrorLeftFactor;
-    // defaultDirectionsWeights["right"] = avatar->mirrorRightFactorReverse;
-    // defaultDirectionsWeights["rightMirror"] = avatar->mirrorRightFactor;
+    // note: Big performance influnce!!! Do not update `directionsWeightsWithReverse` here, because of will run 53 times ( 53 bones )!!! todo: Notice codes which will run 53 times!!!
+    // directionsWeightsWithReverse["forward"] = avatar->forwardFactor;
+    // directionsWeightsWithReverse["backward"] = avatar->backwardFactor;
+    // directionsWeightsWithReverse["left"] = avatar->mirrorLeftFactorReverse;
+    // directionsWeightsWithReverse["leftMirror"] = avatar->mirrorLeftFactor;
+    // directionsWeightsWithReverse["right"] = avatar->mirrorRightFactorReverse;
+    // directionsWeightsWithReverse["rightMirror"] = avatar->mirrorRightFactor;
 
     // walkAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Walk], defaultDirectionsWeights, avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Walk], directionsWeightsWithReverse, avatar->landTimeS);
     copyValue(spec.dst, localVecQuatPtr2, spec.isPosition);
 
     // runAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Run], defaultDirectionsWeights, avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Run], directionsWeightsWithReverse, avatar->landTimeS);
 
     // blend walk run
     interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr2, 0, avatar->walkRunFactor, spec.isPosition);
@@ -566,7 +567,7 @@ namespace AnimationSystem {
     interpolateFlat(spec.dst, 0, spec.dst, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
 
     // crouchAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Crouch], defaultDirectionsWeights, avatar->landTimeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Crouch], directionsWeightsWithReverse, avatar->landTimeS);
     copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
     _clearXZ(localVecQuatArr, spec.isPosition);
 
@@ -938,7 +939,7 @@ namespace AnimationSystem {
 
   float *_get8DirectionsSkydiveAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) {
     // skydiveAnimations
-    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Skydive], skydiveDirectionsWeights, timeS);
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Skydive], directionsWeights, timeS);
     copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
     _clearXZ(localVecQuatArr, spec.isPosition);
 
@@ -947,6 +948,18 @@ namespace AnimationSystem {
     interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
     return localVecQuatArr;
   }
+
+  // float *_get8DirectionsGliderAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) {
+  //   // gliderAnimations
+  //   localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Glider], directionsWeights, timeS);
+  //   copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
+  //   _clearXZ(localVecQuatArr, spec.isPosition);
+
+  //   // blend glider idle ---
+  //   localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle]->duration));
+  //   interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+  //   return localVecQuatArr;
+  // }
 
   void _blendFallLoop(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->fallLoopFactor > 0) {
@@ -974,6 +987,22 @@ namespace AnimationSystem {
         f = clamp(f, 0, 1);
         interpolateFlat(spec.dst, 0, v2, 0, v3, 0, f, spec.isPosition);
       }
+
+      _clearXZ(spec.dst, spec.isPosition);
+    }
+  }
+
+  void _blendGlider(AnimationMapping &spec, Avatar *avatar) {
+    if (avatar->gliderState) {
+      Animation *gliderAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle];
+      float t3 = fmod(AnimationMixer::nowS, gliderAnimation->duration);
+      // float *v3 = _get8DirectionsGliderAnimationValue(spec, avatar, t3);
+      float *v3 = evaluateInterpolant(gliderAnimation, spec.index, t3);
+      copyValue(spec.dst, v3, spec.isPosition);
+
+      // float f = (fallLoopTimeS - gliderStartTimeS) / 0.5;
+      // f = clamp(f, 0, 1);
+      // interpolateFlat(spec.dst, 0, v2, 0, v3, 0, f, spec.isPosition);
 
       _clearXZ(spec.dst, spec.isPosition);
     }
@@ -1081,6 +1110,7 @@ namespace AnimationSystem {
       // note: cascading blending, in order to do transition between all kinds of aniamtions.
       _blendFly(spec, this->avatar);
       _blendFallLoop(spec, this->avatar);
+      _blendGlider(spec, this->avatar);
       _blendLand(spec, this->avatar);
       _blendActivate(spec, this->avatar);
       _blendSwim(spec, this->avatar);
