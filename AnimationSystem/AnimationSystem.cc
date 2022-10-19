@@ -998,12 +998,9 @@ namespace AnimationSystem {
       Animation *gliderAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle];
       float t3 = fmod(AnimationMixer::nowS, gliderAnimation->duration);
       float *v3 = _get8DirectionsGliderAnimationValue(spec, avatar, t3);
-      // float *v3 = evaluateInterpolant(gliderAnimation, spec.index, t3);
-      // copyValue(spec.dst, v3, spec.isPosition);
 
       float f = avatar->gliderTime / 1000 / 0.15;
       f = clamp(f, 0, 1);
-      // if (spec.isPosition) std::cout << "f: " << f << std::endl;
       interpolateFlat(spec.dst, 0, spec.dst, 0, v3, 0, f, spec.isPosition);
 
       _clearXZ(spec.dst, spec.isPosition);
