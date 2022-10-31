@@ -34,7 +34,7 @@ namespace AnimationSystem {
 
   // Utils ------
 
-  float min(float a, float b) {
+  float min(float a, float b) { // todo: fmin, fmax ?
     if (a > b) {
       return b;
     } else {
@@ -215,26 +215,26 @@ namespace AnimationSystem {
     std::string jsonStr;
 
     if (!isInitedAnimationSystem) {
-      std::cout << "initAnimationSystem ------------------" << std::endl;
+      // std::cout << "initAnimationSystem ------------------" << std::endl;
 
-      std::cout << "animationGroupIndexes.Dance: " << animationGroupIndexes.Dance << std::endl;
-      std::cout << "animationGroupIndexes.Activate: " << animationGroupIndexes.Activate << std::endl;
-      std::cout << "animationGroupIndexes.Use: " << animationGroupIndexes.Use << std::endl;
-      std::cout << "animationGroupIndexes.Land: " << animationGroupIndexes.Land << std::endl;
-      std::cout << "danceAnimationIndexes.Dansu: " << danceAnimationIndexes.Dansu << std::endl;
-      std::cout << "danceAnimationIndexes.Powerup: " << danceAnimationIndexes.Powerup << std::endl;
+      // std::cout << "animationGroupIndexes.Dance: " << animationGroupIndexes.Dance << std::endl;
+      // std::cout << "animationGroupIndexes.Activate: " << animationGroupIndexes.Activate << std::endl;
+      // std::cout << "animationGroupIndexes.Use: " << animationGroupIndexes.Use << std::endl;
+      // std::cout << "animationGroupIndexes.Land: " << animationGroupIndexes.Land << std::endl;
+      // std::cout << "danceAnimationIndexes.Dansu: " << danceAnimationIndexes.Dansu << std::endl;
+      // std::cout << "danceAnimationIndexes.Powerup: " << danceAnimationIndexes.Powerup << std::endl;
 
-      std::cout << "boneIndexes.Hips: " << boneIndexes.Hips << std::endl;
-      std::cout << "boneIndexes.Spine: " << boneIndexes.Spine << std::endl;
-      std::cout << "boneIndexes.Chest: " << boneIndexes.Chest << std::endl;
-      std::cout << "boneIndexes.Left_elbow: " << boneIndexes.Left_elbow << std::endl;
-      std::cout << "boneIndexes.Left_toe: " << boneIndexes.Left_toe << std::endl;
+      // std::cout << "boneIndexes.Hips: " << boneIndexes.Hips << std::endl;
+      // std::cout << "boneIndexes.Spine: " << boneIndexes.Spine << std::endl;
+      // std::cout << "boneIndexes.Chest: " << boneIndexes.Chest << std::endl;
+      // std::cout << "boneIndexes.Left_elbow: " << boneIndexes.Left_elbow << std::endl;
+      // std::cout << "boneIndexes.Left_toe: " << boneIndexes.Left_toe << std::endl;
 
-      std::cout << "boneName 0: " << _animationMappings[0].boneName << std::endl;
-      std::cout << "boneName 1: " << _animationMappings[1].boneName << std::endl;
-      std::cout << "boneName 2: " << _animationMappings[2].boneName << std::endl;
-      std::cout << "boneName 9: " << _animationMappings[9].boneName << std::endl;
-      std::cout << "boneName 52: " << _animationMappings[52].boneName << std::endl;
+      // std::cout << "boneName 0: " << _animationMappings[0].boneName << std::endl;
+      // std::cout << "boneName 1: " << _animationMappings[1].boneName << std::endl;
+      // std::cout << "boneName 2: " << _animationMappings[2].boneName << std::endl;
+      // std::cout << "boneName 9: " << _animationMappings[9].boneName << std::endl;
+      // std::cout << "boneName 52: " << _animationMappings[52].boneName << std::endl;
 
       json j;
       std::string ws = "abc zsdk";
@@ -257,7 +257,7 @@ namespace AnimationSystem {
 
       std::string testJString = j.dump();
 
-      std::cout << "nlohmann json result: " << testJString << std::endl;
+      // std::cout << "nlohmann json result: " << testJString << std::endl;
 
       // -------------------------------------------------------------------------
 
@@ -321,11 +321,11 @@ namespace AnimationSystem {
         }
       }
 
-      std::cout << "boneIndexes.HipsPosition: " << boneIndexes.HipsPosition << std::endl;
-      std::cout << "boneIndexes.Hips: " << boneIndexes.Hips << std::endl;
-      std::cout << "boneIndexes.Spine: " << boneIndexes.Spine << std::endl;
-      std::cout << "boneIndexes.Left_thumb2: " << boneIndexes.Left_thumb2 << std::endl;
-      std::cout << "boneIndexes.Left_toe: " << boneIndexes.Left_toe << std::endl;
+      // std::cout << "boneIndexes.HipsPosition: " << boneIndexes.HipsPosition << std::endl;
+      // std::cout << "boneIndexes.Hips: " << boneIndexes.Hips << std::endl;
+      // std::cout << "boneIndexes.Spine: " << boneIndexes.Spine << std::endl;
+      // std::cout << "boneIndexes.Left_thumb2: " << boneIndexes.Left_thumb2 << std::endl;
+      // std::cout << "boneIndexes.Left_toe: " << boneIndexes.Left_toe << std::endl;
 
       // -------------------------------------------------------------------------
 
@@ -366,7 +366,7 @@ namespace AnimationSystem {
       }
 
       jsonStr = jAnimationGroups.dump();
-      std::cout << "-wasm-jsonStr: " << jsonStr << std::endl; // test
+      // std::cout << "-wasm-jsonStr: " << jsonStr << std::endl; // test
 
       // -------------------------------------------------------------------------
 
@@ -379,9 +379,9 @@ namespace AnimationSystem {
 
       // -------------------------------------------------------------------------
 
-      std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.Drink]->name << std::endl;
-      std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.SwordSideSlashStep]->name << std::endl;
-      std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.Throw]->name << std::endl;
+      // std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.Drink]->name << std::endl;
+      // std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.SwordSideSlashStep]->name << std::endl;
+      // std::cout << "test animation name: " << animationGroups[animationGroupIndexes.Use][useAnimationIndexes.Throw]->name << std::endl;
 
       // -------------------------------------------------------------------------
 
@@ -395,37 +395,37 @@ namespace AnimationSystem {
       float i, result;
       i = 0;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.1;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.2;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.3;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.4;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.5;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.6;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.7;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.8;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 0.9;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
       i = 1;
       result = CubicBezierEasing::cubicBezier(i);
-      std::cout << "cubicBezier " << i << ": " << result << std::endl;
+      // std::cout << "cubicBezier " << i << ": " << result << std::endl;
 
       //
       isInitedAnimationSystem = true;
