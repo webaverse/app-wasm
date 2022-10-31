@@ -6,14 +6,14 @@
 using json = nlohmann::json;
 
 
-  // --- Interpolators
-  class ScalarInterpolator {
+  // --- actionInterpolants
+  class ScalarInterpolant {
   public:
     bool evaluatee;
     float value;
     float minValue;
     float maxValue;
-    ScalarInterpolator(bool evaluatee, float minValue, float maxValue) {
+    ScalarInterpolant(bool evaluatee, float minValue, float maxValue) {
       this->evaluatee = evaluatee;
       this->value = minValue;
       this->minValue = minValue;
@@ -29,7 +29,7 @@ using json = nlohmann::json;
       return this->maxValue - this->value;
     }
   };
-  // class InfiniteActionInterpolant: public ScalarInterpolator {
+  // class InfiniteActionInterpolant: public ScalarInterpolant {
   // public:
 
   // }
@@ -60,7 +60,36 @@ using json = nlohmann::json;
       this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
     }
   };
-  // --- End: Interpolators
+  class InfiniteActionInterpolant {
+  public:
+    bool *evaluatee;
+    float value;
+    float minValue;
+    float maxValue;
+    InfiniteActionInterpolant(bool *evaluatee, float minValue) {
+      this->evaluatee = evaluatee;
+      this->value = minValue;
+      this->minValue = minValue;
+      this->maxValue = std::numeric_limits<float>::infinity();
+    }
+    float get() {
+      return this->value;
+    }
+    float getNormalized() {
+      return this->value / (this->maxValue - this->minValue);
+    }
+    float getInverse() {
+      return this->maxValue - this->value;
+    }
+    void update(float timeDiff) {
+      if (*this->evaluatee) {
+        this->value += timeDiff;
+      } else {
+        this->value = this->minValue;
+      }
+    }
+  };
+  // --- End: actionInterpolants
 
 namespace AnimationSystem {
   struct Interpolant;
@@ -103,6 +132,7 @@ namespace AnimationSystem {
   class Avatar {
   public:
     BiActionInterpolant *biActionInterpolant; // test
+    InfiniteActionInterpolant *infiniteActionInterpolant; // test
 
     AnimationMixer *mixer;
 

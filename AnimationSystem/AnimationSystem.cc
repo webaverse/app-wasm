@@ -211,6 +211,7 @@ namespace AnimationSystem {
 
     
     avatar->biActionInterpolant = new BiActionInterpolant(&avatar->crouchState, 0, 200); // test
+    avatar->infiniteActionInterpolant = new InfiniteActionInterpolant(&avatar->flyState, 0); // test
 
     return avatar;
   }
@@ -482,7 +483,7 @@ namespace AnimationSystem {
     this->landTime = scratchStack[index++];
     this->fallLoopFactor = scratchStack[index++];
     this->fallLoopTime = scratchStack[index++];
-    this->flyTime = scratchStack[index++];
+    // this->flyTime = scratchStack[index++];
     this->doubleJumpTime = scratchStack[index++];
     this->jumpTime = scratchStack[index++];
     this->narutoRunTime = scratchStack[index++];
@@ -540,11 +541,16 @@ namespace AnimationSystem {
     directionsWeightsWithReverse[4] = this->mirrorRightFactorReverse;
     directionsWeightsWithReverse[5] = this->mirrorRightFactor;
 
-    // ------------------
+    // --- test
     this->biActionInterpolant->update(timeDiff); // test
     float test = this->biActionInterpolant->getNormalized(); // test
     this->crouchFactor = test;
-    std::cout << "test: " << test << std::endl;
+    // std::cout << "test: " << test << std::endl;
+
+    this->infiniteActionInterpolant->update(timeDiff);
+    this->flyTime = this->flyState ? this->infiniteActionInterpolant->get() : -1;
+    // std::cout << "test flyTime: " << this->flyTime << std::endl;
+    // --- end: test
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
@@ -1048,6 +1054,7 @@ namespace AnimationSystem {
 
   void _blendFly(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->flyState || (avatar->flyTime >= 0 && avatar->flyTime < 1000)) {
+      // if (spec.isPosition) std::cout << "test flyTime: " << avatar->flyTime << " trueeeee" << std::endl;
       // if (spec.isPosition) avatar->testBlendStrings += "_blendFly, "; // test: blend strings.
 
       float t2 = avatar->flyTime / 1000;
