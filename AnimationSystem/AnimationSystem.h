@@ -60,6 +60,36 @@ using json = nlohmann::json;
       this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
     }
   };
+  class UniActionInterpolant {
+  public:
+    bool *evaluatee;
+    float value;
+    float minValue;
+    float maxValue;
+    UniActionInterpolant(bool *evaluatee, float minValue, float maxValue) {
+      this->evaluatee = evaluatee;
+      this->value = minValue;
+      this->minValue = minValue;
+      this->maxValue = maxValue;
+    }
+    float get() {
+      return this->value;
+    }
+    float getNormalized() {
+      return this->value / (this->maxValue - this->minValue);
+    }
+    float getInverse() {
+      return this->maxValue - this->value;
+    }
+    void update(float timeDiff) {
+      if (*this->evaluatee) {
+        this->value += timeDiff;
+        this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
+      } else {
+        this->value = this->minValue;
+      }
+    }
+  };
   class InfiniteActionInterpolant {
   public:
     bool *evaluatee;
@@ -135,6 +165,7 @@ namespace AnimationSystem {
     // ActionInterpolants // todo: Use template map/array `actionInterpolants`.
     BiActionInterpolant *crouchActI;
     InfiniteActionInterpolant *flyActI;
+    UniActionInterpolant *activateActI;
 
     AnimationMixer *mixer;
 
@@ -187,6 +218,7 @@ namespace AnimationSystem {
     bool holdState;
     bool pickUpState;
     bool swimState;
+    bool activateState;
     //
     bool fallLoopFromJump;
 

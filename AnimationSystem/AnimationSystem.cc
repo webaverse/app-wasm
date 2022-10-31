@@ -209,9 +209,10 @@ namespace AnimationSystem {
     avatar->mixer = mixer;
     mixer->avatar = avatar;
 
-    
-    avatar->crouchActI = new BiActionInterpolant(&avatar->crouchState, 0, 200); // test
-    avatar->flyActI = new InfiniteActionInterpolant(&avatar->flyState, 0); // test
+    // ActionInterpolants
+    avatar->crouchActI = new BiActionInterpolant(&avatar->crouchState, 0, 200);
+    avatar->flyActI = new InfiniteActionInterpolant(&avatar->flyState, 0);
+    avatar->activateActI = new UniActionInterpolant(&avatar->activateState, 0, 750); // todo: activateMaxTime = 750;
 
     return avatar;
   }
@@ -463,7 +464,7 @@ namespace AnimationSystem {
     this->sprintFactor = scratchStack[index++];
     this->movementsTransitionFactor = scratchStack[index++];
 
-    this->activateTime = scratchStack[index++];
+    // this->activateTime = scratchStack[index++];
     this->swimTime = scratchStack[index++];
     this->movementsTime = scratchStack[index++];
 
@@ -477,6 +478,7 @@ namespace AnimationSystem {
     this->holdState = scratchStack[index++];
     this->pickUpState = scratchStack[index++];
     this->swimState = scratchStack[index++];
+    this->activateState = scratchStack[index++];
 
     // other ---
     this->landWithMoving = scratchStack[index++];
@@ -549,6 +551,9 @@ namespace AnimationSystem {
     this->flyActI->update(timeDiff);
     this->flyTime = this->flyState ? this->flyActI->get() : -1;
     // std::cout << "test flyTime: " << this->flyTime << std::endl;
+
+    this->activateActI->update(timeDiff);
+    this->activateTime = this->activateActI->get();
     // --- end: Update & Get value of ActionInterpolants
   }
   AnimationMixer *createAnimationMixer() {
