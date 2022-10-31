@@ -5,6 +5,63 @@
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+
+  // --- Interpolators
+  class ScalarInterpolator {
+  public:
+    bool evaluatee;
+    float value;
+    float minValue;
+    float maxValue;
+    ScalarInterpolator(bool evaluatee, float minValue, float maxValue) {
+      this->evaluatee = evaluatee;
+      this->value = minValue;
+      this->minValue = minValue;
+      this->maxValue = maxValue;
+    }
+    float get() {
+      return this->value;
+    }
+    float getNormalized() {
+      return this->value / (this->maxValue - this->minValue);
+    }
+    float getInverse() {
+      return this->maxValue - this->value;
+    }
+  };
+  // class InfiniteActionInterpolant: public ScalarInterpolator {
+  // public:
+
+  // }
+  class BiActionInterpolant {
+  public:
+    bool *evaluatee;
+    float value;
+    float minValue;
+    float maxValue;
+    BiActionInterpolant(bool *evaluatee, float minValue, float maxValue) {
+      this->evaluatee = evaluatee;
+      this->value = minValue;
+      this->minValue = minValue;
+      this->maxValue = maxValue;
+    }
+    float get() {
+      return this->value;
+    }
+    float getNormalized() {
+      return this->value / (this->maxValue - this->minValue);
+    }
+    float getInverse() {
+      return this->maxValue - this->value;
+    }
+    void update(float timeDiff) {
+      // std::cout << "evaluatee: " << (*(this->evaluatee)) << std::endl;
+      this->value += (*this->evaluatee ? 1 : -1) * timeDiff;
+      this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
+    }
+  };
+  // --- End: Interpolators
+
 namespace AnimationSystem {
   struct Interpolant;
   struct Animation;
@@ -45,6 +102,8 @@ namespace AnimationSystem {
 
   class Avatar {
   public:
+    BiActionInterpolant *biActionInterpolant; // test
+
     AnimationMixer *mixer;
 
     // values
@@ -114,7 +173,7 @@ namespace AnimationSystem {
 
     std::string testBlendStrings; // test
     
-    void update(float *scratchStack);
+    void update(float *scratchStack, float timeDiff);
   };
   class AnimationMixer {
   public:
@@ -138,6 +197,8 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer();
   Avatar *createAnimationAvatar(AnimationMixer *mixer);
   // end: need run in this order
+  // --- Interpolators
+  // --- End: Interpolators
 };
 
 #endif // _ANIMATIONSYSTEM_H

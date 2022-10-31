@@ -209,6 +209,9 @@ namespace AnimationSystem {
     avatar->mixer = mixer;
     mixer->avatar = avatar;
 
+    
+    avatar->biActionInterpolant = new BiActionInterpolant(&avatar->flyState, 0, 300); // test
+
     return avatar;
   }
   unsigned int initAnimationSystem(char *scratchStack) { // only need init once globally
@@ -427,6 +430,8 @@ namespace AnimationSystem {
       result = CubicBezierEasing::cubicBezier(i);
       // std::cout << "cubicBezier " << i << ": " << result << std::endl;
 
+      // ---------------------------------------------------------------------------
+
       //
       isInitedAnimationSystem = true;
     }
@@ -438,7 +443,7 @@ namespace AnimationSystem {
     }
     return jsonStrByteLength;
   }
-  void Avatar::update(float *scratchStack) {
+  void Avatar::update(float *scratchStack, float timeDiff) {
     unsigned int index = 0;
 
     // values ---
@@ -533,6 +538,11 @@ namespace AnimationSystem {
     directionsWeightsWithReverse[3] = this->mirrorLeftFactor;
     directionsWeightsWithReverse[4] = this->mirrorRightFactorReverse;
     directionsWeightsWithReverse[5] = this->mirrorRightFactor;
+
+    // ------------------
+    this->biActionInterpolant->update(timeDiff); // test
+    float test = this->biActionInterpolant->get(); // test
+    std::cout << "test: " << test << std::endl;
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
