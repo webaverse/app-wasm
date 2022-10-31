@@ -210,7 +210,7 @@ namespace AnimationSystem {
     mixer->avatar = avatar;
 
     
-    avatar->biActionInterpolant = new BiActionInterpolant(&avatar->flyState, 0, 300); // test
+    avatar->biActionInterpolant = new BiActionInterpolant(&avatar->crouchState, 0, 200); // test
 
     return avatar;
   }
@@ -458,7 +458,7 @@ namespace AnimationSystem {
 
     this->idleWalkFactor = scratchStack[index++];
     this->walkRunFactor = scratchStack[index++];
-    this->crouchFactor = scratchStack[index++];
+    // this->crouchFactor = scratchStack[index++];
     this->sprintFactor = scratchStack[index++];
     this->movementsTransitionFactor = scratchStack[index++];
 
@@ -470,6 +470,7 @@ namespace AnimationSystem {
     this->jumpState = scratchStack[index++];
     this->doubleJumpState = scratchStack[index++];
     this->flyState = scratchStack[index++];
+    this->crouchState = scratchStack[index++];
     this->narutoRunState = scratchStack[index++];
     this->sitState = scratchStack[index++];
     this->holdState = scratchStack[index++];
@@ -541,7 +542,8 @@ namespace AnimationSystem {
 
     // ------------------
     this->biActionInterpolant->update(timeDiff); // test
-    float test = this->biActionInterpolant->get(); // test
+    float test = this->biActionInterpolant->getNormalized(); // test
+    this->crouchFactor = test;
     std::cout << "test: " << test << std::endl;
   }
   AnimationMixer *createAnimationMixer() {

@@ -147,6 +147,7 @@ namespace AnimationSystem {
 
     bool landWithMoving;
     bool flyState;
+    bool crouchState;
     bool doubleJumpState;
     bool jumpState;
     bool sitState;
