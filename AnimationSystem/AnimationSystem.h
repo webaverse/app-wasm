@@ -131,8 +131,10 @@ namespace AnimationSystem {
 
   class Avatar {
   public:
-    BiActionInterpolant *biActionInterpolant; // test
-    InfiniteActionInterpolant *infiniteActionInterpolant; // test
+
+    // ActionInterpolants // todo: Use template map/array `actionInterpolants`.
+    BiActionInterpolant *crouchActI;
+    InfiniteActionInterpolant *flyActI;
 
     AnimationMixer *mixer;
 

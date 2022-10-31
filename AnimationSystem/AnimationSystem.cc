@@ -210,8 +210,8 @@ namespace AnimationSystem {
     mixer->avatar = avatar;
 
     
-    avatar->biActionInterpolant = new BiActionInterpolant(&avatar->crouchState, 0, 200); // test
-    avatar->infiniteActionInterpolant = new InfiniteActionInterpolant(&avatar->flyState, 0); // test
+    avatar->crouchActI = new BiActionInterpolant(&avatar->crouchState, 0, 200); // test
+    avatar->flyActI = new InfiniteActionInterpolant(&avatar->flyState, 0); // test
 
     return avatar;
   }
@@ -541,16 +541,15 @@ namespace AnimationSystem {
     directionsWeightsWithReverse[4] = this->mirrorRightFactorReverse;
     directionsWeightsWithReverse[5] = this->mirrorRightFactor;
 
-    // --- test
-    this->biActionInterpolant->update(timeDiff); // test
-    float test = this->biActionInterpolant->getNormalized(); // test
-    this->crouchFactor = test;
+    // --- Update & Get value of ActionInterpolants
+    this->crouchActI->update(timeDiff); // test
+    this->crouchFactor = this->crouchActI->getNormalized(); // test
     // std::cout << "test: " << test << std::endl;
 
-    this->infiniteActionInterpolant->update(timeDiff);
-    this->flyTime = this->flyState ? this->infiniteActionInterpolant->get() : -1;
+    this->flyActI->update(timeDiff);
+    this->flyTime = this->flyState ? this->flyActI->get() : -1;
     // std::cout << "test flyTime: " << this->flyTime << std::endl;
-    // --- end: test
+    // --- end: Update & Get value of ActionInterpolants
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
