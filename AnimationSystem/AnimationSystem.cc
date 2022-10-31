@@ -210,8 +210,11 @@ namespace AnimationSystem {
     mixer->avatar = avatar;
 
     
-    avatar->biActionInterpolant = new BiActionInterpolant(&avatar->crouchState, 0, 200); // test
-    avatar->infiniteActionInterpolant = new InfiniteActionInterpolant(&avatar->flyState, 0); // test
+    // avatar->biActionInterpolant = new BiActionInterpolant(&avatar->crouchState, 0, 200); // test
+    // avatar->infiniteActionInterpolant = new InfiniteActionInterpolant(&avatar->flyState, 0); // test
+
+    avatar->actionInterpolants["crouch"] = new BiActionInterpolant(&avatar->crouchState, 0, 200);
+    avatar->actionInterpolants["fly"] = new InfiniteActionInterpolant(&avatar->flyState, 0);
 
     return avatar;
   }
@@ -541,16 +544,22 @@ namespace AnimationSystem {
     directionsWeightsWithReverse[4] = this->mirrorRightFactorReverse;
     directionsWeightsWithReverse[5] = this->mirrorRightFactor;
 
-    // --- test
-    this->biActionInterpolant->update(timeDiff); // test
-    float test = this->biActionInterpolant->getNormalized(); // test
-    this->crouchFactor = test;
-    // std::cout << "test: " << test << std::endl;
+    // // --- test
+    // this->biActionInterpolant->update(timeDiff); // test
+    // float test = this->biActionInterpolant->getNormalized(); // test
+    // this->crouchFactor = test;
+    // // std::cout << "test: " << test << std::endl;
 
-    this->infiniteActionInterpolant->update(timeDiff);
-    this->flyTime = this->flyState ? this->infiniteActionInterpolant->get() : -1;
-    // std::cout << "test flyTime: " << this->flyTime << std::endl;
-    // --- end: test
+    // this->infiniteActionInterpolant->update(timeDiff);
+    // this->flyTime = this->flyState ? this->infiniteActionInterpolant->get() : -1;
+    // // std::cout << "test flyTime: " << this->flyTime << std::endl;
+    // // --- end: test
+
+    for (auto const& x : this->actionInterpolants) {
+      this->actionInterpolants[x.first]->update(timeDiff);
+    }
+    this->crouchFactor = this->actionInterpolants["crouch"]->getNormalized();
+    this->flyTime = this->flyState ? this->actionInterpolants["fly"]->get() : -1;
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();

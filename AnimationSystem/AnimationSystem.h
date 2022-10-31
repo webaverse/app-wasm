@@ -7,6 +7,12 @@ using json = nlohmann::json;
 
 
   // --- actionInterpolants
+  class ActionInterpolant { // todo: don't use this base class, use template instead ?
+  public:
+    float get() {return 0;}
+    float getNormalized() {return 0;}
+    void update(float timeDiff) {}
+  };
   class ScalarInterpolant {
   public:
     bool evaluatee;
@@ -33,7 +39,7 @@ using json = nlohmann::json;
   // public:
 
   // }
-  class BiActionInterpolant {
+  class BiActionInterpolant: public ActionInterpolant {
   public:
     bool *evaluatee;
     float value;
@@ -60,7 +66,7 @@ using json = nlohmann::json;
       this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
     }
   };
-  class InfiniteActionInterpolant {
+  class InfiniteActionInterpolant: public ActionInterpolant {
   public:
     bool *evaluatee;
     float value;
@@ -131,8 +137,10 @@ namespace AnimationSystem {
 
   class Avatar {
   public:
-    BiActionInterpolant *biActionInterpolant; // test
-    InfiniteActionInterpolant *infiniteActionInterpolant; // test
+    // BiActionInterpolant *biActionInterpolant; // test
+    // InfiniteActionInterpolant *infiniteActionInterpolant; // test
+
+    std::map<std::string, ActionInterpolant *> actionInterpolants; // todo: don't use string.
 
     AnimationMixer *mixer;
 
