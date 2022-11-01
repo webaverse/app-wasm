@@ -155,6 +155,8 @@ namespace AnimationSystem {
   class Avatar {
   public:
 
+    std::unordered_map<std::string, json *> actions;
+
     // ActionInterpolants // todo: Use base class or template map/array `actionInterpolants`.
     BiActionInterpolant *crouchActI;
     UniActionInterpolant *activateActI;
@@ -252,6 +254,7 @@ namespace AnimationSystem {
     std::string testBlendStrings; // test
     
     void update(float *scratchStack, float timeDiff);
+    void addAction(char *scratchStack, unsigned int stringByteLength);
   };
   class AnimationMixer {
   public:

@@ -620,6 +620,17 @@ namespace AnimationSystem {
 
     // --- end: Update & Get value of ActionInterpolants
   }
+  void Avatar::addAction(char *scratchStack, unsigned int stringByteLength) {
+    std::cout << "-wasm-addAction" << std::endl;
+
+    std::string jsonStr = "";
+    for (unsigned int i = 0; i < stringByteLength; i++) {
+      jsonStr += scratchStack[i];
+    }
+
+    json j = json::parse(jsonStr);
+    std::cout << "-wasm-json.actionId: " << j["actionId"] << std::endl;
+  }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
