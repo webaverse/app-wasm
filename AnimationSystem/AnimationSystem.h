@@ -35,12 +35,10 @@ using json = nlohmann::json;
   // }
   class BiActionInterpolant {
   public:
-    bool *evaluatee;
     float value;
     float minValue;
     float maxValue;
-    BiActionInterpolant(bool *evaluatee, float minValue, float maxValue) {
-      this->evaluatee = evaluatee;
+    BiActionInterpolant(float minValue, float maxValue) {
       this->value = minValue;
       this->minValue = minValue;
       this->maxValue = maxValue;
@@ -54,20 +52,17 @@ using json = nlohmann::json;
     float getInverse() {
       return this->maxValue - this->value;
     }
-    void update(float timeDiff) {
-      // std::cout << "evaluatee: " << (*(this->evaluatee)) << std::endl;
-      this->value += (*this->evaluatee ? 1 : -1) * timeDiff;
+    void update(float timeDiff, bool evaluatee) {
+      this->value += (evaluatee ? 1 : -1) * timeDiff;
       this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
     }
   };
   class UniActionInterpolant {
   public:
-    bool *evaluatee;
     float value;
     float minValue;
     float maxValue;
-    UniActionInterpolant(bool *evaluatee, float minValue, float maxValue) {
-      this->evaluatee = evaluatee;
+    UniActionInterpolant(float minValue, float maxValue) {
       this->value = minValue;
       this->minValue = minValue;
       this->maxValue = maxValue;
@@ -81,8 +76,8 @@ using json = nlohmann::json;
     float getInverse() {
       return this->maxValue - this->value;
     }
-    void update(float timeDiff) {
-      if (*this->evaluatee) {
+    void update(float timeDiff, bool evaluatee) {
+      if (evaluatee) {
         this->value += timeDiff;
         this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
       } else {
@@ -92,12 +87,10 @@ using json = nlohmann::json;
   };
   class InfiniteActionInterpolant {
   public:
-    bool *evaluatee;
     float value;
     float minValue;
     float maxValue;
-    InfiniteActionInterpolant(bool *evaluatee, float minValue) {
-      this->evaluatee = evaluatee;
+    InfiniteActionInterpolant(float minValue) {
       this->value = minValue;
       this->minValue = minValue;
       this->maxValue = std::numeric_limits<float>::infinity();
@@ -111,8 +104,8 @@ using json = nlohmann::json;
     float getInverse() {
       return this->maxValue - this->value;
     }
-    void update(float timeDiff) {
-      if (*this->evaluatee) {
+    void update(float timeDiff, bool evaluatee) {
+      if (evaluatee) {
         this->value += timeDiff;
       } else {
         this->value = this->minValue;
@@ -162,10 +155,11 @@ namespace AnimationSystem {
   class Avatar {
   public:
 
-    // ActionInterpolants // todo: Use template map/array `actionInterpolants`.
+    // ActionInterpolants // todo: Use base class or template map/array `actionInterpolants`.
     BiActionInterpolant *crouchActI;
-    InfiniteActionInterpolant *flyActI;
     UniActionInterpolant *activateActI;
+    InfiniteActionInterpolant *flyActI;
+    InfiniteActionInterpolant *jumpActI;
 
     AnimationMixer *mixer;
 

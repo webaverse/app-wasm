@@ -210,9 +210,14 @@ namespace AnimationSystem {
     mixer->avatar = avatar;
 
     // ActionInterpolants
-    avatar->crouchActI = new BiActionInterpolant(&avatar->crouchState, 0, 200);
-    avatar->flyActI = new InfiniteActionInterpolant(&avatar->flyState, 0);
-    avatar->activateActI = new UniActionInterpolant(&avatar->activateState, 0, 750); // todo: activateMaxTime = 750;
+    avatar->crouchActI = new BiActionInterpolant(0, 200);
+    avatar->activateActI = new UniActionInterpolant(0, 750); // todo: activateMaxTime = 750;
+    // avatar->useActI = new InfiniteActionInterpolant(&avatar->useState, 0);
+    // avatar->pickUpActI = new InfiniteActionInterpolant(&avatar->pickUpState, 0);
+    // avatar->unuseActI = new InfiniteActionInterpolant(&avatar->pickUpState, 0);
+
+    avatar->flyActI = new InfiniteActionInterpolant(0);
+    avatar->jumpActI = new InfiniteActionInterpolant(0);
 
     return avatar;
   }
@@ -487,7 +492,7 @@ namespace AnimationSystem {
     this->fallLoopTime = scratchStack[index++];
     // this->flyTime = scratchStack[index++];
     this->doubleJumpTime = scratchStack[index++];
-    this->jumpTime = scratchStack[index++];
+    // this->jumpTime = scratchStack[index++];
     this->narutoRunTime = scratchStack[index++];
     this->narutoRunTimeFactor = scratchStack[index++];
     this->danceFactor = scratchStack[index++];
@@ -544,16 +549,19 @@ namespace AnimationSystem {
     directionsWeightsWithReverse[5] = this->mirrorRightFactor;
 
     // --- Update & Get value of ActionInterpolants
-    this->crouchActI->update(timeDiff); // test
-    this->crouchFactor = this->crouchActI->getNormalized(); // test
+    this->crouchActI->update(timeDiff, this->crouchState);
+    this->crouchFactor = this->crouchActI->getNormalized();
     // std::cout << "test: " << test << std::endl;
 
-    this->flyActI->update(timeDiff);
+    this->flyActI->update(timeDiff, this->flyState);
     this->flyTime = this->flyState ? this->flyActI->get() : -1;
     // std::cout << "test flyTime: " << this->flyTime << std::endl;
 
-    this->activateActI->update(timeDiff);
+    this->activateActI->update(timeDiff, this->activateState);
     this->activateTime = this->activateActI->get();
+
+    this->jumpActI->update(timeDiff, this->jumpState);
+    this->jumpTime = this->jumpActI->get();
     // --- end: Update & Get value of ActionInterpolants
   }
   AnimationMixer *createAnimationMixer() {
