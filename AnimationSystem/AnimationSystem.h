@@ -158,8 +158,21 @@ namespace AnimationSystem {
     // ActionInterpolants // todo: Use base class or template map/array `actionInterpolants`.
     BiActionInterpolant *crouchActI;
     UniActionInterpolant *activateActI;
+    InfiniteActionInterpolant *useActI;
+    InfiniteActionInterpolant *pickUpActI;
+    InfiniteActionInterpolant *unuseActI;
+    InfiniteActionInterpolant *aimActI;
+    InfiniteActionInterpolant *narutoRunActI;
     InfiniteActionInterpolant *flyActI;
+    InfiniteActionInterpolant *swimActI;
     InfiniteActionInterpolant *jumpActI;
+    InfiniteActionInterpolant *doubleJumpActI;
+    InfiniteActionInterpolant *landActI;
+    BiActionInterpolant *danceActI;
+    BiActionInterpolant *emoteActI;
+    InfiniteActionInterpolant *fallLoopActI;
+    BiActionInterpolant *fallLoopTransitionActI;
+    InfiniteActionInterpolant *hurtActI;
 
     AnimationMixer *mixer;
 
@@ -172,30 +185,30 @@ namespace AnimationSystem {
     float doubleJumpTime;
     float jumpTime;
     float narutoRunTime;
-    float narutoRunTimeFactor;
+    // float narutoRunTimeFactor;
     float danceFactor;
-    float crouchMaxTime;
+    // float crouchMaxTime;
     float emoteFactor;
-    float lastEmoteTime;
-    float idleWalkFactor;
+    float lastEmoteTime; // todo: calc on wasm side.
+    float idleWalkFactor; // todo: calc on wasm side?
     float useTime;
-    float useAnimationEnvelopeLength;
+    float useAnimationEnvelopeLength; // todo: calc on wasm side.
     float hurtTime;
     float unuseTime;
     float aimTime;
     float aimMaxTime;
-    float walkRunFactor;
+    float walkRunFactor; // todo: calc on wasm side?
     float crouchFactor;
     float pickUpTime;
-    float forwardFactor;
-    float backwardFactor;
-    float leftFactor;
-    float rightFactor;
-    float mirrorLeftFactorReverse;
-    float mirrorLeftFactor;
-    float mirrorRightFactorReverse;
-    float mirrorRightFactor;
-    float landTimeS;
+    float forwardFactor; // todo: calc on wasm side.
+    float backwardFactor; // todo: calc on wasm side.
+    float leftFactor; // todo: calc on wasm side.
+    float rightFactor; // todo: calc on wasm side.
+    float mirrorLeftFactorReverse; // todo: calc on wasm side.
+    float mirrorLeftFactor; // todo: calc on wasm side.
+    float mirrorRightFactorReverse; // todo: calc on wasm side.
+    float mirrorRightFactor; // todo: calc on wasm side.
+    float landTimeS; // todo: calc on wasm side.
     float timeSinceLastMoveS;
     float swimTime;
     float movementsTime;
@@ -213,6 +226,12 @@ namespace AnimationSystem {
     bool pickUpState;
     bool swimState;
     bool activateState;
+    bool useState;
+    bool aimState;
+    bool fallLoopState;
+    bool danceState;
+    bool emoteState;
+    bool hurtState;
     //
     bool fallLoopFromJump;
 
