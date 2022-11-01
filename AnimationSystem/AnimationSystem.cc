@@ -629,7 +629,15 @@ namespace AnimationSystem {
     }
 
     json j = json::parse(jsonStr);
+    this->actions[j["actionId"]] = j;
     std::cout << "-wasm-json.actionId: " << j["actionId"] << std::endl;
+    std::cout << "-wasm-action 0: " << j.dump() << std::endl;
+    std::cout << "-wasm-action 1: " << this->actions[j["actionId"]].dump() << std::endl;
+  }
+  void Avatar::testLogActions() {
+    for (auto const& x : this->actions) {
+      std::cout << "-wasm-action 2: " << this->actions[x.first].dump() << std::endl;
+    }
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
