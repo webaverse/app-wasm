@@ -217,13 +217,13 @@ namespace AnimationSystem {
     float sprintFactor;
     float movementsTransitionFactor;
 
-    bool landWithMoving;
+    // states
+    bool jumpState;
+    bool doubleJumpState;
     bool flyState;
     bool crouchState;
-    bool doubleJumpState;
-    bool jumpState;
-    bool sitState;
     bool narutoRunState;
+    bool sitState;
     bool holdState;
     bool pickUpState;
     bool swimState;
@@ -234,7 +234,9 @@ namespace AnimationSystem {
     bool danceState;
     bool emoteState;
     bool hurtState;
+
     //
+    bool landWithMoving;
     bool fallLoopFromJump;
 
     int activateAnimationIndex;
