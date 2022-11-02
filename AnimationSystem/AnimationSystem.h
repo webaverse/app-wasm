@@ -219,37 +219,37 @@ namespace AnimationSystem {
 
     // states
     bool jumpState;
-    int jumpActionsCount = 0;
+    // int jumpActionsCount = 0;
     bool doubleJumpState;
-    int doubleJumpActionsCount = 0;
+    // int doubleJumpActionsCount = 0;
     bool flyState;
-    int flyActionsCount = 0;
+    // int flyActionsCount = 0;
     bool crouchState;
-    int crouchActionsCount = 0;
+    // int crouchActionsCount = 0;
     bool narutoRunState;
-    int narutoRunActionsCount = 0;
+    // int narutoRunActionsCount = 0;
     bool sitState;
-    int sitActionsCount = 0;
+    // int sitActionsCount = 0;
     bool holdState;
-    int holdActionsCount = 0;
+    // int holdActionsCount = 0;
     bool pickUpState;
-    int pickUpActionsCount = 0;
+    // int pickUpActionsCount = 0;
     bool swimState;
-    int swimActionsCount = 0;
+    // int swimActionsCount = 0;
     bool activateState;
-    int activateActionsCount = 0;
+    // int activateActionsCount = 0;
     bool useState;
-    int useActionsCount = 0;
+    // int useActionsCount = 0;
     bool aimState;
-    int aimActionsCount = 0;
+    // int aimActionsCount = 0;
     bool fallLoopState;
-    int fallLoopActionsCount = 0;
+    // int fallLoopActionsCount = 0;
     bool danceState;
-    int danceActionsCount = 0;
+    // int danceActionsCount = 0;
     bool emoteState;
-    int emoteActionsCount = 0;
+    // int emoteActionsCount = 0;
     bool hurtState;
-    int hurtActionsCount = 0;
+    // int hurtActionsCount = 0;
 
     //
     bool landWithMoving;
