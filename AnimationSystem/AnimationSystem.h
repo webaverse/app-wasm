@@ -7,32 +7,6 @@ using json = nlohmann::json;
 
 
   // --- actionInterpolants
-  class ScalarInterpolant {
-  public:
-    bool evaluatee;
-    float value;
-    float minValue;
-    float maxValue;
-    ScalarInterpolant(bool evaluatee, float minValue, float maxValue) {
-      this->evaluatee = evaluatee;
-      this->value = minValue;
-      this->minValue = minValue;
-      this->maxValue = maxValue;
-    }
-    float get() {
-      return this->value;
-    }
-    float getNormalized() {
-      return this->value / (this->maxValue - this->minValue);
-    }
-    float getInverse() {
-      return this->maxValue - this->value;
-    }
-  };
-  // class InfiniteActionInterpolant: public ScalarInterpolant {
-  // public:
-
-  // }
   class BiActionInterpolant {
   public:
     float value;
@@ -151,7 +125,7 @@ namespace AnimationSystem {
 
     std::unordered_map<std::string, json> actions;
 
-    // ActionInterpolants // todo: Use base class or template map/array `actionInterpolants`.
+    // ActionInterpolants
     BiActionInterpolant *crouchActI;
     UniActionInterpolant *activateActI;
     InfiniteActionInterpolant *useActI;
@@ -185,26 +159,26 @@ namespace AnimationSystem {
     float danceFactor;
     // float crouchMaxTime;
     float emoteFactor;
-    float lastEmoteTime; // todo: calc on wasm side.
-    float idleWalkFactor; // todo: calc on wasm side?
+    float lastEmoteTime;
+    float idleWalkFactor;
     float useTime;
-    float useAnimationEnvelopeLength; // todo: calc on wasm side.
+    float useAnimationEnvelopeLength;
     float hurtTime;
     float unuseTime;
     float aimTime;
     float aimMaxTime;
-    float walkRunFactor; // todo: calc on wasm side?
+    float walkRunFactor;
     float crouchFactor;
     float pickUpTime;
-    float forwardFactor; // todo: calc on wasm side.
-    float backwardFactor; // todo: calc on wasm side.
-    float leftFactor; // todo: calc on wasm side.
-    float rightFactor; // todo: calc on wasm side.
-    float mirrorLeftFactorReverse; // todo: calc on wasm side.
-    float mirrorLeftFactor; // todo: calc on wasm side.
-    float mirrorRightFactorReverse; // todo: calc on wasm side.
-    float mirrorRightFactor; // todo: calc on wasm side.
-    float landTimeS; // todo: calc on wasm side.
+    float forwardFactor;
+    float backwardFactor;
+    float leftFactor;
+    float rightFactor;
+    float mirrorLeftFactorReverse;
+    float mirrorLeftFactor;
+    float mirrorRightFactorReverse;
+    float mirrorRightFactor;
+    float landTimeS;
     float timeSinceLastMoveS;
     float swimTime;
     float movementsTime;
@@ -213,37 +187,21 @@ namespace AnimationSystem {
 
     // states
     bool jumpState;
-    // int jumpActionsCount = 0;
     bool doubleJumpState;
-    // int doubleJumpActionsCount = 0;
     bool flyState;
-    // int flyActionsCount = 0;
     bool crouchState;
-    // int crouchActionsCount = 0;
     bool narutoRunState;
-    // int narutoRunActionsCount = 0;
     bool sitState;
-    // int sitActionsCount = 0;
     bool holdState;
-    // int holdActionsCount = 0;
     bool pickUpState;
-    // int pickUpActionsCount = 0;
     bool swimState;
-    // int swimActionsCount = 0;
     bool activateState;
-    // int activateActionsCount = 0;
     bool useState;
-    // int useActionsCount = 0;
     bool aimState;
-    // int aimActionsCount = 0;
     bool fallLoopState;
-    // int fallLoopActionsCount = 0;
     bool danceState;
-    // int danceActionsCount = 0;
     bool emoteState;
-    // int emoteActionsCount = 0;
     bool hurtState;
-    // int hurtActionsCount = 0;
 
     //
     bool landWithMoving;
@@ -266,7 +224,6 @@ namespace AnimationSystem {
     void update(float *scratchStack, float timeDiff);
     void addAction(char *scratchStack, unsigned int stringByteLength);
     void removeAction(char *scratchStack, unsigned int stringByteLength);
-    void testLogActions();
   };
   class AnimationMixer {
   public:
@@ -288,8 +245,6 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer();
   Avatar *createAnimationAvatar(AnimationMixer *mixer);
   // end: need run in this order
-  // --- Interpolators
-  // --- End: Interpolators
 };
 
 #endif // _ANIMATIONSYSTEM_H

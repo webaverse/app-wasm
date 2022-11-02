@@ -30,13 +30,11 @@ namespace AnimationSystem {
 
   bool isInitedAnimationSystem = false;
 
-  // std::unordered_map<std::string, json>::iterator it;
-
   // functions:
 
   // Utils ------
 
-  float min(float a, float b) { // todo: fmin, fmax ?
+  float min(float a, float b) {
     if (a > b) {
       return b;
     } else {
@@ -201,7 +199,7 @@ namespace AnimationSystem {
 
     // ActionInterpolants
     avatar->crouchActI = new BiActionInterpolant(0, 200);
-    avatar->activateActI = new UniActionInterpolant(0, 750); // todo: activateMaxTime = 750;
+    avatar->activateActI = new UniActionInterpolant(0, 750);
     avatar->useActI = new InfiniteActionInterpolant(0);
     avatar->pickUpActI = new InfiniteActionInterpolant(0);
     avatar->unuseActI = new InfiniteActionInterpolant(0);
@@ -368,19 +366,11 @@ namespace AnimationSystem {
     // this->jumpState = scratchStack[index++];
     // this->doubleJumpState = scratchStack[index++];
     // this->flyState = scratchStack[index++];
-    // this->crouchState = scratchStack[index++];
     // this->narutoRunState = scratchStack[index++];
     // this->sitState = scratchStack[index++];
     // this->holdState = scratchStack[index++];
     // this->pickUpState = scratchStack[index++];
     // this->swimState = scratchStack[index++];
-    // this->activateState = scratchStack[index++];
-    // this->useState = scratchStack[index++];
-    // this->aimState = scratchStack[index++];
-    // this->fallLoopState = scratchStack[index++];
-    // this->danceState = scratchStack[index++];
-    // this->emoteState = scratchStack[index++];
-    // this->hurtState = scratchStack[index++];
 
     this->landWithMoving = scratchStack[index++];
     // this->landTime = scratchStack[index++];
@@ -403,7 +393,6 @@ namespace AnimationSystem {
     // this->aimMaxTime = scratchStack[index++];
     // this->pickUpTime = scratchStack[index++];
 
-    // ---
     this->useAnimationIndex = (int)(scratchStack[index++]);
     this->emoteAnimationIndex = (int)(scratchStack[index++]);
     this->sitAnimationIndex = (int)(scratchStack[index++]);
@@ -575,11 +564,6 @@ namespace AnimationSystem {
       this->emoteState = false;
     } else if (j["type"] == "hurt") {
       this->hurtState = false;
-    }
-  }
-  void Avatar::testLogActions() { // todo: clean.
-    for (auto const& x : this->actions) {
-      std::cout << "-wasm-action 2: " << this->actions[x.first].dump() << std::endl;
     }
   }
   AnimationMixer *createAnimationMixer() {
