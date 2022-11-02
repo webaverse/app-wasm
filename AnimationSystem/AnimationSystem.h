@@ -255,6 +255,7 @@ namespace AnimationSystem {
     
     void update(float *scratchStack, float timeDiff);
     void addAction(char *scratchStack, unsigned int stringByteLength);
+    void removeAction(char *scratchStack, unsigned int stringByteLength);
     void testLogActions();
   };
   class AnimationMixer {

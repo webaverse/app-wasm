@@ -30,6 +30,8 @@ namespace AnimationSystem {
 
   bool isInitedAnimationSystem = false;
 
+  // std::unordered_map<std::string, json>::iterator it;
+
   // functions:
 
   // Utils ------
@@ -633,6 +635,19 @@ namespace AnimationSystem {
     std::cout << "-wasm-json.actionId: " << j["actionId"] << std::endl;
     std::cout << "-wasm-action 0: " << j.dump() << std::endl;
     std::cout << "-wasm-action 1: " << this->actions[j["actionId"]].dump() << std::endl;
+  }
+  void Avatar::removeAction(char *scratchStack, unsigned int stringByteLength) {
+    std::string actionId = "";
+    for (unsigned int i = 0; i < stringByteLength; i++) {
+      actionId += scratchStack[i];
+    }
+
+    // std::cout << "-wasm-actionId: " << actionId << std::endl;
+
+    // it = this->actions.find(actionId);
+    // this->actions.erase(it);
+
+    this->actions.erase(actionId);
   }
   void Avatar::testLogActions() {
     for (auto const& x : this->actions) {
