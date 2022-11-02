@@ -637,6 +637,7 @@ namespace AnimationSystem {
     // std::cout << "-wasm-action 0: " << j.dump() << std::endl;
     // std::cout << "-wasm-action 1: " << this->actions[j["actionId"]].dump() << std::endl;
 
+    // note: for performance reason, only check string when add/remove action.
     if (j["type"] == "jump") {
       this->jumpState = true;
       // this->jumpActionsCount++;
@@ -719,6 +720,7 @@ namespace AnimationSystem {
     // this->actions.erase(j["actionId"]);
     this->actions.erase(j["type"]);
 
+    // note: for performance reason, only check string when add/remove action.
     if (j["type"] == "jump") {
       // this->jumpActionsCount--;
       // if (this->jumpActionsCount == 0) {
