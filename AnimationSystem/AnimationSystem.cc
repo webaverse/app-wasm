@@ -484,23 +484,23 @@ namespace AnimationSystem {
     // this->swimTime = scratchStack[index++];
     this->movementsTime = scratchStack[index++];
 
-    // action states ---
-    this->jumpState = scratchStack[index++];
-    this->doubleJumpState = scratchStack[index++];
-    this->flyState = scratchStack[index++];
-    this->crouchState = scratchStack[index++];
-    this->narutoRunState = scratchStack[index++];
-    this->sitState = scratchStack[index++];
-    this->holdState = scratchStack[index++];
-    this->pickUpState = scratchStack[index++];
-    this->swimState = scratchStack[index++];
-    this->activateState = scratchStack[index++];
-    this->useState = scratchStack[index++];
-    this->aimState = scratchStack[index++];
-    this->fallLoopState = scratchStack[index++];
-    this->danceState = scratchStack[index++];
-    this->emoteState = scratchStack[index++];
-    this->hurtState = scratchStack[index++];
+    // // action states ---
+    // this->jumpState = scratchStack[index++];
+    // this->doubleJumpState = scratchStack[index++];
+    // this->flyState = scratchStack[index++];
+    // this->crouchState = scratchStack[index++];
+    // this->narutoRunState = scratchStack[index++];
+    // this->sitState = scratchStack[index++];
+    // this->holdState = scratchStack[index++];
+    // this->pickUpState = scratchStack[index++];
+    // this->swimState = scratchStack[index++];
+    // this->activateState = scratchStack[index++];
+    // this->useState = scratchStack[index++];
+    // this->aimState = scratchStack[index++];
+    // this->fallLoopState = scratchStack[index++];
+    // this->danceState = scratchStack[index++];
+    // this->emoteState = scratchStack[index++];
+    // this->hurtState = scratchStack[index++];
 
     // other ---
     this->landWithMoving = scratchStack[index++];
@@ -635,19 +635,185 @@ namespace AnimationSystem {
     std::cout << "-wasm-json.actionId: " << j["actionId"] << std::endl;
     std::cout << "-wasm-action 0: " << j.dump() << std::endl;
     std::cout << "-wasm-action 1: " << this->actions[j["actionId"]].dump() << std::endl;
+
+    if (j["type"] == "jump") {
+      this->jumpState = true;
+      this->jumpActionsCount++;
+      std::cout << "jumpActionsCount: " <<  jumpActionsCount << std::endl;
+    } else if (j["type"] == "doubleJump") {
+      this->doubleJumpState = true;
+      this->doubleJumpActionsCount++;
+      std::cout << "doubleJumpActionsCount: " << doubleJumpActionsCount << std::endl;
+    } else if (j["type"] == "fly") {
+      this->flyState = true;
+      this->flyActionsCount++;
+      std::cout << "flyActionsCount: " << flyActionsCount << std::endl;
+    } else if (j["type"] == "crouch") {
+      this->crouchState = true;
+      this->crouchActionsCount++;
+      std::cout << "crouchActionsCount: " << crouchActionsCount << std::endl;
+    } else if (j["type"] == "narutoRun") {
+      this->narutoRunState = true;
+      this->narutoRunActionsCount++;
+      std::cout << "narutoRunActionsCount: " << narutoRunActionsCount << std::endl;
+    } else if (j["type"] == "sit") {
+      this->sitState = true;
+      this->sitActionsCount++;
+      std::cout << "sitActionsCount: " << sitActionsCount << std::endl;
+    } else if (j["type"] == "hold") {
+      this->holdState = true;
+      this->holdActionsCount++;
+      std::cout << "holdActionsCount: " << holdActionsCount << std::endl;
+    } else if (j["type"] == "pickUp") {
+      this->pickUpState = true;
+      this->pickUpActionsCount++;
+      std::cout << "pickUpActionsCount: " << pickUpActionsCount << std::endl;
+    } else if (j["type"] == "swim") {
+      this->swimState = true;
+      this->swimActionsCount++;
+      std::cout << "swimActionsCount: " << swimActionsCount << std::endl;
+    } else if (j["type"] == "activate") {
+      this->activateState = true;
+      this->activateActionsCount++;
+      std::cout << "activateActionsCount: " << activateActionsCount << std::endl;
+    } else if (j["type"] == "use") {
+      this->useState = true;
+      this->useActionsCount++;
+      std::cout << "useActionsCount: " << useActionsCount << std::endl;
+    } else if (j["type"] == "aim") {
+      this->aimState = true;
+      this->aimActionsCount++;
+      std::cout << "aimActionsCount: " << aimActionsCount << std::endl;
+    } else if (j["type"] == "fallLoop") {
+      this->fallLoopState = true;
+      this->fallLoopActionsCount++;
+      std::cout << "fallLoopActionsCount: " << fallLoopActionsCount << std::endl;
+    } else if (j["type"] == "dance") {
+      this->danceState = true;
+      this->danceActionsCount++;
+      std::cout << "danceActionsCount: " << danceActionsCount << std::endl;
+    } else if (j["type"] == "emote") {
+      this->emoteState = true;
+      this->emoteActionsCount++;
+      std::cout << "emoteActionsCount: " << emoteActionsCount << std::endl;
+    } else if (j["type"] == "hurt") {
+      this->hurtState = true;
+      this->hurtActionsCount++;
+      std::cout << "hurtActionsCount: " << hurtActionsCount << std::endl;
+    }
   }
   void Avatar::removeAction(char *scratchStack, unsigned int stringByteLength) {
-    std::string actionId = "";
+    std::string jsonStr = "";
     for (unsigned int i = 0; i < stringByteLength; i++) {
-      actionId += scratchStack[i];
+      jsonStr += scratchStack[i];
     }
+
+    json j = json::parse(jsonStr);
 
     // std::cout << "-wasm-actionId: " << actionId << std::endl;
 
     // it = this->actions.find(actionId);
     // this->actions.erase(it);
 
-    this->actions.erase(actionId);
+    this->actions.erase(j["actionId"]);
+
+    if (j["type"] == "jump") {
+      this->jumpActionsCount--;
+      if (this->jumpActionsCount == 0) {
+        this->jumpState = false;
+      }
+      std::cout << "jumpActionsCount: " << jumpActionsCount << std::endl;
+    } else if (j["type"] == "doubleJump") {
+      this->doubleJumpActionsCount--;
+      if (this->doubleJumpActionsCount == 0) {
+        this->doubleJumpState = false;
+      }
+      std::cout << "doubleJumpActionsCount: " << doubleJumpActionsCount << std::endl;
+    } else if (j["type"] == "fly") {
+      this->flyActionsCount--;
+      if (this->flyActionsCount == 0) {
+        this->flyState = false;
+      }
+      std::cout << "flyActionsCount: " << flyActionsCount << std::endl;
+    } else if (j["type"] == "crouch") {
+      this->crouchActionsCount--;
+      if (this->crouchActionsCount == 0) {
+        this->crouchState = false;
+      }
+      std::cout << "crouchActionsCount: " << crouchActionsCount << std::endl;
+    } else if (j["type"] == "narutoRun") {
+      this->narutoRunActionsCount--;
+      if (this->narutoRunActionsCount == 0) {
+        this->narutoRunState = false;
+      }
+      std::cout << "narutoRunActionsCount: " << narutoRunActionsCount << std::endl;
+    } else if (j["type"] == "sit") {
+      this->sitActionsCount--;
+      if (this->sitActionsCount == 0) {
+        this->sitState = false;
+      }
+      std::cout << "sitActionsCount: " << sitActionsCount << std::endl;
+    } else if (j["type"] == "hold") {
+      this->holdActionsCount--;
+      if (this->holdActionsCount == 0) {
+        this->holdState = false;
+      }
+      std::cout << "holdActionsCount: " << holdActionsCount << std::endl;
+    } else if (j["type"] == "pickUp") {
+      this->pickUpActionsCount--;
+      if (this->pickUpActionsCount == 0) {
+        this->pickUpState = false;
+      }
+      std::cout << "pickUpActionsCount: " << pickUpActionsCount << std::endl;
+    } else if (j["type"] == "swim") {
+      this->swimActionsCount--;
+      if (this->swimActionsCount == 0) {
+        this->swimState = false;
+      }
+      std::cout << "swimActionsCount: " << swimActionsCount << std::endl;
+    } else if (j["type"] == "activate") {
+      this->activateActionsCount--;
+      if (this->activateActionsCount == 0) {
+        this->activateState = false;
+      }
+      std::cout << "activateActionsCount: " << activateActionsCount << std::endl;
+    } else if (j["type"] == "use") {
+      this->useActionsCount--;
+      if (this->useActionsCount == 0) {
+        this->useState = false;
+      }
+      std::cout << "useActionsCount: " << useActionsCount << std::endl;
+    } else if (j["type"] == "aim") {
+      this->aimActionsCount--;
+      if (this->aimActionsCount == 0) {
+        this->aimState = false;
+      }
+      std::cout << "aimActionsCount: " << aimActionsCount << std::endl;
+    } else if (j["type"] == "fallLoop") {
+      this->fallLoopActionsCount--;
+      if (this->fallLoopActionsCount == 0) {
+        this->fallLoopState = false;
+      }
+      std::cout << "fallLoopActionsCount: " << fallLoopActionsCount << std::endl;
+    } else if (j["type"] == "dance") {
+      this->danceActionsCount--;
+      if (this->danceActionsCount == 0) {
+        this->danceState = false;
+      }
+      std::cout << "danceActionsCount: " << danceActionsCount << std::endl;
+    } else if (j["type"] == "emote") {
+      this->emoteActionsCount--;
+      if (this->emoteActionsCount == 0) {
+        this->emoteState = false;
+      }
+      std::cout << "emoteActionsCount: " << emoteActionsCount << std::endl;
+    } else if (j["type"] == "hurt") {
+      this->hurtActionsCount--;
+      if (this->hurtActionsCount == 0) {
+        this->hurtState = false;
+      }
+      std::cout << "hurtActionsCount: " << hurtActionsCount << std::endl;
+    }
   }
   void Avatar::testLogActions() {
     for (auto const& x : this->actions) {
