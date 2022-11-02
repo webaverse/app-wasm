@@ -5,6 +5,115 @@
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+
+  // --- actionInterpolants
+  class ScalarInterpolant {
+  public:
+    bool evaluatee;
+    float value;
+    float minValue;
+    float maxValue;
+    ScalarInterpolant(bool evaluatee, float minValue, float maxValue) {
+      this->evaluatee = evaluatee;
+      this->value = minValue;
+      this->minValue = minValue;
+      this->maxValue = maxValue;
+    }
+    float get() {
+      return this->value;
+    }
+    float getNormalized() {
+      return this->value / (this->maxValue - this->minValue);
+    }
+    float getInverse() {
+      return this->maxValue - this->value;
+    }
+  };
+  // class InfiniteActionInterpolant: public ScalarInterpolant {
+  // public:
+
+  // }
+  class BiActionInterpolant {
+  public:
+    float value;
+    float minValue;
+    float maxValue;
+    BiActionInterpolant(float minValue, float maxValue) {
+      this->value = minValue;
+      this->minValue = minValue;
+      this->maxValue = maxValue;
+    }
+    float get() {
+      return this->value;
+    }
+    float getNormalized() {
+      return this->value / (this->maxValue - this->minValue);
+    }
+    float getInverse() {
+      return this->maxValue - this->value;
+    }
+    void update(float timeDiff, bool evaluatee) {
+      this->value += (evaluatee ? 1 : -1) * timeDiff;
+      this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
+    }
+  };
+  class UniActionInterpolant {
+  public:
+    float value;
+    float minValue;
+    float maxValue;
+    UniActionInterpolant(float minValue, float maxValue) {
+      this->value = minValue;
+      this->minValue = minValue;
+      this->maxValue = maxValue;
+    }
+    float get() {
+      return this->value;
+    }
+    float getNormalized() {
+      return this->value / (this->maxValue - this->minValue);
+    }
+    float getInverse() {
+      return this->maxValue - this->value;
+    }
+    void update(float timeDiff, bool evaluatee) {
+      if (evaluatee) {
+        this->value += timeDiff;
+        this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
+      } else {
+        this->value = this->minValue;
+      }
+    }
+  };
+  class InfiniteActionInterpolant {
+  public:
+    float value;
+    float minValue;
+    float maxValue;
+    InfiniteActionInterpolant(float minValue) {
+      this->value = minValue;
+      this->minValue = minValue;
+      this->maxValue = std::numeric_limits<float>::infinity();
+    }
+    float get() {
+      return this->value;
+    }
+    float getNormalized() {
+      return this->value / (this->maxValue - this->minValue);
+    }
+    float getInverse() {
+      return this->maxValue - this->value;
+    }
+    void update(float timeDiff, bool evaluatee) {
+      if (evaluatee) {
+        this->value += timeDiff;
+      } else {
+        this->value = this->minValue;
+      }
+    }
+  };
+  // --- End: actionInterpolants
+
 namespace AnimationSystem {
   struct Interpolant;
   struct Animation;
@@ -39,6 +148,28 @@ namespace AnimationSystem {
 
   class Avatar {
   public:
+
+    std::unordered_map<std::string, json> actions;
+
+    // ActionInterpolants // todo: Use base class or template map/array `actionInterpolants`.
+    BiActionInterpolant *crouchActI;
+    UniActionInterpolant *activateActI;
+    InfiniteActionInterpolant *useActI;
+    InfiniteActionInterpolant *pickUpActI;
+    InfiniteActionInterpolant *unuseActI;
+    InfiniteActionInterpolant *aimActI;
+    InfiniteActionInterpolant *narutoRunActI;
+    InfiniteActionInterpolant *flyActI;
+    InfiniteActionInterpolant *swimActI;
+    InfiniteActionInterpolant *jumpActI;
+    InfiniteActionInterpolant *doubleJumpActI;
+    InfiniteActionInterpolant *landActI;
+    BiActionInterpolant *danceActI;
+    BiActionInterpolant *emoteActI;
+    InfiniteActionInterpolant *fallLoopActI;
+    BiActionInterpolant *fallLoopTransitionActI;
+    InfiniteActionInterpolant *hurtActI;
+
     AnimationMixer *mixer;
 
     // values
@@ -50,46 +181,72 @@ namespace AnimationSystem {
     float doubleJumpTime;
     float jumpTime;
     float narutoRunTime;
-    float narutoRunTimeFactor;
+    // float narutoRunTimeFactor;
     float danceFactor;
-    float crouchMaxTime;
+    // float crouchMaxTime;
     float emoteFactor;
-    float lastEmoteTime;
-    float idleWalkFactor;
+    float lastEmoteTime; // todo: calc on wasm side.
+    float idleWalkFactor; // todo: calc on wasm side?
     float useTime;
-    float useAnimationEnvelopeLength;
+    float useAnimationEnvelopeLength; // todo: calc on wasm side.
     float hurtTime;
     float unuseTime;
     float aimTime;
     float aimMaxTime;
-    float walkRunFactor;
+    float walkRunFactor; // todo: calc on wasm side?
     float crouchFactor;
     float pickUpTime;
-    float forwardFactor;
-    float backwardFactor;
-    float leftFactor;
-    float rightFactor;
-    float mirrorLeftFactorReverse;
-    float mirrorLeftFactor;
-    float mirrorRightFactorReverse;
-    float mirrorRightFactor;
-    float landTimeS;
+    float forwardFactor; // todo: calc on wasm side.
+    float backwardFactor; // todo: calc on wasm side.
+    float leftFactor; // todo: calc on wasm side.
+    float rightFactor; // todo: calc on wasm side.
+    float mirrorLeftFactorReverse; // todo: calc on wasm side.
+    float mirrorLeftFactor; // todo: calc on wasm side.
+    float mirrorRightFactorReverse; // todo: calc on wasm side.
+    float mirrorRightFactor; // todo: calc on wasm side.
+    float landTimeS; // todo: calc on wasm side.
     float timeSinceLastMoveS;
     float swimTime;
     float movementsTime;
     float sprintFactor;
     float movementsTransitionFactor;
 
-    bool landWithMoving;
-    bool flyState;
-    bool doubleJumpState;
+    // states
     bool jumpState;
-    bool sitState;
+    // int jumpActionsCount = 0;
+    bool doubleJumpState;
+    // int doubleJumpActionsCount = 0;
+    bool flyState;
+    // int flyActionsCount = 0;
+    bool crouchState;
+    // int crouchActionsCount = 0;
     bool narutoRunState;
+    // int narutoRunActionsCount = 0;
+    bool sitState;
+    // int sitActionsCount = 0;
     bool holdState;
+    // int holdActionsCount = 0;
     bool pickUpState;
+    // int pickUpActionsCount = 0;
     bool swimState;
+    // int swimActionsCount = 0;
+    bool activateState;
+    // int activateActionsCount = 0;
+    bool useState;
+    // int useActionsCount = 0;
+    bool aimState;
+    // int aimActionsCount = 0;
+    bool fallLoopState;
+    // int fallLoopActionsCount = 0;
+    bool danceState;
+    // int danceActionsCount = 0;
+    bool emoteState;
+    // int emoteActionsCount = 0;
+    bool hurtState;
+    // int hurtActionsCount = 0;
+
     //
+    bool landWithMoving;
     bool fallLoopFromJump;
 
     int activateAnimationIndex;
@@ -106,7 +263,10 @@ namespace AnimationSystem {
 
     //
     
-    void update(float *scratchStack);
+    void update(float *scratchStack, float timeDiff);
+    void addAction(char *scratchStack, unsigned int stringByteLength);
+    void removeAction(char *scratchStack, unsigned int stringByteLength);
+    void testLogActions();
   };
   class AnimationMixer {
   public:
@@ -128,6 +288,8 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer();
   Avatar *createAnimationAvatar(AnimationMixer *mixer);
   // end: need run in this order
+  // --- Interpolators
+  // --- End: Interpolators
 };
 
 #endif // _ANIMATIONSYSTEM_H

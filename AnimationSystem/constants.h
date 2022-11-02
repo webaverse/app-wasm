@@ -1,3 +1,8 @@
+// todo: put into initAnimationSystem() ?
+const float narutoRunTimeFactor = 2;
+const float crouchMaxTime = 200;
+const float aimMaxTime = 1000;
+
 class BoneIndexes {
 public:
   // positions

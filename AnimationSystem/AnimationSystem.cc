@@ -30,11 +30,13 @@ namespace AnimationSystem {
 
   bool isInitedAnimationSystem = false;
 
+  // std::unordered_map<std::string, json>::iterator it;
+
   // functions:
 
   // Utils ------
 
-  float min(float a, float b) {
+  float min(float a, float b) { // todo: fmin, fmax ?
     if (a > b) {
       return b;
     } else {
@@ -197,6 +199,25 @@ namespace AnimationSystem {
     avatar->mixer = mixer;
     mixer->avatar = avatar;
 
+    // ActionInterpolants
+    avatar->crouchActI = new BiActionInterpolant(0, 200);
+    avatar->activateActI = new UniActionInterpolant(0, 750); // todo: activateMaxTime = 750;
+    avatar->useActI = new InfiniteActionInterpolant(0);
+    avatar->pickUpActI = new InfiniteActionInterpolant(0);
+    avatar->unuseActI = new InfiniteActionInterpolant(0);
+    avatar->aimActI = new InfiniteActionInterpolant(0);
+    avatar->narutoRunActI = new InfiniteActionInterpolant(0);
+    avatar->flyActI = new InfiniteActionInterpolant(0);
+    avatar->swimActI = new InfiniteActionInterpolant(0);
+    avatar->jumpActI = new InfiniteActionInterpolant(0);
+    avatar->doubleJumpActI = new InfiniteActionInterpolant(0);
+    avatar->landActI = new InfiniteActionInterpolant(0);
+    avatar->danceActI = new BiActionInterpolant(0, 200);
+    avatar->emoteActI = new BiActionInterpolant(0, 200);
+    avatar->fallLoopActI = new InfiniteActionInterpolant(0);
+    avatar->fallLoopTransitionActI = new BiActionInterpolant(0, 300);
+    avatar->hurtActI = new InfiniteActionInterpolant(0);
+
     return avatar;
   }
   unsigned int initAnimationSystem(char *scratchStack) { // only need init once globally
@@ -320,7 +341,7 @@ namespace AnimationSystem {
     }
     return jsonStrByteLength;
   }
-  void Avatar::update(float *scratchStack) {
+  void Avatar::update(float *scratchStack, float timeDiff) {
     unsigned int index = 0;
 
     // values ---
@@ -335,45 +356,54 @@ namespace AnimationSystem {
 
     this->idleWalkFactor = scratchStack[index++];
     this->walkRunFactor = scratchStack[index++];
-    this->crouchFactor = scratchStack[index++];
+    // this->crouchFactor = scratchStack[index++];
     this->sprintFactor = scratchStack[index++];
     this->movementsTransitionFactor = scratchStack[index++];
 
-    this->activateTime = scratchStack[index++];
-    this->swimTime = scratchStack[index++];
+    // this->activateTime = scratchStack[index++];
+    // this->swimTime = scratchStack[index++];
     this->movementsTime = scratchStack[index++];
 
-    // action states ---
-    this->jumpState = scratchStack[index++];
-    this->doubleJumpState = scratchStack[index++];
-    this->flyState = scratchStack[index++];
-    this->narutoRunState = scratchStack[index++];
-    this->sitState = scratchStack[index++];
-    this->holdState = scratchStack[index++];
-    this->pickUpState = scratchStack[index++];
-    this->swimState = scratchStack[index++];
+    // // action states ---
+    // this->jumpState = scratchStack[index++];
+    // this->doubleJumpState = scratchStack[index++];
+    // this->flyState = scratchStack[index++];
+    // this->crouchState = scratchStack[index++];
+    // this->narutoRunState = scratchStack[index++];
+    // this->sitState = scratchStack[index++];
+    // this->holdState = scratchStack[index++];
+    // this->pickUpState = scratchStack[index++];
+    // this->swimState = scratchStack[index++];
+    // this->activateState = scratchStack[index++];
+    // this->useState = scratchStack[index++];
+    // this->aimState = scratchStack[index++];
+    // this->fallLoopState = scratchStack[index++];
+    // this->danceState = scratchStack[index++];
+    // this->emoteState = scratchStack[index++];
+    // this->hurtState = scratchStack[index++];
 
     this->landWithMoving = scratchStack[index++];
-    this->landTime = scratchStack[index++];
-    this->fallLoopFactor = scratchStack[index++];
-    this->fallLoopTime = scratchStack[index++];
-    this->flyTime = scratchStack[index++];
-    this->doubleJumpTime = scratchStack[index++];
-    this->jumpTime = scratchStack[index++];
-    this->narutoRunTime = scratchStack[index++];
-    this->narutoRunTimeFactor = scratchStack[index++];
-    this->danceFactor = scratchStack[index++];
-    this->crouchMaxTime = scratchStack[index++];
-    this->emoteFactor = scratchStack[index++];
+    // this->landTime = scratchStack[index++];
+    // this->fallLoopFactor = scratchStack[index++];
+    // this->fallLoopTime = scratchStack[index++];
+    // this->flyTime = scratchStack[index++];
+    // this->doubleJumpTime = scratchStack[index++];
+    // this->jumpTime = scratchStack[index++];
+    // this->narutoRunTime = scratchStack[index++];
+    // this->narutoRunTimeFactor = scratchStack[index++];
+    // this->danceFactor = scratchStack[index++];
+    // this->crouchMaxTime = scratchStack[index++];
+    // this->emoteFactor = scratchStack[index++];
     this->lastEmoteTime = scratchStack[index++];
-    this->useTime = scratchStack[index++];
+    // this->useTime = scratchStack[index++];
     this->useAnimationEnvelopeLength = scratchStack[index++];
-    this->hurtTime = scratchStack[index++];
-    this->unuseTime = scratchStack[index++];
-    this->aimTime = scratchStack[index++];
-    this->aimMaxTime = scratchStack[index++];
-    this->pickUpTime = scratchStack[index++];
+    // this->hurtTime = scratchStack[index++];
+    // this->unuseTime = scratchStack[index++];
+    // this->aimTime = scratchStack[index++];
+    // this->aimMaxTime = scratchStack[index++];
+    // this->pickUpTime = scratchStack[index++];
 
+    // ---
     this->useAnimationIndex = (int)(scratchStack[index++]);
     this->emoteAnimationIndex = (int)(scratchStack[index++]);
     this->sitAnimationIndex = (int)(scratchStack[index++]);
@@ -401,6 +431,156 @@ namespace AnimationSystem {
     directionsWeightsWithReverse[3] = this->mirrorLeftFactor;
     directionsWeightsWithReverse[4] = this->mirrorRightFactorReverse;
     directionsWeightsWithReverse[5] = this->mirrorRightFactor;
+
+    // --- Update & Get value of ActionInterpolants
+
+    this->crouchActI->update(timeDiff, this->crouchState);
+    this->crouchFactor = this->crouchActI->getNormalized();
+
+    this->activateActI->update(timeDiff, this->activateState);
+    this->activateTime = this->activateActI->get();
+
+    this->useActI->update(timeDiff, this->useState);
+    this->useTime = this->useActI->get();
+
+    this->pickUpActI->update(timeDiff, this->pickUpState);
+    this->pickUpTime = this->pickUpActI->get();
+
+    this->unuseActI->update(timeDiff, !this->useState);
+    this->unuseTime = this->unuseActI->get();
+
+    this->aimActI->update(timeDiff, this->aimState);
+    this->aimTime = this->aimActI->get();
+
+    this->narutoRunActI->update(timeDiff, this->narutoRunState);
+    this->narutoRunTime = this->narutoRunActI->get();
+
+    this->flyActI->update(timeDiff, this->flyState);
+    this->flyTime = this->flyState ? this->flyActI->get() : -1;
+
+    this->swimActI->update(timeDiff, this->swimState);
+    this->swimTime = this->swimState ? this->swimActI->get() : -1;
+
+    this->jumpActI->update(timeDiff, this->jumpState);
+    this->jumpTime = this->jumpActI->get();
+
+    this->doubleJumpActI->update(timeDiff, this->doubleJumpState);
+    this->doubleJumpTime = this->doubleJumpActI->get();
+
+    this->landActI->update(timeDiff, !this->jumpState && !this->fallLoopState && !this->flyState);
+    this->landTime = this->landActI->get();
+
+    this->danceActI->update(timeDiff, this->danceState);
+    this->danceFactor = this->danceActI->get();
+
+    this->emoteActI->update(timeDiff, this->emoteState);
+    this->emoteFactor = this->emoteActI->get();
+
+    this->fallLoopActI->update(timeDiff, this->fallLoopState);
+    this->fallLoopTime = this->fallLoopActI->get();
+
+    this->fallLoopTransitionActI->update(timeDiff, this->fallLoopState);
+    this->fallLoopFactor = this->fallLoopTransitionActI->getNormalized();
+
+    this->hurtActI->update(timeDiff, this->hurtState);
+    this->hurtTime = this->hurtActI->get();
+
+    // --- end: Update & Get value of ActionInterpolants
+  }
+  void Avatar::addAction(char *scratchStack, unsigned int stringByteLength) {
+
+    std::string jsonStr = "";
+    for (unsigned int i = 0; i < stringByteLength; i++) {
+      jsonStr += scratchStack[i];
+    }
+
+    json j = json::parse(jsonStr);
+    this->actions[j["type"]] = j;
+
+    // note: for performance reason, only check string when add/remove action.
+    if (j["type"] == "jump") {
+      this->jumpState = true;
+    } else if (j["type"] == "doubleJump") {
+      this->doubleJumpState = true;
+    } else if (j["type"] == "fly") {
+      this->flyState = true;
+    } else if (j["type"] == "crouch") {
+      this->crouchState = true;
+    } else if (j["type"] == "narutoRun") {
+      this->narutoRunState = true;
+    } else if (j["type"] == "sit") {
+      this->sitState = true;
+    } else if (j["type"] == "hold") {
+      this->holdState = true;
+    } else if (j["type"] == "pickUp") {
+      this->pickUpState = true;
+    } else if (j["type"] == "swim") {
+      this->swimState = true;
+    } else if (j["type"] == "activate") {
+      this->activateState = true;
+    } else if (j["type"] == "use") {
+      this->useState = true;
+    } else if (j["type"] == "aim") {
+      this->aimState = true;
+    } else if (j["type"] == "fallLoop") {
+      this->fallLoopState = true;
+    } else if (j["type"] == "dance") {
+      this->danceState = true;
+    } else if (j["type"] == "emote") {
+      this->emoteState = true;
+    } else if (j["type"] == "hurt") {
+      this->hurtState = true;
+    }
+  }
+  void Avatar::removeAction(char *scratchStack, unsigned int stringByteLength) {
+    std::string jsonStr = "";
+    for (unsigned int i = 0; i < stringByteLength; i++) {
+      jsonStr += scratchStack[i];
+    }
+
+    json j = json::parse(jsonStr);
+
+    this->actions.erase(j["type"]);
+
+    // note: for performance reason, only check string when add/remove action.
+    if (j["type"] == "jump") {
+      this->jumpState = false;
+    } else if (j["type"] == "doubleJump") {
+      this->doubleJumpState = false;
+    } else if (j["type"] == "fly") {
+      this->flyState = false;
+    } else if (j["type"] == "crouch") {
+      this->crouchState = false;
+    } else if (j["type"] == "narutoRun") {
+      this->narutoRunState = false;
+    } else if (j["type"] == "sit") {
+      this->sitState = false;
+    } else if (j["type"] == "hold") {
+      this->holdState = false;
+    } else if (j["type"] == "pickUp") {
+      this->pickUpState = false;
+    } else if (j["type"] == "swim") {
+      this->swimState = false;
+    } else if (j["type"] == "activate") {
+      this->activateState = false;
+    } else if (j["type"] == "use") {
+      this->useState = false;
+    } else if (j["type"] == "aim") {
+      this->aimState = false;
+    } else if (j["type"] == "fallLoop") {
+      this->fallLoopState = false;
+    } else if (j["type"] == "dance") {
+      this->danceState = false;
+    } else if (j["type"] == "emote") {
+      this->emoteState = false;
+    } else if (j["type"] == "hurt") {
+      this->hurtState = false;
+    }
+  }
+  void Avatar::testLogActions() { // todo: clean.
+    for (auto const& x : this->actions) {
+      std::cout << "-wasm-action 2: " << this->actions[x.first].dump() << std::endl;
+    }
   }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
@@ -615,7 +795,7 @@ namespace AnimationSystem {
       spec.dst[3] = 0.9876883405951378;
     } else {
       Animation *narutoRunAnimation = animationGroups[animationGroupIndexes.NarutoRun][defaultNarutoRunAnimationIndex];
-      float t2 = fmod((avatar->narutoRunTime / 1000 * avatar->narutoRunTimeFactor), narutoRunAnimation->duration);
+      float t2 = fmod((avatar->narutoRunTime / 1000 * narutoRunTimeFactor), narutoRunAnimation->duration);
       float *v2 = evaluateInterpolant(narutoRunAnimation, spec.index, t2);
 
       copyValue(spec.dst, v2, spec.isPosition);
@@ -631,7 +811,7 @@ namespace AnimationSystem {
     float t2 = fmod(AnimationMixer::nowS, danceAnimation->duration);
     float *v2 = evaluateInterpolant(danceAnimation, spec.index, t2);
 
-    float danceFactorS = avatar->danceFactor / avatar->crouchMaxTime;
+    float danceFactorS = avatar->danceFactor / crouchMaxTime;
     float f = min(max(danceFactorS, 0), 1);
     
     interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
@@ -647,7 +827,7 @@ namespace AnimationSystem {
     float t2 = min(emoteTime / 1000, emoteAnimation->duration);
     float *v2 = evaluateInterpolant(emoteAnimation, spec.index, t2);
 
-    float emoteFactorS = avatar->emoteFactor / avatar->crouchMaxTime;
+    float emoteFactorS = avatar->emoteFactor / crouchMaxTime;
     float f = min(max(emoteFactorS, 0), 1);
 
     if (spec.index == boneIndexes.Spine || spec.index == boneIndexes.Chest || spec.index == boneIndexes.UpperChest || spec.index == boneIndexes.Neck || spec.index == boneIndexes.Head) {
@@ -767,7 +947,7 @@ namespace AnimationSystem {
     _handleDefault(spec, avatar);
 
     Animation *aimAnimation = animationGroups[animationGroupIndexes.Aim][avatar->aimAnimationIndex];
-    float t2 = fmod((avatar->aimTime / avatar->aimMaxTime), aimAnimation->duration);
+    float t2 = fmod((avatar->aimTime / aimMaxTime), aimAnimation->duration);
     if (!spec.isPosition) {
       if (aimAnimation) {
         float *v2 = evaluateInterpolant(aimAnimation, spec.index, t2);
