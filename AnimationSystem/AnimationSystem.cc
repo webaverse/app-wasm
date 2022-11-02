@@ -524,6 +524,7 @@ namespace AnimationSystem {
     // this->aimMaxTime = scratchStack[index++];
     // this->pickUpTime = scratchStack[index++];
 
+    // ---
     this->useAnimationIndex = (int)(scratchStack[index++]);
     this->emoteAnimationIndex = (int)(scratchStack[index++]);
     this->sitAnimationIndex = (int)(scratchStack[index++]);
