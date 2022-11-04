@@ -180,6 +180,10 @@ namespace AnimationSystem {
     // int emoteActionsCount = 0;
     bool hurtState;
     // int hurtActionsCount = 0;
+    bool rightHandState;
+    // int rightHandActionsCount = 0;
+    bool leftHandState;
+    // int leftHandActionsCount = 0;
 
     //
     bool landWithMoving;

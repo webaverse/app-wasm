@@ -229,6 +229,8 @@ namespace AnimationSystem {
     avatar->actionInterpolants["fallLoop"] = new InfiniteActionInterpolant(0);
     avatar->actionInterpolants["fallLoopTransition"] = new BiActionInterpolant(0, 300);
     avatar->actionInterpolants["hurt"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["aimRightTransition"] = new BiActionInterpolant(0, 150);
+    avatar->actionInterpolants["aimLeftTransition"] = new BiActionInterpolant(0, 150);
 
     return avatar;
   }
@@ -621,6 +623,11 @@ namespace AnimationSystem {
     this->actionInterpolants["hurt"]->update(timeDiff, this->hurtState);
     this->hurtTime = this->actionInterpolants["hurt"]->get();
 
+    //
+
+    this->actionInterpolants["aimRightTransition"]->update(timeDiff, this->aimState && this->rightHandState);
+    this->actionInterpolants["aimLeftTransition"]->update(timeDiff, this->aimState && this->leftHandState);
+
     // --- end: Update & Get value of ActionInterpolants
   }
   void Avatar::addAction(char *scratchStack, unsigned int stringByteLength) {
@@ -703,6 +710,14 @@ namespace AnimationSystem {
       this->hurtState = true;
       // this->hurtActionsCount++;
       // std::cout << "hurtActionsCount: " << hurtActionsCount << std::endl;
+    } else if (j["type"] == "rightHand") {
+      this->rightHandState = true;
+      // this->rightHandActionsCount++;
+      // std::cout << "rightHandActionsCount: " << rightHandActionsCount << std::endl;
+    } else if (j["type"] == "leftHand") {
+      this->leftHandState = true;
+      // this->leftHandActionsCount++;
+      // std::cout << "leftHandActionsCount: " << leftHandActionsCount << std::endl;
     }
   }
   void Avatar::removeAction(char *scratchStack, unsigned int stringByteLength) {
@@ -818,6 +833,18 @@ namespace AnimationSystem {
         this->hurtState = false;
       // }
       // std::cout << "hurtActionsCount: " << hurtActionsCount << std::endl;
+    } else if (j["type"] == "rightHand") {
+      // this->rightHandActionsCount--;
+      // if (this->rightHandActionsCount == 0) {
+        this->rightHandState = false;
+      // }
+      // std::cout << "rightHandActionsCount: " << rightHandActionsCount << std::endl;
+    } else if (j["type"] == "leftHand") {
+      // this->leftHandActionsCount--;
+      // if (this->leftHandActionsCount == 0) {
+        this->leftHandState = false;
+      // }
+      // std::cout << "leftHandActionsCount: " << leftHandActionsCount << std::endl;
     }
   }
   void Avatar::testLogActions() {
@@ -826,6 +853,7 @@ namespace AnimationSystem {
     }
   }
   float Avatar::getActionInterpolant(char *scratchStack, unsigned int stringByteLength, unsigned int type) { // 0: get(), 1: getNormalized(), 2: getInverse() // todo: cache result. get all actionInterpolants at one call. don't use string?
+    // todo: is one frame last? yes, aimRight/LeftTransition has one frame bug.
     std::string actionName = "";
     for (unsigned int i = 0; i < stringByteLength; i++) {
       actionName += scratchStack[i];
