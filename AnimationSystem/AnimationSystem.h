@@ -13,69 +13,33 @@ using json = nlohmann::json;
     float value;
     float minValue;
     float maxValue;
-    ScalarInterpolant(bool evaluatee, float minValue, float maxValue) {
-      this->evaluatee = evaluatee;
+    ScalarInterpolant(float minValue, float maxValue) {
       this->value = minValue;
       this->minValue = minValue;
       this->maxValue = maxValue;
     }
-    float get() {
+    virtual float get() {
       return this->value;
     }
-    float getNormalized() {
+    virtual float getNormalized() {
       return this->value / (this->maxValue - this->minValue);
     }
-    float getInverse() {
+    virtual float getInverse() {
       return this->maxValue - this->value;
     }
+    virtual void update(float timeDiff, bool evaluatee) { }
   };
-  // class InfiniteActionInterpolant: public ScalarInterpolant {
-  // public:
-
-  // }
-  class BiActionInterpolant {
+  class BiActionInterpolant: public ScalarInterpolant {
   public:
-    float value;
-    float minValue;
-    float maxValue;
-    BiActionInterpolant(float minValue, float maxValue) {
-      this->value = minValue;
-      this->minValue = minValue;
-      this->maxValue = maxValue;
-    }
-    float get() {
-      return this->value;
-    }
-    float getNormalized() {
-      return this->value / (this->maxValue - this->minValue);
-    }
-    float getInverse() {
-      return this->maxValue - this->value;
-    }
+    using ScalarInterpolant::ScalarInterpolant;
     void update(float timeDiff, bool evaluatee) {
       this->value += (evaluatee ? 1 : -1) * timeDiff;
       this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
     }
   };
-  class UniActionInterpolant {
+  class UniActionInterpolant: public ScalarInterpolant {
   public:
-    float value;
-    float minValue;
-    float maxValue;
-    UniActionInterpolant(float minValue, float maxValue) {
-      this->value = minValue;
-      this->minValue = minValue;
-      this->maxValue = maxValue;
-    }
-    float get() {
-      return this->value;
-    }
-    float getNormalized() {
-      return this->value / (this->maxValue - this->minValue);
-    }
-    float getInverse() {
-      return this->maxValue - this->value;
-    }
+    using ScalarInterpolant::ScalarInterpolant;
     void update(float timeDiff, bool evaluatee) {
       if (evaluatee) {
         this->value += timeDiff;
@@ -85,25 +49,9 @@ using json = nlohmann::json;
       }
     }
   };
-  class InfiniteActionInterpolant {
+  class InfiniteActionInterpolant: public ScalarInterpolant {
   public:
-    float value;
-    float minValue;
-    float maxValue;
-    InfiniteActionInterpolant(float minValue) {
-      this->value = minValue;
-      this->minValue = minValue;
-      this->maxValue = std::numeric_limits<float>::infinity();
-    }
-    float get() {
-      return this->value;
-    }
-    float getNormalized() {
-      return this->value / (this->maxValue - this->minValue);
-    }
-    float getInverse() {
-      return this->maxValue - this->value;
-    }
+    InfiniteActionInterpolant(float minValue): ScalarInterpolant(minValue, std::numeric_limits<float>::infinity()) { }
     void update(float timeDiff, bool evaluatee) {
       if (evaluatee) {
         this->value += timeDiff;
