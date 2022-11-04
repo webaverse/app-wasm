@@ -212,23 +212,23 @@ namespace AnimationSystem {
     mixer->avatar = avatar;
 
     // ActionInterpolants
-    avatar->crouchActI = new BiActionInterpolant(0, 200);
-    avatar->activateActI = new UniActionInterpolant(0, 750); // todo: activateMaxTime = 750;
-    avatar->useActI = new InfiniteActionInterpolant(0);
-    avatar->pickUpActI = new InfiniteActionInterpolant(0);
-    avatar->unuseActI = new InfiniteActionInterpolant(0);
-    avatar->aimActI = new InfiniteActionInterpolant(0);
-    avatar->narutoRunActI = new InfiniteActionInterpolant(0);
-    avatar->flyActI = new InfiniteActionInterpolant(0);
-    avatar->swimActI = new InfiniteActionInterpolant(0);
-    avatar->jumpActI = new InfiniteActionInterpolant(0);
-    avatar->doubleJumpActI = new InfiniteActionInterpolant(0);
-    avatar->landActI = new InfiniteActionInterpolant(0);
-    avatar->danceActI = new BiActionInterpolant(0, 200);
-    avatar->emoteActI = new BiActionInterpolant(0, 200);
-    avatar->fallLoopActI = new InfiniteActionInterpolant(0);
-    avatar->fallLoopTransitionActI = new BiActionInterpolant(0, 300);
-    avatar->hurtActI = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["crouch"] = new BiActionInterpolant(0, 200);
+    avatar->actionInterpolants["activate"] = new UniActionInterpolant(0, 750); // todo: activateMaxTime = 750;
+    avatar->actionInterpolants["use"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["pickUp"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["unuse"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["aim"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["narutoRun"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["fly"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["swim"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["jump"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["doubleJump"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["land"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["dance"] = new BiActionInterpolant(0, 200);
+    avatar->actionInterpolants["emote"] = new BiActionInterpolant(0, 200);
+    avatar->actionInterpolants["fallLoop"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["fallLoopTransition"] = new BiActionInterpolant(0, 300);
+    avatar->actionInterpolants["hurt"] = new InfiniteActionInterpolant(0);
 
     return avatar;
   }
@@ -568,58 +568,58 @@ namespace AnimationSystem {
 
     // --- Update & Get value of ActionInterpolants
 
-    this->crouchActI->update(timeDiff, this->crouchState);
-    this->crouchFactor = this->crouchActI->getNormalized();
+    this->actionInterpolants["crouch"]->update(timeDiff, this->crouchState);
+    this->crouchFactor = this->actionInterpolants["crouch"]->getNormalized();
     // std::cout << "test: " << test << std::endl;
 
-    this->activateActI->update(timeDiff, this->activateState);
-    this->activateTime = this->activateActI->get();
+    this->actionInterpolants["activate"]->update(timeDiff, this->activateState);
+    this->activateTime = this->actionInterpolants["activate"]->get();
 
-    this->useActI->update(timeDiff, this->useState);
-    this->useTime = this->useActI->get();
+    this->actionInterpolants["use"]->update(timeDiff, this->useState);
+    this->useTime = this->actionInterpolants["use"]->get();
 
-    this->pickUpActI->update(timeDiff, this->pickUpState);
-    this->pickUpTime = this->pickUpActI->get();
+    this->actionInterpolants["pickUp"]->update(timeDiff, this->pickUpState);
+    this->pickUpTime = this->actionInterpolants["pickUp"]->get();
 
-    this->unuseActI->update(timeDiff, !this->useState);
-    this->unuseTime = this->unuseActI->get();
+    this->actionInterpolants["unuse"]->update(timeDiff, !this->useState);
+    this->unuseTime = this->actionInterpolants["unuse"]->get();
 
-    this->aimActI->update(timeDiff, this->aimState);
-    this->aimTime = this->aimActI->get();
+    this->actionInterpolants["aim"]->update(timeDiff, this->aimState);
+    this->aimTime = this->actionInterpolants["aim"]->get();
 
-    this->narutoRunActI->update(timeDiff, this->narutoRunState);
-    this->narutoRunTime = this->narutoRunActI->get();
+    this->actionInterpolants["narutoRun"]->update(timeDiff, this->narutoRunState);
+    this->narutoRunTime = this->actionInterpolants["narutoRun"]->get();
 
-    this->flyActI->update(timeDiff, this->flyState);
-    this->flyTime = this->flyState ? this->flyActI->get() : -1;
+    this->actionInterpolants["fly"]->update(timeDiff, this->flyState);
+    this->flyTime = this->flyState ? this->actionInterpolants["fly"]->get() : -1;
     // std::cout << "test flyTime: " << this->flyTime << std::endl;
 
-    this->swimActI->update(timeDiff, this->swimState);
-    this->swimTime = this->swimState ? this->swimActI->get() : -1;
+    this->actionInterpolants["swim"]->update(timeDiff, this->swimState);
+    this->swimTime = this->swimState ? this->actionInterpolants["swim"]->get() : -1;
 
-    this->jumpActI->update(timeDiff, this->jumpState);
-    this->jumpTime = this->jumpActI->get();
+    this->actionInterpolants["jump"]->update(timeDiff, this->jumpState);
+    this->jumpTime = this->actionInterpolants["jump"]->get();
 
-    this->doubleJumpActI->update(timeDiff, this->doubleJumpState);
-    this->doubleJumpTime = this->doubleJumpActI->get();
+    this->actionInterpolants["doubleJump"]->update(timeDiff, this->doubleJumpState);
+    this->doubleJumpTime = this->actionInterpolants["doubleJump"]->get();
 
-    this->landActI->update(timeDiff, !this->jumpState && !this->fallLoopState && !this->flyState);
-    this->landTime = this->landActI->get();
+    this->actionInterpolants["land"]->update(timeDiff, !this->jumpState && !this->fallLoopState && !this->flyState);
+    this->landTime = this->actionInterpolants["land"]->get();
 
-    this->danceActI->update(timeDiff, this->danceState);
-    this->danceFactor = this->danceActI->get();
+    this->actionInterpolants["dance"]->update(timeDiff, this->danceState);
+    this->danceFactor = this->actionInterpolants["dance"]->get();
 
-    this->emoteActI->update(timeDiff, this->emoteState);
-    this->emoteFactor = this->emoteActI->get();
+    this->actionInterpolants["emote"]->update(timeDiff, this->emoteState);
+    this->emoteFactor = this->actionInterpolants["emote"]->get();
 
-    this->fallLoopActI->update(timeDiff, this->fallLoopState);
-    this->fallLoopTime = this->fallLoopActI->get();
+    this->actionInterpolants["fallLoop"]->update(timeDiff, this->fallLoopState);
+    this->fallLoopTime = this->actionInterpolants["fallLoop"]->get();
 
-    this->fallLoopTransitionActI->update(timeDiff, this->fallLoopState);
-    this->fallLoopFactor = this->fallLoopTransitionActI->getNormalized();
+    this->actionInterpolants["fallLoopTransition"]->update(timeDiff, this->fallLoopState);
+    this->fallLoopFactor = this->actionInterpolants["fallLoopTransition"]->getNormalized();
 
-    this->hurtActI->update(timeDiff, this->hurtState);
-    this->hurtTime = this->hurtActI->get();
+    this->actionInterpolants["hurt"]->update(timeDiff, this->hurtState);
+    this->hurtTime = this->actionInterpolants["hurt"]->get();
 
     // --- end: Update & Get value of ActionInterpolants
   }

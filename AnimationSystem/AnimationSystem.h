@@ -104,25 +104,7 @@ namespace AnimationSystem {
   public:
 
     std::unordered_map<std::string, json> actions;
-
-    // ActionInterpolants // todo: Use base class or template map/array `actionInterpolants`.
-    BiActionInterpolant *crouchActI;
-    UniActionInterpolant *activateActI;
-    InfiniteActionInterpolant *useActI;
-    InfiniteActionInterpolant *pickUpActI;
-    InfiniteActionInterpolant *unuseActI;
-    InfiniteActionInterpolant *aimActI;
-    InfiniteActionInterpolant *narutoRunActI;
-    InfiniteActionInterpolant *flyActI;
-    InfiniteActionInterpolant *swimActI;
-    InfiniteActionInterpolant *jumpActI;
-    InfiniteActionInterpolant *doubleJumpActI;
-    InfiniteActionInterpolant *landActI;
-    BiActionInterpolant *danceActI;
-    BiActionInterpolant *emoteActI;
-    InfiniteActionInterpolant *fallLoopActI;
-    BiActionInterpolant *fallLoopTransitionActI;
-    InfiniteActionInterpolant *hurtActI;
+    std::unordered_map<std::string, ScalarInterpolant *> actionInterpolants;
 
     AnimationMixer *mixer;
 
