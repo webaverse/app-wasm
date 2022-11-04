@@ -205,7 +205,8 @@ namespace AnimationSystem {
 
     std::string testBlendStrings; // test
     
-    void update(float *scratchStack, float timeDiff);
+    void updateInterpolation(float timeDiff); // note: call before `update()`
+    void update(float *scratchStack);
     void addAction(char *scratchStack, unsigned int stringByteLength);
     void removeAction(char *scratchStack, unsigned int stringByteLength);
     void testLogActions();
