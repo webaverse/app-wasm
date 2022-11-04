@@ -825,6 +825,29 @@ namespace AnimationSystem {
       std::cout << "-wasm-action 2: " << this->actions[x.first].dump() << std::endl;
     }
   }
+  float Avatar::getActionInterpolant(char *scratchStack, unsigned int stringByteLength, unsigned int type) { // 0: get(), 1: getNormalized(), 2: getInverse() // todo: cache result. get all actionInterpolants at one call. don't use string?
+    std::string actionName = "";
+    for (unsigned int i = 0; i < stringByteLength; i++) {
+      actionName += scratchStack[i];
+    }
+
+    // std::cout << "actionName: " << actionName << std::endl;
+
+    if (type == 0) {
+      float interpolantValue = this->actionInterpolants[actionName]->get();
+      // std::cout << "interpolantValue: " << interpolantValue << std::endl;
+      return interpolantValue;
+    } else if (type == 1) {
+      float interpolantValue = this->actionInterpolants[actionName]->getNormalized();
+      // std::cout << "interpolantValue: " << interpolantValue << std::endl;
+      return interpolantValue;
+    } else if (type == 2) {
+      float interpolantValue = this->actionInterpolants[actionName]->getInverse();
+      // std::cout << "interpolantValue: " << interpolantValue << std::endl;
+      return interpolantValue;
+    }
+    return -1;
+  }
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);

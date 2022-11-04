@@ -77,6 +77,9 @@ EMSCRIPTEN_KEEPALIVE void removeActionAnimationAvatar(AnimationSystem::Avatar *a
 EMSCRIPTEN_KEEPALIVE void testLogActionsAnimationAvatar(AnimationSystem::Avatar *avatar) {
   return avatar->testLogActions();
 }
+EMSCRIPTEN_KEEPALIVE float getActionInterpolantAnimationAvatar(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int stringByteLength, unsigned int type) {
+  return avatar->getActionInterpolant(scratchStack, stringByteLength, type);
+}
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
 }
