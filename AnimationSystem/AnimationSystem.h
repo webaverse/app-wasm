@@ -186,6 +186,8 @@ namespace AnimationSystem {
     // int leftHandActionsCount = 0;
     bool sprintState;
     // int sprintActionsCount = 0;
+    bool movementsState;
+    // int movementsActionsCount = 0;
 
     //
     bool landWithMoving;

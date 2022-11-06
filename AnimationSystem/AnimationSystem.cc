@@ -232,6 +232,8 @@ namespace AnimationSystem {
     avatar->actionInterpolants["aimRightTransition"] = new BiActionInterpolant(0, 150);
     avatar->actionInterpolants["aimLeftTransition"] = new BiActionInterpolant(0, 150);
     avatar->actionInterpolants["sprint"] = new BiActionInterpolant(0, 200);
+    avatar->actionInterpolants["movements"] = new InfiniteActionInterpolant(0);
+    avatar->actionInterpolants["movementsTransition"] = new BiActionInterpolant(0, 200);
 
     return avatar;
   }
@@ -485,6 +487,8 @@ namespace AnimationSystem {
     this->actionInterpolants["aimRightTransition"]->update(timeDiff, this->aimState && this->rightHandState);
     this->actionInterpolants["aimLeftTransition"]->update(timeDiff, this->aimState && this->leftHandState);
     this->actionInterpolants["sprint"]->update(timeDiff, this->sprintState);
+    this->actionInterpolants["movements"]->update(timeDiff, this->movementsState);
+    this->actionInterpolants["movementsTransition"]->update(timeDiff, this->movementsState);
   }
   void Avatar::update(float *scratchStack) {
     unsigned int index = 0;
@@ -503,11 +507,11 @@ namespace AnimationSystem {
     this->walkRunFactor = scratchStack[index++];
     // this->crouchFactor = scratchStack[index++];
     // this->sprintFactor = scratchStack[index++];
-    this->movementsTransitionFactor = scratchStack[index++];
+    // this->movementsTransitionFactor = scratchStack[index++];
 
     // this->activateTime = scratchStack[index++];
     // this->swimTime = scratchStack[index++];
-    this->movementsTime = scratchStack[index++];
+    // this->movementsTime = scratchStack[index++];
 
     // // action states ---
     // this->jumpState = scratchStack[index++];
@@ -630,8 +634,14 @@ namespace AnimationSystem {
     this->hurtTime = this->actionInterpolants["hurt"]->get();
 
     float sprintTime = this->actionInterpolants["sprint"]->get();
-    this->sprintFactor = fmin(fmax(sprintTime / 200, 0), 1);
-    std::cout << "sprintFactor: " << this->sprintFactor << " time: " << sprintTime << " state: " << this->sprintState << std::endl;
+    this->sprintFactor = fmin(fmax(sprintTime / 200, 0), 1); // todo: use getNormalized() ?
+    // std::cout << "sprintFactor: " << this->sprintFactor << " time: " << sprintTime << " state: " << this->sprintState << std::endl;
+
+    this->movementsTime = this->actionInterpolants["movements"]->get();
+
+    float movementsTransitionTime = this->actionInterpolants["movementsTransition"]->get();
+    this->movementsTransitionFactor = fmin(fmax(movementsTransitionTime / 200, 0), 1); // todo: use getNormalized() ?
+    std::cout << "movementsTime: " << this->movementsTime << " movementsTransitionFactor: " << movementsTransitionFactor << std::endl;
 
     // --- end: Update & Get value of ActionInterpolants
   }
@@ -727,6 +737,10 @@ namespace AnimationSystem {
       this->sprintState = true;
       // this->sprintActionsCount++;
       // std::cout << "sprintActionsCount: " << sprintActionsCount << std::endl;
+    } else if (j["type"] == "movements") {
+      this->movementsState = true;
+      // this->movementsActionsCount++;
+      // std::cout << "movementsActionsCount: " << movementsActionsCount << std::endl;
     }
   }
   void Avatar::removeAction(char *scratchStack, unsigned int stringByteLength) {
@@ -860,6 +874,12 @@ namespace AnimationSystem {
         this->sprintState = false;
       // }
       // std::cout << "sprintActionsCount: " << sprintActionsCount << std::endl;
+    } else if (j["type"] == "movements") {
+      // this->movementsActionsCount--;
+      // if (this->movementsActionsCount == 0) {
+        this->movementsState = false;
+      // }
+      // std::cout << "movementsActionsCount: " << movementsActionsCount << std::endl;
     }
   }
   void Avatar::testLogActions() {
