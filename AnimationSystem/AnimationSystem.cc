@@ -487,14 +487,12 @@ namespace AnimationSystem {
     this->hurtTime = this->actionInterpolants["hurt"]->get();
 
     float sprintTime = this->actionInterpolants["sprint"]->get();
-    this->sprintFactor = fmin(fmax(sprintTime / 200, 0), 1); // todo: use getNormalized() ?
-    // std::cout << "sprintFactor: " << this->sprintFactor << " time: " << sprintTime << " state: " << this->sprintState << std::endl;
+    this->sprintFactor = fmin(fmax(sprintTime / 200, 0), 1);
 
     this->movementsTime = this->actionInterpolants["movements"]->get();
 
     float movementsTransitionTime = this->actionInterpolants["movementsTransition"]->get();
-    this->movementsTransitionFactor = fmin(fmax(movementsTransitionTime / 200, 0), 1); // todo: use getNormalized() ?
-    std::cout << "movementsTime: " << this->movementsTime << " movementsTransitionFactor: " << movementsTransitionFactor << std::endl;
+    this->movementsTransitionFactor = fmin(fmax(movementsTransitionTime / 200, 0), 1);
 
     // --- end: Update & Get value of ActionInterpolants
   }
@@ -604,25 +602,20 @@ namespace AnimationSystem {
       this->movementsState = false;
     }
   }
-  float Avatar::getActionInterpolant(char *scratchStack, unsigned int stringByteLength, unsigned int type) { // 0: get(), 1: getNormalized(), 2: getInverse() // todo: cache result. get all actionInterpolants at one call. don't use string?
+  float Avatar::getActionInterpolant(char *scratchStack, unsigned int stringByteLength, unsigned int type) { // 0: get(), 1: getNormalized(), 2: getInverse()
     std::string actionName = "";
     for (unsigned int i = 0; i < stringByteLength; i++) {
       actionName += scratchStack[i];
     }
 
-    // std::cout << "actionName: " << actionName << std::endl;
-
     if (type == 0) {
       float interpolantValue = this->actionInterpolants[actionName]->get();
-      // std::cout << "interpolantValue: " << interpolantValue << std::endl;
       return interpolantValue;
     } else if (type == 1) {
       float interpolantValue = this->actionInterpolants[actionName]->getNormalized();
-      // std::cout << "interpolantValue: " << interpolantValue << std::endl;
       return interpolantValue;
     } else if (type == 2) {
       float interpolantValue = this->actionInterpolants[actionName]->getInverse();
-      // std::cout << "interpolantValue: " << interpolantValue << std::endl;
       return interpolantValue;
     }
     return -1;
