@@ -7,49 +7,39 @@ using json = nlohmann::json;
 
 
   // --- actionInterpolants
-  class BiActionInterpolant {
+  class ScalarInterpolant {
   public:
+    bool evaluatee;
     float value;
     float minValue;
     float maxValue;
-    BiActionInterpolant(float minValue, float maxValue) {
+    ScalarInterpolant(float minValue, float maxValue) {
       this->value = minValue;
       this->minValue = minValue;
       this->maxValue = maxValue;
     }
-    float get() {
+    virtual float get() {
       return this->value;
     }
-    float getNormalized() {
+    virtual float getNormalized() {
       return this->value / (this->maxValue - this->minValue);
     }
-    float getInverse() {
+    virtual float getInverse() {
       return this->maxValue - this->value;
     }
+    virtual void update(float timeDiff, bool evaluatee) { }
+  };
+  class BiActionInterpolant: public ScalarInterpolant {
+  public:
+    using ScalarInterpolant::ScalarInterpolant;
     void update(float timeDiff, bool evaluatee) {
       this->value += (evaluatee ? 1 : -1) * timeDiff;
       this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
     }
   };
-  class UniActionInterpolant {
+  class UniActionInterpolant: public ScalarInterpolant {
   public:
-    float value;
-    float minValue;
-    float maxValue;
-    UniActionInterpolant(float minValue, float maxValue) {
-      this->value = minValue;
-      this->minValue = minValue;
-      this->maxValue = maxValue;
-    }
-    float get() {
-      return this->value;
-    }
-    float getNormalized() {
-      return this->value / (this->maxValue - this->minValue);
-    }
-    float getInverse() {
-      return this->maxValue - this->value;
-    }
+    using ScalarInterpolant::ScalarInterpolant;
     void update(float timeDiff, bool evaluatee) {
       if (evaluatee) {
         this->value += timeDiff;
@@ -59,25 +49,9 @@ using json = nlohmann::json;
       }
     }
   };
-  class InfiniteActionInterpolant {
+  class InfiniteActionInterpolant: public ScalarInterpolant {
   public:
-    float value;
-    float minValue;
-    float maxValue;
-    InfiniteActionInterpolant(float minValue) {
-      this->value = minValue;
-      this->minValue = minValue;
-      this->maxValue = std::numeric_limits<float>::infinity();
-    }
-    float get() {
-      return this->value;
-    }
-    float getNormalized() {
-      return this->value / (this->maxValue - this->minValue);
-    }
-    float getInverse() {
-      return this->maxValue - this->value;
-    }
+    InfiniteActionInterpolant(float minValue): ScalarInterpolant(minValue, std::numeric_limits<float>::infinity()) { }
     void update(float timeDiff, bool evaluatee) {
       if (evaluatee) {
         this->value += timeDiff;
@@ -124,25 +98,7 @@ namespace AnimationSystem {
   public:
 
     std::unordered_map<std::string, json> actions;
-
-    // ActionInterpolants
-    BiActionInterpolant *crouchActI;
-    UniActionInterpolant *activateActI;
-    InfiniteActionInterpolant *useActI;
-    InfiniteActionInterpolant *pickUpActI;
-    InfiniteActionInterpolant *unuseActI;
-    InfiniteActionInterpolant *aimActI;
-    InfiniteActionInterpolant *narutoRunActI;
-    InfiniteActionInterpolant *flyActI;
-    InfiniteActionInterpolant *swimActI;
-    InfiniteActionInterpolant *jumpActI;
-    InfiniteActionInterpolant *doubleJumpActI;
-    InfiniteActionInterpolant *landActI;
-    BiActionInterpolant *danceActI;
-    BiActionInterpolant *emoteActI;
-    InfiniteActionInterpolant *fallLoopActI;
-    BiActionInterpolant *fallLoopTransitionActI;
-    InfiniteActionInterpolant *hurtActI;
+    std::unordered_map<std::string, ScalarInterpolant *> actionInterpolants;
 
     AnimationMixer *mixer;
 
@@ -202,6 +158,10 @@ namespace AnimationSystem {
     bool danceState;
     bool emoteState;
     bool hurtState;
+    bool rightHandState;
+    bool leftHandState;
+    bool sprintState;
+    bool movementsState;
 
     //
     bool landWithMoving;
@@ -221,9 +181,11 @@ namespace AnimationSystem {
 
     //
     
-    void update(float *scratchStack, float timeDiff);
+    void updateInterpolation(float timeDiff); // note: call before `update()`
+    void update(float *scratchStack);
     void addAction(char *scratchStack, unsigned int stringByteLength);
     void removeAction(char *scratchStack, unsigned int stringByteLength);
+    float getActionInterpolant(char *scratchStack, unsigned int stringByteLength, unsigned int type = 0); // 0: get(), 1: getNormalized(), 2: getInverse()
   };
   class AnimationMixer {
   public:

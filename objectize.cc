@@ -65,14 +65,20 @@ EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
 EMSCRIPTEN_KEEPALIVE AnimationSystem::Avatar *createAnimationAvatar(AnimationSystem::AnimationMixer *mixer) {
   return AnimationSystem::createAnimationAvatar(mixer);
 }
-EMSCRIPTEN_KEEPALIVE void updateAnimationAvatar(AnimationSystem::Avatar *avatar, float *scratchStack, float timeDiff) {
-  return avatar->update(scratchStack, timeDiff);
+EMSCRIPTEN_KEEPALIVE void updateInterpolationAnimationAvatar(AnimationSystem::Avatar *avatar, float timeDiff) {
+  return avatar->updateInterpolation(timeDiff);
+}
+EMSCRIPTEN_KEEPALIVE void updateAnimationAvatar(AnimationSystem::Avatar *avatar, float *scratchStack) {
+  return avatar->update(scratchStack);
 }
 EMSCRIPTEN_KEEPALIVE void addActionAnimationAvatar(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int stringByteLength) {
   return avatar->addAction(scratchStack, stringByteLength);
 }
 EMSCRIPTEN_KEEPALIVE void removeActionAnimationAvatar(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int stringByteLength) {
   return avatar->removeAction(scratchStack, stringByteLength);
+}
+EMSCRIPTEN_KEEPALIVE float getActionInterpolantAnimationAvatar(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int stringByteLength, unsigned int type) {
+  return avatar->getActionInterpolant(scratchStack, stringByteLength, type);
 }
 EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
   return AnimationSystem::createAnimationMixer();
