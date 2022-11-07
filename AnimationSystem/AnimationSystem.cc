@@ -8,7 +8,8 @@ namespace AnimationSystem {
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
 
-  std::vector<std::vector<Animation *>> animationGroups;
+  std::vector<std::vector<Animation *>> animationGroups; // todo: use `AnimationGroupDeclarations declarations` directly?
+  std::unordered_map<std::string, std::unordered_map<std::string, AnimationDeclaration>> animationGroupsMap; // todo: use index as first key?
 
   unsigned int defaultSitAnimationIndex;
   unsigned int defaultEmoteAnimationIndex;
@@ -373,6 +374,7 @@ namespace AnimationSystem {
         for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
           AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
           animationGroup.push_back(animationAll[animationDeclaration.fileName]);
+          animationGroupsMap[declaration.groupName][animationDeclaration.keyName] = animationDeclaration;
 
           // std::cout << "-IL: animation i: " << j << std::endl;
           // std::cout << "-IL: animationDeclaration.keyName: " << animationDeclaration.keyName << std::endl;
@@ -641,9 +643,23 @@ namespace AnimationSystem {
 
     float movementsTransitionTime = this->actionInterpolants["movementsTransition"]->get();
     this->movementsTransitionFactor = fmin(fmax(movementsTransitionTime / 200, 0), 1); // todo: use getNormalized() ?
-    std::cout << "movementsTime: " << this->movementsTime << " movementsTransitionFactor: " << movementsTransitionFactor << std::endl;
+    // std::cout << "movementsTime: " << this->movementsTime << " movementsTransitionFactor: " << movementsTransitionFactor << std::endl;
 
     // --- end: Update & Get value of ActionInterpolants
+
+    // std::cout << "emoteAction: " << (this->actions["emote"] == nullptr) << std::endl; // will output 0 | 1.
+    // std::cout << "emoteAction: " << this->actions["emote"] << std::endl; // will output null if no emoteAction, will output dump `{"actionId":"pmOHH","animation":"victory","type":"emote"}` if has emoteAction.
+    // if (this->actions["emote"] == nullptr) { // todo: use `json emoteAction = this->actions["emote"]` ? // todo: why must need `== nullptr` ?
+    //   // std::cout << "-wasm: -1" << std::endl;
+    //   this->emoteAnimationIndex = -1;
+    // } else {
+    //   // std::cout << "-wasm: 0" << std::endl;
+    //   // this->emoteAnimationIndex = 0;
+    //   this->emoteAnimationIndex = animationGroupsMap["emote"][this->actions["emote"]["animation"]].index;
+    //   std::cout << "emoteAnimationName: " << this->actions["emote"]["animation"] << std::endl;
+    // }
+    // std::cout << "emoteAnimationIndex: " << this->emoteAnimationIndex << std::endl;
+    std::cout << "-wasm-index: " << animationGroupsMap["emote"]["victory"].index << " name: " << animationGroupsMap["emote"]["victory"].keyName << std::endl;
   }
   void Avatar::addAction(char *scratchStack, unsigned int stringByteLength) {
     // std::cout << "-wasm-addAction" << std::endl;
