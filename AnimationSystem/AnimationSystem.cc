@@ -8,7 +8,8 @@ namespace AnimationSystem {
   std::vector<AnimationMapping> _animationMappings;
   std::map<std::string, Animation *> animationAll;
 
-  std::vector<std::vector<Animation *>> animationGroups;
+  std::vector<std::vector<Animation *>> animationGroups; // todo: use `AnimationGroupDeclarations declarations` directly?
+  std::unordered_map<std::string, std::unordered_map<std::string, AnimationDeclaration>> animationGroupsMap; // todo: use index as first key?
 
   unsigned int defaultSitAnimationIndex;
   unsigned int defaultEmoteAnimationIndex;
@@ -305,6 +306,7 @@ namespace AnimationSystem {
         for (unsigned int j = 0; j < declaration.animationDeclarations.size(); j++) {
           AnimationDeclaration animationDeclaration = declaration.animationDeclarations[j];
           animationGroup.push_back(animationAll[animationDeclaration.fileName]);
+          animationGroupsMap[declaration.groupName][animationDeclaration.keyName] = animationDeclaration;
 
           json jAnimation;
           jAnimation["keyName"] = animationDeclaration.keyName;
@@ -423,14 +425,14 @@ namespace AnimationSystem {
     // this->pickUpTime = scratchStack[index++];
 
     this->useAnimationIndex = (int)(scratchStack[index++]);
-    this->emoteAnimationIndex = (int)(scratchStack[index++]);
-    this->sitAnimationIndex = (int)(scratchStack[index++]);
-    this->danceAnimationIndex = (int)(scratchStack[index++]);
-    this->activateAnimationIndex = (int)(scratchStack[index++]);
-    this->hurtAnimationIndex = (int)(scratchStack[index++]);
+    // this->emoteAnimationIndex = (int)(scratchStack[index++]);
+    // this->sitAnimationIndex = (int)(scratchStack[index++]);
+    // this->danceAnimationIndex = (int)(scratchStack[index++]);
+    // this->activateAnimationIndex = (int)(scratchStack[index++]);
+    // this->hurtAnimationIndex = (int)(scratchStack[index++]);
     this->useAnimationComboIndex = (int)(scratchStack[index++]);
     this->unuseAnimationIndex = (int)(scratchStack[index++]);
-    this->aimAnimationIndex = (int)(scratchStack[index++]);
+    // this->aimAnimationIndex = (int)(scratchStack[index++]);
 
     this->fallLoopFromJump = scratchStack[index++];
     this->landTimeS = scratchStack[index++];
@@ -495,6 +497,54 @@ namespace AnimationSystem {
     this->movementsTransitionFactor = fmin(fmax(movementsTransitionTime / 200, 0), 1);
 
     // --- end: Update & Get value of ActionInterpolants
+
+    // std::cout << "emoteAction: " << (this->actions["emote"] == nullptr) << std::endl; // will output 0 | 1.
+    // std::cout << "emoteAction: " << this->actions["emote"] << std::endl; // will output null if no emoteAction, will output dump `{"actionId":"pmOHH","animation":"victory","type":"emote"}` if has emoteAction.
+    if (this->actions["emote"] == nullptr) { // todo: use `json emoteAction = this->actions["emote"]` ? // todo: why must need `== nullptr` ?
+      // std::cout << "-wasm: -1" << std::endl;
+      this->emoteAnimationIndex = -1;
+    } else {
+      // std::cout << "-wasm: 0" << std::endl;
+      // this->emoteAnimationIndex = 0;
+      this->emoteAnimationIndex = animationGroupsMap["emote"][this->actions["emote"]["animation"]].index;
+      // std::cout << "emoteAnimationName: " << this->actions["emote"]["animation"] << std::endl;
+    }
+    // std::cout << "emoteAnimationIndex: " << this->emoteAnimationIndex << std::endl;
+    // std::cout << "-wasm-index: " << animationGroupsMap["emote"]["victory"].index << " name: " << animationGroupsMap["emote"]["victory"].keyName << std::endl;
+
+    if (this->actions["sit"] == nullptr) {
+      this->sitAnimationIndex = -1;
+    } else {
+      this->sitAnimationIndex = animationGroupsMap["sit"][this->actions["sit"]["animation"]].index;
+    }
+
+    if (this->actions["dance"] == nullptr) {
+      this->danceAnimationIndex = -1;
+    } else {
+      this->danceAnimationIndex = animationGroupsMap["dance"][this->actions["dance"]["animation"]].index;
+    }
+
+    if (this->actions["activate"] == nullptr) {
+      this->activateAnimationIndex = -1;
+    } else {
+      this->activateAnimationIndex = animationGroupsMap["activate"][this->actions["activate"]["animationName"]].index;
+    }
+
+    if (this->actions["hurt"] == nullptr) {
+      this->hurtAnimationIndex = -1;
+    } else {
+      this->hurtAnimationIndex = animationGroupsMap["hurt"][this->actions["hurt"]["animation"]].index;
+    }
+
+    if (this->actions["aim"] == nullptr) {
+      this->aimAnimationIndex = -1;
+    } else {
+      if (this->actions["aim"]["characterAnimation"] == nullptr) {
+        this->aimAnimationIndex = -1;
+      } else {
+        this->aimAnimationIndex = animationGroupsMap["aim"][this->actions["aim"]["characterAnimation"]].index;
+      }
+    }
   }
   void Avatar::addAction(char *scratchStack, unsigned int stringByteLength) {
 
