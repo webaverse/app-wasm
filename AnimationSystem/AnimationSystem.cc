@@ -688,7 +688,11 @@ namespace AnimationSystem {
     if (this->actions["aim"] == nullptr) {
       this->aimAnimationIndex = -1;
     } else {
-      this->aimAnimationIndex = animationGroupsMap["aim"][this->actions["aim"]["characterAnimation"]].index;
+      if (this->actions["aim"]["characterAnimation"] == nullptr) {
+        this->aimAnimationIndex = -1;
+      } else {
+        this->aimAnimationIndex = animationGroupsMap["aim"][this->actions["aim"]["characterAnimation"]].index;
+      }
     }
   }
   void Avatar::addAction(char *scratchStack, unsigned int stringByteLength) {
