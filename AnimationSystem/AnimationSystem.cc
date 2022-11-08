@@ -558,13 +558,13 @@ namespace AnimationSystem {
     // ---
     this->useAnimationIndex = (int)(scratchStack[index++]);
     // this->emoteAnimationIndex = (int)(scratchStack[index++]);
-    this->sitAnimationIndex = (int)(scratchStack[index++]);
-    this->danceAnimationIndex = (int)(scratchStack[index++]);
-    this->activateAnimationIndex = (int)(scratchStack[index++]);
-    this->hurtAnimationIndex = (int)(scratchStack[index++]);
+    // this->sitAnimationIndex = (int)(scratchStack[index++]);
+    // this->danceAnimationIndex = (int)(scratchStack[index++]);
+    // this->activateAnimationIndex = (int)(scratchStack[index++]);
+    // this->hurtAnimationIndex = (int)(scratchStack[index++]);
     this->useAnimationComboIndex = (int)(scratchStack[index++]); // todo: use real combo index.
     this->unuseAnimationIndex = (int)(scratchStack[index++]);
-    this->aimAnimationIndex = (int)(scratchStack[index++]);
+    // this->aimAnimationIndex = (int)(scratchStack[index++]);
 
     // std::cout
     // << "-wasm- xxxAnimatonIndex: "
@@ -660,6 +660,36 @@ namespace AnimationSystem {
     }
     // std::cout << "emoteAnimationIndex: " << this->emoteAnimationIndex << std::endl;
     // std::cout << "-wasm-index: " << animationGroupsMap["emote"]["victory"].index << " name: " << animationGroupsMap["emote"]["victory"].keyName << std::endl;
+
+    if (this->actions["sit"] == nullptr) {
+      this->sitAnimationIndex = -1;
+    } else {
+      this->sitAnimationIndex = animationGroupsMap["sit"][this->actions["sit"]["animation"]].index;
+    }
+
+    if (this->actions["dance"] == nullptr) {
+      this->danceAnimationIndex = -1;
+    } else {
+      this->danceAnimationIndex = animationGroupsMap["dance"][this->actions["dance"]["animation"]].index;
+    }
+
+    if (this->actions["activate"] == nullptr) {
+      this->activateAnimationIndex = -1;
+    } else {
+      this->activateAnimationIndex = animationGroupsMap["activate"][this->actions["activate"]["animationName"]].index;
+    }
+
+    if (this->actions["hurt"] == nullptr) {
+      this->hurtAnimationIndex = -1;
+    } else {
+      this->hurtAnimationIndex = animationGroupsMap["hurt"][this->actions["hurt"]["animation"]].index;
+    }
+
+    if (this->actions["aim"] == nullptr) {
+      this->aimAnimationIndex = -1;
+    } else {
+      this->aimAnimationIndex = animationGroupsMap["aim"][this->actions["aim"]["characterAnimation"]].index;
+    }
   }
   void Avatar::addAction(char *scratchStack, unsigned int stringByteLength) {
     // std::cout << "-wasm-addAction" << std::endl;
