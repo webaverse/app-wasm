@@ -557,7 +557,7 @@ namespace AnimationSystem {
 
     // ---
     this->useAnimationIndex = (int)(scratchStack[index++]);
-    this->emoteAnimationIndex = (int)(scratchStack[index++]);
+    // this->emoteAnimationIndex = (int)(scratchStack[index++]);
     this->sitAnimationIndex = (int)(scratchStack[index++]);
     this->danceAnimationIndex = (int)(scratchStack[index++]);
     this->activateAnimationIndex = (int)(scratchStack[index++]);
@@ -649,17 +649,17 @@ namespace AnimationSystem {
 
     // std::cout << "emoteAction: " << (this->actions["emote"] == nullptr) << std::endl; // will output 0 | 1.
     // std::cout << "emoteAction: " << this->actions["emote"] << std::endl; // will output null if no emoteAction, will output dump `{"actionId":"pmOHH","animation":"victory","type":"emote"}` if has emoteAction.
-    // if (this->actions["emote"] == nullptr) { // todo: use `json emoteAction = this->actions["emote"]` ? // todo: why must need `== nullptr` ?
-    //   // std::cout << "-wasm: -1" << std::endl;
-    //   this->emoteAnimationIndex = -1;
-    // } else {
-    //   // std::cout << "-wasm: 0" << std::endl;
-    //   // this->emoteAnimationIndex = 0;
-    //   this->emoteAnimationIndex = animationGroupsMap["emote"][this->actions["emote"]["animation"]].index;
-    //   std::cout << "emoteAnimationName: " << this->actions["emote"]["animation"] << std::endl;
-    // }
+    if (this->actions["emote"] == nullptr) { // todo: use `json emoteAction = this->actions["emote"]` ? // todo: why must need `== nullptr` ?
+      // std::cout << "-wasm: -1" << std::endl;
+      this->emoteAnimationIndex = -1;
+    } else {
+      // std::cout << "-wasm: 0" << std::endl;
+      // this->emoteAnimationIndex = 0;
+      this->emoteAnimationIndex = animationGroupsMap["emote"][this->actions["emote"]["animation"]].index;
+      // std::cout << "emoteAnimationName: " << this->actions["emote"]["animation"] << std::endl;
+    }
     // std::cout << "emoteAnimationIndex: " << this->emoteAnimationIndex << std::endl;
-    std::cout << "-wasm-index: " << animationGroupsMap["emote"]["victory"].index << " name: " << animationGroupsMap["emote"]["victory"].keyName << std::endl;
+    // std::cout << "-wasm-index: " << animationGroupsMap["emote"]["victory"].index << " name: " << animationGroupsMap["emote"]["victory"].keyName << std::endl;
   }
   void Avatar::addAction(char *scratchStack, unsigned int stringByteLength) {
     // std::cout << "-wasm-addAction" << std::endl;
