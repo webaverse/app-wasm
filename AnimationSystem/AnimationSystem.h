@@ -5,62 +5,61 @@
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
-
-  // --- actionInterpolants
-  class ScalarInterpolant {
-  public:
-    bool evaluatee;
-    float value;
-    float minValue;
-    float maxValue;
-    ScalarInterpolant(float minValue, float maxValue) {
-      this->value = minValue;
-      this->minValue = minValue;
-      this->maxValue = maxValue;
-    }
-    virtual float get() {
-      return this->value;
-    }
-    virtual float getNormalized() {
-      return this->value / (this->maxValue - this->minValue);
-    }
-    virtual float getInverse() {
-      return this->maxValue - this->value;
-    }
-    virtual void update(float timeDiff, bool evaluatee) { }
-  };
-  class BiActionInterpolant: public ScalarInterpolant {
-  public:
-    using ScalarInterpolant::ScalarInterpolant;
-    void update(float timeDiff, bool evaluatee) {
-      this->value += (evaluatee ? 1 : -1) * timeDiff;
+// --- actionInterpolants
+class ScalarInterpolant {
+public:
+  bool evaluatee;
+  float value;
+  float minValue;
+  float maxValue;
+  ScalarInterpolant(float minValue, float maxValue) {
+    this->value = minValue;
+    this->minValue = minValue;
+    this->maxValue = maxValue;
+  }
+  virtual float get() {
+    return this->value;
+  }
+  virtual float getNormalized() {
+    return this->value / (this->maxValue - this->minValue);
+  }
+  virtual float getInverse() {
+    return this->maxValue - this->value;
+  }
+  virtual void update(float timeDiff, bool evaluatee) { }
+};
+class BiActionInterpolant: public ScalarInterpolant {
+public:
+  using ScalarInterpolant::ScalarInterpolant;
+  void update(float timeDiff, bool evaluatee) {
+    this->value += (evaluatee ? 1 : -1) * timeDiff;
+    this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
+  }
+};
+class UniActionInterpolant: public ScalarInterpolant {
+public:
+  using ScalarInterpolant::ScalarInterpolant;
+  void update(float timeDiff, bool evaluatee) {
+    if (evaluatee) {
+      this->value += timeDiff;
       this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
+    } else {
+      this->value = this->minValue;
     }
-  };
-  class UniActionInterpolant: public ScalarInterpolant {
-  public:
-    using ScalarInterpolant::ScalarInterpolant;
-    void update(float timeDiff, bool evaluatee) {
-      if (evaluatee) {
-        this->value += timeDiff;
-        this->value = fmin(fmax(this->value, this->minValue), this->maxValue);
-      } else {
-        this->value = this->minValue;
-      }
+  }
+};
+class InfiniteActionInterpolant: public ScalarInterpolant {
+public:
+  InfiniteActionInterpolant(float minValue): ScalarInterpolant(minValue, std::numeric_limits<float>::infinity()) { }
+  void update(float timeDiff, bool evaluatee) {
+    if (evaluatee) {
+      this->value += timeDiff;
+    } else {
+      this->value = this->minValue;
     }
-  };
-  class InfiniteActionInterpolant: public ScalarInterpolant {
-  public:
-    InfiniteActionInterpolant(float minValue): ScalarInterpolant(minValue, std::numeric_limits<float>::infinity()) { }
-    void update(float timeDiff, bool evaluatee) {
-      if (evaluatee) {
-        this->value += timeDiff;
-      } else {
-        this->value = this->minValue;
-      }
-    }
-  };
-  // --- End: actionInterpolants
+  }
+};
+// --- End: actionInterpolants
 
 namespace AnimationSystem {
   struct Interpolant;
@@ -111,9 +110,7 @@ namespace AnimationSystem {
     float doubleJumpTime;
     float jumpTime;
     float narutoRunTime;
-    // float narutoRunTimeFactor;
     float danceFactor;
-    // float crouchMaxTime;
     float emoteFactor;
     float lastEmoteTime;
     float idleWalkFactor;
@@ -189,7 +186,6 @@ namespace AnimationSystem {
   };
   class AnimationMixer {
   public:
-    // static float now;
     static float nowS;
 
     Avatar *avatar;

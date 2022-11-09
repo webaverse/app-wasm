@@ -385,54 +385,14 @@ namespace AnimationSystem {
 
     this->idleWalkFactor = scratchStack[index++];
     this->walkRunFactor = scratchStack[index++];
-    // this->crouchFactor = scratchStack[index++];
-    // this->sprintFactor = scratchStack[index++];
-    // this->movementsTransitionFactor = scratchStack[index++];
-
-    // this->activateTime = scratchStack[index++];
-    // this->swimTime = scratchStack[index++];
-    // this->movementsTime = scratchStack[index++];
-
-    // // action states ---
-    // this->jumpState = scratchStack[index++];
-    // this->doubleJumpState = scratchStack[index++];
-    // this->flyState = scratchStack[index++];
-    // this->narutoRunState = scratchStack[index++];
-    // this->sitState = scratchStack[index++];
-    // this->holdState = scratchStack[index++];
-    // this->pickUpState = scratchStack[index++];
-    // this->swimState = scratchStack[index++];
 
     this->landWithMoving = scratchStack[index++];
-    // this->landTime = scratchStack[index++];
-    // this->fallLoopFactor = scratchStack[index++];
-    // this->fallLoopTime = scratchStack[index++];
-    // this->flyTime = scratchStack[index++];
-    // this->doubleJumpTime = scratchStack[index++];
-    // this->jumpTime = scratchStack[index++];
-    // this->narutoRunTime = scratchStack[index++];
-    // this->narutoRunTimeFactor = scratchStack[index++];
-    // this->danceFactor = scratchStack[index++];
-    // this->crouchMaxTime = scratchStack[index++];
-    // this->emoteFactor = scratchStack[index++];
     this->lastEmoteTime = scratchStack[index++];
-    // this->useTime = scratchStack[index++];
     this->useAnimationEnvelopeLength = scratchStack[index++];
-    // this->hurtTime = scratchStack[index++];
-    // this->unuseTime = scratchStack[index++];
-    // this->aimTime = scratchStack[index++];
-    // this->aimMaxTime = scratchStack[index++];
-    // this->pickUpTime = scratchStack[index++];
 
     this->useAnimationIndex = (int)(scratchStack[index++]);
-    // this->emoteAnimationIndex = (int)(scratchStack[index++]);
-    // this->sitAnimationIndex = (int)(scratchStack[index++]);
-    // this->danceAnimationIndex = (int)(scratchStack[index++]);
-    // this->activateAnimationIndex = (int)(scratchStack[index++]);
-    // this->hurtAnimationIndex = (int)(scratchStack[index++]);
     this->useAnimationComboIndex = (int)(scratchStack[index++]);
     this->unuseAnimationIndex = (int)(scratchStack[index++]);
-    // this->aimAnimationIndex = (int)(scratchStack[index++]);
 
     this->fallLoopFromJump = scratchStack[index++];
     this->landTimeS = scratchStack[index++];

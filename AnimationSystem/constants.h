@@ -4,9 +4,9 @@ const float aimMaxTime = 1000;
 
 class BoneIndexes {
 public:
-  // positions
+  // positions ---
   int HipsPosition;
-  // quaternions
+  // quaternions ---
   int Hips;
   int Spine;
   int Chest;
