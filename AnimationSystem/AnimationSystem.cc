@@ -1239,7 +1239,7 @@ namespace AnimationSystem {
         _blendJump(spec, this->avatar);
       } else if (avatar->sitState) {
         _blendSit(spec, this->avatar);
-      } else if (avatar->narutoRunState) {
+      } else if (avatar->narutoRunState && !avatar->crouchState) {
         _blendNarutoRun(spec, this->avatar);
       } else if (avatar->danceFactor > 0) {
         _blendDance(spec, this->avatar);
