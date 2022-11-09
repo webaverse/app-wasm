@@ -5,6 +5,7 @@
 #include "march.h"
 #include "occlusionCull/occlusionCull.h"
 // #include "DualContouring/main.h"
+#include "AnimationSystem/AnimationSystem.h"
 // #include "collide.h"
 #include "physics.h"
 // #include "convex.h"
@@ -58,6 +59,48 @@ EMSCRIPTEN_KEEPALIVE bool updateMassAndInertiaPhysics(PScene *scene, unsigned in
 EMSCRIPTEN_KEEPALIVE float getBodyMassPhysics(PScene *scene, unsigned int id) {
   return scene->getBodyMass(id);
 }
+
+// AnimationSystem
+
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Avatar *createAnimationAvatar(AnimationSystem::AnimationMixer *mixer) {
+  return AnimationSystem::createAnimationAvatar(mixer);
+}
+EMSCRIPTEN_KEEPALIVE void updateInterpolationAnimationAvatar(AnimationSystem::Avatar *avatar, float timeDiff) {
+  return avatar->updateInterpolation(timeDiff);
+}
+EMSCRIPTEN_KEEPALIVE void updateAnimationAvatar(AnimationSystem::Avatar *avatar, float *scratchStack) {
+  return avatar->update(scratchStack);
+}
+EMSCRIPTEN_KEEPALIVE void addActionAnimationAvatar(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int stringByteLength) {
+  return avatar->addAction(scratchStack, stringByteLength);
+}
+EMSCRIPTEN_KEEPALIVE void removeActionAnimationAvatar(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int stringByteLength) {
+  return avatar->removeAction(scratchStack, stringByteLength);
+}
+EMSCRIPTEN_KEEPALIVE float getActionInterpolantAnimationAvatar(AnimationSystem::Avatar *avatar, char *scratchStack, unsigned int stringByteLength, unsigned int type) {
+  return avatar->getActionInterpolant(scratchStack, stringByteLength, type);
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::AnimationMixer *createAnimationMixer() {
+  return AnimationSystem::createAnimationMixer();
+}
+EMSCRIPTEN_KEEPALIVE float *updateAnimationMixer(AnimationSystem::AnimationMixer *mixer, float now, float nowS) {
+  return mixer->update(now, nowS);
+}
+EMSCRIPTEN_KEEPALIVE void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
+  return AnimationSystem::createAnimationMapping(isPosition, index, isTop, isArm, scratchStack, nameByteLength);
+}
+EMSCRIPTEN_KEEPALIVE AnimationSystem::Animation *createAnimation(char *scratchStack, unsigned int nameByteLength, float duration) {
+  return AnimationSystem::createAnimation(scratchStack, nameByteLength, duration);
+}
+EMSCRIPTEN_KEEPALIVE unsigned int initAnimationSystem(char *scratchStack) {
+  return AnimationSystem::initAnimationSystem(scratchStack);
+}
+EMSCRIPTEN_KEEPALIVE void createAnimationInterpolant(AnimationSystem::Animation *animation, unsigned int numParameterPositions, float *parameterPositions, unsigned int numSampleValues, float *sampleValues, unsigned int valueSize) {
+  return AnimationSystem::createAnimationInterpolant(animation, numParameterPositions, parameterPositions, numSampleValues, sampleValues, valueSize);
+}
+
+// End AnimationSystem
+
 EMSCRIPTEN_KEEPALIVE unsigned int simulatePhysics(PScene *scene, unsigned int *ids, float *positions, float *quaternions, float *scales, unsigned int *bitfields, unsigned int numIds, float elapsedTime, float *velocities) {
   return scene->simulate(ids, positions, quaternions, scales, bitfields, numIds, elapsedTime, velocities);
 }

@@ -329,7 +329,7 @@ emcc -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=209715200 -D__linux__ -s ALLOW_MEMORY_
   -IRectBinPack/include \
   -Iconcaveman \
   objectize.cc \
-  vector.cc physics-base.cc physics.cc PathFinder.cc FastNoise.cpp \
+  vector.cc physics-base.cc physics.cc PathFinder.cc FastNoise.cpp AnimationSystem/AnimationSystem.cc \
   *.o \
   -DNDEBUG -DPX_SIMD_DISABLED -DPX_EMSCRIPTEN=1 -DPX_COOKING \
   -I. \
