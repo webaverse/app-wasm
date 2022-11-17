@@ -385,6 +385,8 @@ namespace AnimationSystem {
 
     this->idleWalkFactor = scratchStack[index++];
     this->walkRunFactor = scratchStack[index++];
+    this->movementsTransitionFactor = scratchStack[index++];
+    this->movementsTime = scratchStack[index++];
 
     this->landWithMoving = scratchStack[index++];
     this->lastEmoteTime = scratchStack[index++];
