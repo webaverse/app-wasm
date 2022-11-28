@@ -523,8 +523,8 @@ namespace AnimationSystem {
       this->narutoRunState = true;
     } else if (j["type"] == "sit") {
       this->sitState = true;
-    } else if (j["type"] == "hold") {
-      this->holdState = true;
+    } else if (j["type"] == "wear") {
+      this->holdState = j["holdAnimation"] == "pick_up_idle";
     } else if (j["type"] == "pickUp") {
       this->pickUpState = true;
     } else if (j["type"] == "swim") {
@@ -576,7 +576,7 @@ namespace AnimationSystem {
       this->narutoRunState = false;
     } else if (j["type"] == "sit") {
       this->sitState = false;
-    } else if (j["type"] == "hold") {
+    } else if (j["type"] == "wear") {
       this->holdState = false;
     } else if (j["type"] == "pickUp") {
       this->pickUpState = false;
