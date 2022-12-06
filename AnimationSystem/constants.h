@@ -277,6 +277,9 @@ int useAnimationIota = 0;
 class UseAnimationIndexes {
 public:
   int Combo;
+  int Combo_0;
+  int Combo_1;
+  int Combo_2;
   int Slash;
   int Rifle;
   int Pistol;
@@ -755,6 +758,21 @@ AnimationGroupDeclarations declarations = {
         "combo",
         useAnimationIndexes.Combo = useAnimationIota++,
         "One Hand Sword Combo.fbx"
+      },
+      {
+        "combo_0",
+        useAnimationIndexes.Combo = useAnimationIota++,
+        "one_hand_sword_combo_0.fbx"
+      },
+      {
+        "combo_1",
+        useAnimationIndexes.Combo = useAnimationIota++,
+        "one_hand_sword_combo_1.fbx"
+      },
+      {
+        "combo_2",
+        useAnimationIndexes.Combo = useAnimationIota++,
+        "one_hand_sword_combo_2.fbx"
       },
       {
         "slash",
