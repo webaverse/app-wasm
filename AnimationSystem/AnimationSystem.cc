@@ -11,6 +11,8 @@ namespace AnimationSystem {
   std::vector<std::vector<Animation *>> animationGroups;
   std::unordered_map<std::string, std::unordered_map<std::string, AnimationDeclaration>> animationGroupsMap;
 
+  float AnimationMixer::nowS;
+
   unsigned int defaultSitAnimationIndex;
   unsigned int defaultEmoteAnimationIndex;
   unsigned int defaultDanceAnimationIndex;
