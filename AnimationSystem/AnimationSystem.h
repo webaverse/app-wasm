@@ -142,6 +142,7 @@ namespace AnimationSystem {
     // states
     bool jumpState;
     bool doubleJumpState;
+    bool landState;
     bool flyState;
     bool crouchState;
     bool narutoRunState;
@@ -185,6 +186,8 @@ namespace AnimationSystem {
     void addAction(char *scratchStack, unsigned int stringByteLength);
     void removeAction(char *scratchStack, unsigned int stringByteLength);
     float getActionInterpolant(char *scratchStack, unsigned int stringByteLength, unsigned int type = 0); // 0: get(), 1: getNormalized(), 2: getInverse()
+
+    // getAnimationAvatarInfos() // test // todo
   };
   class AnimationMixer {
   public:
