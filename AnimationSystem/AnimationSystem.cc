@@ -27,6 +27,7 @@ namespace AnimationSystem {
   float *localVecQuatPtr;
   float *localVecQuatPtr2;
 
+  float directionsWeights[4];
   float directionsWeightsWithReverse[6];
 
   float identityQuaternion[4] = {0, 0, 0, 1};
@@ -202,6 +203,7 @@ namespace AnimationSystem {
 
     // ActionInterpolants
     avatar->actionInterpolants["crouch"] = new BiActionInterpolant(0, 200);
+    avatar->actionInterpolants["glider"] = new InfiniteActionInterpolant(0);
     avatar->actionInterpolants["activate"] = new UniActionInterpolant(0, 750);
     avatar->actionInterpolants["use"] = new InfiniteActionInterpolant(0);
     avatar->actionInterpolants["pickUp"] = new InfiniteActionInterpolant(0);
@@ -350,6 +352,7 @@ namespace AnimationSystem {
   }
   void Avatar::updateInterpolation(float timeDiff) {
     this->actionInterpolants["crouch"]->update(timeDiff, this->crouchState);
+    this->actionInterpolants["glider"]->update(timeDiff, this->gliderState);
     this->actionInterpolants["activate"]->update(timeDiff, this->activateState);
     this->actionInterpolants["use"]->update(timeDiff, this->useState);
     this->actionInterpolants["pickUp"]->update(timeDiff, this->pickUpState);
@@ -408,6 +411,11 @@ namespace AnimationSystem {
     }
 
     //
+
+    directionsWeights[0] = this->forwardFactor;
+    directionsWeights[1] = this->backwardFactor;
+    directionsWeights[2] = this->leftFactor;
+    directionsWeights[3] = this->rightFactor;
     
     directionsWeightsWithReverse[0] = this->forwardFactor;
     directionsWeightsWithReverse[1] = this->backwardFactor;
@@ -419,6 +427,8 @@ namespace AnimationSystem {
     // --- Update & Get value of ActionInterpolants
 
     this->crouchFactor = this->actionInterpolants["crouch"]->getNormalized();
+
+    this->gliderTime = this->actionInterpolants["glider"]->get();
 
     this->activateTime = this->actionInterpolants["activate"]->get();
 
@@ -521,6 +531,8 @@ namespace AnimationSystem {
       this->flyState = true;
     } else if (j["type"] == "crouch") {
       this->crouchState = true;
+    } else if (j["type"] == "glider") {
+      this->gliderState = true;
     } else if (j["type"] == "narutoRun") {
       this->narutoRunState = true;
     } else if (j["type"] == "sit") {
@@ -574,6 +586,8 @@ namespace AnimationSystem {
       this->flyState = false;
     } else if (j["type"] == "crouch") {
       this->crouchState = false;
+    } else if (j["type"] == "glider") {
+      this->gliderState = false;
     } else if (j["type"] == "narutoRun") {
       this->narutoRunState = false;
     } else if (j["type"] == "sit") {
@@ -1170,6 +1184,32 @@ namespace AnimationSystem {
     }
   }
 
+  float *_get8DirectionsGliderAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) {
+    // gliderAnimations
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Glider], directionsWeights, timeS);
+    copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
+    _clearXZ(localVecQuatArr, spec.isPosition);
+
+    // blend glider idle ---
+    localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle]->duration));
+    interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+    return localVecQuatArr;
+  }
+
+  void _blendGlider(AnimationMapping &spec, Avatar *avatar) {
+    if (avatar->gliderState) {
+      Animation *gliderAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle];
+      float t3 = fmod(AnimationMixer::nowS, gliderAnimation->duration);
+      float *v3 = _get8DirectionsGliderAnimationValue(spec, avatar, t3);
+
+      float f = avatar->gliderTime / 1000 / 0.15;
+      f = clamp(f, 0, 1);
+      interpolateFlat(spec.dst, 0, spec.dst, 0, v3, 0, f, spec.isPosition);
+
+      _clearXZ(spec.dst, spec.isPosition);
+    }
+  }
+
   void _blendSwim(AnimationMapping &spec, Avatar *avatar) {
     if (avatar->swimState) {
       float swimTimeS = avatar->swimTime / 1000;
@@ -1272,6 +1312,7 @@ namespace AnimationSystem {
       // note: cascading blending, in order to do transition between all kinds of aniamtions.
       _blendFly(spec, this->avatar);
       _blendFallLoop(spec, this->avatar);
+      _blendGlider(spec, this->avatar);
       _blendLand(spec, this->avatar);
       _blendActivate(spec, this->avatar);
       _blendSwim(spec, this->avatar);

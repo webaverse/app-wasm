@@ -91,6 +91,8 @@ public:
   int Run;
   int Crouch;
   //
+  int Glider;
+  //
   int Activate;
   int Aim;
   int Dance;
@@ -113,6 +115,7 @@ class SingleAnimationIndexes {
 public:
   int Idle;
   int CrouchIdle;
+  int GliderIdle;
   int Jump;
   int DoubleJump;
   int FallLoop;
@@ -157,6 +160,18 @@ public:
   int RightMirror;
 };
 CrouchAnimationIndexes crouchAnimationIndexes;
+
+// ---
+
+int gliderAnimationIota = 0;
+class GliderAnimationIndexes {
+public:
+  int Forward;
+  int Backward;
+  int Left;
+  int Right;
+};
+GliderAnimationIndexes gliderAnimationIndexes;
 
 // ---
 
@@ -315,6 +330,11 @@ AnimationGroupDeclarations declarations = {
         "Crouch Idle.fbx"
       },
       {
+        "GliderIdle",
+        singleAnimationIndexes.GliderIdle = singleAnimationIota++,
+        "glider_forward.fbx"
+      },
+      {
         "jump",
         singleAnimationIndexes.Jump = singleAnimationIota++,
         "jump.fbx"
@@ -442,6 +462,33 @@ AnimationGroupDeclarations declarations = {
         "rightMirror",
         crouchAnimationIndexes.RightMirror = crouchAnimationIota++,
         "Crouched Sneaking Left reverse.fbx"
+      },
+    }
+  },
+  //
+  {
+    "Glider",
+    animationGroupIndexes.Glider = animationGroupIota++,
+    {
+      {
+        "Forward",
+        gliderAnimationIndexes.Forward = gliderAnimationIota++,
+        "glider_forward.fbx"
+      },
+      {
+        "Backward",
+        gliderAnimationIndexes.Backward = gliderAnimationIota++,
+        "glider_backward.fbx"
+      },
+      {
+        "Left",
+        gliderAnimationIndexes.Left = gliderAnimationIota++,
+        "glider_left.fbx"
+      },
+      {
+        "Right",
+        gliderAnimationIndexes.Right = gliderAnimationIota++,
+        "glider_right.fbx"
       },
     }
   },
