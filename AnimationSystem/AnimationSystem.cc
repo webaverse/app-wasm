@@ -363,8 +363,7 @@ namespace AnimationSystem {
     this->actionInterpolants["swim"]->update(timeDiff, this->swimState);
     this->actionInterpolants["jump"]->update(timeDiff, this->jumpState);
     this->actionInterpolants["doubleJump"]->update(timeDiff, this->doubleJumpState);
-    // this->actionInterpolants["land"]->update(timeDiff, !this->jumpState && !this->fallLoopState && !this->flyState);
-    this->actionInterpolants["land"]->update(timeDiff, this->landState && !this->flyState); // todo: don't check fl here, resolve conflicts in actions-manager.js ?
+    this->actionInterpolants["land"]->update(timeDiff, this->landState && !this->flyState);
     this->actionInterpolants["dance"]->update(timeDiff, this->danceState);
     this->actionInterpolants["emote"]->update(timeDiff, this->emoteState);
     this->actionInterpolants["fallLoop"]->update(timeDiff, this->fallLoopState);
@@ -403,7 +402,7 @@ namespace AnimationSystem {
     this->unuseAnimationIndex = (int)(scratchStack[index++]);
 
     this->fallLoopFromJump = scratchStack[index++];
-    this->landTimeS = scratchStack[index++]; // todo: calc from landState ?
+    this->landTimeS = scratchStack[index++];
     this->timeSinceLastMoveS = scratchStack[index++];
 
     this->useAnimationEnvelopeIndices.clear();
