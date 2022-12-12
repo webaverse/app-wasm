@@ -228,7 +228,7 @@ EMSCRIPTEN_KEEPALIVE void cookGeometryPhysics(float *positions, unsigned int *in
 EMSCRIPTEN_KEEPALIVE void cookConvexGeometryPhysics(float *positions, unsigned int *indices, unsigned int numPositions, unsigned int numIndices, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   physicsBase->cookConvexGeometry(positions, indices, numPositions, numIndices, data, length, writeStream);
 }
-EMSCRIPTEN_KEEPALIVE void cookHeightFieldGeometryPhysics(unsigned int numRows, unsigned int numColumns, unsigned int *scratchStack, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+EMSCRIPTEN_KEEPALIVE void cookHeightFieldGeometryPhysics(unsigned int numRows, unsigned int numColumns, int16_t *scratchStack, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
   physicsBase->cookHeightFieldGeometry(numRows, numColumns, scratchStack, data, length, writeStream);
 }
 
@@ -265,8 +265,8 @@ EMSCRIPTEN_KEEPALIVE void addGeometryPhysics(PScene *scene, PxTriangleMesh *tria
 EMSCRIPTEN_KEEPALIVE void addConvexGeometryPhysics(PScene *scene, PxConvexMesh *convexMesh, float *position, float *quaternion, float *scale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxConvexMesh *releaseConvexMesh) {
   scene->addConvexGeometry(convexMesh, position, quaternion, scale, id, material, dynamic, external, releaseConvexMesh);
 }
-EMSCRIPTEN_KEEPALIVE void addHeightFieldGeometryPhysics(PScene *scene, PxHeightField *convexMesh, float heightScale, float rowScale, float columnScale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxHeightField *releaseHeightField) {
-  scene->addHeightFieldGeometry(convexMesh, heightScale, rowScale, columnScale, id, material, dynamic, external, releaseHeightField);
+EMSCRIPTEN_KEEPALIVE void addHeightFieldGeometryPhysics(PScene *scene, PxHeightField *convexMesh, float *position, float *quaternion, float *scale, float heightScale, float rowScale, float columnScale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxHeightField *releaseHeightField) {
+  scene->addHeightFieldGeometry(convexMesh, position, quaternion, scale, heightScale, rowScale, columnScale, id, material, dynamic, external, releaseHeightField);
 }
 
 EMSCRIPTEN_KEEPALIVE void setGeometryScalePhysics(PScene *scene, unsigned int id, float *scale, PxDefaultMemoryOutputStream *writeStream) {

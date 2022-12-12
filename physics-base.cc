@@ -90,7 +90,7 @@ void PBase::cookConvexGeometry(float *positions, unsigned int *indices, unsigned
   *data = (*writeStream)->getData();
   *length = (*writeStream)->getSize();
 }
-void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumns, unsigned int *scratchStack, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
+void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumns, int16_t *scratchStack, uint8_t **data, unsigned int *length, PxDefaultMemoryOutputStream **writeStream) {
 	PxU32 hfNumVerts = numRows * numColumns;
 
 	PxHeightFieldSample* samples = new PxHeightFieldSample[hfNumVerts];
@@ -101,8 +101,8 @@ void PBase::cookHeightFieldGeometry(unsigned int numRows, unsigned int numColumn
 		for(PxU32 x = 0; x < numRows; x++)
 		{
       const PxU32 Index = x + z * numRows;
-      unsigned int height = scratchStack[Index];
-			samples[Index].height = (PxI16)(height);
+      const PxI16 height = scratchStack[Index];
+			samples[Index].height = height;
 		}
 	}
 
