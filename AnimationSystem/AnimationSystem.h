@@ -106,6 +106,7 @@ namespace AnimationSystem {
     float landTime;
     float fallLoopFactor;
     float fallLoopTime;
+    float skydiveTime;
     float gliderTime;
     float flyTime;
     float doubleJumpTime;
@@ -154,6 +155,7 @@ namespace AnimationSystem {
     bool useState;
     bool aimState;
     bool fallLoopState;
+    bool skydiveState;
     bool gliderState;
     bool danceState;
     bool emoteState;

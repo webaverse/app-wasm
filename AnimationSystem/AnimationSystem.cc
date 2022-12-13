@@ -203,6 +203,7 @@ namespace AnimationSystem {
 
     // ActionInterpolants
     avatar->actionInterpolants["crouch"] = new BiActionInterpolant(0, 200);
+    avatar->actionInterpolants["skydive"] = new InfiniteActionInterpolant(0);
     avatar->actionInterpolants["glider"] = new InfiniteActionInterpolant(0);
     avatar->actionInterpolants["activate"] = new UniActionInterpolant(0, 750);
     avatar->actionInterpolants["use"] = new InfiniteActionInterpolant(0);
@@ -352,6 +353,7 @@ namespace AnimationSystem {
   }
   void Avatar::updateInterpolation(float timeDiff) {
     this->actionInterpolants["crouch"]->update(timeDiff, this->crouchState);
+    this->actionInterpolants["skydive"]->update(timeDiff, this->skydiveState);
     this->actionInterpolants["glider"]->update(timeDiff, this->gliderState);
     this->actionInterpolants["activate"]->update(timeDiff, this->activateState);
     this->actionInterpolants["use"]->update(timeDiff, this->useState);
@@ -428,6 +430,8 @@ namespace AnimationSystem {
     // --- Update & Get value of ActionInterpolants
 
     this->crouchFactor = this->actionInterpolants["crouch"]->getNormalized();
+
+    this->skydiveTime = this->actionInterpolants["skydive"]->get();
 
     this->gliderTime = this->actionInterpolants["glider"]->get();
 
@@ -534,6 +538,8 @@ namespace AnimationSystem {
       this->flyState = true;
     } else if (j["type"] == "crouch") {
       this->crouchState = true;
+    } else if (j["type"] == "skydive") {
+      this->skydiveState = true;
     } else if (j["type"] == "glider") {
       this->gliderState = true;
     } else if (j["type"] == "narutoRun") {
@@ -591,6 +597,8 @@ namespace AnimationSystem {
       this->flyState = false;
     } else if (j["type"] == "crouch") {
       this->crouchState = false;
+    } else if (j["type"] == "skydive") {
+      this->skydiveState = false;
     } else if (j["type"] == "glider") {
       this->gliderState = false;
     } else if (j["type"] == "narutoRun") {
@@ -1189,6 +1197,32 @@ namespace AnimationSystem {
     }
   }
 
+  float *_get8DirectionsSkydiveAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) {
+    // skydiveAnimations
+    localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Skydive], directionsWeights, timeS);
+    copyValue(localVecQuatArr, localVecQuatPtr2, spec.isPosition);
+    _clearXZ(localVecQuatArr, spec.isPosition);
+
+    // blend skydive idle ---
+    localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle]->duration));
+    interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
+    return localVecQuatArr;
+  }
+
+  void _blendSkydive(AnimationMapping &spec, Avatar *avatar) {
+    if (avatar->skydiveState) {
+      Animation *skydiveAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle];
+      float t3 = fmod(AnimationMixer::nowS, skydiveAnimation->duration);
+      float *v3 = _get8DirectionsSkydiveAnimationValue(spec, avatar, t3);
+
+      float f = avatar->skydiveTime / 1000 / 0.5;
+      f = clamp(f, 0, 1);
+      interpolateFlat(spec.dst, 0, spec.dst, 0, v3, 0, f, spec.isPosition);
+
+      _clearXZ(spec.dst, spec.isPosition);
+    }
+  }
+
   float *_get8DirectionsGliderAnimationValue(AnimationMapping &spec, Avatar *avatar, float timeS) {
     // gliderAnimations
     localVecQuatPtr2 = doBlendList(spec, animationGroups[animationGroupIndexes.Glider], directionsWeights, timeS);
@@ -1317,6 +1351,7 @@ namespace AnimationSystem {
       // note: cascading blending, in order to do transition between all kinds of aniamtions.
       _blendFly(spec, this->avatar);
       _blendFallLoop(spec, this->avatar);
+      _blendSkydive(spec, this->avatar);
       _blendGlider(spec, this->avatar);
       _blendLand(spec, this->avatar);
       _blendActivate(spec, this->avatar);

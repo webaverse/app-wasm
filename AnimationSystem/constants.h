@@ -91,6 +91,7 @@ public:
   int Run;
   int Crouch;
   //
+  int Skydive;
   int Glider;
   //
   int Activate;
@@ -115,6 +116,7 @@ class SingleAnimationIndexes {
 public:
   int Idle;
   int CrouchIdle;
+  int SkydiveIdle;
   int GliderIdle;
   int Jump;
   int DoubleJump;
@@ -162,6 +164,16 @@ public:
 CrouchAnimationIndexes crouchAnimationIndexes;
 
 // ---
+
+int skydiveAnimationIota = 0;
+class SkydiveAnimationIndexes {
+public:
+  int Forward;
+  int Backward;
+  int Left;
+  int Right;
+};
+SkydiveAnimationIndexes skydiveAnimationIndexes;
 
 int gliderAnimationIota = 0;
 class GliderAnimationIndexes {
@@ -330,6 +342,11 @@ AnimationGroupDeclarations declarations = {
         "Crouch Idle.fbx"
       },
       {
+        "SkydiveIdle",
+        singleAnimationIndexes.SkydiveIdle = singleAnimationIota++,
+        "glide_idle.fbx"
+      },
+      {
         "GliderIdle",
         singleAnimationIndexes.GliderIdle = singleAnimationIota++,
         "glider_forward.fbx"
@@ -466,6 +483,32 @@ AnimationGroupDeclarations declarations = {
     }
   },
   //
+  {
+    "Skydive",
+    animationGroupIndexes.Skydive = animationGroupIota++,
+    {
+      {
+        "Forward",
+        skydiveAnimationIndexes.Forward = skydiveAnimationIota++,
+        "glide_forward.fbx"
+      },
+      {
+        "Backward",
+        skydiveAnimationIndexes.Backward = skydiveAnimationIota++,
+        "glide_backward.fbx"
+      },
+      {
+        "Left",
+        skydiveAnimationIndexes.Left = skydiveAnimationIota++,
+        "glide_left.fbx"
+      },
+      {
+        "Right",
+        skydiveAnimationIndexes.Right = skydiveAnimationIota++,
+        "glide_right.fbx"
+      },
+    }
+  },
   {
     "Glider",
     animationGroupIndexes.Glider = animationGroupIota++,
