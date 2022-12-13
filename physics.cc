@@ -662,7 +662,13 @@ void PScene::addHeightFieldGeometry(
     PxVec3(position[0], position[1], position[2]),
     PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3])
   );
-  PxHeightFieldGeometry geometry(heightField, PxMeshGeometryFlags(), heightScale, rowScale, columnScale);
+  PxHeightFieldGeometry geometry(
+    heightField,
+    PxMeshGeometryFlags(),
+    heightScale * scale[1],
+    rowScale * scale[0],
+    columnScale * scale[2]
+  );
 
   PxRigidActor *mesh;
   if (dynamic) {
