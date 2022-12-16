@@ -644,9 +644,31 @@ void PScene::addConvexGeometry(PxConvexMesh *convexMesh, float *position, float 
   }
 }
 
-void PScene::addHeightFieldGeometry(PxHeightField *heightField, float heightScale, float rowScale, float columnScale, unsigned int id, PxMaterial *material, unsigned int dynamic, unsigned int external, PxHeightField *releaseHeightField) {
-  PxTransform transform(PxVec3(0, 0, 0), PxQuat(0, 0, 0, 1));
-  PxHeightFieldGeometry geometry(heightField, PxMeshGeometryFlags(), heightScale, rowScale, columnScale);
+void PScene::addHeightFieldGeometry(
+  PxHeightField *heightField,
+  float *position,
+  float *quaternion,
+  float *scale,
+  float heightScale,
+  float rowScale,
+  float columnScale,
+  unsigned int id,
+  PxMaterial *material,
+  unsigned int dynamic,
+  unsigned int external,
+  PxHeightField *releaseHeightField
+) {
+  PxTransform transform(
+    PxVec3(position[0], position[1], position[2]),
+    PxQuat(quaternion[0], quaternion[1], quaternion[2], quaternion[3])
+  );
+  PxHeightFieldGeometry geometry(
+    heightField,
+    PxMeshGeometryFlags(),
+    heightScale * scale[1],
+    rowScale * scale[0],
+    columnScale * scale[2]
+  );
 
   PxRigidActor *mesh;
   if (dynamic) {
