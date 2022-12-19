@@ -119,6 +119,7 @@ namespace AnimationSystem {
     float useTime;
     float useAnimationEnvelopeLength;
     float hurtTime;
+    float readyGrabTime;
     float unuseTime;
     float aimTime;
     float aimMaxTime;
@@ -160,6 +161,7 @@ namespace AnimationSystem {
     bool danceState;
     bool emoteState;
     bool hurtState;
+    bool readyGrabState;
     bool rightHandState;
     bool leftHandState;
     bool sprintState;
