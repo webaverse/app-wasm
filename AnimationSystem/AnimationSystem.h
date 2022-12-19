@@ -190,6 +190,7 @@ namespace AnimationSystem {
     void addAction(char *scratchStack, unsigned int stringByteLength);
     void removeAction(char *scratchStack, unsigned int stringByteLength);
     float getActionInterpolant(char *scratchStack, unsigned int stringByteLength, unsigned int type = 0); // 0: get(), 1: getNormalized(), 2: getInverse()
+    void getValues(float *scratchStack);
   };
   class AnimationMixer {
   public:
