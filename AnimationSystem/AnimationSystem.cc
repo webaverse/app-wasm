@@ -998,7 +998,7 @@ namespace AnimationSystem {
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
     }
 
-    _clearXZ(spec.dst, spec.isPosition);
+    // _clearXZ(spec.dst, spec.isPosition);
   }
 
   void _blendUse(AnimationMapping &spec, Avatar *avatar) {
