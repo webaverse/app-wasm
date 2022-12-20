@@ -1098,13 +1098,17 @@ namespace AnimationSystem {
   }
 
   void _blendReadyGrab(AnimationMapping &spec, Avatar *avatar) {
+    _handleDefault(spec, avatar);
+
     Animation *readyGrabAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.ReadyGrab];
     float t2 = avatar->readyGrabTime / 1000;
     float *v2 = evaluateInterpolant(readyGrabAnimation, spec.index, t2);
 
-    copyValue(spec.dst, v2, spec.isPosition);
+    // copyValue(spec.dst, v2, spec.isPosition);
+    float f = clamp(avatar->readyGrabTime / 200, 0, 1);
+    interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
 
-    _clearXZ(spec.dst, spec.isPosition);
+    // _clearXZ(spec.dst, spec.isPosition);
   }
 
   void _blendAim(AnimationMapping &spec, Avatar *avatar) {
