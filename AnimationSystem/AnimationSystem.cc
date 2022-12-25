@@ -891,74 +891,80 @@ namespace AnimationSystem {
       interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
     }
 
-    _clearXZ(spec.dst, spec.isPosition);
+    // _clearXZ(spec.dst, spec.isPosition);
   }
 
   void _blendUse(AnimationMapping &spec, Avatar *avatar) {
-    Animation *useAnimation = nullptr;
-    float t2;
-    float useTimeS = avatar->useTime / 1000;
-    if (avatar->useAnimationEnvelopeIndices.size() > 0) {
-      float totalTime = 0;
-      for (unsigned int i = 0; i < avatar->useAnimationEnvelopeIndices.size() - 1; i++) {
-        int animationIndex = avatar->useAnimationEnvelopeIndices[i];
-        Animation *animation = animationGroups[animationGroupIndexes.Use][animationIndex];
-        totalTime += animation->duration;
-      }
-
-      if (totalTime > 0) {
-        float animationTimeBase = 0;
+    if (
+      avatar->useAnimationIndex >= 0 ||
+      avatar->useAnimationComboIndex >= 0 ||
+      avatar->useAnimationEnvelopeIndices.size() > 0
+    ) {
+      Animation *useAnimation = nullptr;
+      float t2;
+      float useTimeS = avatar->useTime / 1000;
+      if (avatar->useAnimationEnvelopeIndices.size() > 0) {
+        float totalTime = 0;
         for (unsigned int i = 0; i < avatar->useAnimationEnvelopeIndices.size() - 1; i++) {
           int animationIndex = avatar->useAnimationEnvelopeIndices[i];
           Animation *animation = animationGroups[animationGroupIndexes.Use][animationIndex];
-          if (useTimeS < (animationTimeBase + animation->duration)) {
-            useAnimation = animation;
-            break;
+          totalTime += animation->duration;
+        }
+
+        if (totalTime > 0) {
+          float animationTimeBase = 0;
+          for (unsigned int i = 0; i < avatar->useAnimationEnvelopeIndices.size() - 1; i++) {
+            int animationIndex = avatar->useAnimationEnvelopeIndices[i];
+            Animation *animation = animationGroups[animationGroupIndexes.Use][animationIndex];
+            if (useTimeS < (animationTimeBase + animation->duration)) {
+              useAnimation = animation;
+              break;
+            }
+            animationTimeBase += animation->duration;
           }
-          animationTimeBase += animation->duration;
+          if (useAnimation != nullptr) { // first iteration
+            t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
+          } else { // loop
+            int secondLastAnimationIndex = avatar->useAnimationEnvelopeIndices[avatar->useAnimationEnvelopeIndices.size() - 2];
+            useAnimation = animationGroups[animationGroupIndexes.Use][secondLastAnimationIndex];
+            t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
+          }
         }
-        if (useAnimation != nullptr) { // first iteration
-          t2 = min(useTimeS - animationTimeBase, useAnimation->duration);
-        } else { // loop
-          int secondLastAnimationIndex = avatar->useAnimationEnvelopeIndices[avatar->useAnimationEnvelopeIndices.size() - 2];
-          useAnimation = animationGroups[animationGroupIndexes.Use][secondLastAnimationIndex];
-          t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
-        }
+      } else if (avatar->airUseState) {
+        useAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.AirAttack];
+        t2 = min(useTimeS, useAnimation->duration);
+      } else if (avatar->useAnimationIndex >= 0) {
+        useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationIndex];
+        t2 = min(useTimeS, useAnimation->duration);
+      } else if(avatar->useAnimationComboIndex >= 0) {
+        useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationComboIndex];
+        t2 = min(useTimeS, useAnimation->duration);
       }
-    } else if (avatar->airUseState) {
-      useAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.AirAttack];
-      t2 = min(useTimeS, useAnimation->duration);
-    } else if (avatar->useAnimationIndex >= 0) {
-      useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationIndex];
-      t2 = min(useTimeS, useAnimation->duration);
-    } else if(avatar->useAnimationComboIndex >= 0) {
-      useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationComboIndex];
-      t2 = min(useTimeS, useAnimation->duration);
-    }
-    
-    _handleDefault(spec, avatar);
+      
+      _handleDefault(spec, avatar);
 
-    if (useAnimation) {
-      if (!spec.isPosition) {
-        float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+      if (useAnimation) {
+        if (!spec.isPosition) {
+          float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
 
-        Animation *idleAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Idle];
-        float t3 = 0;
-        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+          Animation *idleAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Idle];
+          float t3 = 0;
+          float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
-        invertQuaternionFlat(v3, 0);
-        multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
-        multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
-      } else {
-        float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
-        _clearXZ(v2, spec.isPosition);
+          invertQuaternionFlat(v3, 0);
+          multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
+          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        } else {
+          float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+          _clearXZ(v2, spec.isPosition);
 
-        Animation *idleAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Idle];
-        float t3 = 0;
-        float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+          Animation *idleAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Idle];
+          float t3 = 0;
+          float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
-        subVectorsFlat(spec.dst, spec.dst, v3);
-        addVectorsFlat(spec.dst, spec.dst, v2);
+          subVectorsFlat(spec.dst, spec.dst, v3);
+          addVectorsFlat(spec.dst, spec.dst, v2);
+        }
       }
     }
   }
@@ -1255,12 +1261,6 @@ namespace AnimationSystem {
         _blendDance(spec, this->avatar);
       } else if (avatar->emoteFactor > 0) {
         _blendEmote(spec, this->avatar);
-      } else if (
-        avatar->useAnimationIndex >= 0 ||
-        avatar->useAnimationComboIndex >= 0 ||
-        avatar->useAnimationEnvelopeIndices.size() > 0
-      ) {
-        _blendUse(spec, this->avatar);
       } else if (avatar->hurtAnimationIndex >= 0) {
         _blendHurt(spec, this->avatar);
       } else if (avatar->aimAnimationIndex >= 0) {
@@ -1278,6 +1278,7 @@ namespace AnimationSystem {
       // note: cascading blending, in order to do transition between all kinds of aniamtions.
       _blendFly(spec, this->avatar);
       _blendFallLoop(spec, this->avatar);
+      _blendUse(spec, this->avatar);
       _blendLand(spec, this->avatar);
       _blendActivate(spec, this->avatar);
       _blendSwim(spec, this->avatar);
