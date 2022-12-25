@@ -559,6 +559,8 @@ namespace AnimationSystem {
       this->activateState = true;
     } else if (j["type"] == "use") {
       this->useState = true;
+      // std::cout << "-wasm-isAir: " << j["isAir"] << std::endl;
+      if (j["isAir"] == true) this->airUseState = true;
     } else if (j["type"] == "aim") {
       this->aimState = true;
     } else if (j["type"] == "fallLoop") {
@@ -620,6 +622,7 @@ namespace AnimationSystem {
       this->activateState = false;
     } else if (j["type"] == "use") {
       this->useState = false;
+      this->airUseState = false;
     } else if (j["type"] == "aim") {
       this->aimState = false;
     } else if (j["type"] == "fallLoop") {
@@ -1005,13 +1008,7 @@ namespace AnimationSystem {
     Animation *useAnimation = nullptr;
     float t2;
     float useTimeS = avatar->useTime / 1000;
-    if (avatar->useAnimationIndex >= 0) {
-      useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationIndex];
-      t2 = min(useTimeS, useAnimation->duration);
-    } else if(avatar->useAnimationComboIndex >= 0) {
-      useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationComboIndex];
-      t2 = min(useTimeS, useAnimation->duration);
-    } else if (avatar->useAnimationEnvelopeIndices.size() > 0) {
+    if (avatar->useAnimationEnvelopeIndices.size() > 0) {
       float totalTime = 0;
       for (unsigned int i = 0; i < avatar->useAnimationEnvelopeIndices.size() - 1; i++) {
         int animationIndex = avatar->useAnimationEnvelopeIndices[i];
@@ -1038,6 +1035,15 @@ namespace AnimationSystem {
           t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
         }
       }
+    } else if (avatar->airUseState) {
+      useAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.AirAttack];
+      t2 = min(useTimeS, useAnimation->duration);
+    } else if (avatar->useAnimationIndex >= 0) {
+      useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationIndex];
+      t2 = min(useTimeS, useAnimation->duration);
+    } else if(avatar->useAnimationComboIndex >= 0) {
+      useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationComboIndex];
+      t2 = min(useTimeS, useAnimation->duration);
     }
     
     _handleDefault(spec, avatar);
