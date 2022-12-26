@@ -535,7 +535,6 @@ namespace AnimationSystem {
       this->activateState = true;
     } else if (j["type"] == "use") {
       this->useState = true;
-      // std::cout << "-wasm-isAir: " << j["isAir"] << std::endl;
       if (j["isAir"] == true && j["behavior"] == "sword") this->airAttackState = true;
     } else if (j["type"] == "aim") {
       this->aimState = true;
