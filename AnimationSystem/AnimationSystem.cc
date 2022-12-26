@@ -536,7 +536,7 @@ namespace AnimationSystem {
     } else if (j["type"] == "use") {
       this->useState = true;
       // std::cout << "-wasm-isAir: " << j["isAir"] << std::endl;
-      if (j["isAir"] == true) this->airUseState = true;
+      if (j["isAir"] == true && j["behavior"] == "sword") this->airAttackState = true;
     } else if (j["type"] == "aim") {
       this->aimState = true;
     } else if (j["type"] == "fallLoop") {
@@ -590,7 +590,7 @@ namespace AnimationSystem {
       this->activateState = false;
     } else if (j["type"] == "use") {
       this->useState = false;
-      this->airUseState = false;
+      this->airAttackState = false;
     } else if (j["type"] == "aim") {
       this->aimState = false;
     } else if (j["type"] == "fallLoop") {
@@ -930,7 +930,7 @@ namespace AnimationSystem {
             t2 = fmod((useTimeS - animationTimeBase), useAnimation->duration);
           }
         }
-      } else if (avatar->airUseState) {
+      } else if (avatar->airAttackState) {
         useAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.AirAttack];
         t2 = min(useTimeS, useAnimation->duration);
       } else if (avatar->useAnimationIndex >= 0) {
@@ -941,13 +941,23 @@ namespace AnimationSystem {
         t2 = min(useTimeS, useAnimation->duration);
       }
       
-      _handleDefault(spec, avatar);
+      // _handleDefault(spec, avatar);
 
       if (useAnimation) {
-        if (avatar->airUseState) {
-            float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
-            _clearXZ(v2, spec.isPosition);
-            copyValue(spec.dst, v2, spec.isPosition);
+        if (avatar->airAttackState) {
+          float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+          _clearXZ(v2, spec.isPosition);
+          // copyValue(spec.dst, v2, spec.isPosition);
+          
+          float f3 = useTimeS / 0.2;
+          f3 = clamp(f3, 0, 1);
+
+          float f2 = ((useAnimation->duration + 0.3) - useTimeS) / 0.2;
+          f2 = clamp(f2, 0, 1);
+
+          float f = min(f3, f2);
+
+          interpolateFlat(spec.dst, 0, spec.dst, 0, v2, 0, f, spec.isPosition);
         } else {
           if (!spec.isPosition) {
             float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
