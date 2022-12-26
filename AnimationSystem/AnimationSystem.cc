@@ -944,26 +944,32 @@ namespace AnimationSystem {
       _handleDefault(spec, avatar);
 
       if (useAnimation) {
-        if (!spec.isPosition) {
-          float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
-
-          Animation *idleAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Idle];
-          float t3 = 0;
-          float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
-
-          invertQuaternionFlat(v3, 0);
-          multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
-          multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+        if (avatar->airUseState) {
+            float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+            _clearXZ(v2, spec.isPosition);
+            copyValue(spec.dst, v2, spec.isPosition);
         } else {
-          float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
-          _clearXZ(v2, spec.isPosition);
+          if (!spec.isPosition) {
+            float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
 
-          Animation *idleAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Idle];
-          float t3 = 0;
-          float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+            Animation *idleAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Idle];
+            float t3 = 0;
+            float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
 
-          subVectorsFlat(spec.dst, spec.dst, v3);
-          addVectorsFlat(spec.dst, spec.dst, v2);
+            invertQuaternionFlat(v3, 0);
+            multiplyQuaternionsFlat(spec.dst, 0, v3, 0, spec.dst, 0);
+            multiplyQuaternionsFlat(spec.dst, 0, v2, 0, spec.dst, 0);
+          } else {
+            float *v2 = evaluateInterpolant(useAnimation, spec.index, t2);
+            _clearXZ(v2, spec.isPosition);
+
+            Animation *idleAnimation = animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.Idle];
+            float t3 = 0;
+            float *v3 = evaluateInterpolant(idleAnimation, spec.index, t3);
+
+            subVectorsFlat(spec.dst, spec.dst, v3);
+            addVectorsFlat(spec.dst, spec.dst, v2);
+          }
         }
       }
     }
