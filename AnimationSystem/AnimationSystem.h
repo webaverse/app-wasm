@@ -150,6 +150,7 @@ namespace AnimationSystem {
     bool swimState;
     bool activateState;
     bool useState;
+    bool airAttackState;
     bool aimState;
     bool fallLoopState;
     bool danceState;
