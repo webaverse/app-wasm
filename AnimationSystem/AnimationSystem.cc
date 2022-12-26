@@ -1281,7 +1281,11 @@ namespace AnimationSystem {
         _blendHurt(spec, this->avatar);
       } else if (avatar->aimAnimationIndex >= 0) {
         _blendAim(spec, this->avatar);
-      } else if (avatar->unuseAnimationIndex >= 0 && avatar->unuseTime >= 0) {
+      } else if (avatar->unuseAnimationIndex >= 0 && avatar->unuseTime >= 0 && !(
+        avatar->useAnimationIndex >= 0 ||
+        avatar->useAnimationComboIndex >= 0 ||
+        avatar->useAnimationEnvelopeIndices.size() > 0
+      )) {
         _blendUnuse(spec, this->avatar);
       } else if (avatar->holdState) {
         _blendHold(spec, this->avatar);
