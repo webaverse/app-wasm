@@ -1314,7 +1314,7 @@ namespace AnimationSystem {
     _clearXZ(localVecQuatArr, spec.isPosition);
 
     // blend skydive idle ---
-    localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle]->duration));
+    localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.SkydiveIdle], spec.index, timeS);
     interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
     return localVecQuatArr;
   }
@@ -1340,7 +1340,7 @@ namespace AnimationSystem {
     _clearXZ(localVecQuatArr, spec.isPosition);
 
     // blend glider idle ---
-    localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle], spec.index, fmod(avatar->timeSinceLastMoveS, animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle]->duration));
+    localVecQuatPtr = evaluateInterpolant(animationGroups[animationGroupIndexes.Single][singleAnimationIndexes.GliderIdle], spec.index, timeS);
     interpolateFlat(localVecQuatArr, 0, localVecQuatArr, 0, localVecQuatPtr, 0, 1 - avatar->idleWalkFactor, spec.isPosition);
     return localVecQuatArr;
   }
