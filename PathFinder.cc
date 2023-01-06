@@ -19,7 +19,8 @@ PathFinder::PathFinder(std::vector<PxRigidActor *> _actors, float _hy, float _he
 }
 
 float PathFinder::roundToHeightTolerance(float y) {
-  y = round(y * (1 / heightTolerance)) / (1 / heightTolerance);
+  // note: // return round(y * 2) / 2; // Round to 0.5 because heightTolerance is 0.5;
+  y = round(y * (1 / heightTolerance)) / (1 / heightTolerance); // note: round to any heightTolerance.
   return y;
 }
 
