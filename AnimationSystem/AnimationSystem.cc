@@ -739,7 +739,7 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
-    animationMixer->animationValues = new float[_animationMappings.size() * 4];
+    animationMixer->animationValues = new float[_animationMappings.size() * 4 + 1]; // + 1 isUseFinished
     return animationMixer;
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
@@ -1008,9 +1008,11 @@ namespace AnimationSystem {
     if (avatar->useAnimationIndex >= 0) {
       useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationIndex];
       t2 = min(useTimeS, useAnimation->duration);
+      if (useTimeS >= useAnimation->duration) avatar->mixer->isUseFinished = true;
     } else if(avatar->useAnimationComboIndex >= 0) {
       useAnimation = animationGroups[animationGroupIndexes.Use][avatar->useAnimationComboIndex];
       t2 = min(useTimeS, useAnimation->duration);
+      if (useTimeS >= useAnimation->duration) avatar->mixer->isUseFinished = true;
     } else if (avatar->useAnimationEnvelopeIndices.size() > 0) {
       float totalTime = 0;
       for (unsigned int i = 0; i < avatar->useAnimationEnvelopeIndices.size() - 1; i++) {
@@ -1422,6 +1424,8 @@ namespace AnimationSystem {
   float *AnimationMixer::update(float now, float nowS) {
     AnimationMixer::nowS = nowS;
 
+    this->isUseFinished = false;
+
     for (int i = 0; i < _animationMappings.size(); i++) {
       AnimationMapping spec = _animationMappings[i];
 
@@ -1474,6 +1478,7 @@ namespace AnimationSystem {
       animationValues[i * 4 + 2] = spec.dst[2];
       animationValues[i * 4 + 3] = spec.dst[3];
     }
+    animationValues[_animationMappings.size() * 4] = this->isUseFinished;
 
     return animationValues;
   }

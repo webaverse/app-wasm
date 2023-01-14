@@ -198,6 +198,7 @@ namespace AnimationSystem {
 
     Avatar *avatar;
     float *animationValues;
+    bool isUseFinished;
 
     float *update(float now, float nowS);
   };
