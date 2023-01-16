@@ -739,7 +739,7 @@ namespace AnimationSystem {
   AnimationMixer *createAnimationMixer() {
     AnimationMixer *animationMixer = new AnimationMixer();
     _animationMixers.push_back(animationMixer);
-    animationMixer->animationValues = new float[_animationMappings.size() * 4 + 1]; // + 1 isUseFinished
+    animationMixer->animationValues = new float[_animationMappings.size() * 4 + 2]; // + 1 animations finished flags.
     return animationMixer;
   }
   void createAnimationMapping(bool isPosition, unsigned int index, bool isTop, bool isArm, char *scratchStack, unsigned int nameByteLength) {
@@ -1075,6 +1075,7 @@ namespace AnimationSystem {
     Animation *hurtAnimation = animationGroups[animationGroupIndexes.Hurt][avatar->hurtAnimationIndex];
     float hurtTimeS = avatar->hurtTime / 1000;
     float t2 = min(hurtTimeS, hurtAnimation->duration);
+    if (hurtTimeS >= hurtAnimation->duration) avatar->mixer->isHurtFinished = true;
     if (!spec.isPosition) {
       if (hurtAnimation) {
         float *v2 = evaluateInterpolant(hurtAnimation, spec.index, t2);
@@ -1425,6 +1426,7 @@ namespace AnimationSystem {
     AnimationMixer::nowS = nowS;
 
     this->isUseFinished = false;
+    this->isHurtFinished = false;
 
     for (int i = 0; i < _animationMappings.size(); i++) {
       AnimationMapping spec = _animationMappings[i];
@@ -1478,7 +1480,9 @@ namespace AnimationSystem {
       animationValues[i * 4 + 2] = spec.dst[2];
       animationValues[i * 4 + 3] = spec.dst[3];
     }
-    animationValues[_animationMappings.size() * 4] = this->isUseFinished;
+    unsigned int positionsAndQuaternionsLength = _animationMappings.size() * 4;
+    animationValues[positionsAndQuaternionsLength] = this->isUseFinished;
+    animationValues[positionsAndQuaternionsLength + 1] = this->isHurtFinished;
 
     return animationValues;
   }
